@@ -28,6 +28,8 @@ export interface Scale {
   sortedComposite: Record<ProfileKey, Float64Array>;
   /** Cache: Pokémon-ID → Fit je Profil */
   cache: Map<number, Record<ProfileKey, number>>;
+  /** Cache: Pokémon-ID → normalisierte Faktoren (Reihenfolge wie FACTORS) */
+  factorCache: Map<number, Float64Array>;
 }
 
 /** Anteil der Werte im sortierten Array, die ≤ v sind (0–1). */
@@ -69,15 +71,26 @@ export function factorScore(p: Pokemon, f: FactorKey, scale: Scale): number {
   return pw * cdf(scale.sortedFactors[f], raw) + (1 - pw) * root;
 }
 
+/** Alle normalisierten Faktoren eines Pokémon – einmal je Scale berechnet. */
+function factorScores(p: Pokemon, scale: Scale): Float64Array {
+  let scores = scale.factorCache.get(p.id);
+  if (!scores) {
+    scores = Float64Array.from(FACTORS, (f) => factorScore(p, f, scale));
+    scale.factorCache.set(p.id, scores);
+  }
+  return scores;
+}
+
 /** Gewichteter Durchschnitt der Faktoren für ein Profil (0–1), noch ohne Perzentil. */
 export function compositeScore(p: Pokemon, profile: ProfileKey, scale: Scale): number {
   const weights = PROFILES[profile].weights;
+  const scores = factorScores(p, scale);
   let sum = 0;
   let total = 0;
-  for (const f of FACTORS) {
-    const lvl = weights[f];
+  for (let i = 0; i < FACTORS.length; i++) {
+    const lvl = weights[FACTORS[i]];
     if (!lvl) continue;
-    sum += lvl * factorScore(p, f, scale);
+    sum += lvl * scores[i];
     total += lvl;
   }
   return total ? sum / total : 0;
@@ -107,6 +120,7 @@ export function buildScale(pool: Pokemon[], id = 'custom'): Scale {
     sortedFactors,
     sortedComposite: {} as Record<ProfileKey, Float64Array>,
     cache: new Map(),
+    factorCache: new Map(),
   };
   for (const key of PROFILE_KEYS) {
     const arr = Float64Array.from(pool, (p) => compositeScore(p, key, scale));

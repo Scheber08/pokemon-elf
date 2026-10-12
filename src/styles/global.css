@@ -701,7 +701,7 @@ select {
 
 @media (max-width: 899px) {
   .builder {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -1637,7 +1637,7 @@ button.sheet__row:hover {
 @media (max-width: 899px) {
   .challenge__setup,
   .challenge__play {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .challenge__pitch {
     position: static;
@@ -1895,9 +1895,10 @@ button.sheet__row:hover {
 }
 
 @media (max-width: 899px) {
+  /* minmax(0, 1fr): sonst wächst die Spalte auf die Mindestbreite der Tabelle (Seite scrollt seitlich) */
   .result-hero,
   .result-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .facts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2090,7 +2091,7 @@ button.sheet__row:hover {
 }
 @media (max-width: 899px) {
   .draft__setup {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (max-width: 520px) {

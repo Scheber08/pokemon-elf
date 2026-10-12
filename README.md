@@ -3,7 +3,8 @@
 Fußball-Aufstellungen aus Pokémon: Stell eine Startelf auf, lass sie nach **Positions-Fit** bewerten
 und spiel damit eine simulierte Saison mit 34 Spielen. Schaffst du **34–0**?
 
-React 19 + Vite + TypeScript, kein Backend. Die gesamte UI ist auf Deutsch.
+React 19 + Vite + TypeScript. Optionales Backend auf **Cloudflare Pages Functions + D1** für die
+Online-Rangliste – ohne Backend läuft alles lokal weiter. Die gesamte UI ist auf Deutsch.
 
 ## Schnellstart
 
@@ -14,8 +15,9 @@ npm run dev        # http://localhost:5173
 
 | Befehl | Zweck |
 | --- | --- |
-| `npm run dev` | Entwicklungsserver |
-| `npm run build` | Typprüfung + Produktions-Build nach `dist/` |
+| `npm run dev` | Entwicklungsserver (ohne Backend → Runs laufen offline/ungewertet) |
+| `npm run dev:cf` | Build + `wrangler pages dev` mit API und lokaler D1 – http://localhost:8788 |
+| `npm run build` | Typprüfung (App + Worker) + Produktions-Build nach `dist/` |
 | `npm run preview` | Build lokal ansehen |
 | `npm test` | Unit-Tests (Vitest) |
 | `npm run data` | Pokémon-Daten neu von der PokeAPI laden |
@@ -57,15 +59,24 @@ src/
     formation.ts           Umverteilung beim Formationswechsel
     urlState.ts            Aufstellung ↔ kompakter URL-Parameter (?elf=…)
     exportImage.ts         html2canvas-Export, Teilen, Zwischenablage
-    leaderboard/           Ranglisten-Interface: lokal (localStorage) + Supabase-Vorlage
+    challengeEngine.ts     Deterministische Challenge-Logik (Würfe, Rerolls, Replay) – Client + Server
+    runCompute.ts          Team-Score + Saison eines fertigen Runs – Client + Server
+    daily.ts               Tägliche Elf: Tag (Europe/Berlin), Seeds, Countdown
+    seasonTimeline.ts      Spieltag-für-Spieltag-Verlauf für den Live-Ticker
+    api/                   API-Vertrag (contract.ts) + Browser-Client (client.ts)
+    runFinish.ts           Run abschließen: online einreichen oder lokal auswerten
+    leaderboard/           Lokale Run-Historie (localStorage)
   components/              Spielfeld (Drag & Drop), Teamblatt, Auswahl-Dialog, Ergebnis …
   pages/                   Builder, 34–0, 151/Retro, Draft, Rangliste, Scouting-Guide, Info
-  state/                   Daten-, Einstellungs- und Toast-Kontext
-tests/                     Unit-Tests: Fit, Team-Score, Saison, URL & Formation
+  state/                   Daten-, Einstellungs- und Toast-Kontext, useChallengeRun (Run-Lebenszyklus)
+server/                    Backend: Routing, Endpunkte, D1-Abfragen, Validierung, Geräte-Auth
+functions/api/[[route]].ts Cloudflare Pages Function → server/handler.ts
+migrations/0001_init.sql   D1-Schema (der Server legt es auch selbst an)
+tests/                     Unit-Tests: Fit, Team-Score, Saison, Engine, Server/API, Ticker, Tages-Elf …
 ```
 
-Routen: `/` Builder · `/challenge` 34–0 · `/151` 151 Challenge & Retro 34–0 · `/draft` Fantasy-Draft ·
-`/rangliste` · `/scouting` · `/ueber` · `/datenschutz`
+Routen: `/` Builder · `/challenge` 34–0 · `/taeglich` Tägliche Elf · `/151` 151 Challenge & Retro 34–0 ·
+`/draft` Fantasy-Draft · `/rangliste` (Deep-Link `?c=daily&p=today`) · `/scouting` · `/ueber` · `/datenschutz`
 
 ## Bewertung in Kürze
 
@@ -88,10 +99,16 @@ Alle Zahlen sind in `src/config/` änderbar – die Tests prüfen Eigenschaften,
 
 - **Builder** – frei aufstellen, Drag & Drop, Bild speichern (1200×1500 PNG), Link teilen. Keine Fit-Anzeige.
 - **34–0 Challenge** – pro Runde werden Region + Typ gewürfelt (je ein Reroll pro Run), max. 2 Legendäre.
+- **Tägliche Elf** – jeden Tag (Europe/Berlin) dieselben Würfe für alle, Regeln wie 34–0, ein Versuch pro
+  Tag und Gerät. Die Saison ist für alle identisch (gleiche Elf → gleiches Ergebnis). Ergebnis als
+  Emoji-Raster teilen (34 Spieltage in zwei Reihen).
 - **151 Challenge** – pro Runde ein zufälliges Pokémon aus den Original-151, 5 Rerolls.
 - **Retro 34–0** – Modus der 151-Seite: Typ-Würfel wie bei 34–0, aber nur Kanto, Retro-Sprites,
   Gen-1-Skalierung, eigene Rangliste.
 - **Fantasy-Draft** – 2–8 Teams (Hot-Seat oder CPU), Snake-Draft über 11 Runden, danach Liga.
+
+Nach jedem Challenge-Run läuft die Saison im **Live-Ticker** ab (Spieltag für Spieltag, Pause, 1×/2×/4×,
+Überspringen), danach folgt die Saisonbilanz.
 
 ## Persistenz
 
@@ -99,44 +116,58 @@ Alles liegt im `localStorage` (Präfix `pokemon-elf:`): Aufstellung, Einstellung
 Bestwerte pro Challenge und die lokale Rangliste. Ein geteilter Link (`?elf=…`) enthält Formation,
 11 IDs + Standardschütze, Region/Legendäre/Sprite-Stil und den Teamnamen – Base64url, ~36 Zeichen.
 
-## Online-Rangliste (optional, Supabase)
+## Online-Rangliste (Cloudflare)
 
-Die UI spricht nur mit `LeaderboardService` (`src/lib/leaderboard/types.ts`). Ohne Konfiguration wird
-die lokale Variante verwendet. Für Supabase `.env.example` nach `.env` kopieren, URL und Anon-Key
-eintragen und folgende Tabelle anlegen:
+Gewertete Runs laufen so ab:
 
-```sql
-create table runs (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users default auth.uid(),
-  challenge text not null check (challenge in ('c340', 'retro340', 'c151')),
-  player text not null,
-  wins int not null, draws int not null, losses int not null,
-  points int not null, score int not null,
-  formation text not null, lineup int[] not null,
-  team_name text not null default '',
-  created_at timestamptz not null default now()
-);
-alter table runs enable row level security;
-create policy "lesen" on runs for select using (true);
-create policy "eigene schreiben" on runs for insert with check (auth.uid() = user_id);
-create policy "eigene umbenennen" on runs for update using (auth.uid() = user_id);
-```
+1. `POST /api/runs/start` – der Server vergibt Seed + Token (Tägliche Elf: Seed des Tages).
+2. Der Browser spielt mit `challengeEngine` und protokolliert jeden Zug.
+3. `POST /api/runs/finish` – der Server spielt das Protokoll mit **derselben Engine** nach, lehnt illegale
+   Runs ab, zieht den Saison-Seed selbst (Tägliche Elf: Seed des Tages), rechnet Team-Score + Saison und
+   speichert die Wertung. Der Browser simuliert mit diesem Seed dieselbe Saison.
 
-Die Anmeldung selbst (Supabase Auth, z. B. Magic Link) ist noch nicht eingebaut: Die Vorlage in
-`src/lib/leaderboard/remote.ts` erwartet das Access-Token in `sessionStorage['pokemon-elf:sb-token']`
-und zeigt ohne Token „Anmelden, um auf der Rangliste zu spielen".
+Kein Account nötig: Jedes Gerät hat eine zufällige ID + einen geheimen Schlüssel (der Server speichert nur
+dessen SHA-256). Pro Gerät zählt der beste Run; die Tägliche Elf ist einmal pro Gerät und Tag gewertet.
+Limits gegen Missbrauch (Runs pro Stunde, neue Geräte pro IP-Hash) stehen in `src/lib/api/contract.ts`.
+Ist das Backend nicht erreichbar, spielt die App lokal und ungewertet weiter; scheitert nur das Absenden,
+kann man erneut senden oder offline auswerten.
 
-## Deploy
+Endpunkte: `GET /api/health` · `POST /api/runs/start` · `POST /api/runs/finish` ·
+`GET /api/leaderboard?challenge=…&period=today|all` · `POST /api/player` (Spielername).
 
-Reine statische Seite – `dist/` kann überall gehostet werden. SPA-Fallback auf `index.html` ist nötig,
-damit Deep-Links wie `/scouting` funktionieren; beides ist vorkonfiguriert.
+## Deploy auf Cloudflare Pages
 
-**Vercel:** Repository importieren – `vercel.json` setzt Build-Befehl, `dist` und die Rewrites.
-Oder per CLI: `npx vercel --prod`.
+**Einmalig einrichten (Dashboard, ohne Kommandozeile):**
 
-**Netlify:** Repository verbinden – `netlify.toml` setzt Build, `dist` und den Redirect.
-Oder per CLI: `npx netlify deploy --prod --dir=dist` (vorher `npm run build`).
+1. *Workers & Pages → Create → Pages → Connect to Git* → Repository wählen.
+   Build command `npm run build`, Build output directory `dist`. Speichern & deployen.
+   Ab jetzt baut und deployt **jeder Push auf `main` automatisch** (andere Branches → Vorschau-URL).
+2. *Storage & Databases → D1 → Create* → Name `pokemon-elf`.
+3. Im Pages-Projekt: *Settings → Bindings → Add → D1 database* → Variable name **`DB`**, Datenbank
+   `pokemon-elf` (für *Production*, optional auch *Preview*). Danach einmal neu deployen
+   (*Deployments → … → Retry deployment*) oder einfach den nächsten Push abwarten.
+
+Fertig – die Tabellen legt der Server beim ersten Aufruf selbst an (`server/schema.ts`). Ohne Binding
+läuft die Seite trotzdem: `/api/health` meldet dann einen Fehler und die App spielt lokal.
+Prüfen: `https://<dein-projekt>.pages.dev/api/health` → `{"ok":true,…}`.
+
+Optional unter *Settings → Variables and Secrets*: `IP_SALT` (Secret, Salz für IP-Hashes) und
+`ALLOWED_ORIGINS` (kommagetrennt, falls die API von einer anderen Domain genutzt wird; der Client
+liest dann `VITE_API_BASE` beim Build).
+
+Bewusst **keine `wrangler.toml` im Repo**: Cloudflare würde sie als Quelle für die Bindings nehmen und
+die Einstellungen aus dem Dashboard ignorieren. Wer die Konfiguration lieber als Code pflegt, nimmt
+`wrangler.example.toml` als Vorlage (dann `npx wrangler d1 create pokemon-elf` und die ID eintragen).
+
+**Per Kommandozeile statt Git:** `npx wrangler login`, dann `npm run deploy:cf` (Projektname
+`pokemon-elf`; das D1-Binding wie oben im Dashboard setzen).
+
+**Free-Plan:** 10 ms CPU pro Anfrage. Ein Abschluss kostet im Worker wenige Millisekunden; die
+Normalisierungen werden beim Start des Isolates gebaut, nicht in der Anfrage. Sollten trotzdem
+`1102`-Fehler (CPU-Limit) auftauchen, hilft der Paid-Plan.
+
+**Andere Hosts (Vercel/Netlify/statisch):** `vercel.json` bzw. `netlify.toml` liegen bei. Dort gibt es
+kein Backend – Challenges laufen dann lokal und ungewertet.
 
 Unterpfad (z. B. GitHub Pages unter `/pokemon-elf/`): `vite build --base=/pokemon-elf/` – Router,
 Daten-URL und geteilte Links nutzen `import.meta.env.BASE_URL`.

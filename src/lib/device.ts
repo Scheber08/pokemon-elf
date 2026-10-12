@@ -9,6 +9,13 @@ import { load, save } from './storage';
 
 const KEY = 'device';
 
+/**
+ * Identität dieses Seitenaufrufs. Einmal geladen bzw. erzeugt, bleibt sie im Speicher –
+ * auch wenn localStorage blockiert ist und das Speichern scheitert. Sonst bekäme jeder
+ * Aufruf ein neues Gerät (Start und Abschluss eines Runs passten nicht zusammen).
+ */
+let current: DeviceAuth | null = null;
+
 function randomHex(bytes: number): string {
   const buf = new Uint8Array(bytes);
   crypto.getRandomValues(buf);
@@ -20,9 +27,14 @@ function newId(): string {
 }
 
 export function getDevice(): DeviceAuth {
-  const stored = load<Partial<DeviceAuth>>(KEY, {});
-  if (stored.deviceId && stored.deviceSecret) return { deviceId: stored.deviceId, deviceSecret: stored.deviceSecret };
-  const device = { deviceId: newId(), deviceSecret: randomHex(32) };
-  save(KEY, device);
-  return device;
+  if (current) return current;
+  const stored: Partial<DeviceAuth> = load<Partial<DeviceAuth> | null>(KEY, null) ?? {};
+  const { deviceId, deviceSecret } = stored;
+  if (typeof deviceId === 'string' && deviceId && typeof deviceSecret === 'string' && deviceSecret) {
+    current = { deviceId, deviceSecret };
+  } else {
+    current = { deviceId: newId(), deviceSecret: randomHex(32) };
+    save(KEY, current);
+  }
+  return current;
 }

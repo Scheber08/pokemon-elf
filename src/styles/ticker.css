@@ -1,0 +1,653 @@
+/* ============================================================
+   Live-Ticker der Saison (SeasonTicker)
+   Selektoren, die globale Klassen (.card, .facts, .league-table) überschreiben,
+   sind doppelt qualifiziert – so gewinnen sie unabhängig von der CSS-Reihenfolge.
+   ============================================================ */
+.ticker.card {
+  display: grid;
+  gap: 14px;
+  background:
+    radial-gradient(ellipse at top left, rgba(227, 53, 13, 0.1), transparent 50%),
+    radial-gradient(ellipse at top right, rgba(255, 203, 5, 0.1), transparent 55%),
+    var(--surface);
+}
+.ticker:focus {
+  outline: none;
+}
+.ticker:focus-visible {
+  outline: 2px solid var(--line-strong);
+  outline-offset: 3px;
+}
+
+/* Kopf: Titel + Steuerung */
+.ticker__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+.ticker__heading {
+  min-width: 0;
+}
+.ticker__team {
+  font-family: var(--font-head);
+  font-size: clamp(26px, 4vw, 38px);
+  text-transform: uppercase;
+  line-height: 1.05;
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+}
+.ticker__live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 6px;
+  padding: 1px 8px 1px 7px;
+  border-radius: 5px;
+  background: var(--red);
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+.ticker__live::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
+  animation: ticker-pulse 1.1s ease-in-out infinite;
+}
+.ticker__live--pause {
+  background: var(--surface-3);
+  color: var(--text);
+}
+.ticker__live--pause::before {
+  animation: none;
+  border-radius: 1px;
+  width: 6px;
+  background: currentColor;
+}
+.ticker__live--ende {
+  background: var(--yellow);
+  color: var(--yellow-ink);
+}
+.ticker__live--ende::before {
+  animation: none;
+  background: currentColor;
+}
+
+.ticker__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.ticker__speed {
+  flex: none;
+}
+.ticker__speed .segmented__btn {
+  min-height: 28px;
+  padding: 3px 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Spieltag + Fortschritt */
+.ticker__progress-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ticker__round {
+  flex: none;
+  font-family: var(--font-head);
+  font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.ticker__round strong {
+  color: var(--text);
+  font-size: 26px;
+  font-weight: 700;
+  margin-left: 2px;
+}
+.ticker__progress {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.ticker__progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--yellow), #ffd84a);
+  transition: width 0.3s ease-out;
+}
+
+/* Raster: links Spiel, rechts Tabelle */
+.ticker__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.ticker__main {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.ticker__side {
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 12px;
+  min-width: 0;
+}
+.ticker__side .section-title {
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+.facts.ticker__facts {
+  margin: 0;
+}
+.facts.ticker__facts dd {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.ticker__hint {
+  margin: -4px 0 0;
+}
+
+/* Anzeigetafel – TV-Grafik, in beiden Themes dunkel */
+.ticker-board {
+  --board-bg: #0d1b2a;
+  --board-bg-2: #13263a;
+  --board-text: #eef3f8;
+  --board-dim: #9fb3c8;
+  --board-accent: #8a99a8;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--board-bg-2), var(--board-bg));
+  color: var(--board-text);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: var(--shadow);
+  animation: ticker-board-in 0.32s ease-out;
+}
+.ticker-board::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 5px;
+  background: var(--board-accent);
+}
+.ticker-board--S {
+  --board-accent: var(--green);
+}
+.ticker-board--U {
+  --board-accent: #8a99a8;
+}
+.ticker-board--N {
+  --board-accent: var(--red);
+}
+.ticker-board.is-upcoming {
+  --board-accent: var(--yellow);
+  animation: none;
+}
+.ticker-board__bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px 0;
+  font-family: var(--font-head);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--board-dim);
+}
+.ticker-board__match {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px 8px;
+}
+.ticker-board__team {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ticker-board__team:first-child {
+  text-align: right;
+  align-items: flex-end;
+}
+.ticker-board__team:last-child {
+  text-align: left;
+  align-items: flex-start;
+}
+.ticker-board__name {
+  font-family: var(--font-head);
+  font-size: clamp(16px, 2.4vw, 22px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+.ticker-board__team.is-user .ticker-board__name {
+  color: var(--yellow);
+}
+.ticker-board__rating {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--board-dim);
+}
+.ticker-board__score {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 14px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: var(--font-head);
+  font-size: clamp(40px, 7vw, 60px);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  animation: ticker-score-pop 0.4s ease-out;
+}
+.is-upcoming .ticker-board__score {
+  color: var(--board-dim);
+  animation: none;
+}
+.ticker-board__colon {
+  color: var(--board-dim);
+  margin: 0 2px;
+}
+.ticker-board__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 6px 14px 12px;
+  min-height: 44px;
+}
+.ticker-board__outcome {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: var(--yellow);
+  color: var(--yellow-ink);
+}
+.ticker-board__outcome.is-S {
+  background: var(--green);
+  color: #fff;
+}
+.ticker-board__outcome.is-U {
+  background: #8a99a8;
+  color: #0d1b2a;
+}
+.ticker-board__outcome.is-N {
+  background: var(--red);
+  color: #fff;
+}
+.ticker-board__scorers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 13px;
+  color: var(--board-text);
+  min-width: 0;
+}
+.ticker-board__scorers li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.ticker-board__scorers strong {
+  color: var(--yellow);
+}
+.ticker-board__sprite {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex: none;
+}
+.ticker-board__none {
+  font-size: 13px;
+  color: var(--board-dim);
+}
+
+/* Platz-Trend */
+.ticker-trend {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.ticker-trend--up {
+  color: var(--green);
+}
+.ticker-trend--down {
+  color: var(--red);
+}
+.ticker-trend--same {
+  color: var(--text-dim);
+}
+:root[data-theme='light'] .ticker-trend--up {
+  color: #1e7a33;
+}
+
+/* 34–0-Tracker */
+.ticker-perfect {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-family: var(--font-head);
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.ticker-perfect.is-alive {
+  background: rgba(255, 203, 5, 0.14);
+  border: 1px solid rgba(255, 203, 5, 0.45);
+  color: var(--yellow);
+}
+:root[data-theme='light'] .ticker-perfect.is-alive {
+  color: #92400e;
+}
+.ticker-perfect.is-broken {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+}
+.ticker-perfect__streak {
+  font-family: var(--font-body);
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text);
+}
+
+/* Ergebnis-Leiste: ein Punkt pro Spieltag */
+.ticker-dots {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(17, minmax(0, 1fr));
+  gap: 4px;
+}
+.ticker-dots__dot {
+  height: 12px;
+  border-radius: 3px;
+  background: var(--surface-3);
+  opacity: 0.6;
+}
+.ticker-dots__dot.is-S {
+  background: var(--green);
+  opacity: 1;
+}
+.ticker-dots__dot.is-U {
+  background: #8a99a8;
+  opacity: 1;
+}
+.ticker-dots__dot.is-N {
+  background: var(--red);
+  opacity: 1;
+}
+.ticker-dots__dot.is-latest {
+  box-shadow: 0 0 0 2px var(--text);
+  animation: ticker-dot-in 0.3s ease-out;
+}
+
+/* Mini-Tabelle */
+.league-table.ticker-table {
+  font-size: 13px;
+}
+.league-table.ticker-table td {
+  padding: 6px 5px;
+}
+.ticker-table__name {
+  max-width: 0;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.league-table .ticker-table__gap td {
+  padding: 0 5px;
+  color: var(--text-dim);
+  line-height: 1.2;
+}
+
+/* Abpfiff */
+.ticker-finale {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 20px 16px 22px;
+  border-radius: var(--radius);
+  text-align: center;
+  background:
+    radial-gradient(ellipse at top, rgba(255, 203, 5, 0.22), transparent 65%),
+    linear-gradient(180deg, #13263a, #0d1b2a);
+  color: #eef3f8;
+  border: 1px solid rgba(255, 203, 5, 0.4);
+  box-shadow: var(--shadow);
+  animation: ticker-board-in 0.4s ease-out;
+}
+.ticker-finale__kicker {
+  font-family: var(--font-head);
+  font-size: 22px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--yellow);
+}
+.ticker-finale__record {
+  font-family: var(--font-head);
+  font-size: clamp(56px, 11vw, 96px);
+  font-weight: 700;
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+}
+.ticker-finale.is-perfect .ticker-finale__record {
+  background: linear-gradient(90deg, var(--yellow), var(--red), var(--yellow));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.ticker-finale__line {
+  margin: 0 0 8px;
+  font-weight: 600;
+  color: #9fb3c8;
+}
+.ticker-finale__timer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.ticker-finale__timer > span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--yellow);
+  transform-origin: left center;
+  animation: ticker-countdown linear forwards;
+}
+
+@keyframes ticker-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+@keyframes ticker-board-in {
+  from {
+    opacity: 0.4;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes ticker-score-pop {
+  0% {
+    transform: scale(0.85);
+  }
+  60% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes ticker-dot-in {
+  from {
+    transform: scale(0.4);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes ticker-countdown {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (max-width: 899px) {
+  .ticker__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .ticker__head {
+    align-items: stretch;
+  }
+  .ticker__controls {
+    width: 100%;
+  }
+  .ticker__controls .btn {
+    flex: 1 1 auto;
+  }
+  .ticker__round {
+    font-size: 15px;
+  }
+  .ticker__round strong {
+    font-size: 22px;
+  }
+  .ticker-board__match {
+    gap: 8px;
+    padding: 10px 10px 6px;
+  }
+  .ticker-board__bar,
+  .ticker-board__foot {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .ticker-board__score {
+    padding: 4px 8px;
+  }
+  .ticker-dots {
+    gap: 3px;
+  }
+  .ticker-dots__dot {
+    height: 10px;
+  }
+}
+
+/* Reduzierte Bewegung: keine Animationen – der Ticker läuft trotzdem (und lässt sich überspringen) */
+@media (prefers-reduced-motion: reduce) {
+  .ticker__live::before,
+  .ticker-board,
+  .ticker-board__score,
+  .ticker-dots__dot.is-latest,
+  .ticker-finale {
+    animation: none;
+  }
+  .ticker__progress > span {
+    transition: none;
+  }
+  .ticker-finale__timer {
+    display: none;
+  }
+}
+
+/* ============================================================
+   Ergebnis-Ergänzungen (SeasonResultView): Online-Wertung
+   ============================================================ */
+.result-ranking {
+  margin: 4px 0 0;
+}
+.result-ranking--ranked {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  font-size: 14px;
+}
+.result-ranking__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  background: rgba(46, 154, 68, 0.16);
+  border: 1px solid rgba(46, 154, 68, 0.55);
+  font-family: var(--font-head);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+.result-ranking__badge::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  flex: none;
+}
+.result-ranking--ranked a {
+  font-family: var(--font-head);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+/* Fokus nach dem Ticker landet auf der Überschrift – ohne Rahmen */
+.result-hero__team[tabindex='-1']:focus {
+  outline: none;
+}
+

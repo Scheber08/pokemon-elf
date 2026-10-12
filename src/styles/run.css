@@ -1,0 +1,101 @@
+/* ============================================================
+   Challenge-Runs: Online-Status, Badges, Hinweise
+   ============================================================ */
+
+/* Hinweis unter dem Start-Button (RunSetup) */
+.setup__note {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+.setup__note > p {
+  margin: 0;
+}
+
+/* Online-/Offline-Anzeige im Setup */
+.runnet {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.runnet__dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--text-dim);
+}
+.runnet--online {
+  color: var(--text);
+}
+.runnet--online .runnet__dot {
+  background: var(--green);
+  box-shadow: 0 0 0 3px rgba(46, 154, 68, 0.25);
+}
+.runnet--checking .runnet__dot {
+  animation: runnet-pulse 0.9s ease-in-out infinite alternate;
+}
+@keyframes runnet-pulse {
+  to {
+    opacity: 0.25;
+  }
+}
+
+/* Badge in der Statuszeile: gewertet / offline */
+.runbadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.runbadge::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-dim);
+}
+.runbadge--ranked {
+  color: var(--text);
+}
+.runbadge--ranked::before {
+  background: var(--green);
+  box-shadow: 0 0 0 3px rgba(46, 154, 68, 0.25);
+}
+.runbadge--offline {
+  color: var(--text-dim);
+}
+
+/* Hinweise über der Statuszeile (z. B. Offline-Fallback) mit Schließen-Knopf */
+.run-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+}
+.run-notice__text {
+  flex: 1;
+  min-width: 0;
+}
+.run-notice__close {
+  flex: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+.run-notice__close:hover,
+.run-notice__close:focus-visible {
+  opacity: 1;
+}
+
+/* Gesperrte Buttons während laufender Anfragen */
+.btn[aria-busy='true'] {
+  cursor: progress;
+}

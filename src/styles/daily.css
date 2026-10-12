@@ -1,0 +1,243 @@
+/* ============================================================
+   Tägliche Elf
+   ============================================================ */
+
+/* Seitenkopf: Datum, Nummer, Countdown */
+.daily-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+.daily-head__main {
+  min-width: 0;
+}
+.daily-head .kicker,
+.daily-bar .kicker {
+  display: block;
+  margin-bottom: 4px;
+}
+.daily-no {
+  color: var(--yellow);
+}
+:root[data-theme='light'] .daily-no {
+  color: #b45309;
+}
+
+/* „Neue Elf in 05:12:33" */
+.daily-countdown {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  padding: 8px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.daily-countdown__label {
+  font-family: var(--font-head);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+}
+.daily-countdown__time {
+  font-family: var(--font-head);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Neuer Tag ist da (Run vom Vortag läuft noch / wird angezeigt) */
+.daily-new {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 0;
+  padding: 8px 14px;
+  background: rgba(255, 203, 5, 0.1);
+  border: 1px solid rgba(255, 203, 5, 0.35);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Kopfzeile der Ergebnisansicht */
+.daily-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  margin-bottom: 18px;
+  padding: 12px 16px;
+}
+.daily-bar__info {
+  min-width: 0;
+}
+.daily-bar__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  margin: 0;
+  font-family: var(--font-head);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.daily-bar__badge {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.daily-bar__side {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Teilen im „Wordle-Stil" (im Ergebnis unter den Aktionen) */
+.daily-share {
+  margin-top: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  /* Emoji-Reihen skalieren mit der Breite des Blocks (cqi) */
+  container-type: inline-size;
+}
+.daily-share__title {
+  margin: 0 0 8px;
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+.daily-share__preview {
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+.daily-share__line {
+  display: block;
+}
+/* 17 Emojis pro Reihe sollen auch auf schmalen Handys in eine Zeile passen */
+.daily-share__line--emoji {
+  font-size: 12px;
+  font-size: clamp(8px, 3.6cqi, 16px);
+  line-height: 1.45;
+  letter-spacing: 0;
+}
+.daily-share__actions {
+  margin-top: 10px;
+}
+
+/* Online schon gespielt – Versuch verbraucht */
+.daily-done {
+  display: grid;
+  gap: 12px;
+}
+.daily-done .section-title,
+.daily-done p {
+  margin: 0;
+}
+.daily-done__facts {
+  margin: 0;
+}
+.daily-done__cta {
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .daily-head {
+    align-items: flex-start;
+  }
+  .daily-countdown {
+    padding: 6px 14px;
+  }
+  .daily-countdown__time {
+    font-size: 20px;
+  }
+  .daily-bar__title {
+    font-size: 20px;
+  }
+}
+@media (max-width: 420px) {
+  .daily-share__preview {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+/* ============================================================
+   Rangliste: Online / Dieses Gerät
+   ============================================================ */
+.lb-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+.lb-top > .notice,
+.lb-top > .runnet {
+  flex: 1 1 320px;
+  margin: 0;
+}
+.lb-top .field {
+  margin: 0;
+}
+
+.lb-meta {
+  margin: 0 0 10px;
+  font-family: var(--font-head);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+
+.lb-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Eigene Platzierung außerhalb der Top-Liste – abgesetzt */
+.lb-mine__label th {
+  padding-top: 14px;
+  border-top: 2px dashed var(--line-strong);
+  font-family: var(--font-head);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  text-align: left;
+}
+
+.lb-namehint {
+  margin: 8px 0 0;
+}

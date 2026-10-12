@@ -43,12 +43,36 @@ export function Privacy() {
         <h1 className="page-title">Datenschutz</h1>
       </header>
       <section className="card prose">
-        <p>Kurz gesagt: Diese App sammelt keine personenbezogenen Daten und setzt keine Tracking-Cookies.</p>
+        <p>
+          Kurz gesagt: Diese App kommt ohne Konto aus und setzt keine Tracking-Cookies. Nur für die Online-Rangliste
+          speichert der Server das Nötigste – mehr dazu unten.
+        </p>
         <h2 className="section-title">Lokale Speicherung</h2>
         <p>
-          Deine Aufstellung, Einstellungen, Bestwerte, laufende Runs und die lokale Rangliste werden ausschließlich im
-          localStorage deines Browsers gespeichert. Sie verlassen dein Gerät nicht. Du kannst sie jederzeit über die
-          Browser-Einstellungen löschen.
+          Deine Aufstellung, Einstellungen, Bestwerte, laufende Runs, die lokale Rangliste und die zufällige
+          Geräte-Kennung für die Online-Rangliste werden im localStorage deines Browsers gespeichert. Du kannst sie
+          jederzeit über die Browser-Einstellungen löschen – dann gilt dein Browser als neues Gerät.
+        </p>
+        <h2 className="section-title">Online-Rangliste</h2>
+        <p>
+          Spielst du eine Challenge online, schickt die App deinen Run an unseren Server, damit er geprüft und gewertet
+          werden kann. Gespeichert werden:
+        </p>
+        <ul>
+          <li>eine zufällige Geräte-ID und ein Hash des Geräte-Schlüssels (der Schlüssel selbst bleibt auf deinem Gerät),</li>
+          <li>dein gewählter Spielername und Teamname,</li>
+          <li>deine Runs: Aufstellung, Züge, Team-Score, Bilanz und Zeitpunkt,</li>
+          <li>
+            zum Schutz vor Missbrauch (Begrenzung neuer Geräte pro Anschluss) ein Hash deiner IP-Adresse bei der ersten
+            Anmeldung des Geräts, bei IPv6 nur des Netzpräfixes (/64). Der Hash ist mit einem geheimen Zufallswert
+            gesalzen, wird nur eine Stunde lang gebraucht und danach beim nächsten Serverzugriff gelöscht; die
+            IP-Adresse selbst wird nie gespeichert.
+          </li>
+        </ul>
+        <p>
+          Die Daten liegen in einer Cloudflare-D1-Datenbank. Spielername, Teamname und Ergebnisse sind in der Rangliste
+          öffentlich sichtbar. Es gibt keine Konten, keine E-Mail-Adressen und keine Tracking-Cookies. Offline gespielte
+          Runs verlassen dein Gerät nicht.
         </p>
         <h2 className="section-title">Externe Inhalte</h2>
         <p>

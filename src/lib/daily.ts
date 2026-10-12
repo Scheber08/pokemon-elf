@@ -21,7 +21,10 @@ export function dayKey(date: Date = new Date()): string {
 }
 
 export function isDayKey(day: string): boolean {
-  return /^\d{4}-\d{2}-\d{2}$/.test(day) && !Number.isNaN(Date.parse(`${day}T00:00:00Z`));
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return false;
+  const ms = Date.parse(`${day}T00:00:00Z`);
+  // Rundreise verwirft Kalender-Unsinn wie 2026-02-30 (Date.parse rollt sonst über).
+  return !Number.isNaN(ms) && new Date(ms).toISOString().slice(0, 10) === day;
 }
 
 /** Seed der Würfe dieses Tages. */

@@ -16,6 +16,7 @@ import type {
 } from './contract';
 
 const BASE = `${(import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') ?? ''}/api`;
+const RATE_LIMITED = 'Zu viele Anfragen in kurzer Zeit – bitte später erneut versuchen';
 
 export class ApiRequestError extends Error {
   constructor(
@@ -47,26 +48,71 @@ async function request<T>(path: string, init?: RequestInit & { timeoutMs?: numbe
   const body = isJson ? await res.json().catch(() => null) : null;
   if (!res.ok) {
     const err = body as ApiErrorBody | null;
-    throw new ApiRequestError(err?.message ?? `HTTP ${res.status}`, res.status, err?.error ?? 'server_error');
+    // 429 ohne JSON (z. B. vom CDN) trotzdem als Rate-Limit melden
+    const limited = res.status === 429;
+    throw new ApiRequestError(
+      err?.message ?? (limited ? RATE_LIMITED : `HTTP ${res.status}`),
+      res.status,
+      err?.error ?? (limited ? 'rate_limited' : 'server_error'),
+    );
   }
   if (!isJson) throw new ApiRequestError('Unerwartete Antwort vom Server', res.status, 'server_error');
   return body as T;
 }
 
-let health: Promise<HealthResponse | null> | null = null;
+/** So lange gilt ein gescheiterter Health-Check, danach wird beim nächsten Aufruf neu geprüft. */
+export const HEALTH_RETRY_MS = 15_000;
 
-/** Prüft einmal pro Seitenaufruf, ob das Backend da ist. */
+let health: Promise<HealthResponse | null> | null = null;
+/** War das Backend in diesem Seitenaufruf schon einmal erreichbar? (false = evtl. gar keins) */
+let everOnline = false;
+
+export function apiEverOnline(): boolean {
+  return everOnline;
+}
+/** Zeitpunkt, zu dem der zwischengespeicherte Check gescheitert ist – null: läuft noch oder ok */
+let healthFailedAt: number | null = null;
+const healthListeners = new Set<(ok: boolean) => void>();
+
+/**
+ * Prüft, ob das Backend da ist. Ein Erfolg gilt für den ganzen Seitenaufruf, ein
+ * Fehlschlag nur HEALTH_RETRY_MS lang – danach (oder mit force) wird neu geprüft.
+ */
 export function apiHealth(force = false): Promise<HealthResponse | null> {
-  if (!health || force) {
-    health = request<HealthResponse>('/health', { timeoutMs: 3500 })
+  const expired = healthFailedAt != null && Date.now() - healthFailedAt >= HEALTH_RETRY_MS;
+  if (!health || force || expired) {
+    const probe: Promise<HealthResponse | null> = request<HealthResponse>('/health', { timeoutMs: 3500 })
       .then((h) => (h?.ok ? h : null))
-      .catch(() => null);
+      .catch(() => null)
+      .then((h) => {
+        // Nur der jüngste Check zählt
+        if (h) everOnline = true;
+        if (health === probe) {
+          healthFailedAt = h ? null : Date.now();
+          for (const listener of healthListeners) listener(h != null);
+        }
+        return h;
+      });
+    health = probe;
+    healthFailedAt = null;
   }
   return health;
 }
 
-export async function apiAvailable(): Promise<boolean> {
-  return (await apiHealth()) != null;
+/**
+ * Ist das Backend erreichbar? recheck: Ein bekannter Fehlschlag wird sofort neu geprüft
+ * (z. B. direkt vor dem Start eines Runs), statt bis zu HEALTH_RETRY_MS alt zu sein.
+ */
+export async function apiAvailable(recheck = false): Promise<boolean> {
+  return (await apiHealth(recheck && healthFailedAt != null)) != null;
+}
+
+/** Meldet das Ergebnis jedes weiteren Health-Checks (true = erreichbar). Liefert die Abmeldung. */
+export function onApiHealth(listener: (ok: boolean) => void): () => void {
+  healthListeners.add(listener);
+  return () => {
+    healthListeners.delete(listener);
+  };
 }
 
 export function startRun(challenge: ChallengeKey): Promise<StartRunResponse> {

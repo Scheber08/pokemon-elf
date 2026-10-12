@@ -34,7 +34,11 @@ export const localLeaderboard: LeaderboardService = {
   },
 
   async top(challenge, period, limit = 50) {
-    const entries = readAll().filter((e) => e.challenge === challenge && (period === 'all' || isToday(e.createdAt)));
+    // „Heute" = Berliner Kalendertag – wie das Label und die Online-Tageswertung
+    const now = new Date();
+    const entries = readAll().filter(
+      (e) => e.challenge === challenge && (period === 'all' || isToday(e.createdAt, now)),
+    );
     return bestPerPlayer(entries).slice(0, limit);
   },
 };

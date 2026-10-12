@@ -1,4 +1,5 @@
 import type { ChallengeKey, FormationId, Record3 } from '../../types';
+import { dayKey } from '../daily';
 
 export interface LeaderboardEntry {
   id: string;
@@ -54,7 +55,12 @@ export function bestPerPlayer(entries: LeaderboardEntry[]): LeaderboardEntry[] {
   return [...best.values()].sort(compareEntries);
 }
 
+/**
+ * Liegt der Zeitstempel am heutigen Tag der Tageswertung? Gezählt wird – wie beim Server
+ * und im Label „Heute · …" – der Kalendertag in Berlin (dayKey), nicht der des Geräts.
+ */
 export function isToday(iso: string, now = new Date()): boolean {
   const d = new Date(iso);
-  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+  if (Number.isNaN(d.getTime()) || Number.isNaN(now.getTime())) return false;
+  return dayKey(d) === dayKey(now);
 }

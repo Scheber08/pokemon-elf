@@ -4,6 +4,7 @@ import type { ChallengeStats } from '../lib/challengeStats';
 import { formatRecord } from '../lib/season';
 import type { FormationId } from '../types';
 import { Segmented } from './Segmented';
+import '../styles/run.css';
 
 export function StatCards({ stats }: { stats: ChallengeStats }) {
   return (
@@ -40,9 +41,13 @@ interface SetupProps {
   onChange: (v: { formation: FormationId; ssEnabled: boolean; teamName: string }) => void;
   onStart: () => void;
   extra?: ReactNode;
+  /** Start läuft (z. B. Anfrage an den Server) – Button gesperrt */
+  starting?: boolean;
+  /** Hinweis unter dem Start-Button, z. B. Online-Status oder Fehler */
+  note?: ReactNode;
 }
 
-export function RunSetup({ formation, ssEnabled, teamName, onChange, onStart, extra }: SetupProps) {
+export function RunSetup({ formation, ssEnabled, teamName, onChange, onStart, extra, starting, note }: SetupProps) {
   return (
     <section className="card setup" aria-label="Run vorbereiten">
       {extra}
@@ -75,9 +80,10 @@ export function RunSetup({ formation, ssEnabled, teamName, onChange, onStart, ex
           onChange={(e) => onChange({ formation, ssEnabled, teamName: e.target.value })}
         />
       </div>
-      <button type="button" className="btn btn--primary btn--big" onClick={onStart}>
-        Run starten
+      <button type="button" className="btn btn--primary btn--big" onClick={onStart} disabled={starting} aria-busy={starting}>
+        {starting ? 'Starte …' : 'Run starten'}
       </button>
+      {note && <div className="setup__note">{note}</div>}
     </section>
   );
 }

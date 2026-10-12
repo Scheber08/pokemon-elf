@@ -1,0 +1,23 @@
+# Optional: Konfiguration als Code für Cloudflare Pages.
+#
+# Standardweg (empfohlen): KEINE wrangler.toml im Repo – die D1-Datenbank wird im
+# Cloudflare-Dashboard verknüpft (Pages-Projekt → Settings → Bindings → D1 → Name "DB").
+# Die Tabellen legt der Server beim ersten Aufruf selbst an.
+#
+# Wer die Bindings lieber im Repo pflegt: Datei nach wrangler.toml kopieren und
+# database_id eintragen (`npx wrangler d1 create pokemon-elf` zeigt sie an).
+# ACHTUNG: Mit wrangler.toml im Repo ignoriert Cloudflare die Bindings aus dem
+# Dashboard – und eine falsche database_id lässt jeden Deploy fehlschlagen.
+name = "pokemon-elf"
+pages_build_output_dir = "./dist"
+compatibility_date = "2025-09-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "pokemon-elf"
+database_id = "HIER-DIE-ID-AUS-wrangler-d1-create-EINTRAGEN"
+migrations_dir = "migrations"
+
+# Optional (Dashboard → Settings → Variables and Secrets):
+#   ALLOWED_ORIGINS = "https://example.de"   andere Origins, die die API per CORS nutzen dürfen
+#   IP_SALT         (als Secret)             Salz für die IP-Hashes des Geräte-Limits

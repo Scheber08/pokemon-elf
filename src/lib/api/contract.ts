@@ -16,6 +16,11 @@
  *     illegale Runs, zieht den Saison-Seed selbst (Tages-Challenge: Seed des Tages),
  *     rechnet Team-Score + Saison und speichert den Eintrag.
  *  4. Der Client simuliert mit seasonSeed lokal dieselbe Saison (deterministisch).
+ *
+ * finish ist pro Token wiederholbar: Schickt dasselbe Gerät einen schon gewerteten
+ * Token erneut (z. B. weil die Antwort verloren ging), kommt 200 mit dem gespeicherten
+ * Ergebnis (gleiche entryId und seasonSeed, Plätze aktuell) – egal, was im Body steht.
+ * 409 token_used gibt es nur noch, solange eine parallele Anfrage den Run gerade speichert.
  */
 import type { ChallengeKey, FormationId, Record3 } from '../../types';
 import type { PickLog } from '../challengeEngine';
@@ -54,7 +59,10 @@ export interface FinishRunRequest extends DeviceAuth {
   picks: PickLog[];
   /** 0–32 Zeichen */
   teamName: string;
-  /** 1–24 Zeichen; wird als aktueller Name des Geräts gespeichert */
+  /**
+   * 1–24 Zeichen; wird als aktueller Name des Geräts gespeichert. Ohne Buchstabe,
+   * Ziffer oder Emoji (nach dem Säubern) bleibt der gespeicherte Name unverändert.
+   */
   player: string;
 }
 
@@ -103,6 +111,7 @@ export interface LeaderboardResponse {
 }
 
 export interface RenameRequest extends DeviceAuth {
+  /** 1–24 Zeichen, mindestens ein Buchstabe, eine Ziffer oder ein Emoji (sonst 400) */
   player: string;
 }
 

@@ -6,11 +6,14 @@
   "description": "Pokémon Elf – Lineup Builder: Fußball-Aufstellungen aus Pokémon",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && tsc --noEmit -p tsconfig.worker.json && vite build",
     "preview": "vite preview",
     "data": "node scripts/build-data.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "typecheck:worker": "tsc --noEmit -p tsconfig.worker.json",
+    "dev:cf": "npm run build && wrangler pages dev dist --port 8788 --d1 DB --compatibility-date 2025-09-01",
+    "deploy:cf": "npm run build && wrangler pages deploy dist --project-name pokemon-elf"
   },
   "dependencies": {
     "html2canvas": "^1.4.1",

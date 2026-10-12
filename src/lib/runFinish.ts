@@ -55,6 +55,51 @@ export interface FinishOptions {
   day: string | null;
   byId: Map<number, Pokemon>;
   scale: Scale;
+  /**
+   * false: Ist der Server bei einem Online-Run nicht erreichbar (Netzwerk/5xx) oder bremst er
+   * (429), wird der Fehler geworfen statt offline auszuwerten – so kann der Aufrufer erneut
+   * senden lassen. „Bereits gewertet" (token_used) wird immer geworfen.
+   */
+  networkFallback?: boolean;
+}
+
+const FINISH_FAILED =
+  'Server nicht erreichbar – dein Run ist noch nicht gewertet. Sende ihn gleich noch einmal oder werte ihn offline aus (dann ohne Wertung).';
+const ALREADY_RANKED =
+  'Dieser Run ist auf dem Server schon gewertet, das Ergebnis ist hier aber noch nicht angekommen. Sende ihn gleich noch einmal, um dein gewertetes Ergebnis zu laden.';
+
+/** Meldung als Satz: ergänzt den Punkt, falls kein Satzzeichen am Ende steht. */
+const sentence = (msg: string) => (/[.!?…]$/.test(msg) ? msg : `${msg}.`);
+
+/** 429 – der Server bremst nur; der Token bleibt gültig, später erneut senden klappt. */
+export function isRateLimited(e: unknown): boolean {
+  return e instanceof ApiRequestError && (e.status === 429 || e.code === 'rate_limited');
+}
+
+/** Netzwerkfehler, Serverfehler (5xx) oder 429 – ein erneuter Versuch kann klappen. */
+export function isRetryable(e: unknown): boolean {
+  return (
+    e instanceof ApiRequestError && (e.code === 'network' || e.status === 0 || e.status >= 500 || isRateLimited(e))
+  );
+}
+
+/**
+ * 409 token_used: Der Server hat diesen Run schon gewertet (Antwort verloren, zweiter Tab …).
+ * Dann nie eine eigene Zufalls-Saison zeigen oder speichern, sondern erneut senden lassen.
+ */
+export function isAlreadyRanked(e: unknown): boolean {
+  return e instanceof ApiRequestError && e.code === 'token_used';
+}
+
+/** Anzeigbarer Fehler, wenn finishRun geworfen hat (der Run bleibt dann in 'play'). */
+export function finishErrorMessage(e: unknown): string {
+  if (isAlreadyRanked(e)) return ALREADY_RANKED;
+  if (isRateLimited(e)) {
+    const msg = sentence((e as ApiRequestError).message);
+    return `${msg} Dein Run ist noch nicht gewertet – sende ihn später noch einmal oder werte ihn offline aus (dann ohne Wertung).`;
+  }
+  if (isRetryable(e)) return FINISH_FAILED;
+  return `Auswertung fehlgeschlagen: ${e instanceof Error ? e.message : String(e)}`;
 }
 
 const offline = (message: string | null, day: string | null): RunRanking => ({
@@ -94,11 +139,16 @@ export async function finishRun(o: FinishOptions): Promise<FinishOutcome> {
         message: null,
       };
     } catch (e) {
-      const err = e as ApiRequestError;
-      ranking =
-        err instanceof ApiRequestError && err.status >= 400 && err.status < 500
-          ? { ...offline(err.message, o.day), status: 'rejected' }
-          : offline('Server nicht erreichbar – Run nicht gewertet', o.day);
+      // Schon gewertet: Saison-Seed liegt nur beim Server – nichts erfinden, nichts speichern.
+      if (isAlreadyRanked(e)) throw e;
+      if (o.networkFallback === false && isRetryable(e)) throw e;
+      if (isRateLimited(e)) {
+        ranking = offline(`${(e as ApiRequestError).message} – Run nicht gewertet`, o.day);
+      } else if (e instanceof ApiRequestError && e.status >= 400 && e.status < 500) {
+        ranking = { ...offline(e.message, o.day), status: 'rejected' };
+      } else {
+        ranking = offline('Server nicht erreichbar – Run nicht gewertet', o.day);
+      }
     }
   }
 
@@ -150,27 +200,4 @@ export async function savePlayerName(name: string, localEntryId: string | null):
   } catch {
     return { online: false };
   }
-}
-
-/**
- * @deprecated Übergangslösung für die alten Challenge-Seiten – wird beim Umbau
- * auf challengeEngine/finishRun entfernt.
- */
-export async function recordFinishedRun(
-  challenge: ChallengeKey,
-  input: FinishedRunInput,
-  run: ComputedRun,
-): Promise<{ stats: ChallengeStats; entryId: string | null }> {
-  const stats = recordStats(challenge, run.evaluation.score, run.season.record);
-  const entry = await leaderboard.submit({
-    challenge,
-    player: playerName(),
-    record: run.season.record,
-    points: run.season.points,
-    score: run.evaluation.score,
-    formation: input.formation,
-    lineup: [...input.slots, ...(input.ss !== undefined ? [input.ss] : [])],
-    teamName: input.teamName,
-  });
-  return { stats, entryId: entry.id };
 }

@@ -269,7 +269,8 @@ export function candidates(state: RunState, data: EngineData): Pokemon[] {
 }
 
 export function rerollsLeft(state: RunState, kind: RerollKind): number {
-  return Math.max(0, rulesOf(state.config).rerolls[kind] - state.rerollsUsed[kind]);
+  if (!REROLL_KINDS.includes(kind)) return 0;
+  return Math.max(0, rulesOf(state.config).rerolls[kind] - (state.rerollsUsed[kind] ?? 0));
 }
 
 export function canReroll(state: RunState, kind: RerollKind, data: EngineData): boolean {
