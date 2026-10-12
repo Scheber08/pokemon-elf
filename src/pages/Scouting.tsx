@@ -194,9 +194,10 @@ export function Scouting() {
         <section className="card prose">
           <h2 className="section-title">Typen</h2>
           <p>
-            Jede Position hat Lieblingstypen: Stahl und Gestein in der Abwehr, Elektro und Flug auf den Flügeln, Feuer,
-            Kampf und Drache im Sturm. Der erste gelistete Typ gibt +3 %, die weiteren +2 % bzw. +1 %. Das ist ein
-            Tie-Breaker – kein Grund, einen schwachen Spieler aufzustellen.
+            Jede Position hat Lieblingstypen: Gestein und Stahl in der Abwehr, Elektro, Unlicht und Flug auf den Flügeln,
+            Feuer, Eis und Drache im Sturm. Der erste gelistete Typ gibt +3 %, die weiteren +2 % bzw. +1 %. Jeder der 18
+            Typen hat genau zwei Lieblingspositionen – kein Typ ist bevorzugt. Das ist ein Tie-Breaker – kein Grund,
+            einen schwachen Spieler aufzustellen.
           </p>
         </section>
       </div>

@@ -3,7 +3,11 @@
  *
  * Jede Position verweist auf ein Profil. Ein Profil legt fest, wie stark jeder
  * Faktor zählt: KEY (Schlüssel) = 3, HELPS (Hilft) = 2, MINOR (Kleiner Anteil) = 1,
- * NONE (Zählt nicht) = 0. Die Typen-Liste ist nach Bonus sortiert (+3 %, +2 %, +1 %).
+ * NONE (Zählt nicht) = 0. Die Typen-Liste ist nach Bonus sortiert (+3 %, +2 %, +1 %, +1 %).
+ *
+ * Typ-Verteilung ausgeglichen: Jeder der 18 Typen steht bei genau zwei Positionen,
+ * zusammen +3 % oder +4 % (tests/fit.test.ts prüft das). Der Standardschütze hat
+ * keine Typen, weil er nicht zum Team-Score zählt.
  */
 import type { FactorKey, Line, PosCode, ProfileKey, TypeKey } from '../types';
 
@@ -69,7 +73,8 @@ export const PROFILES: Record<ProfileKey, Profile> = {
     role: 'Hält Bälle, organisiert die Abwehr.',
     weights: w(HELPS, NONE, HELPS, NONE, KEY, HELPS, KEY, MINOR),
     notes: { spd: 'Reflexe/Ruhe' },
-    types: ['psychic', 'steel', 'ghost'],
+    // Psycho: Antizipation · Stahl: Nerven · Geist: „Geisterhände" · Gestein: Fels in der Brandung
+    types: ['psychic', 'steel', 'ghost', 'rock'],
   },
   IV: {
     key: 'IV',
@@ -84,21 +89,23 @@ export const PROFILES: Record<ProfileKey, Profile> = {
     role: 'Verteidigen die Flanke und schalten sich ein.',
     weights: w(HELPS, MINOR, HELPS, MINOR, MINOR, KEY, NONE, NONE),
     notes: { hp: 'Ausdauer' },
-    types: ['water', 'flying', 'normal'],
+    // Gift: giftig im Zweikampf
+    types: ['water', 'poison', 'normal'],
   },
   WB: {
     key: 'WB',
     title: 'Schienenspieler',
     role: 'Die ganze Seitenlinie rauf und runter.',
     weights: w(KEY, MINOR, MINOR, HELPS, NONE, KEY, NONE, NONE),
-    types: ['flying', 'water', 'electric'],
+    // Käfer: Laufwunder · Pflanze: zäh und ausdauernd
+    types: ['flying', 'bug', 'water', 'grass'],
   },
   DM: {
     key: 'DM',
     title: 'Sechser',
     role: 'Balleroberer vor der Abwehr.',
     weights: w(HELPS, HELPS, KEY, MINOR, HELPS, MINOR, NONE, MINOR),
-    types: ['fighting', 'dark', 'ground'],
+    types: ['fighting', 'ground', 'dark', 'poison'],
   },
   ZM: {
     key: 'ZM',
@@ -106,28 +113,31 @@ export const PROFILES: Record<ProfileKey, Profile> = {
     role: 'Taktgeber und Box-to-Box.',
     weights: w(HELPS, MINOR, MINOR, KEY, HELPS, HELPS, NONE, NONE),
     notes: { spa: 'Passspiel', spd: 'Spielübersicht' },
-    types: ['normal', 'psychic', 'fighting'],
+    // Pflanze: verwurzelt im Zentrum · Eis: kühler Kopf
+    types: ['normal', 'grass', 'psychic', 'ice'],
   },
   OM: {
     key: 'OM',
     title: 'Zehner',
     role: 'Kreativspieler hinter den Spitzen.',
     weights: w(NONE, MINOR, NONE, KEY, HELPS, HELPS, NONE, NONE),
-    types: ['psychic', 'fairy', 'dragon'],
+    // Fee: Zauberfuß · Feuer: Leidenschaft
+    types: ['fairy', 'dragon', 'fire'],
   },
   FM: {
     key: 'FM',
     title: 'Außenbahn',
     role: 'Flanken und Tempo.',
     weights: w(HELPS, MINOR, NONE, HELPS, MINOR, KEY, NONE, NONE),
-    types: ['electric', 'flying', 'normal'],
+    types: ['electric', 'bug', 'flying'],
   },
   FL: {
     key: 'FL',
     title: 'Flügelstürmer',
     role: 'Dribbling und Abschluss von außen.',
     weights: w(NONE, HELPS, NONE, HELPS, NONE, KEY, NONE, NONE),
-    types: ['electric', 'flying', 'fairy'],
+    // Unlicht: Schlitzohr am Flügel · Geist: taucht plötzlich auf
+    types: ['dark', 'ghost', 'electric', 'fairy'],
   },
   ST: {
     key: 'ST',
@@ -135,7 +145,8 @@ export const PROFILES: Record<ProfileKey, Profile> = {
     role: 'Tore schießen, Bälle festmachen.',
     weights: w(MINOR, KEY, MINOR, HELPS, MINOR, HELPS, MINOR, MINOR),
     notes: { atk: 'Schusskraft', spa: 'Abschluss', height: 'Kopfball' },
-    types: ['fire', 'fighting', 'dragon'],
+    // Eis: eiskalt vor dem Tor
+    types: ['fire', 'ice', 'dragon'],
   },
   SS: {
     key: 'SS',

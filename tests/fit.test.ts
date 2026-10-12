@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PROFILES } from '../src/config/positions';
+import { TYPE_KEYS } from '../src/config/pokemonTypes';
 import { SCORING } from '../src/config/scoring';
 import { buildScale, cdf, compositeScore, positionFit, profileFit, typeBonus, weightScore } from '../src/lib/fit';
 import type { ProfileKey } from '../src/types';
@@ -94,6 +95,16 @@ describe('Positions-Fit', () => {
 });
 
 describe('Typ-Bonus', () => {
+  it('ist ausgeglichen: jeder Typ bei genau zwei Positionen, zusammen +3 % bis +4 %', () => {
+    for (const t of TYPE_KEYS) {
+      const where = Object.values(PROFILES).filter((p) => p.types.includes(t));
+      const total = where.reduce((a, p) => a + SCORING.typeBonus[Math.min(p.types.indexOf(t), SCORING.typeBonus.length - 1)], 0);
+      expect(where.length, t).toBe(2);
+      expect(total, t).toBeGreaterThanOrEqual(0.03 - 1e-9);
+      expect(total, t).toBeLessThanOrEqual(0.04 + 1e-9);
+    }
+  });
+
   it('+3 % für den ersten, +2 %/+1 % für die weiteren gelisteten Typen', () => {
     expect(typeBonus(mon({ types: ['psychic'] }), 'TW')).toBeCloseTo(0.03);
     expect(typeBonus(mon({ types: ['steel'] }), 'TW')).toBeCloseTo(0.02);
