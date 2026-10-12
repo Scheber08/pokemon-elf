@@ -1,4 +1,4 @@
-# Optional: Konfiguration als Code für Cloudflare Pages.
+# Optional: Konfiguration als Code für Cloudflare *Pages* (für Workers gilt wrangler.jsonc).
 #
 # Standardweg (empfohlen): KEINE wrangler.toml im Repo – die D1-Datenbank wird im
 # Cloudflare-Dashboard verknüpft (Pages-Projekt → Settings → Bindings → D1 → Name "DB").

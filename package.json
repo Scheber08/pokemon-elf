@@ -12,8 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck:worker": "tsc --noEmit -p tsconfig.worker.json",
-    "dev:cf": "npm run build && wrangler pages dev dist --port 8788 --d1 DB --compatibility-date 2025-09-01",
-    "deploy:cf": "npm run build && wrangler pages deploy dist --project-name pokemon-elf"
+    "dev:cf": "npm run build && wrangler dev --port 8788",
+    "deploy:cf": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "html2canvas": "^1.4.1",

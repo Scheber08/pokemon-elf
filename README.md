@@ -3,7 +3,7 @@
 Fußball-Aufstellungen aus Pokémon: Stell eine Startelf auf, lass sie nach **Positions-Fit** bewerten
 und spiel damit eine simulierte Saison mit 34 Spielen. Schaffst du **34–0**?
 
-React 19 + Vite + TypeScript. Optionales Backend auf **Cloudflare Pages Functions + D1** für die
+React 19 + Vite + TypeScript. Optionales Backend auf **Cloudflare Workers + D1** für die
 Online-Rangliste – ohne Backend läuft alles lokal weiter. Die gesamte UI ist auf Deutsch.
 
 ## Schnellstart
@@ -16,7 +16,8 @@ npm run dev        # http://localhost:5173
 | Befehl | Zweck |
 | --- | --- |
 | `npm run dev` | Entwicklungsserver (ohne Backend → Runs laufen offline/ungewertet) |
-| `npm run dev:cf` | Build + `wrangler pages dev` mit API und lokaler D1 – http://localhost:8788 |
+| `npm run dev:cf` | Build + `wrangler dev`: Worker mit API, statischen Dateien und lokaler D1 – http://localhost:8788 |
+| `npm run deploy:cf` | Build + `wrangler deploy` (ohne Git-Anbindung) |
 | `npm run build` | Typprüfung (App + Worker) + Produktions-Build nach `dist/` |
 | `npm run preview` | Build lokal ansehen |
 | `npm test` | Unit-Tests (Vitest) |
@@ -70,7 +71,9 @@ src/
   pages/                   Builder, 34–0, 151/Retro, Draft, Rangliste, Scouting-Guide, Info
   state/                   Daten-, Einstellungs- und Toast-Kontext, useChallengeRun (Run-Lebenszyklus)
 server/                    Backend: Routing, Endpunkte, D1-Abfragen, Validierung, Geräte-Auth
-functions/api/[[route]].ts Cloudflare Pages Function → server/handler.ts
+worker/index.ts            Cloudflare Worker: /api/* → server/handler.ts, sonst statische Dateien
+wrangler.jsonc             Worker-Konfiguration (Assets aus dist/, SPA-Fallback, D1-Binding „DB")
+functions/api/[[route]].ts Alternative für Cloudflare Pages → server/handler.ts
 migrations/0001_init.sql   D1-Schema (der Server legt es auch selbst an)
 tests/                     Unit-Tests: Fit, Team-Score, Saison, Engine, Server/API, Ticker, Tages-Elf …
 ```
@@ -135,42 +138,47 @@ kann man erneut senden oder offline auswerten.
 Endpunkte: `GET /api/health` · `POST /api/runs/start` · `POST /api/runs/finish` ·
 `GET /api/leaderboard?challenge=…&period=today|all` · `POST /api/player` (Spielername).
 
-## Deploy auf Cloudflare Pages
+## Deploy auf Cloudflare
 
-**Einmalig einrichten (Dashboard, ohne Kommandozeile):**
+### Workers (empfohlen)
 
-1. *Workers & Pages → Create → Pages → Connect to Git* → Repository wählen.
-   Build command `npm run build`, Build output directory `dist`. Speichern & deployen.
-   Ab jetzt baut und deployt **jeder Push auf `main` automatisch** (andere Branches → Vorschau-URL).
-2. *Storage & Databases → D1 → Create* → Name `pokemon-elf`.
-3. Im Pages-Projekt: *Settings → Bindings → Add → D1 database* → Variable name **`DB`**, Datenbank
-   `pokemon-elf` (für *Production*, optional auch *Preview*). Danach einmal neu deployen
-   (*Deployments → … → Retry deployment*) oder einfach den nächsten Push abwarten.
+1. *Workers & Pages → Create → Import a repository* → Repository wählen.
+   Build command `npm run build`, Deploy command `npx wrangler deploy` (Standard). Der Name des
+   Workers muss zu `"name"` in `wrangler.jsonc` passen (`pokemon-elf`).
+2. Fertig. `wrangler.jsonc` beschreibt alles: statische Dateien aus `dist/` mit SPA-Fallback, den
+   Worker für `/api/*` und das D1-Binding `DB`. Beim ersten Deploy legt Wrangler die D1-Datenbank
+   `pokemon-elf` automatisch an (keine ID nötig), die Tabellen erstellt der Server beim ersten Aufruf
+   (`server/schema.ts`).
 
-Fertig – die Tabellen legt der Server beim ersten Aufruf selbst an (`server/schema.ts`). Ohne Binding
-läuft die Seite trotzdem: `/api/health` meldet dann einen Fehler und die App spielt lokal.
-Prüfen: `https://<dein-projekt>.pages.dev/api/health` → `{"ok":true,…}`.
+Ab dann baut und deployt **jeder Push auf `main` automatisch**. Prüfen:
+`https://pokemon-elf.<dein-subdomain>.workers.dev/api/health` → `{"ok":true,…}`.
 
-Optional unter *Settings → Variables and Secrets*: `IP_SALT` (Secret, Salz für IP-Hashes) und
-`ALLOWED_ORIGINS` (kommagetrennt, falls die API von einer anderen Domain genutzt wird; der Client
-liest dann `VITE_API_BASE` beim Build).
+Optional unter *Settings → Variables and Secrets*: `IP_SALT` (Secret; sonst legt der Server ein
+zufälliges Salz in der Datenbank an) und `ALLOWED_ORIGINS` (kommagetrennt, falls die API von einer
+anderen Domain genutzt wird; der Client liest dann `VITE_API_BASE` beim Build).
 
-Bewusst **keine `wrangler.toml` im Repo**: Cloudflare würde sie als Quelle für die Bindings nehmen und
-die Einstellungen aus dem Dashboard ignorieren. Wer die Konfiguration lieber als Code pflegt, nimmt
-`wrangler.example.toml` als Vorlage (dann `npx wrangler d1 create pokemon-elf` und die ID eintragen).
+Ohne Git: `npx wrangler login`, dann `npm run deploy:cf`.
 
-**Per Kommandozeile statt Git:** `npx wrangler login`, dann `npm run deploy:cf` (Projektname
-`pokemon-elf`; das D1-Binding wie oben im Dashboard setzen).
+### Pages (Alternative)
 
-**Free-Plan:** 10 ms CPU pro Anfrage. Ein Abschluss kostet im Worker wenige Millisekunden; die
-Normalisierungen werden beim Start des Isolates gebaut, nicht in der Anfrage. Sollten trotzdem
-`1102`-Fehler (CPU-Limit) auftauchen, hilft der Paid-Plan.
+`functions/api/[[route]].ts` funktioniert auch als Pages Function: *Workers & Pages → Create → Pages →
+Connect to Git*, Build command `npm run build`, Output `dist`, danach im Projekt *Settings → Bindings →
+D1 database* mit dem Namen `DB` verknüpfen (Datenbank vorher unter *Storage & Databases → D1* anlegen).
+Pages ignoriert `wrangler.jsonc` (kein `pages_build_output_dir`); wer Pages als Code konfigurieren will,
+nimmt `wrangler.example.toml` als Vorlage.
 
-**Andere Hosts (Vercel/Netlify/statisch):** `vercel.json` bzw. `netlify.toml` liegen bei. Dort gibt es
-kein Backend – Challenges laufen dann lokal und ungewertet.
+### Hinweise
 
-Unterpfad (z. B. GitHub Pages unter `/pokemon-elf/`): `vite build --base=/pokemon-elf/` – Router,
-Daten-URL und geteilte Links nutzen `import.meta.env.BASE_URL`.
+- **Free-Plan:** 10 ms CPU pro Anfrage. Ein Abschluss kostet im Worker wenige Millisekunden; die
+  Normalisierungen werden beim Start des Isolates gebaut, nicht in der Anfrage. Sollten trotzdem
+  `1102`-Fehler (CPU-Limit) auftauchen, hilft der Paid-Plan.
+- **Schema-Änderungen** an einer schon genutzten D1-Datenbank brauchen eine echte Migration
+  (`migrations/`, `npx wrangler d1 migrations apply pokemon-elf --remote`) – `CREATE … IF NOT EXISTS`
+  ändert bestehende Tabellen nicht.
+- **Andere Hosts (Vercel/Netlify/statisch):** `vercel.json` bzw. `netlify.toml` liegen bei. Dort gibt es
+  kein Backend – Challenges laufen dann lokal und ungewertet.
+- **Unterpfad** (z. B. GitHub Pages unter `/pokemon-elf/`): `vite build --base=/pokemon-elf/` – Router,
+  Daten-URL und geteilte Links nutzen `import.meta.env.BASE_URL`.
 
 ## Rechtliches
 
