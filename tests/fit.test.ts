@@ -1,0 +1,138 @@
+import { describe, expect, it } from 'vitest';
+import { PROFILES } from '../src/config/positions';
+import { SCORING } from '../src/config/scoring';
+import { buildScale, cdf, compositeScore, positionFit, profileFit, typeBonus, weightScore } from '../src/lib/fit';
+import type { ProfileKey } from '../src/types';
+import { ALL, byName, mon } from './helpers';
+
+const scale = buildScale(ALL, 'all');
+const gen1Scale = buildScale(
+  ALL.filter((p) => p.gen === 1),
+  'gen1',
+);
+const PROFILE_KEYS = Object.keys(PROFILES) as ProfileKey[];
+
+describe('cdf', () => {
+  it('liefert den Anteil der Werte ≤ v', () => {
+    const sorted = Float64Array.from([10, 20, 20, 30]);
+    expect(cdf(sorted, 5)).toBe(0);
+    expect(cdf(sorted, 10)).toBe(0.25);
+    expect(cdf(sorted, 20)).toBe(0.75);
+    expect(cdf(sorted, 99)).toBe(1);
+  });
+});
+
+describe('Gewicht (logarithmisch, gedeckelt)', () => {
+  it('jede Verdopplung zählt gleich viel', () => {
+    const a = weightScore(50) - weightScore(25);
+    const b = weightScore(200) - weightScore(100);
+    expect(a).toBeCloseTo(b, 10);
+    expect(a).toBeGreaterThan(0);
+  });
+
+  it('ist bei der Obergrenze gedeckelt und bleibt in 0–1', () => {
+    expect(weightScore(SCORING.weight.capKg)).toBe(1);
+    expect(weightScore(999.9)).toBe(1);
+    expect(weightScore(0.1)).toBe(0);
+  });
+});
+
+describe('Positions-Fit', () => {
+  it('liegt für alle Pokémon und Profile zwischen 0 und 100', () => {
+    for (const p of ALL) {
+      for (const k of PROFILE_KEYS) {
+        const f = profileFit(p, k, scale);
+        expect(f).toBeGreaterThanOrEqual(0);
+        expect(f).toBeLessThanOrEqual(100);
+      }
+    }
+  });
+
+  it('Schlüsselwerte heben den Fit (Sp.-Vert. beim TW, Vert. beim IV, Init. beim AV)', () => {
+    const base = mon();
+    expect(positionFit(mon({ spd: 140 }), 'TW', scale)).toBeGreaterThan(positionFit(base, 'TW', scale));
+    expect(positionFit(mon({ def: 140 }), 'IV', scale)).toBeGreaterThan(positionFit(base, 'IV', scale));
+    expect(positionFit(mon({ spe: 140 }), 'LV', scale)).toBeGreaterThan(positionFit(base, 'LV', scale));
+    expect(positionFit(mon({ atk: 140 }), 'ST', scale)).toBeGreaterThan(positionFit(base, 'ST', scale));
+  });
+
+  it('Schlüssel zählt mehr als „Hilft" (Sp.-Ang. vs. Init. beim ZM)', () => {
+    const keyBoost = positionFit(mon({ spa: 130 }), 'ZM', scale);
+    const helpBoost = positionFit(mon({ spe: 130 }), 'ZM', scale);
+    expect(keyBoost).toBeGreaterThan(helpBoost);
+  });
+
+  it('Faktoren mit „Zählt nicht" ändern nichts (Angriff beim TW)', () => {
+    expect(positionFit(mon({ atk: 10 }), 'TW', scale)).toBe(positionFit(mon({ atk: 200 }), 'TW', scale));
+  });
+
+  it('Größe ist bei 2,2 m gedeckelt', () => {
+    const tall = positionFit(mon({ h: SCORING.height.cap }), 'TW', scale);
+    const giant = positionFit(mon({ h: 14.5 }), 'TW', scale);
+    const small = positionFit(mon({ h: 0.4 }), 'TW', scale);
+    expect(giant).toBe(tall);
+    expect(tall).toBeGreaterThan(small);
+  });
+
+  it('Größe zählt nur, wo angegeben (nicht beim Flügelstürmer)', () => {
+    expect(positionFit(mon({ h: 0.3 }), 'LF', scale)).toBe(positionFit(mon({ h: 2.0 }), 'LF', scale));
+  });
+
+  it('LV und RV teilen sich ein Profil', () => {
+    const p = byName('Turtok');
+    expect(positionFit(p, 'LV', scale)).toBe(positionFit(p, 'RV', scale));
+  });
+
+  it('plausible Rangfolge mit echten Daten', () => {
+    // Relaxo (groß, viel KP/Sp.-Vert.) ist ein besserer Torwart als Pichu.
+    expect(positionFit(byName('Relaxo'), 'TW', scale)).toBeGreaterThan(positionFit(byName('Pichu'), 'TW', scale));
+    // Stahlos (Verteidigung 200) ist ein besserer IV als Simsala.
+    expect(positionFit(byName('Stahlos'), 'IV', scale)).toBeGreaterThan(positionFit(byName('Simsala'), 'IV', scale));
+    // Simsala ist ein besserer Zehner als Stahlos.
+    expect(positionFit(byName('Simsala'), 'OM', scale)).toBeGreaterThan(positionFit(byName('Stahlos'), 'OM', scale));
+  });
+});
+
+describe('Typ-Bonus', () => {
+  it('+3 % für den ersten, +2 %/+1 % für die weiteren gelisteten Typen', () => {
+    expect(typeBonus(mon({ types: ['psychic'] }), 'TW')).toBeCloseTo(0.03);
+    expect(typeBonus(mon({ types: ['steel'] }), 'TW')).toBeCloseTo(0.02);
+    expect(typeBonus(mon({ types: ['ghost'] }), 'TW')).toBeCloseTo(0.01);
+    expect(typeBonus(mon({ types: ['psychic', 'steel'] }), 'TW')).toBeCloseTo(0.05);
+    expect(typeBonus(mon({ types: ['fire'] }), 'TW')).toBe(0);
+  });
+
+  it('ist nur ein Tie-Breaker: gleiche Werte, passender Typ → leicht höherer Fit', () => {
+    const plain = positionFit(mon({ types: ['bug'] }), 'IV', scale);
+    const rock = positionFit(mon({ types: ['rock'] }), 'IV', scale);
+    expect(rock).toBeGreaterThan(plain);
+    expect(rock - plain).toBeLessThanOrEqual(plain * 0.03 + 1e-9);
+  });
+
+  it('beeinflusst den gewichteten Rohwert nicht', () => {
+    expect(compositeScore(mon({ types: ['rock'] }), 'IV', scale)).toBe(compositeScore(mon({ types: ['bug'] }), 'IV', scale));
+  });
+});
+
+describe('Eigene Gen-1-Skalierung', () => {
+  it('normalisiert nur über die Original-151', () => {
+    expect(gen1Scale.size).toBe(151);
+    expect(scale.size).toBe(ALL.length);
+  });
+
+  it('dasselbe Pokémon wird im Gen-1-Pool anders eingeordnet', () => {
+    const glurak = byName('Glurak');
+    const diffs = PROFILE_KEYS.map((k) => Math.abs(profileFit(glurak, k, gen1Scale) - profileFit(glurak, k, scale)));
+    expect(Math.max(...diffs)).toBeGreaterThan(0.5);
+  });
+
+  it('auch im Gen-1-Pool gelten die Grenzen 0–100', () => {
+    for (const p of ALL.filter((x) => x.gen === 1)) {
+      for (const k of PROFILE_KEYS) {
+        const f = profileFit(p, k, gen1Scale);
+        expect(f).toBeGreaterThanOrEqual(0);
+        expect(f).toBeLessThanOrEqual(100);
+      }
+    }
+  });
+});

@@ -1,0 +1,37 @@
+/** Kleine, fehlertolerante Hülle um localStorage (privater Modus, volle Quota …). */
+const PREFIX = 'pokemon-elf:';
+
+export const STORAGE_KEYS = {
+  lineup: 'lineup',
+  settings: 'settings',
+  stats: (challenge: string) => `stats:${challenge}`,
+  run: (challenge: string) => `run:${challenge}`,
+  leaderboard: 'leaderboard',
+  playerName: 'player-name',
+  draft: 'draft',
+} as const;
+
+export function load<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(PREFIX + key);
+    return raw == null ? fallback : (JSON.parse(raw) as T);
+  } catch {
+    return fallback;
+  }
+}
+
+export function save(key: string, value: unknown): void {
+  try {
+    localStorage.setItem(PREFIX + key, JSON.stringify(value));
+  } catch {
+    /* Speicher nicht verfügbar – App funktioniert trotzdem. */
+  }
+}
+
+export function remove(key: string): void {
+  try {
+    localStorage.removeItem(PREFIX + key);
+  } catch {
+    /* ignorieren */
+  }
+}
