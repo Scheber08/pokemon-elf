@@ -19,10 +19,7 @@ export type NewEntry = Omit<LeaderboardEntry, 'id' | 'createdAt'>;
 
 export type Period = 'today' | 'all';
 
-/**
- * Austauschbare Ranglisten-Schnittstelle. Heute lokal (localStorage),
- * später z. B. Supabase – die UI spricht nur mit diesem Interface.
- */
+/** Lokale Run-Historie (localStorage). Die Online-Rangliste: src/lib/api/client.ts. */
 export interface LeaderboardService {
   readonly kind: 'local' | 'remote';
   /** true, wenn man sich für Einträge anmelden muss */
@@ -36,6 +33,7 @@ export interface LeaderboardService {
 
 export const CHALLENGE_LABEL: Record<ChallengeKey, string> = {
   c340: '34–0 Challenge',
+  daily: 'Tägliche Elf',
   retro340: 'Retro 34–0',
   c151: '151 Challenge',
 };

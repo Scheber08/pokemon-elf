@@ -4,6 +4,7 @@ import { Footer, Header } from './components/Layout';
 import { Builder } from './pages/Builder';
 import { Challenge151 } from './pages/Challenge151';
 import { Challenge340 } from './pages/Challenge340';
+import { Daily } from './pages/Daily';
 import { Draft } from './pages/Draft';
 import { About, NotFound, Privacy } from './pages/InfoPages';
 import { Leaderboard } from './pages/Leaderboard';
@@ -15,6 +16,7 @@ import { ToastProvider } from './state/Toast';
 const TITLES: Record<string, string> = {
   '/': 'Builder',
   '/challenge': '34–0 Challenge',
+  '/taeglich': 'Tägliche Elf',
   '/151': '151 Challenge',
   '/draft': 'Fantasy-Draft',
   '/rangliste': 'Rangliste',
@@ -48,6 +50,7 @@ export function App() {
               <Routes>
                 <Route path="/" element={<Builder />} />
                 <Route path="/challenge" element={<Challenge340 />} />
+                <Route path="/taeglich" element={<Daily />} />
                 <Route path="/151" element={<Challenge151 />} />
                 <Route path="/draft" element={<Draft />} />
                 <Route path="/rangliste" element={<Leaderboard />} />

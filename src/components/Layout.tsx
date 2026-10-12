@@ -4,6 +4,7 @@ import { useSettings } from '../state/Settings';
 const TABS = [
   { to: '/', label: 'Builder', end: true },
   { to: '/challenge', label: '34–0 Challenge' },
+  { to: '/taeglich', label: 'Tägliche Elf' },
   { to: '/151', label: '151 Challenge' },
   { to: '/draft', label: 'Fantasy-Draft' },
   { to: '/rangliste', label: 'Rangliste' },

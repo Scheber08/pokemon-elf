@@ -8,8 +8,8 @@ import { save, STORAGE_KEYS } from '../lib/storage';
 import { useToast } from '../state/Toast';
 import type { ChallengeKey } from '../types';
 
-const CHALLENGES: ChallengeKey[] = ['c340', 'retro340', 'c151'];
-const PLAY_LINK: Record<ChallengeKey, string> = { c340: '/challenge', retro340: '/151', c151: '/151' };
+const CHALLENGES: ChallengeKey[] = ['c340', 'daily', 'retro340', 'c151'];
+const PLAY_LINK: Record<ChallengeKey, string> = { c340: '/challenge', daily: '/taeglich', retro340: '/151', c151: '/151' };
 
 export function Leaderboard() {
   const toast = useToast();

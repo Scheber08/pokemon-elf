@@ -16,6 +16,30 @@ export function randomSeed(): number {
   return Math.floor(Math.random() * 2 ** 31);
 }
 
+/**
+ * Leitet aus mehreren Teilen einen 31-Bit-Seed ab (FNV-1a + Avalanche).
+ * Gleiche Teile → gleicher Seed, auf Client und Server identisch.
+ */
+export function hashSeed(...parts: (string | number)[]): number {
+  const text = parts.join('|');
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  h ^= h >>> 16;
+  h = Math.imul(h, 0x85ebca6b);
+  h ^= h >>> 13;
+  h = Math.imul(h, 0xc2b2ae35);
+  h ^= h >>> 16;
+  return (h >>> 0) & 0x7fffffff;
+}
+
+/** Eigener, reproduzierbarer Zufallsstrom für einen bestimmten Zweck. */
+export function streamRng(...parts: (string | number)[]): Rng {
+  return createRng(hashSeed(...parts));
+}
+
 export function randInt(rng: Rng, maxExclusive: number): number {
   return Math.floor(rng() * maxExclusive);
 }

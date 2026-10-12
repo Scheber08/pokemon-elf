@@ -61,7 +61,7 @@ export interface Lineup {
   ss: number | null;
 }
 
-export type ChallengeKey = 'c340' | 'retro340' | 'c151';
+export type ChallengeKey = 'c340' | 'retro340' | 'c151' | 'daily';
 
 export interface Record3 {
   w: number;

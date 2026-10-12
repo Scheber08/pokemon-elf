@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { FORMATIONS } from '../config/formations';
 import { POSITIONS } from '../config/positions';
 import { downloadBlob, shareImage } from '../lib/exportImage';
 import { CHALLENGE_LABEL, leaderboard } from '../lib/leaderboard';
 import { lineupImage, slugify } from '../lib/lineupImage';
-import { computeRun, playerName, type FinishedRunInput } from '../lib/runFinish';
+import { computeRun, playerName, type ComputedRun, type FinishedRunInput, type RunRanking } from '../lib/runFinish';
 import { formatRecord, type SeasonResult } from '../lib/season';
 import { save, STORAGE_KEYS } from '../lib/storage';
 import { usePokemonData, type ScaleKind } from '../state/PokemonData';
@@ -20,8 +20,17 @@ interface Props {
   input: FinishedRunInput;
   scaleKind: ScaleKind;
   sprite: SpriteStyle;
+  /** Eintrag in der lokalen Run-Historie (für Umbenennen) */
   entryId: string | null;
   onNewRun: () => void;
+  /** true direkt nach dem Run: erst den Live-Ticker abspielen, dann die Bilanz zeigen */
+  reveal?: boolean;
+  /** Online-Wertung des Runs (gewertet / offline / abgelehnt) */
+  ranking?: RunRanking | null;
+  /** Zusätzlicher Inhalt unter den Aktionen, z. B. Emoji-Teilen der Tages-Challenge */
+  extra?: (run: ComputedRun) => ReactNode;
+  /** Beschriftung des „Neuer Run"-Buttons; null blendet ihn aus */
+  newRunLabel?: string | null;
 }
 
 function verdict(s: SeasonResult): string {

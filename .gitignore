@@ -7,3 +7,5 @@ scripts/.cache
 # Lokale Claude-Desktop-Konfiguration
 .claude/
 .env
+.wrangler/
+.dev.vars
