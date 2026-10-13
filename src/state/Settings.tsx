@@ -9,12 +9,15 @@ interface GlobalSettings {
   sprite: SpriteStyle;
   theme: Theme;
   lang: Lang;
+  /** Signaltöne (z. B. „Du bist dran" im Online-Draft) */
+  sound: boolean;
 }
 
 interface SettingsCtx extends GlobalSettings {
   setSprite(s: SpriteStyle): void;
   setTheme(t: Theme): void;
   setLang(l: Lang): void;
+  setSound(on: boolean): void;
 }
 
 const Ctx = createContext<SettingsCtx | null>(null);
@@ -25,6 +28,7 @@ function initialSettings(): GlobalSettings {
     sprite: 'pixel',
     theme: 'dark',
     ...stored,
+    sound: stored.sound !== false,
     // Ohne gespeicherte Wahl: Browsersprache (Deutsch → de, sonst en)
     lang: isLang(stored.lang) ? stored.lang : detectLang(),
   };
@@ -53,10 +57,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setCurrentLang(lang);
     setSettings((s) => ({ ...s, lang }));
   }, []);
+  const setSound = useCallback((sound: boolean) => setSettings((s) => ({ ...s, sound })), []);
 
   const value = useMemo(
-    () => ({ ...settings, setSprite, setTheme, setLang }),
-    [settings, setSprite, setTheme, setLang],
+    () => ({ ...settings, setSprite, setTheme, setLang, setSound }),
+    [settings, setSprite, setTheme, setLang, setSound],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
@@ -73,9 +78,11 @@ function fallbackSettings(): SettingsCtx {
     sprite: stored.sprite ?? 'pixel',
     theme: stored.theme ?? 'dark',
     lang: currentLang(),
+    sound: stored.sound ?? true,
     setSprite: noop,
     setTheme: noop,
     setLang: noop,
+    setSound: noop,
   };
 }
 

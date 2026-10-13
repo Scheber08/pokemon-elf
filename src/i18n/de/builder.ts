@@ -66,6 +66,8 @@ const builder = {
   /** Werte- und Positions-Tooltip (auch im Draft) */
   statTip: {
     importantAs: (pos: string) => `Wichtig als ${pos}`,
+    /** Vor der Liste der Werte, die auf einer Position zählen (Auswahl-Dialog) */
+    countsHere: 'Zählt hier:',
     height: (value: string) => `Größe ${value} m`,
     weight: (value: string) => `Gewicht ${value} kg`,
     typeBonus: 'Typ-Bonus',

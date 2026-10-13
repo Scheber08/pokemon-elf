@@ -7,7 +7,10 @@ import { RunNotice } from '../components/RunBoard';
 import { useT } from '../i18n';
 import { isDraftCode, normalizeDraftCode } from '../lib/api/draftClient';
 import { DRAFT_LIMITS } from '../lib/api/draftContract';
+import { previewChime } from '../lib/sound';
+import { useSettings } from '../state/Settings';
 import { draftRoomReady, useDraftRoom, type DraftRoomStatus } from '../state/useDraftRoom';
+import { useTurnSounds } from '../state/useTurnSounds';
 import '../styles/draft.css';
 
 /** Verbindungsstatus als kleine Pille (mit „Jetzt verbinden" beim Warten bzw. nach abgelehnter Anmeldung). */
@@ -35,6 +38,34 @@ function ConnectionPill({
   );
 }
 
+/** Ton an/aus (gespeichert) – beim Einschalten zur Probe einmal der Gong. */
+function SoundToggle() {
+  const t = useT();
+  const { sound, setSound } = useSettings();
+  return (
+    <button
+      type="button"
+      className={`draft-sound ${sound ? 'is-on' : ''}`}
+      aria-pressed={sound}
+      title={t.online.soundTitle}
+      onClick={() => {
+        if (!sound) previewChime();
+        setSound(!sound);
+      }}
+    >
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+        <path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor" />
+        {sound ? (
+          <path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        ) : (
+          <path d="M16.5 9.5l5 5M21.5 9.5l-5 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        )}
+      </svg>
+      <span>{sound ? t.online.soundOn : t.online.soundOff}</span>
+    </button>
+  );
+}
+
 /** /draft/:code – Lobby, Live-Draft, gemeinsame Saison und Ergebnis einer Online-Liga. */
 export function DraftRoom() {
   const { code: raw = '' } = useParams();
@@ -43,6 +74,18 @@ export function DraftRoom() {
   const code = normalizeDraftCode(raw);
   const room = useDraftRoom(code);
   const s = room.state;
+  const { sound } = useSettings();
+
+  // Gong, wenn man dran ist; Warnton kurz vor Ablauf des Timers
+  useTurnSounds({
+    enabled: sound,
+    live: room.live,
+    myTurn: room.myTurn,
+    pickIndex: s?.pickIndex ?? -1,
+    ownManualLast: !!room.lastPick && !!room.me && room.lastPick.teamId === room.me.id && !room.lastPick.auto,
+    deadline: s?.phase === 'drafting' ? s.deadline : null,
+    clockOffset: room.clockOffset,
+  });
 
   // Kleinbuchstaben o. Ä. in der Adresse → kanonische Adresse
   useEffect(() => {
@@ -90,7 +133,10 @@ export function DraftRoom() {
           <h1 className="page-title">{leagueName || t.online.title}</h1>
           {s && <p className="page-lead">{t.online.phaseLead[s.phase]}</p>}
         </div>
-        <ConnectionPill status={room.status} failed={failed} onReconnect={room.reconnect} />
+        <div className="draft-room__tools">
+          <SoundToggle />
+          <ConnectionPill status={room.status} failed={failed} onReconnect={room.reconnect} />
+        </div>
       </header>
 
       <div className="draft-room__notices">

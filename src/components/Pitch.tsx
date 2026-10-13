@@ -28,7 +28,7 @@ interface Props {
   highlight?: number[];
   tooltips?: boolean;
   /**
-   * Positions-Hinweise (z. B. im Draft): Hover/Long-Press auf einen leeren Slot zeigt, welche
+   * Positions-Hinweise (Standard: an): Hover/Long-Press auf einen leeren Slot zeigt, welche
    * Werte dort zählen; bei besetzten Slots markiert der Werte-Tooltip die wichtigen Werte.
    */
   positionTips?: boolean;
@@ -66,7 +66,7 @@ export function Pitch({
   slotState,
   highlight,
   tooltips = true,
-  positionTips = false,
+  positionTips = true,
   ariaLabel,
   className = '',
 }: Props) {
@@ -123,6 +123,8 @@ export function Pitch({
   };
 
   const onPointerDown = (e: ReactPointerEvent<HTMLElement>, index: number) => {
+    // Geplanter Hover-Tooltip entfällt (sonst erschiene er nach dem Klick, z. B. über dem Dialog)
+    window.clearTimeout(hoverTimer.current);
     if (e.button !== 0) return;
     suppressClick.current = false;
     const el = e.currentTarget;
@@ -194,6 +196,7 @@ export function Pitch({
       suppressClick.current = false;
       return;
     }
+    window.clearTimeout(hoverTimer.current);
     setTip(null);
     onSlotClick?.(index);
   };
@@ -240,7 +243,10 @@ export function Pitch({
           aria-label={label}
           onPointerEnter={(e) => onPointerEnter(e, index)}
           onPointerLeave={onPointerLeave}
-          onPointerDown={(e) => tooltips && e.pointerType !== 'mouse' && onPointerDown(e, index)}
+          onPointerDown={(e) => {
+            window.clearTimeout(hoverTimer.current);
+            if (tooltips && e.pointerType !== 'mouse') onPointerDown(e, index);
+          }}
           onContextMenu={(e) => e.preventDefault()}
         >
           {content}

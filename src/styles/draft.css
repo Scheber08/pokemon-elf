@@ -698,3 +698,35 @@
     font-size: 17px;
   }
 }
+
+/* Ton an/aus neben der Verbindungs-Pille */
+.draft-room__tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.draft-sound {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.draft-sound.is-on {
+  color: var(--text);
+}
+.draft-sound:hover {
+  border-color: var(--yellow);
+}
+.draft-sound:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}

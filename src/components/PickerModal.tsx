@@ -5,6 +5,7 @@ import { PosBadge } from './Badges';
 import { FilterBar, useFilteredPokemon, type PokemonFilters } from './FilterBar';
 import { Modal } from './Modal';
 import { PokemonGrid } from './PokemonGrid';
+import { PositionKeys } from './StatTooltip';
 
 interface Props {
   pos: PosCode;
@@ -62,6 +63,7 @@ export function PickerModal({ pos, pool, initialRegion, sprite, currentId, onFie
           onSearchKeyDown={onSearchKeyDown}
           resultCount={items.length}
         />
+        <PositionKeys pos={pos} />
         <p className="hint hint--small">{t.builder.picker.swapHint}</p>
         <PokemonGrid
           items={items}
@@ -73,6 +75,7 @@ export function PickerModal({ pos, pool, initialRegion, sprite, currentId, onFie
             return at && p.id !== currentId ? t.builder.picker.onField(t.game.posShort[at]) : null;
           }}
           onPick={(p) => onPick(p.id)}
+          tipPos={pos}
         />
       </div>
     </Modal>

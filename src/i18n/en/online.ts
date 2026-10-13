@@ -4,6 +4,9 @@ import type { Messages } from '../de';
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 const online: Messages['online'] = {
+  soundOn: 'Sound on',
+  soundOff: 'Sound off',
+  soundTitle: 'Play a sound when it’s your turn – and 10 seconds before the pick timer runs out',
   // ------------------------------------------------ /draft (online mode)
   title: 'Fantasy Draft',
   lead: 'Online league with friends: create a league, share the link, pick live in a snake draft – with a pick timer, CPU teams and a shared season at the end.',

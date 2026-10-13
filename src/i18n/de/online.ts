@@ -1,5 +1,8 @@
 /** Texte: Online-Liga – Fantasy-Draft mit Lobby, Live-Draft und Verbindung (Deutsch – Quelle). */
 const online = {
+  soundOn: 'Ton an',
+  soundOff: 'Ton aus',
+  soundTitle: 'Ton, wenn du dran bist – und 10 Sekunden bevor der Pick-Timer abläuft',
   // ------------------------------------------------ /draft (Online-Modus)
   title: 'Fantasy-Draft',
   lead: 'Online-Liga mit Freunden: Liga erstellen, Link teilen, live im Snake-Draft wählen – mit Pick-Timer, CPU-Teams und einer gemeinsamen Saison zum Schluss.',

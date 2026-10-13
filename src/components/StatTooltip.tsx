@@ -170,6 +170,26 @@ export function StatTooltip({ pokemon, anchor, pos }: { pokemon: Pokemon; anchor
 
 const LEVEL_GROUPS: Level[] = [3, 2, 1];
 
+/** Kurzfassung in einer Zeile: welche Werte auf der Position zählen (wichtigste zuerst). */
+export function PositionKeys({ pos }: { pos: PosCode }) {
+  const t = useT();
+  const profile = PROFILES[POSITIONS[pos].profile];
+  const factors = (Object.keys(profile.weights) as FactorKey[])
+    .filter((f) => profile.weights[f] > 0)
+    .sort((a, b) => profile.weights[b] - profile.weights[a]);
+  return (
+    <p className="pos-keys">
+      <span className="pos-keys__label">{t.builder.statTip.countsHere}</span>
+      {factors.map((f) => (
+        <span key={f} className={`pos-keys__factor lvl--${profile.weights[f]}`} title={`${t.game.factorLong[f]}: ${t.game.level[profile.weights[f]]}`}>
+          <LevelIcon level={profile.weights[f]} size={11} />
+          {t.game.factor[f]}
+        </span>
+      ))}
+    </p>
+  );
+}
+
 /** Was auf einer Position zählt – für leere Slots (z. B. beim Draften). */
 export function PositionTooltip({ pos, anchor }: { pos: PosCode; anchor: DOMRect }) {
   const t = useT();

@@ -67,6 +67,7 @@ const builder: Messages['builder'] = {
   },
   statTip: {
     importantAs: (pos) => `What counts at ${pos}`,
+    countsHere: 'What counts here:',
     height: (value) => `Height ${value} m`,
     weight: (value) => `Weight ${value} kg`,
     typeBonus: 'Type bonus',

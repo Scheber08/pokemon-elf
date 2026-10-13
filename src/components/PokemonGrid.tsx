@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useT } from '../i18n';
-import type { Pokemon, SpriteStyle, StatKey } from '../types';
+import type { PosCode, Pokemon, SpriteStyle, StatKey } from '../types';
 import { TypeBadges } from './Badges';
 import { Sprite } from './Sprite';
 import { StatTooltip } from './StatTooltip';
@@ -42,6 +42,8 @@ interface Props {
    * erhalten, wenn nur einzelne Einträge wegfallen (Pick im Live-Draft).
    */
   resetKey?: string | number;
+  /** Zielposition (z. B. im Auswahl-Dialog): der Werte-Tooltip markiert, was dort zählt */
+  tipPos?: PosCode;
 }
 
 /** Raster aus Pokémon-Karten, per Pfeiltasten bedienbar, rendert inkrementell. */
@@ -58,6 +60,7 @@ export function PokemonGrid({
   autoFocus,
   className = '',
   resetKey,
+  tipPos,
 }: Props) {
   const t = useT();
   const [limit, setLimit] = useState(pageSize);
@@ -161,6 +164,7 @@ export function PokemonGrid({
                   window.clearTimeout(hoverTimer.current);
                   setTip(null);
                 }}
+                onPointerDown={() => window.clearTimeout(hoverTimer.current)}
               >
                 <Sprite pokemon={p} style={sprite} className="pcard__sprite" />
                 <span className="pcard__no">{t.game.dexNo(p.id)}</span>
@@ -177,7 +181,7 @@ export function PokemonGrid({
       </div>
       {items.length === 0 && !emptyOption && <p className="pgrid__empty">{t.builder.grid.none}</p>}
       {limit < items.length && <div ref={sentinel} className="pgrid__sentinel" aria-hidden="true" />}
-      {tip && <StatTooltip pokemon={tip.pokemon} anchor={tip.rect} />}
+      {tip && <StatTooltip pokemon={tip.pokemon} anchor={tip.rect} pos={tipPos} />}
     </div>
   );
 }
