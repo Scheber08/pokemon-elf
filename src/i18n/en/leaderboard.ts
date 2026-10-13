@@ -59,6 +59,29 @@ const leaderboard: Messages['leaderboard'] = {
   nameHintOnline: 'Applies online to all runs from this device and locally to new runs.',
   nameHintLocal: 'Applies to new runs on this device.',
   apiError: apiErrorText,
+  viewTeam: 'View team',
+  viewTeamOf: (team, player) => (team ? `View team: ${team} by ${player}` : `View team by ${player}`),
+  entry: {
+    untitled: (player) => `Team by ${player}`,
+    kicker: (challenge, date) => (date ? `${challenge} · ${date}` : challenge),
+    byline: (player, rank) => (rank != null ? `by ${player} · Rank ${rank}` : `by ${player}`),
+    record: 'Record',
+    recordSpoken: (w, d, l) =>
+      `${w} ${w === 1 ? 'win' : 'wins'}, ${d} ${d === 1 ? 'draw' : 'draws'}, ${l} ${l === 1 ? 'defeat' : 'defeats'}`,
+    points: 'Points',
+    score: 'Team score',
+    formation: 'Formation',
+    pitchAria: (team, formation) => `Lineup of ${team} (${formation})`,
+    sheetTitle: 'Lineup',
+    loading: 'Loading team …',
+    gone: 'This team is no longer on the leaderboard.',
+    goneHint: 'There’s probably a better run by now – reload the leaderboard.',
+    reloadBoard: 'Reload leaderboard',
+    loadError: (message) => `Team unavailable: ${message}`,
+    unreadable: 'This lineup can’t be displayed.',
+    openInBuilder: 'Open in builder',
+    openInBuilderHint: 'Replaces your lineup in the builder.',
+  },
 };
 
 export default leaderboard;

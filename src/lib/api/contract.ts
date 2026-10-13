@@ -7,6 +7,7 @@
  *   POST /api/runs/finish   FinishRunRequest → FinishRunResponse
  *   GET  /api/leaderboard?challenge=…&period=today|all&limit=…&me=<deviceId>
  *                                            → LeaderboardResponse
+ *   GET  /api/entries/:id                    → EntryDetail (nur Ranglisten-Einträge, sonst 404)
  *   POST /api/player        RenameRequest    → { ok: true }
  *
  * Spielername: Ein neues Gerät heißt auf dem Server „Trainer" (DEFAULT_PLAYER_NAME). Mit
@@ -117,6 +118,37 @@ export interface LeaderboardResponse {
   rows: LeaderboardRow[];
   /** Eigene Zeile, auch wenn sie außerhalb von `limit` liegt */
   mine: LeaderboardRow | null;
+}
+
+/**
+ * GET /api/entries/:id – das Team eines Ranglisten-Eintrags.
+ * Nur Einträge, die gerade in einer abrufbaren Rangliste stehen (Bestwert allzeit oder heute –
+ * kurz nach Mitternacht auch noch von gestern) und deren Gerät einen eigenen Namen hat; sonst
+ * 404 not_found, auch für den Bestwert eines vergangenen Tages. Ungültige ID → 400 bad_request.
+ * Antwort mit Cache-Control: public, max-age=60 – `player` kann daher bis zu einer Minute alt
+ * sein; den aktuellen Namen liefert die Zeile aus GET /api/leaderboard (no-store).
+ */
+export interface EntryDetail {
+  entryId: string;
+  challenge: ChallengeKey;
+  day: string;
+  /** Name des Geräts beim Abruf (siehe Cache-Hinweis oben) */
+  player: string;
+  teamName: string;
+  formation: FormationId;
+  /** Spieler-IDs in Slot-Reihenfolge der Formation (11 Einträge, null = leer) */
+  slots: (number | null)[];
+  /**
+   * Standardschütze (Spieler-ID, zählt nicht zum Team-Score) – null ohne Standardschütze
+   * (ssEnabled false) oder wenn sein Platz leer ist
+   */
+  ss: number | null;
+  ssEnabled: boolean;
+  record: Record3;
+  points: number;
+  score: number;
+  /** ISO-Zeitstempel */
+  createdAt: string;
 }
 
 export interface RenameRequest extends DeviceAuth {

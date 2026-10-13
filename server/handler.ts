@@ -5,7 +5,7 @@
  */
 import type { HealthResponse } from '../src/lib/api/contract';
 import { draftRoute, draftsUnavailable } from './drafts';
-import { finishRun, health, leaderboard, renamePlayer, startRun } from './endpoints';
+import { entryDetail, finishRun, health, leaderboard, renamePlayer, startRun } from './endpoints';
 import type { Env } from './env';
 import { ApiError, corsHeaders, errorResponse, json, preflight, withHeaders } from './http';
 import { ensureSchema } from './schema';
@@ -30,9 +30,19 @@ const ROUTES: Record<string, { method: 'GET' | 'POST'; run: Route }> = {
   '/api/player': { method: 'POST', run: (req, env) => renamePlayer(req, env) },
 };
 
+/** GET /api/entries/:id – die ID prüft der Endpunkt (ungültig → 400), Unterpfade gibt es nicht. */
+const ENTRY_PATH_RE = /^\/api\/entries\/([^/]+)$/;
+
+/** Routen mit Parameter im Pfad (außer dem Online-Draft). */
+function paramRoute(path: string): { method: 'GET' | 'POST'; run: Route } | null {
+  const entry = ENTRY_PATH_RE.exec(path);
+  if (entry) return { method: 'GET', run: (_req, env) => entryDetail(entry[1], env) };
+  return null;
+}
+
 async function route(request: Request, env: Env, url: URL): Promise<Response> {
   const path = url.pathname.replace(/\/+$/, '');
-  const fixed = ROUTES[path];
+  const fixed = ROUTES[path] ?? paramRoute(path);
   const draft = fixed ? null : draftRoute(path);
   const target = fixed ?? draft;
   if (!target) throw new ApiError(404, 'not_found', 'Diesen API-Pfad gibt es nicht');

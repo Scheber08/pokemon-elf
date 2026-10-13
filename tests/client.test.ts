@@ -4,7 +4,7 @@
  * Node hat kein localStorage – storage.ts liest/schreibt dann nichts (wie bei blockiertem Speicher).
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { HealthResponse } from '../src/lib/api/contract';
+import type { EntryDetail, HealthResponse } from '../src/lib/api/contract';
 
 type Client = typeof import('../src/lib/api/client');
 type Device = typeof import('../src/lib/device');
@@ -174,6 +174,86 @@ describe('Fehler-Zuordnung', () => {
     stubFetch(new Response('kaputt', { status: 502 }));
     const err = await client.startRun('c340').catch((e: unknown) => e);
     expect(err).toMatchObject({ status: 502, code: 'server_error', message: 'HTTP 502' });
+  });
+});
+
+describe('fetchEntry (Team eines Ranglisten-Eintrags)', () => {
+  const ID = '0b6f3c1e-8f0a-4c3e-9d2b-5a7e1f4c2d90';
+  const DETAIL: EntryDetail = {
+    entryId: ID,
+    challenge: 'c340',
+    day: '2026-10-12',
+    player: 'Ash',
+    teamName: 'Pallet Power',
+    formation: '4-3-3',
+    slots: [143, 9, 68, 76, 130, 65, 112, 3, 25, 6, 135],
+    ss: 59,
+    ssEnabled: true,
+    record: { w: 30, d: 2, l: 2 },
+    points: 92,
+    score: 812,
+    createdAt: '2026-10-12T08:00:00.000Z',
+  };
+
+  it('GET /api/entries/<id> mit kodierter ID, liefert das Team unverändert', async () => {
+    const { client } = await fresh();
+    const fetch = stubFetch(json(200, DETAIL));
+    expect(await client.fetchEntry(ID)).toEqual(DETAIL);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const [url, init] = fetch.mock.calls[0];
+    expect(url).toBe(`/api/entries/${ID}`);
+    expect(init?.method ?? 'GET').toBe('GET');
+    expect(init?.body).toBeUndefined();
+
+    await client.fetchEntry('a/b?c=d#e');
+    expect(fetch.mock.calls[1][0]).toBe('/api/entries/a%2Fb%3Fc%3Dd%23e');
+  });
+
+  it('404 → ApiRequestError not_found (Eintrag nicht mehr in der Rangliste)', async () => {
+    const { client } = await fresh();
+    stubFetch(json(404, { error: 'not_found', message: 'Dieses Team ist nicht mehr in der Rangliste' }));
+    const err = await client.fetchEntry(ID).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(client.ApiRequestError);
+    expect(err).toMatchObject({ status: 404, code: 'not_found', message: 'Dieses Team ist nicht mehr in der Rangliste' });
+  });
+
+  it('400, Netzwerk- und Serverfehler laufen über dieselbe Fehler-Zuordnung', async () => {
+    const { client } = await fresh();
+    stubFetch(json(400, { error: 'bad_request', message: 'Ungültige Eintrags-ID' }));
+    expect(await client.fetchEntry('x').catch((e: unknown) => e)).toMatchObject({ status: 400, code: 'bad_request' });
+    stubFetch(offline);
+    expect(await client.fetchEntry(ID).catch((e: unknown) => e)).toMatchObject({ status: 0, code: 'network' });
+    stubFetch(new Response('kaputt', { status: 503 }));
+    expect(await client.fetchEntry(ID).catch((e: unknown) => e)).toMatchObject({ status: 503, code: 'server_error' });
+  });
+
+  it('unlesbare Antwort (ohne Formation/Slots, unbekannte Challenge, kein JSON) → server_error statt halbem Team', async () => {
+    const { client } = await fresh();
+    const bad: unknown[] = [
+      null,
+      [],
+      { ...DETAIL, formation: '9-9-9' },
+      { ...DETAIL, slots: 'kaputt' },
+      { ...DETAIL, challenge: 'liga' },
+      { ...DETAIL, entryId: 42 },
+    ];
+    for (const body of bad) {
+      stubFetch(json(200, body));
+      const err = await client.fetchEntry(ID).catch((e: unknown) => e);
+      expect(err, JSON.stringify(body)).toMatchObject({ code: 'server_error', message: 'Unerwartete Antwort vom Server' });
+    }
+    stubFetch(new Response('<html></html>', { status: 200, headers: { 'Content-Type': 'text/html' } }));
+    expect(await client.fetchEntry(ID).catch((e: unknown) => e)).toMatchObject({ code: 'server_error' });
+  });
+
+  it('Slots passend zur Formation (fehlende/ungültige → leer), ohne Standardschütze kein ss', async () => {
+    const { client } = await fresh();
+    stubFetch(json(200, { ...DETAIL, slots: [143, 'x', -3, 2.5, null], ss: 59, ssEnabled: false, deviceId: 'geheim' }));
+    const d = await client.fetchEntry(ID);
+    expect(d.slots).toEqual([143, null, null, null, null, null, null, null, null, null, null]);
+    expect(d.ss).toBeNull();
+    expect(d.ssEnabled).toBe(false);
+    expect(d).not.toHaveProperty('deviceId');
   });
 });
 

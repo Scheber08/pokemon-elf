@@ -261,6 +261,18 @@ export function parseRename(body: Obj): { auth: DeviceAuth; player: string } {
   return { auth: parseDeviceAuth(body), player: parsePlayerName(body.player) };
 }
 
+/**
+ * Eintrags-ID, genau so, wie der Server sie vergibt (newId = crypto.randomUUID): UUID v4,
+ * klein geschrieben, mit Bindestrichen. Alles andere ist kein Eintrag.
+ */
+export const ENTRY_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
+/** Eintrags-ID aus der URL (GET /api/entries/:id) – sonst 400. */
+export function parseEntryId(raw: string): string {
+  if (!ENTRY_ID_RE.test(raw)) throw badRequest('Ungültige Eintrags-ID');
+  return raw;
+}
+
 export interface LeaderboardQuery {
   challenge: ChallengeKey;
   period: Period;

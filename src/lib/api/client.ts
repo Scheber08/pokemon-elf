@@ -5,9 +5,11 @@
 import { currentLang, messages } from '../../i18n';
 import type { ChallengeKey } from '../../types';
 import { getDevice } from '../device';
+import { parseEntryDetail } from '../leaderboard/entryDetail';
 import type {
   ApiErrorBody,
   ApiErrorCode,
+  EntryDetail,
   FinishRunRequest,
   FinishRunResponse,
   HealthResponse,
@@ -177,6 +179,18 @@ export function finishRun(req: Omit<FinishRunRequest, 'deviceId' | 'deviceSecret
 export function fetchLeaderboard(challenge: ChallengeKey, period: Period, limit = 50): Promise<LeaderboardResponse> {
   const params = new URLSearchParams({ challenge, period, limit: String(limit), me: getDevice().deviceId });
   return request<LeaderboardResponse>(`/leaderboard?${params}`);
+}
+
+/**
+ * Team eines Ranglisten-Eintrags (GET /api/entries/:id). 404 not_found: Der Eintrag zählt in
+ * keiner Rangliste mehr (z. B. durch einen besseren Run ersetzt). Eine unlesbare Antwort
+ * (fehlende Formation/Slots) meldet server_error statt eines halben Teams.
+ */
+export async function fetchEntry(entryId: string): Promise<EntryDetail> {
+  const body = await request<unknown>(`/entries/${encodeURIComponent(entryId)}`);
+  const detail = parseEntryDetail(body);
+  if (!detail) throw new ApiRequestError(messages().errors.unexpected, 200, 'server_error');
+  return detail;
 }
 
 export async function renamePlayer(player: string): Promise<void> {

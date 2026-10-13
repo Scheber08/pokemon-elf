@@ -3,6 +3,7 @@
  * Zeitstempel sind Millisekunden (INTEGER).
  */
 import { DEFAULT_PLAYER_NAME, isDefaultPlayerName } from '../src/lib/api/contract';
+import { dayKey } from '../src/lib/daily';
 import type { ChallengeKey, FormationId } from '../src/types';
 import type { Db, DbStatement } from './env';
 
@@ -225,6 +226,66 @@ export function getEntry(db: Db, id: string): Promise<EntryRow | null> {
     )
     .bind(id)
     .first<EntryRow>();
+}
+
+/**
+ * Ein Eintrag für die Team-Ansicht der Rangliste (GET /api/entries/:id) – roh aus der Datenbank,
+ * Challenge, Formation und Aufstellung prüft der Endpunkt. Bewusst ohne Geräte-ID, Züge und Seeds.
+ */
+export interface EntryDetailRow {
+  id: string;
+  challenge: string;
+  day: string;
+  formation: string;
+  ss_enabled: number;
+  lineup_json: string;
+  team_name: string;
+  score: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  points: number;
+  created_at: number;
+  /** Aktueller Name des Geräts */
+  player: string;
+}
+
+/**
+ * Schonfrist nach Mitternacht (Europe/Berlin): So lange zählt die Tageswertung von gestern für
+ * die Team-Ansicht noch mit – eine „Heute"-Zeile, die kurz vor Mitternacht geladen wurde, lässt
+ * sich danach noch öffnen.
+ */
+export const ENTRY_DAY_GRACE_MS = 10 * 60_000;
+
+/**
+ * Die Wertungen, die GET /api/leaderboard gerade ausliefern kann (period=all|today) – plus der
+ * Vortag während der Schonfrist. Bestwerte früherer Tage bleiben in best_entries stehen, sind
+ * aber in keiner abrufbaren Rangliste mehr.
+ */
+export function entryScopes(now: number): [string, string, string] {
+  return [ALL_TIME_SCOPE, dayKey(new Date(now)), dayKey(new Date(now - ENTRY_DAY_GRACE_MS))];
+}
+
+/**
+ * Eintrag per Primärschlüssel – nur, solange er in einer abrufbaren Rangliste steht: Die
+ * Bestwert-Zeile einer der Wertungen aus entryScopes (Allzeit, heute, ggf. gestern) verweist
+ * auf genau ihn, und das Gerät trägt einen eigenen Namen. Punktzugriffe: entries und devices
+ * über den Primärschlüssel, best_entries über (challenge, scope, device_id) je Wertung.
+ * Parameter: id, dann die drei Wertungen aus entryScopes.
+ */
+export const ENTRY_DETAIL_SQL = `SELECT e.id, e.challenge, e.day, e.formation, e.ss_enabled, e.lineup_json, e.team_name,
+    e.score, e.wins, e.draws, e.losses, e.points, e.created_at, d.name AS player
+  FROM entries e JOIN devices d ON d.id = e.device_id
+  WHERE e.id = ? AND ${visibleDeviceSql('d')}
+    AND EXISTS (SELECT 1 FROM best_entries b WHERE b.challenge = e.challenge AND b.scope IN (?, ?, ?)
+      AND b.device_id = e.device_id AND b.entry_id = e.id)`;
+
+/** Siehe ENTRY_DETAIL_SQL – null, wenn es den Eintrag nicht gibt oder er in keiner Rangliste (mehr) steht. */
+export function rankedEntry(db: Db, id: string, now: number): Promise<EntryDetailRow | null> {
+  return db
+    .prepare(ENTRY_DETAIL_SQL)
+    .bind(id, ...entryScopes(now))
+    .first<EntryDetailRow>();
 }
 
 /**

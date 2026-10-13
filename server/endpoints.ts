@@ -5,14 +5,16 @@ import {
   API_VERSION,
   isDefaultPlayerName,
   LIMITS,
+  type EntryDetail,
   type FinishRunResponse,
   type HealthResponse,
   type LeaderboardResponse,
   type LeaderboardRow,
   type StartRunResponse,
 } from '../src/lib/api/contract';
+import { FORMATIONS, FORMATION_IDS } from '../src/config/formations';
 import { dailyRunSeed, dailySeasonSeed, dayKey, formatDay } from '../src/lib/daily';
-import type { ChallengeKey } from '../src/types';
+import type { ChallengeKey, FormationId } from '../src/types';
 import { authenticate, HOUR_MS, IP_HASH_TTL_MS, rateLimited } from './auth';
 import { newId, randomHex, randomSeed31 } from './crypto';
 import {
@@ -30,15 +32,26 @@ import {
   insertToken,
   isUniqueViolation,
   leaderboardPage,
+  rankedEntry,
   releaseToken,
   setDeviceName,
+  type EntryDetailRow,
   type RankedRow,
   type TokenRow,
 } from './db';
 import type { Db, Env } from './env';
-import { verifyRun } from './game';
+import { ENGINE_DATA, verifyRun } from './game';
 import { ApiError, json } from './http';
-import { parseFinish, parseLeaderboardQuery, parseRename, parseStart, readJsonBody, teamNameRequired } from './validate';
+import {
+  CHALLENGE_KEYS,
+  parseEntryId,
+  parseFinish,
+  parseLeaderboardQuery,
+  parseRename,
+  parseStart,
+  readJsonBody,
+  teamNameRequired,
+} from './validate';
 
 /** Nie abgeschlossene Tokens werden nach dieser Zeit gelöscht … */
 export const STALE_TOKEN_MS = 7 * 24 * HOUR_MS;
@@ -274,4 +287,92 @@ export async function renamePlayer(request: Request, env: Env): Promise<Response
   await authenticate(request, env, auth, Date.now());
   await setDeviceName(env.DB, auth.deviceId, player);
   return json({ ok: true });
+}
+
+// ---------------------------------------------------------------- Team eines Ranglisten-Eintrags
+
+/**
+ * Die Team-Ansicht darf kurz zwischengespeichert werden (Browser, Edge). Ein Bestwert kann
+ * jederzeit durch einen besseren Run ersetzt werden – deshalb nur eine Minute.
+ */
+export const ENTRY_CACHE_CONTROL = 'public, max-age=60';
+
+const entryNotFound = () => new ApiError(404, 'not_found', 'Dieses Team ist nicht mehr in der Rangliste');
+
+/** Ein Platz der Aufstellung: leer (null) oder ein bekanntes Pokémon. */
+const isLineupValue = (v: unknown): v is number | null =>
+  v === null || (typeof v === 'number' && Number.isInteger(v) && ENGINE_DATA.byId.has(v));
+
+/**
+ * Gespeicherte Aufstellung lesen. finishRun schreibt die Slots in der Reihenfolge der Formation
+ * als JSON-Array, mit Standardschütze als ein weiteres Element dahinter. null, wenn das nicht
+ * passt – kein JSON, kein Array, falsche Länge oder ein Wert, der weder leer noch ein bekanntes
+ * Pokémon ist.
+ */
+export function parseStoredLineup(
+  raw: unknown,
+  formation: FormationId,
+  ssEnabled: boolean,
+): { slots: (number | null)[]; ss: number | null } | null {
+  if (typeof raw !== 'string') return null;
+  let data: unknown;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  const size = FORMATIONS[formation].slots.length;
+  if (!Array.isArray(data) || data.length !== size + (ssEnabled ? 1 : 0) || !data.every(isLineupValue)) return null;
+  const values = data as (number | null)[];
+  return { slots: values.slice(0, size), ss: ssEnabled ? values[size] : null };
+}
+
+/**
+ * Antwort aus der gespeicherten Zeile – nur die Felder des Vertrags (keine Geräte-ID, Züge oder
+ * Seeds). null bei beschädigten Daten (unbekannte Challenge/Formation, kaputte Aufstellung,
+ * ungültiger Zeitstempel) und bei einem Standardnamen, den nur isDefaultPlayerName erkennt.
+ */
+export function toEntryDetail(row: EntryDetailRow): EntryDetail | null {
+  const challenge = row.challenge as ChallengeKey;
+  const formation = row.formation as FormationId;
+  if (!CHALLENGE_KEYS.includes(challenge) || !FORMATION_IDS.includes(formation)) return null;
+  if (row.ss_enabled !== 0 && row.ss_enabled !== 1) return null;
+  if (typeof row.player !== 'string' || isDefaultPlayerName(row.player)) return null;
+  const ssEnabled = row.ss_enabled === 1;
+  const lineup = parseStoredLineup(row.lineup_json, formation, ssEnabled);
+  if (!lineup) return null;
+  const createdAt = typeof row.created_at === 'number' ? new Date(row.created_at) : null;
+  if (!createdAt || Number.isNaN(createdAt.getTime())) return null;
+  return {
+    entryId: row.id,
+    challenge,
+    day: row.day,
+    player: row.player,
+    teamName: row.team_name,
+    formation,
+    slots: lineup.slots,
+    ss: lineup.ss,
+    ssEnabled,
+    record: { w: row.wins, d: row.draws, l: row.losses },
+    points: row.points,
+    score: row.score,
+    createdAt: createdAt.toISOString(),
+  };
+}
+
+/**
+ * GET /api/entries/:id – das Team eines Eintrags, der gerade in einer abrufbaren Rangliste steht
+ * (allzeit oder heute, siehe entryScopes). Ungültige ID → 400; unbekannt, ersetzt, nur noch
+ * Bestwert eines vergangenen Tages, Gerät ohne eigenen Namen oder beschädigt → 404.
+ */
+export async function entryDetail(rawId: string, env: Env): Promise<Response> {
+  const id = parseEntryId(rawId);
+  const row = await rankedEntry(env.DB, id, Date.now());
+  if (!row) throw entryNotFound();
+  const body = toEntryDetail(row);
+  if (!body) {
+    console.warn(`Eintrag ${id}: Daten unlesbar oder Standardname – Team-Ansicht als 404`);
+    throw entryNotFound();
+  }
+  return json(body, 200, { 'Cache-Control': ENTRY_CACHE_CONTROL });
 }

@@ -5,7 +5,7 @@
  * Byte 1      Formation (Index in FORMATION_IDS)
  * Byte 2      Flags: Bit 0 Legendäre, Bit 1 Standardschütze, Bit 2–3 Sprite-Stil, Bit 4–7 Region
  * Byte 3–26   12 × uint16 (11 Slots + SS), 0 = leer
- * Byte 27…    Teamname (UTF-8, max. 40 Bytes)
+ * Byte 27…    Teamname (UTF-8, alle restlichen Bytes; der Builder schreibt max. 40 Bytes)
  */
 import { FORMATION_IDS } from '../config/formations';
 import type { FormationId, RegionFilter, Slots, SpriteStyle } from '../types';
@@ -49,8 +49,16 @@ function truncateUtf8(text: string, maxBytes: number): Uint8Array {
   return bytes;
 }
 
-export function encodeLineup(state: SharedLineup): string {
-  const name = truncateUtf8(state.teamName.trim(), MAX_NAME_BYTES);
+export interface EncodeOptions {
+  /**
+   * Höchstlänge des Teamnamens in UTF-8-Bytes (Standard 40 wie beim Teilen aus dem Builder).
+   * decodeLineup liest alle Bytes ab Byte 27 – längere Namen bleiben also lesbar.
+   */
+  maxNameBytes?: number;
+}
+
+export function encodeLineup(state: SharedLineup, { maxNameBytes = MAX_NAME_BYTES }: EncodeOptions = {}): string {
+  const name = truncateUtf8(state.teamName.trim(), maxNameBytes);
   const bytes = new Uint8Array(27 + name.length);
   bytes[0] = VERSION;
   bytes[1] = Math.max(0, FORMATION_IDS.indexOf(state.formation));

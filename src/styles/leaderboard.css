@@ -1,0 +1,163 @@
+/* ============================================================
+   Rangliste: Team ansehen (Knopf in der Zeile + Dialog)
+   Baut auf global.css auf (.league-table, .facts, .modal, .sheet).
+   ============================================================ */
+
+/*
+ * Spieler-Spalte: Spieler oben, Team-Knopf darunter. Lange Namen brechen um, statt die Tabelle
+ * (und am Handy die Seite) zu verbreitern – die Zahlen-Spalten bleiben einzeilig.
+ */
+.leaderboard__table td.lb-who {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.lb-who__player {
+  display: block;
+}
+
+.lb-row {
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .lb-row:hover td {
+    background: var(--surface-2);
+  }
+  .league-table tr.lb-row.is-user:hover td {
+    background: rgba(255, 203, 5, 0.24);
+  }
+}
+
+/* Teamname als Link-Knopf */
+.lb-team {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+  min-height: 30px;
+  margin: 0 0 0 -4px;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--yellow);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+:root[data-theme='light'] .lb-team {
+  color: #b45309;
+}
+.lb-team__name {
+  min-width: 0;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+@media (hover: hover) {
+  .lb-row:hover .lb-team__name {
+    text-decoration-style: solid;
+  }
+}
+.lb-team__icon {
+  flex: none;
+}
+.league-table tr.is-user .lb-team {
+  font-weight: 700;
+}
+
+/* ---------- Dialog ---------- */
+.modal.entry-dialog {
+  width: min(1000px, 100%);
+}
+/* Fußzeile am Handy (Vollbild-Sheet) unten halten */
+.entry-dialog .modal__body {
+  flex: 1 1 auto;
+}
+.entry {
+  display: grid;
+  gap: 12px;
+}
+.entry:focus {
+  outline: none;
+}
+.entry__meta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 12px;
+}
+.entry__by {
+  color: var(--text-dim);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.facts.entry__facts {
+  margin: 0;
+}
+.facts.entry__facts dd {
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.entry__status {
+  margin: 8px 0;
+}
+.entry__error p {
+  margin: 0 0 8px;
+}
+.entry__error p:last-child {
+  margin-bottom: 0;
+}
+.entry__team {
+  display: grid;
+  grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.entry__pitch {
+  width: 100%;
+  max-width: 440px;
+  justify-self: center;
+}
+.entry__team .sheet {
+  margin: 0;
+}
+
+.entry-dialog .modal__foot {
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+.entry__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+.entry__hint {
+  flex: 1 1 160px;
+}
+.entry__close {
+  margin-left: auto;
+}
+
+@media (max-width: 899px) {
+  .entry__team {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .entry__actions .btn {
+    flex: 1 1 auto;
+  }
+  .entry__hint {
+    order: 3;
+    flex-basis: 100%;
+  }
+  .entry__close {
+    margin-left: 0;
+  }
+}

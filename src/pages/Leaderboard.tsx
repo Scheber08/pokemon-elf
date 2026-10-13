@@ -1,11 +1,13 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode, type RefObject } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { EntryDialog, type EntrySource, type EntrySummary } from '../components/EntryDialog';
 import { Segmented } from '../components/Segmented';
 import { useT, type Messages } from '../i18n';
 import { ApiRequestError, fetchLeaderboard } from '../lib/api/client';
 import { LIMITS, type LeaderboardResponse } from '../lib/api/contract';
 import { dayKey } from '../lib/daily';
 import { leaderboard, type LeaderboardEntry, type Period } from '../lib/leaderboard';
+import { localEntryDetail } from '../lib/leaderboard/entryDetail';
 import { playerName, PlayerNameError, savePlayerName } from '../lib/runFinish';
 import { formatRecord } from '../lib/season';
 import { useToast } from '../state/Toast';
@@ -14,6 +16,7 @@ import { isChallengeKey, useApiOnline } from '../state/useChallengeRun';
 import type { ChallengeKey, Record3 } from '../types';
 import '../styles/run.css';
 import '../styles/daily.css';
+import '../styles/leaderboard.css';
 
 const CHALLENGES: ChallengeKey[] = ['c340', 'daily', 'retro340', 'c151'];
 const PLAY_LINK: Record<ChallengeKey, string> = { c340: '/challenge', daily: '/taeglich', retro340: '/151', c151: '/151' };
@@ -34,6 +37,8 @@ interface BoardRow {
   points: number;
   score: number;
   me: boolean;
+  /** Team dieser Zeile (Dialog „Team ansehen") */
+  source: EntrySource;
 }
 
 /** Fehler einer Abfrage: Code der API (falls vorhanden) + deutsche Meldung – übersetzt wird beim Anzeigen. */
@@ -57,14 +62,81 @@ const errorText = (t: Messages, e: LoadError) => t.leaderboard.apiError(e.code, 
 const periodText = (t: Messages, period: Period, day: string) =>
   period === 'today' ? t.leaderboard.todayOn(t.game.day(day)) : t.leaderboard.allTime;
 
-function BoardTable({ rows, mine }: { rows: BoardRow[]; mine: BoardRow | null }) {
+interface BoardTableProps {
+  rows: BoardRow[];
+  mine: BoardRow | null;
+  /**
+   * „Rangliste neu laden" im Dialog (Team nicht mehr in der Rangliste) – mit dem Spieler der
+   * geöffneten Zeile. Wird aufgerufen, bevor der Dialog schließt: Der Aufrufer setzt den Fokus
+   * auf ein Element, das das Neuladen überdauert (die Tabelle samt Knopf verschwindet dabei).
+   */
+  onReload?: (player: string) => void;
+  /** Frisch geladene Tabelle: Fokus an den Team-Knopf dieses Spielers (sofern er noch nirgends sonst ist) */
+  focusPlayer?: string | null;
+}
+
+/**
+ * Tabelle der Rangliste. Jede Zeile öffnet ihr Team im Dialog: per Knopf am Teamnamen
+ * (Tastatur, Screenreader) oder per Klick/Tipp irgendwo in die Zeile. Beim Schließen kehrt
+ * der Fokus zum Knopf der Zeile zurück.
+ */
+function BoardTable({ rows, mine, onReload, focusPlayer = null }: BoardTableProps) {
   const t = useT();
+  const [open, setOpen] = useState<EntrySource | null>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  /** Team-Knöpfe je Zeile (BoardRow.key) */
+  const buttons = useRef(new Map<string, HTMLButtonElement>());
+
+  // Nur beim Einhängen (= nach dem Neuladen aus dem Dialog): Fokus vom Panel an den Team-Knopf
+  // desselben Spielers – aber nur, wenn der Fokus noch auf dem Panel (oder nirgends) steht.
+  useEffect(() => {
+    if (!focusPlayer) return;
+    const active = document.activeElement;
+    if (active && active !== document.body && !active.contains(wrapRef.current)) return;
+    const row = [...rows, ...(mine ? [mine] : [])].find((r) => r.player === focusPlayer);
+    if (row) buttons.current.get(row.key)?.focus();
+    // Bewusst ohne Abhängigkeiten: nur die frisch eingehängte Tabelle, nicht jedes spätere Rendern.
+  }, []);
+
+  /** Knopf fokussieren (Safari tut das beim Klick nicht) – der Dialog gibt den Fokus dorthin zurück. */
+  const openFrom = (button: HTMLElement | null, source: EntrySource) => {
+    button?.focus({ preventScroll: true });
+    setOpen(source);
+  };
+  const onRowClick = (e: MouseEvent<HTMLTableRowElement>, r: BoardRow) => {
+    // Klicks auf den Knopf (oder einen Link) erledigt der selbst; markierter Text bleibt markiert
+    if ((e.target as Element).closest?.('button, a')) return;
+    if (window.getSelection?.()?.toString()) return;
+    openFrom(e.currentTarget.querySelector<HTMLElement>('.lb-team'), r.source);
+  };
+
   const line = (r: BoardRow) => (
-    <tr key={r.key} className={r.me ? 'is-user' : ''} aria-current={r.me ? 'true' : undefined}>
+    <tr
+      key={r.key}
+      className={`lb-row ${r.me ? 'is-user' : ''}`}
+      aria-current={r.me ? 'true' : undefined}
+      onClick={(e) => onRowClick(e, r)}
+    >
       <td>{r.rank}</td>
-      <td className="left">
-        <strong>{r.player}</strong>
-        {r.teamName && <span className="rating">{r.teamName}</span>}
+      <td className="left lb-who">
+        <strong className="lb-who__player">{r.player}</strong>
+        <button
+          ref={(el) => {
+            if (el) buttons.current.set(r.key, el);
+            else buttons.current.delete(r.key);
+          }}
+          type="button"
+          className="lb-team"
+          aria-haspopup="dialog"
+          aria-label={t.leaderboard.viewTeamOf(r.teamName, r.player)}
+          title={t.leaderboard.viewTeam}
+          onClick={(e) => openFrom(e.currentTarget, r.source)}
+        >
+          <span className="lb-team__name">{r.teamName || t.leaderboard.viewTeam}</span>
+          <svg className="lb-team__icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
+            <path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
       </td>
       <td className="mono">{formatRecord(r.record)}</td>
       <td>{r.points}</td>
@@ -74,7 +146,7 @@ function BoardTable({ rows, mine }: { rows: BoardRow[]; mine: BoardRow | null })
     </tr>
   );
   return (
-    <div className="table-scroll">
+    <div className="table-scroll" ref={wrapRef}>
       <table className="league-table leaderboard__table">
         <thead>
           <tr>
@@ -99,6 +171,21 @@ function BoardTable({ rows, mine }: { rows: BoardRow[]; mine: BoardRow | null })
           </tbody>
         )}
       </table>
+      {open && (
+        <EntryDialog
+          source={open}
+          onClose={() => setOpen(null)}
+          onReloadBoard={
+            onReload &&
+            (() => {
+              // Erst den Fokus in Sicherheit bringen (Panel), dann schließen: Der Knopf, an den der
+              // Dialog den Fokus zurückgeben würde, verschwindet mit der neu ladenden Tabelle.
+              onReload(open.summary.player);
+              setOpen(null);
+            })
+          }
+        />
+      )}
     </div>
   );
 }
@@ -115,11 +202,22 @@ function EmptyBoard({ challenge, children }: { challenge: ChallengeKey; children
   );
 }
 
+interface OnlineBoardProps {
+  challenge: ChallengeKey;
+  period: Period;
+  reload: number;
+  onRetry: () => void;
+  /** Panel um die Tabelle – bekommt den Fokus, während die Rangliste aus dem Dialog neu lädt */
+  panelRef: RefObject<HTMLElement | null>;
+}
+
 /** Online-Rangliste (Cloudflare) – nur Runs, die online gestartet wurden. */
-function OnlineBoard({ challenge, period, reload, onRetry }: { challenge: ChallengeKey; period: Period; reload: number; onRetry: () => void }) {
+function OnlineBoard({ challenge, period, reload, onRetry, panelRef }: OnlineBoardProps) {
   const t = useT();
   const key = `${challenge}:${period}:${reload}`;
   const [loaded, setLoaded] = useState<Loaded<LeaderboardResponse> | null>(null);
+  /** Neuladen aus dem Dialog: Spieler, dessen Team-Knopf danach den Fokus bekommt; `from` = alter Schlüssel */
+  const [refocus, setRefocus] = useState<{ player: string; from: string } | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -135,19 +233,47 @@ function OnlineBoard({ challenge, period, reload, onRetry }: { challenge: Challe
   const current = loaded?.key === key ? loaded : null;
   const day = current?.data?.day ?? dayKey();
   const players = current?.data?.players;
+  /** Spieler, dessen Knopf die frisch geladene Tabelle fokussiert (nur nach dem Neuladen aus dem Dialog) */
+  const focusPlayer = refocus && current && current.key !== refocus.from ? refocus.player : null;
+
+  // Neu geladen (Tabelle, leer oder Fehler): Der Wunsch ist erledigt – die Tabelle hat ihn beim Einhängen gelesen.
+  useEffect(() => {
+    if (focusPlayer != null) setRefocus(null);
+  }, [focusPlayer]);
+
+  /** „Rangliste neu laden" im Dialog: Fokus aufs Panel (bleibt beim Neuladen stehen), dann neu laden. */
+  const reloadFromDialog = (player: string) => {
+    panelRef.current?.focus({ preventScroll: true });
+    setRefocus({ player, from: key });
+    onRetry();
+  };
   const meta = [periodText(t, period, day)];
   if (players) meta.push(t.leaderboard.players(players));
 
-  const toRow = (r: LeaderboardResponse['rows'][number]): BoardRow => ({
-    key: r.entryId,
-    rank: r.rank,
-    player: r.player,
-    teamName: r.teamName,
-    record: r.record,
-    points: r.points,
-    score: r.score,
-    me: r.me,
-  });
+  const toRow = (r: LeaderboardResponse['rows'][number]): BoardRow => {
+    const summary: EntrySummary = {
+      challenge,
+      day: r.day,
+      player: r.player,
+      teamName: r.teamName,
+      record: r.record,
+      points: r.points,
+      score: r.score,
+      formation: r.formation,
+      rank: r.rank,
+    };
+    return {
+      key: r.entryId,
+      rank: r.rank,
+      player: r.player,
+      teamName: r.teamName,
+      record: r.record,
+      points: r.points,
+      score: r.score,
+      me: r.me,
+      source: { kind: 'online', entryId: r.entryId, summary },
+    };
+  };
 
   let body: ReactNode;
   if (!current) {
@@ -166,7 +292,7 @@ function OnlineBoard({ challenge, period, reload, onRetry }: { challenge: Challe
   } else {
     const { rows, mine } = current.data;
     const outside = mine && !rows.some((r) => r.me) ? toRow(mine) : null;
-    body = <BoardTable rows={rows.map(toRow)} mine={outside} />;
+    body = <BoardTable rows={rows.map(toRow)} mine={outside} onReload={reloadFromDialog} focusPlayer={focusPlayer} />;
   }
 
   return (
@@ -211,8 +337,20 @@ function LocalBoard({ challenge, period, me }: { challenge: ChallengeKey; period
       </EmptyBoard>
     );
   } else {
-    const rows = current.data.map(
-      (e, i): BoardRow => ({
+    const rows = current.data.map((e, i): BoardRow => {
+      const detail = localEntryDetail(e);
+      const summary: EntrySummary = {
+        challenge: e.challenge,
+        day: detail?.day ?? '',
+        player: e.player,
+        teamName: e.teamName,
+        record: e.record,
+        points: e.points,
+        score: e.score,
+        formation: e.formation,
+        rank: i + 1,
+      };
+      return {
         key: e.id,
         rank: i + 1,
         player: e.player,
@@ -221,8 +359,9 @@ function LocalBoard({ challenge, period, me }: { challenge: ChallengeKey; period
         points: e.points,
         score: e.score,
         me: e.player.trim().toLowerCase() === self,
-      }),
-    );
+        source: { kind: 'local', detail, summary },
+      };
+    });
     body = <BoardTable rows={rows} mine={null} />;
   }
 
@@ -255,6 +394,8 @@ export function Leaderboard() {
   /** Name abgelehnt (leer, „Trainer", vom Server) – Meldung direkt am Feld */
   const nameError = useFieldError();
   const online = apiOnline === true && source === 'online';
+  /** Panel der Rangliste – Fokusziel, während die Tabelle neu lädt */
+  const panelRef = useRef<HTMLElement>(null);
 
   const select = (c: ChallengeKey, p: Period) => {
     setParams(
@@ -359,7 +500,7 @@ export function Leaderboard() {
         />
       </div>
 
-      <section className="card" role="tabpanel" aria-label={t.game.challenge[challenge]}>
+      <section className="card" role="tabpanel" aria-label={t.game.challenge[challenge]} ref={panelRef} tabIndex={-1}>
         {apiOnline == null ? (
           <p className="muted">{t.leaderboard.loading}</p>
         ) : online ? (
@@ -368,6 +509,7 @@ export function Leaderboard() {
             period={period}
             reload={reload}
             onRetry={() => setReload((r) => r + 1)}
+            panelRef={panelRef}
           />
         ) : (
           <LocalBoard challenge={challenge} period={period} me={savedName} />

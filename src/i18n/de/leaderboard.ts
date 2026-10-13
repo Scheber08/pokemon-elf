@@ -48,6 +48,41 @@ const leaderboard = {
    * auf Deutsch wird die Meldung unverändert gezeigt.
    */
   apiError: (_code: string | null, message: string) => message,
+  /** Tooltip des Team-Knopfs in jeder Tabellenzeile */
+  viewTeam: 'Team ansehen',
+  /**
+   * Zugänglicher Name des Team-Knopfs: „Team ansehen: Pallet Power von Ash". Er enthält immer den
+   * sichtbaren Text (Teamname bzw. „Team ansehen") – ohne Teamnamen: „Team ansehen: Team von Ash".
+   */
+  viewTeamOf: (team: string, player: string) =>
+    team ? `Team ansehen: ${team} von ${player}` : `Team ansehen: Team von ${player}`,
+  /** Dialog mit dem Team eines Eintrags */
+  entry: {
+    /** Titel, wenn der Eintrag keinen Teamnamen hat */
+    untitled: (player: string) => `Team von ${player}`,
+    /** „34–0 Challenge · 12.10.2026" (date null: Tag unbekannt) */
+    kicker: (challenge: string, date: string | null) => (date ? `${challenge} · ${date}` : challenge),
+    /** „von Ash · Platz 3" */
+    byline: (player: string, rank: number | null) => (rank != null ? `von ${player} · Platz ${rank}` : `von ${player}`),
+    record: 'Bilanz',
+    /** Vorgelesene Bilanz statt „30–2–2" */
+    recordSpoken: (w: number, d: number, l: number) =>
+      `${w} ${w === 1 ? 'Sieg' : 'Siege'}, ${d} Unentschieden, ${l} ${l === 1 ? 'Niederlage' : 'Niederlagen'}`,
+    points: 'Punkte',
+    score: 'Team-Score',
+    formation: 'Formation',
+    /** aria-label des Spielfelds */
+    pitchAria: (team: string, formation: string) => `Aufstellung von ${team} (${formation})`,
+    sheetTitle: 'Aufstellung',
+    loading: 'Team wird geladen …',
+    gone: 'Dieses Team ist nicht mehr in der Rangliste.',
+    goneHint: 'Vermutlich gibt es inzwischen einen besseren Run – lade die Rangliste neu.',
+    reloadBoard: 'Rangliste neu laden',
+    loadError: (message: string) => `Team nicht erreichbar: ${message}`,
+    unreadable: 'Diese Aufstellung lässt sich nicht anzeigen.',
+    openInBuilder: 'Im Builder öffnen',
+    openInBuilderHint: 'Ersetzt deine Aufstellung im Builder.',
+  },
 };
 
 export default leaderboard;

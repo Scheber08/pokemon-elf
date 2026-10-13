@@ -264,7 +264,8 @@ describe('health & routing', () => {
   });
 
   it('unbekannte Routen → 404', async () => {
-    for (const path of ['/api/nope', '/api/runs', '/api', '/api/runs/start/extra']) {
+    const entryId = crypto.randomUUID();
+    for (const path of ['/api/nope', '/api/runs', '/api', '/api/runs/start/extra', '/api/entries', `/api/entries/${entryId}/x`]) {
       const res = await get<ApiErrorBody>(path);
       expect(res.status, path).toBe(404);
       expect(res.body.error).toBe('not_found');
@@ -282,6 +283,9 @@ describe('health & routing', () => {
     expect(b.headers.get('allow')).toBe('GET');
     expect((await call('DELETE', '/api/player')).status).toBe(405);
     expect((await post('/api/leaderboard', {})).status).toBe(405);
+    const c = await post<ApiErrorBody>(`/api/entries/${crypto.randomUUID()}`, {});
+    expect(c.status).toBe(405);
+    expect(c.headers.get('allow')).toBe('GET');
   });
 
   it('unerwartete Fehler → 500 mit deutscher Meldung, ohne Details', async () => {
