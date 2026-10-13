@@ -184,9 +184,11 @@ const online: Messages['online'] = {
   onlyFitting: 'Matching only',
   blockedRoll: 'Doesn’t match the roll',
   blockedLegends: (max) => `Limit: ${plural(max, 'legendary', 'legendaries')}`,
+  blockedUltraBeasts: (max) => `Limit: ${plural(max, 'Ultra Beast', 'Ultra Beasts')}`,
   favouriteNoMatch: (name) => `${name} doesn’t match your roll – pick one that does.`,
   hintRoll: (region, type) => ` Wanted: ${region} + ${type}.`,
   legendsCount: 'Legendaries',
+  ultraBeastsCount: 'Ultra Beasts',
 
   // ------------------------------------------------ Timer
   cpuPicking: ' CPU picking …',
@@ -275,6 +277,7 @@ const online: Messages['online'] = {
       badTypes: 'Invalid types',
       minOneType: 'At least one type',
       badMaxLegends: 'Invalid legendary limit',
+      badMaxUltraBeasts: 'Invalid Ultra Beast limit',
       badRollMode: 'Invalid random mode',
       badRerolls: 'Invalid rerolls',
       noRoll: 'There’s no roll right now',
@@ -283,16 +286,17 @@ const online: Messages['online'] = {
       noOtherRoll: 'No other roll possible',
       noSlot: 'No free spot left',
       legendLimitOne: 'At most one legendary/mythical per team',
+      ubLimitOne: 'At most one Ultra Beast per team',
     },
     fmt: {
       between: (min, max) => `Between ${min} and ${max} teams`,
       poolFits: (teams, rounds) =>
         `The pool is only big enough for ${plural(teams, 'team', 'teams')} of ${rounds} Pokémon each`,
       poolFitsLegends: (teams, rounds) =>
-        `The pool is only big enough for ${plural(teams, 'team', 'teams')} of ${rounds} Pokémon each (legendary limit)`,
+        `The pool is only big enough for ${plural(teams, 'team', 'teams')} of ${rounds} Pokémon each (limits)`,
       poolHas: (pool, needed) => `The pool only has ${pool} Pokémon, ${needed} are needed`,
       poolCapLegends: (capacity, needed) =>
-        `With the legendary limit the pool only covers ${capacity} picks, ${needed} are needed`,
+        `With the limits the pool only covers ${capacity} picks, ${needed} are needed`,
       tooManyTeams: (n) => `${plural(n, 'team has', 'teams have')} already joined`,
       tooFewTeams: (min) => `At least ${plural(min, 'team', 'teams')} – invite people or add CPU teams`,
       taken: (name) => `${name} is already taken`,
@@ -302,6 +306,7 @@ const online: Messages['online'] = {
       leagueNameTooLong: (max) => `League name is too long (max. ${plural(max, 'character', 'characters')})`,
       notRoll: (name) => `${name} doesn’t match the roll`,
       legendLimit: (max) => `At most ${plural(max, 'legendary/mythical', 'legendaries/mythicals')} per team`,
+      ubLimit: (max) => `At most ${plural(max, 'Ultra Beast', 'Ultra Beasts')} per team`,
     },
     code: {
       bad_settings: 'Invalid settings',

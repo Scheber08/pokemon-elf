@@ -52,6 +52,8 @@ export const DRAFT_LIMITS = {
   lobbyHostGraceMs: 300_000,
   /** Erlaubte Legendären-Limits pro Team (null = unbegrenzt) */
   maxLegends: [1, 2, 3] as const,
+  /** Erlaubte Ultrabestien-Limits pro Team (null = unbegrenzt) */
+  maxUltraBeasts: [1, 2, 3] as const,
   /** Höchstens so viele Typ- bzw. Regions-Rerolls pro Team und Draft */
   rerollsMax: 3,
 } as const;
@@ -109,6 +111,13 @@ export interface DraftSettings {
    * null = unbegrenzt, sonst 1–3. Wirkt nur, wenn legendary oder mythical an ist.
    */
   maxLegends: number | null;
+  /** Ultrabestien im Pool (ältere Ligen ohne das Feld: ja – dort waren sie normale Pokémon) */
+  ultraBeasts: boolean;
+  /**
+   * Höchstens so viele Ultrabestien pro Team (Standardschütze zählt mit): null = unbegrenzt,
+   * sonst 1–3. Wirkt nur, wenn ultraBeasts an ist.
+   */
+  maxUltraBeasts: number | null;
   /** Standardschütze → 12. Runde */
   setPiece: boolean;
   /** Maximale Teamzahl (2–8) */
@@ -147,6 +156,8 @@ export const DEFAULT_DRAFT_SETTINGS: DraftSettings = {
   legendary: false,
   mythical: false,
   maxLegends: null,
+  ultraBeasts: true,
+  maxUltraBeasts: null,
   setPiece: false,
   maxTeams: 4,
   pickSeconds: 60,

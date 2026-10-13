@@ -235,7 +235,7 @@ describe('Einstellungen: neue Felder', () => {
     expect(maxTeamsForPool({ ...gen7, maxLegends: 3 }, ALL)).toBe(8);
     expect(codeOf(() => normalizeSettings({ ...limited, maxTeams: 8 }, DEFAULT_DRAFT_SETTINGS, ALL))).toBe('pool_too_small');
     expect(messageOf(() => normalizeSettings({ ...limited, maxTeams: 8 }, DEFAULT_DRAFT_SETTINGS, ALL))).toBe(
-      'Der Pool reicht nur für 7 Teams à 11 Pokémon (Legendären-Limit)',
+      'Der Pool reicht nur für 7 Teams à 11 Pokémon (Limits)',
     );
     expect(normalizeSettings({ ...limited, maxTeams: 7 }, DEFAULT_DRAFT_SETTINGS, ALL).maxTeams).toBe(7);
     // In der Lobby: Limit einschalten geht erst, wenn die Teamzahl passt
@@ -255,7 +255,7 @@ describe('Einstellungen: neue Felder', () => {
     const tight: DraftState = { ...s, settings: { ...s.settings, maxLegends: 1 } };
     const cap = poolPickCapacity(tight.settings, 8, ALL);
     expect(codeOf(() => start(tight))).toBe('pool_too_small');
-    expect(messageOf(() => start(tight))).toBe(`Mit dem Legendären-Limit reicht der Pool nur für ${cap} Picks, gebraucht werden 88`);
+    expect(messageOf(() => start(tight))).toBe(`Mit den Limits reicht der Pool nur für ${cap} Picks, gebraucht werden 88`);
     expect(start(s).phase).toBe('drafting');
   });
 
@@ -319,6 +319,8 @@ describe('Ältere Ligen und Clients (region / legends)', () => {
       legendary: true,
       mythical: true,
       maxLegends: null,
+      ultraBeasts: true,
+      maxUltraBeasts: null,
       setPiece: true,
       maxTeams: 6,
       pickSeconds: 30,
@@ -556,7 +558,7 @@ describe('Legendären-Limit pro Team', () => {
     expect(poolPickCapacity(settings, 2, list)).toBe(21);
     expect(maxTeamsForPool(settings, list)).toBe(1);
     expect(messageOf(() => lobby({ legendary: true, maxLegends: 1, maxTeams: 2 }, { list }))).toBe(
-      'Der Pool reicht nur für 1 Teams à 11 Pokémon (Legendären-Limit)',
+      'Der Pool reicht nur für 1 Teams à 11 Pokémon (Limits)',
     );
     // Ohne Limit bzw. mit Limit 2 geht es
     expect(maxTeamsForPool({ ...settings, maxLegends: null }, list)).toBe(2);

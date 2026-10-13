@@ -126,6 +126,10 @@ const draft = {
     unlimited: 'Unbegrenzt',
     maxLegendsNote: 'Legendäre und Mysteriöse zusammen – der Standardschütze zählt mit.',
     maxLegendsOff: 'Nur mit Legendären oder Mysteriösen im Pool.',
+    ultraBeasts: 'Ultrabestien',
+    maxUltraBeasts: 'Ultrabestien pro Team',
+    maxUltraBeastsNote: 'Eigene Kategorie, unabhängig von den Legendären – der Standardschütze zählt mit.',
+    maxUltraBeastsOff: 'Nur mit Ultrabestien im Pool.',
     /** Zufallsmodus (wie die 34–0-Challenge) */
     roll: 'Zufallsmodus',
     rollPick: 'Pro Pick',
@@ -174,6 +178,8 @@ const draft = {
     mythicalOnly: 'mit Mysteriösen, ohne Legendäre',
     withoutLegends: 'ohne Legendäre und Mysteriöse',
     maxLegends: (n: number) => (n === 1 ? 'höchstens ein Legendäres pro Team' : `höchstens ${n} Legendäre pro Team`),
+    withoutUltraBeasts: 'ohne Ultrabestien',
+    maxUltraBeasts: (n: number) => (n === 1 ? 'höchstens eine Ultrabestie pro Team' : `höchstens ${n} Ultrabestien pro Team`),
     rollPick: 'Zufallsmodus: pro Pick',
     rollRound: 'Zufallsmodus: pro Runde',
     rerolls: (type: number, region: number) => `Rerolls: ${type}× Typ, ${region}× Region`,
@@ -205,6 +211,8 @@ const draft = {
     /** Legendäre im Team bei einem Limit („★ 1/2") – Tooltip */
     legendsTitle: (n: number, max: number) =>
       `${n} von höchstens ${max === 1 ? 'einem Legendären/Mysteriösen' : `${max} Legendären/Mysteriösen`}`,
+    /** Ultrabestien im Team bei einem Limit („UB 1/2") – Tooltip */
+    ultraBeastsTitle: (n: number, max: number) => `${n} von höchstens ${max === 1 ? 'einer Ultrabestie' : `${max} Ultrabestien`}`,
     /** Wurf, unter dem ein Pick fiel (Verlauf) */
     rollTitle: (region: string, type: string) => `Wurf: ${region} + ${type}`,
   },

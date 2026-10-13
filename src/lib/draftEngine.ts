@@ -22,6 +22,7 @@
 import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { TYPE_KEYS } from '../config/pokemonTypes';
 import { POSITIONS } from '../config/positions';
+import { isUltraBeast } from '../config/categories';
 import { CLUB_NAMES } from '../config/season';
 import type { FormationId, Pokemon, RegionFilter, TypeKey } from '../types';
 import {
@@ -217,6 +218,9 @@ const nonEmpty = <T>(v: T[] | undefined): T[] | undefined => (v && v.length ? v 
 const isMaxLegends = (v: unknown): v is number | null =>
   v === null || (DRAFT_LIMITS.maxLegends as readonly unknown[]).includes(v);
 
+const isMaxUltraBeasts = (v: unknown): v is number | null =>
+  v === null || (DRAFT_LIMITS.maxUltraBeasts as readonly unknown[]).includes(v);
+
 const isRerollCount = (v: unknown): v is number =>
   typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= DRAFT_LIMITS.rerollsMax;
 
@@ -267,6 +271,8 @@ export function upgradeSettings(raw: unknown): DraftSettings {
     legendary: isBool(r.legendary) ? r.legendary : (legends ?? d.legendary),
     mythical: isBool(r.mythical) ? r.mythical : (legends ?? d.mythical),
     maxLegends: isMaxLegends(r.maxLegends) ? r.maxLegends : d.maxLegends,
+    ultraBeasts: isBool(r.ultraBeasts) ? r.ultraBeasts : d.ultraBeasts,
+    maxUltraBeasts: isMaxUltraBeasts(r.maxUltraBeasts) ? r.maxUltraBeasts : d.maxUltraBeasts,
     setPiece: isBool(r.setPiece) ? r.setPiece : d.setPiece,
     maxTeams:
       typeof r.maxTeams === 'number' && Number.isInteger(r.maxTeams) && r.maxTeams >= DRAFT_LIMITS.minTeams && r.maxTeams <= DRAFT_LIMITS.maxTeams
@@ -301,10 +307,34 @@ export function upgradeState(state: DraftState): DraftState {
 }
 
 /** Pool-relevanter Teil der Einstellungen */
-export type DraftPoolSettings = Pick<DraftSettings, 'gens' | 'types' | 'legendary' | 'mythical'>;
+export type DraftPoolSettings = Pick<DraftSettings, 'gens' | 'types' | 'legendary' | 'mythical'> &
+  Partial<Pick<DraftSettings, 'ultraBeasts'>>;
 
 /** Legendär oder mysteriös? (zählt fürs Legendären-Limit) */
 export const isLegend = (p: Pick<Pokemon, 'leg' | 'myth'>): boolean => !!(p.leg || p.myth);
+
+/**
+ * Begrenzte Kategorien – je Team höchstens settings[LIMIT_SETTING[kind]] davon (null = unbegrenzt):
+ * 'legend' (Legendäre + Mysteriöse), 'ub' (Ultrabestien). Jedes Pokémon gehört zu höchstens einer.
+ */
+export type LimitKind = 'legend' | 'ub';
+export const LIMIT_KINDS: readonly LimitKind[] = ['legend', 'ub'];
+
+/** Einstellung mit dem Limit der Kategorie */
+export const LIMIT_SETTING = { legend: 'maxLegends', ub: 'maxUltraBeasts' } as const satisfies Record<LimitKind, keyof DraftSettings>;
+
+/** Limits der Einstellungen (fehlen sie – ältere Stände –, gilt: unbegrenzt) */
+export type DraftLimitSettings = Partial<Pick<DraftSettings, 'maxLegends' | 'maxUltraBeasts'>>;
+
+/** Begrenzte Kategorie des Pokémon (oder null). */
+export function limitKindOf(p: Pick<Pokemon, 'id' | 'leg' | 'myth'>): LimitKind | null {
+  if (isLegend(p)) return 'legend';
+  if (isUltraBeast(p)) return 'ub';
+  return null;
+}
+
+/** Limit der Kategorie pro Team – null = unbegrenzt. */
+export const limitOf = (settings: DraftLimitSettings, kind: LimitKind): number | null => settings[LIMIT_SETTING[kind]] ?? null;
 
 const poolCache = new WeakMap<Pokemon[], Map<string, Pokemon[]>>();
 
@@ -320,7 +350,8 @@ export function poolOf(settings: DraftPoolSettings, list: Pokemon[]): Pokemon[] 
     byKey = new Map();
     poolCache.set(list, byKey);
   }
-  const key = `${s.gens.join(',')}|${s.types.join(',')}|${s.legendary ? 1 : 0}${s.mythical ? 1 : 0}`;
+  const ultra = s.ultraBeasts ?? true;
+  const key = `${s.gens.join(',')}|${s.types.join(',')}|${s.legendary ? 1 : 0}${s.mythical ? 1 : 0}${ultra ? 1 : 0}`;
   let pool = byKey.get(key);
   if (!pool) {
     const gens = new Set(s.gens);
@@ -331,7 +362,8 @@ export function poolOf(settings: DraftPoolSettings, list: Pokemon[]): Pokemon[] 
           gens.has(p.gen) &&
           p.types.some((t) => types.has(t)) &&
           (!p.leg || s.legendary) &&
-          (!p.myth || s.mythical),
+          (!p.myth || s.mythical) &&
+          (ultra || !isUltraBeast(p)),
       )
       .sort((a, b) => a.id - b.id);
     byKey.set(key, pool);
@@ -339,30 +371,39 @@ export function poolOf(settings: DraftPoolSettings, list: Pokemon[]): Pokemon[] 
   return pool;
 }
 
-const legendCountCache = new WeakMap<Pokemon[], number>();
+const kindCountCache = new WeakMap<Pokemon[], Record<LimitKind, number>>();
 
-/** Legendäre + Mysteriöse in einem (zwischengespeicherten) Pool. */
-function legendCount(pool: Pokemon[]): number {
-  let n = legendCountCache.get(pool);
-  if (n === undefined) {
-    n = pool.filter(isLegend).length;
-    legendCountCache.set(pool, n);
+/** Pokémon je begrenzter Kategorie in einem (zwischengespeicherten) Pool. */
+function kindCounts(pool: Pokemon[]): Record<LimitKind, number> {
+  let n = kindCountCache.get(pool);
+  if (!n) {
+    n = { legend: 0, ub: 0 };
+    for (const p of pool) {
+      const kind = limitKindOf(p);
+      if (kind) n[kind]++;
+    }
+    kindCountCache.set(pool, n);
   }
   return n;
 }
 
-/** Pool-Einstellungen samt Legendären-Limit (fehlt es – ältere Stände –, gilt: unbegrenzt) */
-export type DraftCapacitySettings = DraftPoolSettings & Partial<Pick<DraftSettings, 'maxLegends'>>;
+/** Pool-Einstellungen samt Limits (fehlen sie – ältere Stände –, gilt: unbegrenzt) */
+export type DraftCapacitySettings = DraftPoolSettings & DraftLimitSettings;
 
 /**
- * Wie viele Picks der Pool für `teams` Teams hergibt: alle Nicht-Legendären, Legendäre und
- * Mysteriöse aber nur so viele, wie das Legendären-Limit aufnimmt (teams × maxLegends).
+ * Wie viele Picks der Pool für `teams` Teams hergibt: alle unbegrenzten Pokémon, von jeder
+ * begrenzten Kategorie (Legendäre, Ultrabestien) aber nur so viele, wie ihr Limit aufnimmt
+ * (teams × Limit).
  */
 export function poolPickCapacity(settings: DraftCapacitySettings, teams: number, list: Pokemon[]): number {
   const pool = poolOf(settings, list);
-  const legends = legendCount(pool);
-  const max = settings.maxLegends ?? null;
-  return pool.length - legends + (max == null ? legends : Math.min(legends, Math.max(0, teams) * max));
+  const counts = kindCounts(pool);
+  let capacity = pool.length;
+  for (const kind of LIMIT_KINDS) {
+    const max = limitOf(settings, kind);
+    if (max != null) capacity -= Math.max(0, counts[kind] - Math.max(0, teams) * max);
+  }
+  return capacity;
 }
 
 /**
@@ -372,7 +413,7 @@ export function poolPickCapacity(settings: DraftCapacitySettings, teams: number,
 export function maxTeamsForPool(settings: DraftCapacitySettings & Pick<DraftSettings, 'setPiece'>, list: Pokemon[]): number {
   const r = rounds(settings);
   let teams = Math.floor(poolOf(settings, list).length / r);
-  // Jedes weitere Team braucht r Picks, das Limit gibt höchstens maxLegends (≤ 3) dazu → monoton
+  // Jedes weitere Team braucht r Picks, die Limits geben höchstens je 3 dazu → monoton
   while (teams > 0 && poolPickCapacity(settings, teams, list) < teams * r) teams--;
   return teams;
 }
@@ -391,6 +432,13 @@ export function lobbyRegionOf(settings: Pick<DraftSettings, 'gens'>): LobbyRegio
 /** Legendäre oder Mysteriöse im Pool? (Lobby-Spalte legends; das Limit wirkt nur dann) */
 export const poolHasLegends = (settings: Pick<DraftSettings, 'legendary' | 'mythical'>): boolean =>
   !!(settings.legendary || settings.mythical);
+
+/** Ultrabestien im Pool? (das Ultrabestien-Limit wirkt nur dann; ältere Stände ohne das Feld: ja) */
+export const poolHasUltraBeasts = (settings: Partial<Pick<DraftSettings, 'ultraBeasts'>>): boolean => settings.ultraBeasts ?? true;
+
+/** Ist die Kategorie im Pool (und ihr Limit damit wirksam)? */
+export const poolHasKind = (settings: Pick<DraftSettings, 'legendary' | 'mythical'> & Partial<Pick<DraftSettings, 'ultraBeasts'>>, kind: LimitKind) =>
+  kind === 'legend' ? poolHasLegends(settings) : poolHasUltraBeasts(settings);
 
 /**
  * Prüft und vervollständigt Einstellungen (wirft DraftError bei Unsinn). Nimmt auch die
@@ -422,7 +470,7 @@ export function normalizeSettings(patch: DraftSettingsPatch, base: DraftSettings
     if (!types.length) fail('bad_settings', 'Mindestens ein Typ');
     s.types = types;
   }
-  for (const key of ['legendary', 'mythical', 'setPiece', 'snake'] as const) {
+  for (const key of ['legendary', 'mythical', 'ultraBeasts', 'setPiece', 'snake'] as const) {
     if (p[key] !== undefined) {
       if (!isBool(p[key])) fail('bad_settings', 'Ungültige Einstellung');
       s[key] = p[key] as boolean;
@@ -431,6 +479,10 @@ export function normalizeSettings(patch: DraftSettingsPatch, base: DraftSettings
   if (p.maxLegends !== undefined) {
     if (!isMaxLegends(p.maxLegends)) fail('bad_settings', 'Ungültiges Legendären-Limit');
     s.maxLegends = p.maxLegends;
+  }
+  if (p.maxUltraBeasts !== undefined) {
+    if (!isMaxUltraBeasts(p.maxUltraBeasts)) fail('bad_settings', 'Ungültiges Ultrabestien-Limit');
+    s.maxUltraBeasts = p.maxUltraBeasts;
   }
   if (p.maxTeams !== undefined) {
     if (!Number.isInteger(p.maxTeams) || p.maxTeams < DRAFT_LIMITS.minTeams || p.maxTeams > DRAFT_LIMITS.maxTeams) {
@@ -457,9 +509,9 @@ export function normalizeSettings(patch: DraftSettingsPatch, base: DraftSettings
   }
   const fits = maxTeamsForPool(s, list);
   if (s.maxTeams > fits) {
-    // Liegt es am Legendären-Limit (ohne es reichte der Pool für mehr Teams), steht das dabei
+    // Liegt es an den Limits (ohne sie reichte der Pool für mehr Teams), steht das dabei
     const byLimit = fits < Math.floor(poolOf(s, list).length / rounds(s));
-    fail('pool_too_small', `Der Pool reicht nur für ${fits} Teams à ${rounds(s)} Pokémon${byLimit ? ' (Legendären-Limit)' : ''}`);
+    fail('pool_too_small', `Der Pool reicht nur für ${fits} Teams à ${rounds(s)} Pokémon${byLimit ? ' (Limits)' : ''}`);
   }
   return s;
 }
@@ -762,22 +814,35 @@ function poolIdsOf(pool: Pokemon[]): Set<number> {
   return ids;
 }
 
-/** Legendäre + Mysteriöse im Team (der Standardschütze zählt mit). */
-export function legendsOf(team: Pick<DraftTeam, 'slots' | 'ss'>, list: Pokemon[]): number {
+/** Pokémon der begrenzten Kategorie im Team (der Standardschütze zählt mit). */
+export function kindOf(team: Pick<DraftTeam, 'slots' | 'ss'>, kind: LimitKind, list: Pokemon[]): number {
   const byId = byIdOf(list);
   let n = 0;
   for (const id of [...team.slots, team.ss]) {
     const p = id != null ? byId.get(id) : undefined;
-    if (p && isLegend(p)) n++;
+    if (p && limitKindOf(p) === kind) n++;
   }
   return n;
 }
 
-/** Hat das Team sein Legendären-Limit erreicht? (ohne Limit: nie) */
-function legendLimitHit(settings: Pick<DraftSettings, 'maxLegends'>, team: DraftTeam, list: Pokemon[]): boolean {
-  const max = settings.maxLegends ?? null;
-  return max != null && legendsOf(team, list) >= max;
+/** Legendäre + Mysteriöse im Team (der Standardschütze zählt mit). */
+export const legendsOf = (team: Pick<DraftTeam, 'slots' | 'ss'>, list: Pokemon[]): number => kindOf(team, 'legend', list);
+
+/** Kategorien, deren Limit das Team erreicht hat (ohne Limit: nie). */
+function limitsHit(settings: DraftLimitSettings, team: DraftTeam, list: Pokemon[]): Set<LimitKind> {
+  const hit = new Set<LimitKind>();
+  for (const kind of LIMIT_KINDS) {
+    const max = limitOf(settings, kind);
+    if (max != null && kindOf(team, kind, list) >= max) hit.add(kind);
+  }
+  return hit;
 }
+
+/** Sperrt eines der erreichten Limits das Pokémon? */
+const blockedBy = (hit: Set<LimitKind>, p: Pokemon): LimitKind | null => {
+  const kind = hit.size ? limitKindOf(p) : null;
+  return kind && hit.has(kind) ? kind : null;
+};
 
 /** Passt das Pokémon zum Wurf (diese Generation und einer seiner Typen)? */
 export const matchesRoll = (p: Pick<Pokemon, 'gen' | 'types'>, roll: DraftRoll): boolean =>
@@ -785,9 +850,12 @@ export const matchesRoll = (p: Pick<Pokemon, 'gen' | 'types'>, roll: DraftRoll):
 
 /**
  * Warum ein Pokémon gerade nicht wählbar ist: 'pool' (nicht im Pool), 'taken' (schon
- * vergeben), 'roll' (passt nicht zum Wurf), 'legend_limit' (Legendären-Limit erreicht).
+ * vergeben), 'roll' (passt nicht zum Wurf), 'legend_limit' (Legendären-Limit erreicht),
+ * 'ub_limit' (Ultrabestien-Limit erreicht).
  */
-export type PickBlock = 'pool' | 'taken' | 'roll' | 'legend_limit';
+export type PickBlock = 'pool' | 'taken' | 'roll' | 'legend_limit' | 'ub_limit';
+
+const LIMIT_BLOCK = { legend: 'legend_limit', ub: 'ub_limit' } as const satisfies Record<LimitKind, PickBlock>;
 
 /** Noch freie Pool-Pokémon (nach Nummer sortiert). */
 function remainingPool(state: Pick<DraftState, 'teams' | 'settings'>, list: Pokemon[]): Pokemon[] {
@@ -813,9 +881,9 @@ interface PickRules {
   taken: Set<number>;
   /** Wurf, der für dieses Team gerade gilt (null = freie Wahl) */
   roll: DraftRoll | null;
-  /** Team hat das Legendären-Limit erreicht … */
-  limitHit: boolean;
-  /** … aber im Rest des Pools gibt es nur noch Legendäre: Limit ausgesetzt (der Draft bleibt nie hängen) */
+  /** Kategorien, deren Limit das Team erreicht hat … */
+  limitHit: Set<LimitKind>;
+  /** … aber im Rest des Pools gibt es nur noch gesperrte: Limits ausgesetzt (der Draft bleibt nie hängen) */
   waived: boolean;
   /** Erlaubte Pokémon (nach Nummer sortiert) */
   allowed: Pokemon[];
@@ -826,13 +894,13 @@ function computeRules(state: DraftView, teamId: string, list: Pokemon[]): PickRu
   const taken = draftedIds(state);
   const remaining = pool.filter((p) => !taken.has(p.id));
   const team = state.teams.find((t) => t.id === teamId);
-  const limitHit = !!team && legendLimitHit(state.settings, team, list);
-  const blocked = (p: Pokemon) => limitHit && isLegend(p);
+  const limitHit = team ? limitsHit(state.settings, team, list) : new Set<LimitKind>();
+  const blocked = (p: Pokemon) => blockedBy(limitHit, p) != null;
   const cur = currentTeam(state);
   const raw = cur && cur.id === teamId ? stateRollOf(state) : null;
   // Ein Wurf ohne Wählbares (sollte nie vorkommen, z. B. nach geänderten Daten) gilt nicht: freie Wahl
   const roll = raw && remaining.some((p) => matchesRoll(p, raw) && !blocked(p)) ? { gen: raw.gen, type: raw.type } : null;
-  const waived = limitHit && !roll && !remaining.some((p) => !isLegend(p));
+  const waived = limitHit.size > 0 && !roll && remaining.every(blocked);
   const allowed = remaining.filter((p) => (!roll || matchesRoll(p, roll)) && (waived || !blocked(p)));
   return {
     list,
@@ -880,8 +948,8 @@ function blockOf(rules: PickRules, p: Pokemon): PickBlock | null {
   if (!rules.poolIds.has(p.id)) return 'pool';
   if (rules.taken.has(p.id)) return 'taken';
   if (rules.roll && !matchesRoll(p, rules.roll)) return 'roll';
-  if (rules.limitHit && !rules.waived && isLegend(p)) return 'legend_limit';
-  return null;
+  const kind = rules.waived ? null : blockedBy(rules.limitHit, p);
+  return kind ? LIMIT_BLOCK[kind] : null;
 }
 
 /**
@@ -931,10 +999,10 @@ function comboCounts(settings: Pick<DraftSettings, 'types'>, pokemon: Pokemon[],
   return counts;
 }
 
-/** Für das Team wählbare Kombinationen: frei und nicht durch sein Legendären-Limit gesperrt. */
+/** Für das Team wählbare Kombinationen: frei und nicht durch seine Limits gesperrt. */
 function pickableFor(state: Pick<DraftState, 'teams' | 'settings'>, team: DraftTeam, list: Pokemon[], remaining = remainingPool(state, list)) {
-  const hit = legendLimitHit(state.settings, team, list);
-  const counts = comboCounts(state.settings, remaining, (p) => !hit || !isLegend(p));
+  const hit = limitsHit(state.settings, team, list);
+  const counts = comboCounts(state.settings, remaining, (p) => blockedBy(hit, p) == null);
   return (c: DraftRoll) => (counts.get(comboKey(c.gen, c.type)) ?? 0) > 0;
 }
 
@@ -980,10 +1048,14 @@ function rollsFor(state: DraftState, list: Pokemon[]): Pick<DraftState, 'roll' |
   const n = state.teams.length;
   let roundRoll = state.roundRoll ?? null;
   if (state.pickIndex % n === 0 || state.roundRoll === undefined) {
-    // Möglichst ein Wurf, der für alle Teams der Runde reicht (Legendäre zählen, solange noch ein Team darf)
-    const max = state.settings.maxLegends;
-    const room = max == null || state.teams.some((t) => legendsOf(t, list) < max);
-    const shared = comboCounts(state.settings, remaining, (p) => room || !isLegend(p));
+    // Möglichst ein Wurf, der für alle Teams der Runde reicht (begrenzte zählen, solange noch ein Team darf)
+    const full = new Set(
+      LIMIT_KINDS.filter((kind) => {
+        const max = limitOf(state.settings, kind);
+        return max != null && state.teams.every((t) => kindOf(t, kind, list) >= max);
+      }),
+    );
+    const shared = comboCounts(state.settings, remaining, (p) => blockedBy(full, p) == null);
     const enough = (c: DraftRoll) => pickable(c) && (shared.get(comboKey(c.gen, c.type)) ?? 0) >= n;
     const round = Math.floor(state.pickIndex / n);
     roundRoll = drawRoll(leagueRng(state.seed, 'roll', 'round', round), state.settings, [enough, pickable]);
@@ -1071,10 +1143,10 @@ export function startDraft(state: DraftState, deviceId: string, now: number, lis
   const needed = state.teams.length * rounds(state.settings);
   const pool = poolOf(state.settings, list).length;
   if (pool < needed) fail('pool_too_small', `Der Pool hat nur ${pool} Pokémon, gebraucht werden ${needed}`);
-  // Legendäre zählen nur, soweit das Limit sie aufnimmt (sonst müsste es für alle ausgesetzt werden)
+  // Begrenzte zählen nur, soweit die Limits sie aufnehmen (sonst müssten sie für alle ausgesetzt werden)
   const capacity = poolPickCapacity(state.settings, state.teams.length, list);
   if (capacity < needed) {
-    fail('pool_too_small', `Mit dem Legendären-Limit reicht der Pool nur für ${capacity} Picks, gebraucht werden ${needed}`);
+    fail('pool_too_small', `Mit den Limits reicht der Pool nur für ${capacity} Picks, gebraucht werden ${needed}`);
   }
   const teams =state.settings.order === 'random' ? shuffle(leagueRng(state.seed, 'order'), state.teams) : state.teams;
   const next: DraftState = {
@@ -1104,6 +1176,10 @@ export function pickError(state: DraftView, teamId: string, pokemonId: number, s
   if (block === 'legend_limit') {
     const max = state.settings.maxLegends;
     return max === 1 ? 'Höchstens ein Legendäres/Mysteriöses pro Team' : `Höchstens ${max} Legendäre/Mysteriöse pro Team`;
+  }
+  if (block === 'ub_limit') {
+    const max = state.settings.maxUltraBeasts;
+    return max === 1 ? 'Höchstens eine Ultrabestie pro Team' : `Höchstens ${max} Ultrabestien pro Team`;
   }
   if (!freeSlots(team, state.settings).includes(slot)) return 'Dieser Platz ist nicht frei';
   return null;

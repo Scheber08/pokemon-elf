@@ -1,7 +1,7 @@
 import { FORMATIONS } from '../config/formations';
 import { useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam } from '../lib/api/draftContract';
-import { DRAFT_SS_SLOT, isLegend, poolHasLegends } from '../lib/draftEngine';
+import { DRAFT_SS_SLOT, isLegend, limitKindOf, poolHasLegends, poolHasUltraBeasts } from '../lib/draftEngine';
 import { teamLabel, type FeedItem } from '../state/useDraftRoom';
 import type { Pokemon } from '../types';
 import { PosBadge, TypeBadge } from './Badges';
@@ -40,6 +40,8 @@ export function DraftBoard({ state, byId, currentId }: Props) {
   const last = state.picks.length ? state.picks[state.picks.length - 1] : null;
   const maxLegends = state.settings.maxLegends;
   const legendLimit = maxLegends != null && poolHasLegends(state.settings) ? maxLegends : null;
+  const maxUltraBeasts = state.settings.maxUltraBeasts;
+  const ultraBeastLimit = maxUltraBeasts != null && poolHasUltraBeasts(state.settings) ? maxUltraBeasts : null;
   return (
     <section className="draft__board draft-board" aria-label={t.draft.draftBoard}>
       {state.teams.map((team, i) => {
@@ -50,6 +52,10 @@ export function DraftBoard({ state, byId, currentId }: Props) {
         const legends = rows.filter((r) => {
           const p = r.id != null ? byId.get(r.id) : undefined;
           return !!p && isLegend(p);
+        }).length;
+        const ultraBeasts = rows.filter((r) => {
+          const p = r.id != null ? byId.get(r.id) : undefined;
+          return !!p && limitKindOf(p) === 'ub';
         }).length;
         // Vereinsnamen der CPU-Teams erst bei der Anzeige übersetzen
         const name = teamLabel(team, t);
@@ -75,6 +81,17 @@ export function DraftBoard({ state, byId, currentId }: Props) {
                     ★ {legends}/{legendLimit}
                   </span>
                   <span className="sr-only">{t.draft.board.legendsTitle(legends, legendLimit)}</span>
+                </span>
+              )}
+              {ultraBeastLimit != null && (
+                <span
+                  className={`draft-board__legends ${ultraBeasts >= ultraBeastLimit ? 'is-full' : ''}`}
+                  title={t.draft.board.ultraBeastsTitle(ultraBeasts, ultraBeastLimit)}
+                >
+                  <span aria-hidden="true">
+                    UB {ultraBeasts}/{ultraBeastLimit}
+                  </span>
+                  <span className="sr-only">{t.draft.board.ultraBeastsTitle(ultraBeasts, ultraBeastLimit)}</span>
                 </span>
               )}
               <DraftTeamTags team={team} host={team.id === state.hostTeamId} you={team.id === state.you} />

@@ -226,6 +226,8 @@ export const SETTING_KEYS = [
   'legendary',
   'mythical',
   'maxLegends',
+  'ultraBeasts',
+  'maxUltraBeasts',
   'setPiece',
   'maxTeams',
   'pickSeconds',
@@ -268,11 +270,14 @@ export function cleanSettingsPatch(raw: unknown): DraftSettingsPatch {
     }
     patch.types = [...(types as string[])];
   }
-  for (const key of ['legendary', 'mythical', 'setPiece', 'snake', 'legends'] as const) {
+  for (const key of ['legendary', 'mythical', 'ultraBeasts', 'setPiece', 'snake', 'legends'] as const) {
     if (patch[key] !== undefined && !isBool(patch[key])) badSettings('Ungültige Einstellung');
   }
   if (patch.maxLegends !== undefined && patch.maxLegends !== null && !isInt(patch.maxLegends)) {
     badSettings('Ungültiges Legendären-Limit');
+  }
+  if (patch.maxUltraBeasts !== undefined && patch.maxUltraBeasts !== null && !isInt(patch.maxUltraBeasts)) {
+    badSettings('Ungültiges Ultrabestien-Limit');
   }
   if (patch.roll !== undefined && typeof patch.roll !== 'string') badSettings('Ungültiger Zufallsmodus');
   if (patch.rerolls !== undefined) {

@@ -9,7 +9,7 @@ import {
   type DraftSettings,
   type PickSeconds,
 } from '../lib/api/draftContract';
-import { poolHasLegends, poolOf, rerollUsable } from '../lib/draftEngine';
+import { poolHasLegends, poolHasUltraBeasts, poolOf, rerollUsable } from '../lib/draftEngine';
 import { fitSettingsPatch, poolCapacity } from '../state/useDraftRoom';
 import type { FormationId, Pokemon, TypeKey } from '../types';
 import { Segmented } from './Segmented';
@@ -157,6 +157,8 @@ const TIMER_OPTIONS: PickSeconds[] = [30, 60, 90, 0];
 const REROLL_OPTIONS = Array.from({ length: DRAFT_LIMITS.rerollsMax + 1 }, (_, i) => i);
 /** maxLegends in den Segmenten: 0 = unbegrenzt (null) */
 const LEGEND_OPTIONS = [0, ...DRAFT_LIMITS.maxLegends];
+/** maxUltraBeasts in den Segmenten: 0 = unbegrenzt (null) */
+const ULTRA_BEAST_OPTIONS = [0, ...DRAFT_LIMITS.maxUltraBeasts];
 
 interface Props {
   value: DraftSettings;
@@ -187,6 +189,7 @@ export function DraftSettingsForm({ value, onChange, list, teamsJoined = 0, disa
   const capacity = poolCapacity(value, list);
   const floor = Math.max(DRAFT_LIMITS.minTeams, teamsJoined);
   const legendsInPool = poolHasLegends(value);
+  const ultraBeastsInPool = poolHasUltraBeasts(value);
   const randomMode = value.roll !== 'off';
 
   /** Änderung anwenden (maxTeams sinkt ggf. mit) – unmögliche Änderungen sind gesperrt. */
@@ -395,6 +398,40 @@ export function DraftSettingsForm({ value, onChange, list, teamsJoined = 0, disa
           }))}
           note={legendsInPool ? tx.maxLegendsNote : tx.maxLegendsOff}
         />
+        <div className="draft-settings__pair">
+          <DraftChoice
+            label={tx.ultraBeasts}
+            value={ultraBeastsInPool}
+            disabled={disabled}
+            busy={busy}
+            onChange={(ultraBeasts) => change({ ultraBeasts })}
+            options={[
+              { value: false, label: t.draft.off, disabled: blocked({ ultraBeasts: false }), title: offTitle({ ultraBeasts: false }) },
+              { value: true, label: t.draft.on },
+            ]}
+          />
+          <DraftChoice
+            label={tx.maxUltraBeasts}
+            value={value.maxUltraBeasts ?? 0}
+            disabled={disabled || !ultraBeastsInPool}
+            busy={busy}
+            onChange={(n) => change({ maxUltraBeasts: n === 0 ? null : n })}
+            options={ULTRA_BEAST_OPTIONS.map((n) => ({
+              value: n,
+              disabled: blocked({ maxUltraBeasts: n || null }),
+              label: n ? (
+                String(n)
+              ) : (
+                <>
+                  <span aria-hidden="true">∞</span>
+                  <span className="sr-only">{tx.unlimited}</span>
+                </>
+              ),
+              title: blocked({ maxUltraBeasts: n || null }) ? tooSmall : n ? undefined : tx.unlimited,
+            }))}
+          />
+        </div>
+        <p className="draft-field-note">{ultraBeastsInPool ? tx.maxUltraBeastsNote : tx.maxUltraBeastsOff}</p>
         <p className="draft-field-note draft-settings__poolnote" aria-live="polite">
           {tx.poolNote(poolSize, capacity)}
         </p>
@@ -554,6 +591,11 @@ export function DraftSettingsSummary({ settings }: { settings: DraftSettings }) 
     typesLabel(t, settings.types),
     legends,
     poolHasLegends(settings) && settings.maxLegends != null ? tx.maxLegends(settings.maxLegends) : null,
+    !poolHasUltraBeasts(settings)
+      ? tx.withoutUltraBeasts
+      : settings.maxUltraBeasts != null
+        ? tx.maxUltraBeasts(settings.maxUltraBeasts)
+        : null,
     settings.setPiece ? tx.withSetPiece : tx.withoutSetPiece,
     tx.maxTeams(settings.maxTeams),
     settings.order === 'random' ? tx.orderRandom : tx.orderHost,

@@ -194,11 +194,14 @@ const online = {
   /** Grund auf ausgegrauten Karten */
   blockedRoll: 'Passt nicht zum Wurf',
   blockedLegends: (max: number) => (max === 1 ? 'Limit: ein Legendäres' : `Limit: ${max} Legendäre`),
+  blockedUltraBeasts: (max: number) => (max === 1 ? 'Limit: eine Ultrabestie' : `Limit: ${max} Ultrabestien`),
   favouriteNoMatch: (name: string) => `${name} passt nicht zu deinem Wurf – such dir ein passendes Pokémon.`,
   /** Hinweis unter „Pool", wenn ein Wurf gilt (mit Leerzeichen vorn) */
   hintRoll: (region: string, type: string) => ` Gesucht: ${region} + ${type}.`,
   /** Statusleiste: Legendäre im eigenen Team bei einem Limit */
   legendsCount: 'Legendäre',
+  /** Statusleiste: Ultrabestien im eigenen Team bei einem Limit */
+  ultraBeastsCount: 'Ultrabestien',
 
   // ------------------------------------------------ Timer
   cpuPicking: ' CPU wählt …',
@@ -292,6 +295,7 @@ const online = {
       badTypes: 'Ungültige Typen',
       minOneType: 'Mindestens ein Typ',
       badMaxLegends: 'Ungültiges Legendären-Limit',
+      badMaxUltraBeasts: 'Ungültiges Ultrabestien-Limit',
       badRollMode: 'Ungültiger Zufallsmodus',
       badRerolls: 'Ungültige Rerolls',
       noRoll: 'Gerade gibt es keinen Wurf',
@@ -300,16 +304,17 @@ const online = {
       noOtherRoll: 'Kein anderer Wurf möglich',
       noSlot: 'Kein Platz mehr frei',
       legendLimitOne: 'Höchstens ein Legendäres/Mysteriöses pro Team',
+      ubLimitOne: 'Höchstens eine Ultrabestie pro Team',
     },
     /** Meldungen mit Zahlen bzw. Namen (die Platzhalter werden beim Übersetzen herausgelesen) */
     fmt: {
       between: (min: number, max: number) => `Zwischen ${min} und ${max} Teams`,
       poolFits: (teams: number, rounds: number) => `Der Pool reicht nur für ${teams} Teams à ${rounds} Pokémon`,
       poolFitsLegends: (teams: number, rounds: number) =>
-        `Der Pool reicht nur für ${teams} Teams à ${rounds} Pokémon (Legendären-Limit)`,
+        `Der Pool reicht nur für ${teams} Teams à ${rounds} Pokémon (Limits)`,
       poolHas: (pool: number, needed: number) => `Der Pool hat nur ${pool} Pokémon, gebraucht werden ${needed}`,
       poolCapLegends: (capacity: number, needed: number) =>
-        `Mit dem Legendären-Limit reicht der Pool nur für ${capacity} Picks, gebraucht werden ${needed}`,
+        `Mit den Limits reicht der Pool nur für ${capacity} Picks, gebraucht werden ${needed}`,
       tooManyTeams: (n: number) => `Es sind schon ${n} Teams dabei`,
       tooFewTeams: (min: number) => `Mindestens ${min} Teams – lade Leute ein oder füge CPU-Teams hinzu`,
       /** name: deutscher Pokémon-Name aus der Engine */
@@ -321,6 +326,7 @@ const online = {
       /** name: deutscher Pokémon-Name aus der Engine */
       notRoll: (name: string) => `${name} passt nicht zum Wurf`,
       legendLimit: (max: number) => `Höchstens ${max} Legendäre/Mysteriöse pro Team`,
+      ubLimit: (max: number) => `Höchstens ${max} Ultrabestien pro Team`,
     },
     /** Je Fehlercode – wenn die Meldung selbst unbekannt ist */
     code: {

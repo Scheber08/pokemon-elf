@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { isUltraBeast } from '../config/categories';
 import { LEVEL_SYMBOL, POSITIONS, PROFILES, type Level } from '../config/positions';
 import { fmtNumber, localeOf, messages, useLang, useT } from '../i18n';
 import type { FactorKey, PosCode, Pokemon, StatKey } from '../types';
@@ -136,6 +137,8 @@ export function StatTooltip({ pokemon, anchor, pos }: { pokemon: Pokemon; anchor
         <TypeBadges types={pokemon.types} small />
         {(pokemon.leg || pokemon.myth) ? (
           <span className="legend-chip">{pokemon.myth ? t.game.mythical : t.game.legendary}</span>
+        ) : isUltraBeast(pokemon) ? (
+          <span className="legend-chip legend-chip--ub">{t.game.ultraBeast}</span>
         ) : null}
       </div>
       {pos && (

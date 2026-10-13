@@ -548,6 +548,11 @@ select {
   border-radius: 4px;
   padding: 1px 6px;
 }
+.legend-chip--ub,
+.pcard__legend--ub {
+  background: #4b3a8f;
+  color: #fff;
+}
 
 /* Typ- & Positions-Badges */
 .type-badges {

@@ -62,6 +62,7 @@ const builder: Messages['builder'] = {
     label: 'Pokémon selection',
     legShort: 'Leg.',
     mythShort: 'Myth.',
+    ubShort: 'UB',
     none: 'No Pokémon found.',
     mini: { hp: 'HP', atk: 'ATK', def: 'DEF', spa: 'SPA', spd: 'SPD', spe: 'SPE' },
   },

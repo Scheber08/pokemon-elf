@@ -98,6 +98,7 @@ const game: Messages['game'] = {
   },
   legendary: 'Legendary',
   mythical: 'Mythical',
+  ultraBeast: 'Ultra Beast',
   pokemon: (p) => p.en,
   club: (name) => CLUB_MAP.get(name) ?? name,
   dexNo: (id) => `#${String(id).padStart(4, '0')}`,

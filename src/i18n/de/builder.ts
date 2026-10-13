@@ -59,6 +59,7 @@ const builder = {
     label: 'Pokémon-Auswahl',
     legShort: 'Leg.',
     mythShort: 'Myst.',
+    ubShort: 'UB',
     none: 'Keine Pokémon gefunden.',
     /** Kürzel der Mini-Balken auf den Karten */
     mini: { hp: 'KP', atk: 'ANG', def: 'VER', spa: 'SPA', spd: 'SPV', spe: 'INI' } as Record<StatKey, string>,

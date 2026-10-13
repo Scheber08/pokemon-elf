@@ -12,7 +12,9 @@ import {
   freeSlots,
   legendsOf,
   pickAllowed,
+  kindOf,
   poolHasLegends,
+  poolHasUltraBeasts,
   poolOf,
   rerollsLeft,
   rerollUsable,
@@ -192,17 +194,18 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
 
   // Stabile Listen: Jeder Schnappschuss ist ein neues Objekt – neu gerechnet wird nur, wenn sich
   // Pool, vergebene Pokémon bzw. der Wurf ändern (sonst springt das Raster bei jedem Online-Wechsel zurück).
-  const { gens, types, legendary, mythical, maxLegends } = s.settings;
+  const { gens, types, legendary, mythical, maxLegends, maxUltraBeasts } = s.settings;
+  const ultraBeasts = poolHasUltraBeasts(s.settings);
   // poolOf hält den Pool je Einstellung fest (dasselbe Array, solange sich der Pool nicht ändert)
-  const pool = poolOf({ gens, types, legendary, mythical }, list);
-  const poolKey = `${gens.join(',')}|${types.join(',')}|${legendary ? 1 : 0}${mythical ? 1 : 0}`;
+  const pool = poolOf({ gens, types, legendary, mythical, ultraBeasts }, list);
+  const poolKey = `${gens.join(',')}|${types.join(',')}|${legendary ? 1 : 0}${mythical ? 1 : 0}${ultraBeasts ? 1 : 0}`;
   const takenKey = draftedKey(s);
   const owners = useMemo(() => ownerOfPicks(s), [takenKey]);
   const rollKey = rollKeyOf(s);
   // Was das eigene Team gerade wählen darf (Wurf nur am Zug, Legendären-Limit immer)
   const allowed = useMemo(
     () => (me ? new Set(allowedPicks(s, me.id, list).map((p) => p.id)) : null),
-    [takenKey, rollKey, s.pickIndex, s.phase, me?.id, poolKey, maxLegends, list],
+    [takenKey, rollKey, s.pickIndex, s.phase, me?.id, poolKey, maxLegends, maxUltraBeasts, list],
   );
   const myRoll = useMemo(() => (me ? effectiveRoll(s, me.id, list) : null), [allowed]);
   const freeCount = pool.length - owners.size;
@@ -227,6 +230,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   const filtering = !!effFilters.query.trim() || !!effFilters.type || effFilters.region !== 0;
   const randomMode = s.settings.roll === 'pick' || s.settings.roll === 'round';
   const legendLimit = maxLegends != null && poolHasLegends(s.settings) ? maxLegends : null;
+  const ultraBeastLimit = maxUltraBeasts != null && ultraBeasts ? maxUltraBeasts : null;
 
   // Vorgemerktes Pokémon ist vergeben → Auswahl aufheben (bei fremdem Pick mit Hinweis)
   useEffect(() => {
@@ -372,6 +376,14 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
               </strong>
             </span>
           )}
+          {me && ultraBeastLimit != null && (
+            <span className="statusline__item draft-turnbar__legends">
+              {t.online.ultraBeastsCount}{' '}
+              <strong>
+                {kindOf(me, 'ub', list)}/{ultraBeastLimit}
+              </strong>
+            </span>
+          )}
         </div>
         <DraftCountdown
           deadline={s.deadline}
@@ -444,6 +456,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                   const block = me ? pickAllowed(s, me.id, p, list) : null;
                   if (block === 'roll') return t.online.blockedRoll;
                   if (block === 'legend_limit') return t.online.blockedLegends(maxLegends ?? 0);
+                  if (block === 'ub_limit') return t.online.blockedUltraBeasts(maxUltraBeasts ?? 0);
                   return null;
                 }}
                 className="pgrid-wrap--compact"

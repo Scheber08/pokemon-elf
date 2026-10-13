@@ -1028,15 +1028,17 @@ describe('Reroll über useDraftRoom', () => {
     expect(hook.draftErrorText('Höchstens ein Legendäres/Mysteriöses pro Team', 'bad_pick', ALL, 'en')).toBe(
       'At most one legendary/mythical per team',
     );
-    expect(hook.draftErrorText('Der Pool reicht nur für 7 Teams à 11 Pokémon (Legendären-Limit)', 'pool_too_small', ALL, 'en')).toBe(
-      'The pool is only big enough for 7 teams of 11 Pokémon each (legendary limit)',
+    expect(hook.draftErrorText('Der Pool reicht nur für 7 Teams à 11 Pokémon (Limits)', 'pool_too_small', ALL, 'en')).toBe(
+      'The pool is only big enough for 7 teams of 11 Pokémon each (limits)',
     );
+    expect(hook.draftErrorText('Höchstens 2 Ultrabestien pro Team', 'bad_pick', ALL, 'en')).toBe('At most 2 Ultra Beasts per team');
+    expect(hook.draftErrorText('Höchstens eine Ultrabestie pro Team', 'bad_pick', ALL, 'en')).toBe('At most one Ultra Beast per team');
     expect(hook.draftErrorText('Der Pool reicht nur für 3 Teams à 11 Pokémon', 'pool_too_small', ALL, 'en')).toBe(
       'The pool is only big enough for 3 teams of 11 Pokémon each',
     );
     expect(
-      hook.draftErrorText('Mit dem Legendären-Limit reicht der Pool nur für 80 Picks, gebraucht werden 88', 'pool_too_small', ALL, 'en'),
-    ).toBe('With the legendary limit the pool only covers 80 picks, 88 are needed');
+      hook.draftErrorText('Mit den Limits reicht der Pool nur für 80 Picks, gebraucht werden 88', 'pool_too_small', ALL, 'en'),
+    ).toBe('With the limits the pool only covers 80 picks, 88 are needed');
   });
 
   it('startBlocker wie startDraft: Legendäre zählen nur, soweit das Limit sie aufnimmt', () => {
@@ -1046,7 +1048,7 @@ describe('Reroll über useDraftRoom', () => {
     const tight: DraftState = { ...s, settings: { ...s.settings, maxLegends: 1 } };
     const cap = engine.poolPickCapacity(tight.settings, 8, ALL);
     expect(cap).toBeLessThan(88);
-    expect(hook.startBlocker(snap(tight), ALL, de)).toBe(`Mit dem Legendären-Limit reicht der Pool nur für ${cap} Picks, gebraucht werden 88`);
+    expect(hook.startBlocker(snap(tight), ALL, de)).toBe(`Mit den Limits reicht der Pool nur für ${cap} Picks, gebraucht werden 88`);
     expect(() => engine.startDraft(tight, 'dev-h', 0, ALL)).toThrow(hook.startBlocker(snap(tight), ALL, de)!);
   });
 

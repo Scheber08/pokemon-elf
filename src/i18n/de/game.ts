@@ -66,6 +66,7 @@ const game = {
   } as Record<ChallengeKey, string>,
   legendary: 'Legendär',
   mythical: 'Mysteriös',
+  ultraBeast: 'Ultrabestie',
   /** Name eines Pokémon in dieser Sprache */
   pokemon: (p: Pick<Pokemon, 'de' | 'en'>) => p.de,
   /** Vereinsname (intern deutsch gespeichert) in dieser Sprache */
