@@ -34,10 +34,10 @@ export const DRAFT_LIMITS = {
   createsPerHour: 20,
   /** Verzögerung eines CPU-Picks */
   cpuPickMs: 1200,
-  /** Vorlauf bis zum ersten Spieltag der gemeinsamen Saison */
-  seasonLeadMs: 4000,
+  /** Vorlauf bis zum ersten Spieltag der gemeinsamen Saison – Zeit, sich die fertigen Kader anzusehen */
+  seasonLeadMs: 30_000,
   /** Dauer eines Spieltags im gemeinsamen Ticker */
-  seasonStepMs: 2600,
+  seasonStepMs: 4000,
   /** So lange bleibt eine Liga erhalten (danach wird sie gelöscht) */
   retentionDays: 14,
   /** Andere Mitglieder dürfen für ein Team auto-picken, das so lange offline ist (ms) */

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useT } from '../i18n';
 import {
   currentMatchday,
@@ -27,6 +27,8 @@ interface Props {
   stepMs: number;
   /** Serverzeit − Gerätezeit (ms) aus dem Uhrenabgleich */
   clockOffset: number;
+  /** Vor dem Anpfiff zusätzlich angezeigt (z. B. die fertigen Kader) */
+  preKickoff?: ReactNode;
   /** Ticker vorbei oder übersprungen → Ergebnis zeigen */
   onDone: () => void;
 }
@@ -48,7 +50,7 @@ function formatCountdown(secs: number): string {
  * (bei Punktgleichheit an der Spitze mit der Titelentscheidung), dann onDone (genau
  * einmal). „Überspringen" wirkt nur lokal.
  */
-export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, clockOffset, onDone }: Props) {
+export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, clockOffset, onDone, preKickoff }: Props) {
   const t = useT();
   const tx = t.draft.ticker;
   const { byId } = usePokemonData();
@@ -270,6 +272,8 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
           <LiveTable table={table} day={day} you={you} nameOf={nameOf} />
         </aside>
       </div>
+
+      {!day && preKickoff}
 
       <p className="league-ticker__note muted small">{tx.note}</p>
       <p className="sr-only" aria-live="polite" aria-atomic="true">

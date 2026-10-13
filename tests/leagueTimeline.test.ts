@@ -175,7 +175,7 @@ describe('currentMatchday (synchroner Ticker)', () => {
   });
 
   it('Countdown bis zum Anpfiff in ganzen Sekunden', () => {
-    expect(secondsToKickoff(START, START - DRAFT_LIMITS.seasonLeadMs)).toBe(4);
+    expect(secondsToKickoff(START, START - DRAFT_LIMITS.seasonLeadMs)).toBe(DRAFT_LIMITS.seasonLeadMs / 1000);
     expect(secondsToKickoff(START, START - 3001)).toBe(4);
     expect(secondsToKickoff(START, START - 3000)).toBe(3);
     expect(secondsToKickoff(START, START - 1)).toBe(1);

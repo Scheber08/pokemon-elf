@@ -7,6 +7,7 @@ import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import { teamLabel, type DraftRoom } from '../state/useDraftRoom';
 import { DraftResults } from './DraftResults';
+import { DraftSquads } from './DraftSquads';
 import { LeagueTicker } from './LeagueTicker';
 import '../styles/draft.css';
 
@@ -69,6 +70,16 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           stepMs={season.stepMs}
           clockOffset={room.clockOffset}
           onDone={() => setTicker(false)}
+          preKickoff={
+            <DraftSquads
+              teams={s.teams}
+              ratings={ratings}
+              names={teamNames}
+              highlight={highlight}
+              sprite={sprite}
+              setPiece={s.settings.setPiece}
+            />
+          }
         />
       ) : (
         <DraftResults

@@ -772,3 +772,11 @@
     display: none;
   }
 }
+
+/* Vor dem Anpfiff: die fertigen Kader (Online-Draft) */
+.draft-squads {
+  margin-top: 18px;
+}
+.draft-squads .draft-results__roster-name {
+  margin: 0;
+}
