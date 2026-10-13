@@ -43,7 +43,10 @@ export function dailyNumber(day: string): number {
   return Math.round(ms / 86_400_000) + 1;
 }
 
-/** „12.10.2026" */
+/**
+ * „12.10.2026" – deutsches Format, z. B. für Server-Meldungen. In der Oberfläche
+ * t.game.day(day) verwenden (folgt der gewählten Sprache).
+ */
 export function formatDay(day: string): string {
   const [y, m, d] = day.split('-');
   return `${d}.${m}.${y}`;

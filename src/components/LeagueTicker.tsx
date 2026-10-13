@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useT } from '../i18n';
 import {
   currentMatchday,
   leagueTimeline,
@@ -33,8 +34,6 @@ interface Props {
 /** Wie oft die Uhr neu ausgewertet wird */
 const TICK_MS = 250;
 
-const OUTCOME_WORD = { S: 'Sieg', U: 'Remis', N: 'Niederlage' } as const;
-
 /** „Anpfiff in 3 …" – ab einer Minute als m:ss */
 function formatCountdown(secs: number): string {
   if (secs < 60) return String(secs);
@@ -50,6 +49,8 @@ function formatCountdown(secs: number): string {
  * einmal). „Überspringen" wirkt nur lokal.
  */
 export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, clockOffset, onDone }: Props) {
+  const t = useT();
+  const tx = t.draft.ticker;
   const { byId } = usePokemonData();
   const days = useMemo(() => leagueTimeline(league), [league]);
   const startTable = useMemo(() => buildTable(league.teams, []), [league]);
@@ -90,11 +91,18 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
     return () => window.clearInterval(id);
   }, [startsAt, stepMs, clockOffset, total, finishAt, finish]);
 
+  // Vereinsnamen (CPU-Teams) erst bei der Anzeige übersetzen – gespeichert bleibt der deutsche Name
   const nameOf = useCallback(
-    (t: number) => teamNames[t] || league.teams[t]?.name || `Team ${t + 1}`,
-    [teamNames, league.teams],
+    (i: number) => teamNames[i] || (league.teams[i]?.name ? t.game.club(league.teams[i].name) : `Team ${i + 1}`),
+    [teamNames, league.teams, t],
   );
-  const pokemonName = useCallback((id: number) => byId.get(id)?.de ?? `#${id}`, [byId]);
+  const pokemonName = useCallback(
+    (id: number) => {
+      const p = byId.get(id);
+      return p ? t.game.pokemon(p) : `#${id}`;
+    },
+    [byId, t],
+  );
 
   const day: Matchday | null = md > 0 ? days[md - 1] ?? null : null;
   const finale = total > 0 && md === total;
@@ -105,39 +113,39 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
   const tieNote = finale && day ? titleTieNote(titleRace(day.table), nameOf) : null;
 
   const announcement = useMemo(() => {
-    if (!day) return 'Die gemeinsame Saison beginnt gleich.';
+    if (!day) return tx.startsSoon;
     const parts: string[] = [];
-    if (finale) parts.push('Abpfiff!');
-    parts.push(`${day.round}. Spieltag:`);
+    if (finale) parts.push(tx.fullTime);
+    parts.push(tx.matchdayColon(day.round));
     if (you != null) {
       const r = matchFor(day.matches, you);
       parts.push(
         r
-          ? `${OUTCOME_WORD[r.outcome]} ${r.gf}:${r.ga} ${r.isHome ? 'gegen' : 'bei'} ${nameOf(r.opponent)}, Platz ${day.places[you]}.`
-          : `Dein Team ist spielfrei, Platz ${day.places[you]}.`,
+          ? tx.result(t.draft.outcome[r.outcome], r.gf, r.ga, r.isHome, nameOf(r.opponent), day.places[you])
+          : tx.bye(day.places[you]),
       );
     }
     parts.push(
       finale
-        ? `Meister: ${nameOf(day.leader.team)} mit ${day.leader.pts} Punkten.`
-        : `Tabellenführer: ${nameOf(day.leader.team)} mit ${day.leader.pts} Punkten.`,
+        ? tx.championLine(nameOf(day.leader.team), day.leader.pts)
+        : tx.leaderLine(nameOf(day.leader.team), day.leader.pts),
     );
     if (tieNote) parts.push(`${tieNote}.`);
     return parts.join(' ');
-  }, [day, finale, you, nameOf, tieNote]);
+  }, [day, finale, you, nameOf, tieNote, t, tx]);
 
   const status = finale ? 'ende' : day ? 'live' : 'gleich';
-  const statusLabel = finale ? 'Ende' : day ? 'Live' : 'Gleich';
+  const statusLabel = finale ? tx.statusEnd : day ? tx.statusLive : tx.statusSoon;
 
   return (
     <section className="league-ticker card" aria-labelledby="league-ticker-title">
       <header className="league-ticker__head">
         <div className="league-ticker__heading">
           <span className="kicker">
-            <span className={`league-ticker__live league-ticker__live--${status}`}>{statusLabel}</span> Gemeinsame Saison
+            <span className={`league-ticker__live league-ticker__live--${status}`}>{statusLabel}</span> {tx.sharedSeason}
           </span>
           <h2 id="league-ticker-title" className="league-ticker__title">
-            {you != null ? nameOf(you) : 'Saison-Ticker'}
+            {you != null ? nameOf(you) : tx.title}
           </h2>
         </div>
         <button
@@ -145,22 +153,22 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
           className={`btn btn--small ${finale ? 'btn--primary' : 'btn--ghost'}`}
           onClick={finish}
         >
-          {finale ? 'Zum Ergebnis' : 'Überspringen'}
+          {finale ? tx.toResult : tx.skip}
         </button>
       </header>
 
       <div className="league-ticker__progress-row">
         <span className="league-ticker__round">
-          Spieltag <strong>{md > 0 ? md : '–'}</strong>/{total}
+          {tx.matchdayLabel} <strong>{md > 0 ? md : '–'}</strong>/{total}
         </span>
         <div
           className="league-ticker__progress"
           role="progressbar"
-          aria-label="Saisonfortschritt"
+          aria-label={tx.progressAria}
           aria-valuemin={0}
           aria-valuemax={total}
           aria-valuenow={md}
-          aria-valuetext={`Spieltag ${md} von ${total}`}
+          aria-valuetext={tx.progressText(md, total)}
         >
           <span style={{ width: `${total ? (md / total) * 100 : 0}%` }} />
         </div>
@@ -169,24 +177,24 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
       {ownRow && ownPlace != null && (
         <dl className="facts league-ticker__facts">
           <div>
-            <dt>Platz</dt>
+            <dt>{tx.place}</dt>
             <dd>
-              {day ? `${ownPlace}.` : '–'}
+              {day ? t.draft.placeNo(ownPlace) : '–'}
               {day && <Trend delta={day.delta[ownRow.team]} />}
             </dd>
           </div>
           <div>
-            <dt>Punkte</dt>
+            <dt>{tx.points}</dt>
             <dd>{ownRow.pts}</dd>
           </div>
           <div>
-            <dt>Bilanz</dt>
+            <dt>{tx.record}</dt>
             <dd>
               {ownRow.w}–{ownRow.d}–{ownRow.l}
             </dd>
           </div>
           <div>
-            <dt>Tore</dt>
+            <dt>{tx.goals}</dt>
             <dd>
               {ownRow.gf}:{ownRow.ga}
             </dd>
@@ -198,15 +206,14 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
         <div className="league-ticker__main">
           {finale && day && (
             <div className="league-finale">
-              <span className="league-finale__kicker">Abpfiff!</span>
+              <span className="league-finale__kicker">{tx.fullTime}</span>
               <p className="league-finale__line">
-                Meister: <strong>{nameOf(day.leader.team)}</strong> · {day.leader.pts} Pkt
+                {tx.championLabel}
+                <strong>{nameOf(day.leader.team)}</strong> · {t.draft.pts(day.leader.pts)}
               </p>
               {tieNote && <p className="league-finale__tie">{tieNote}</p>}
               {you != null && ownPlace != null && (
-                <p className="league-finale__you">
-                  {ownPlace === 1 ? 'Dein Team ist Meister!' : `Dein Team: Platz ${ownPlace}`}
-                </p>
+                <p className="league-finale__you">{ownPlace === 1 ? tx.youChampion : tx.yourPlace(ownPlace)}</p>
               )}
               {finaleMs != null && finaleMs > 0 && (
                 <span className="league-finale__timer" aria-hidden="true">
@@ -217,10 +224,10 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
           )}
 
           {day ? (
-            <section key={day.round} className="league-board" aria-label={`${day.round}. Spieltag`}>
+            <section key={day.round} className="league-board" aria-label={t.draft.matchday(day.round)}>
               <div className="league-board__bar">
-                <span>{day.round}. Spieltag</span>
-                <span>{finale ? 'Endstand' : 'Ergebnisse'}</span>
+                <span>{t.draft.matchday(day.round)}</span>
+                <span>{finale ? tx.finalScores : tx.results}</span>
               </div>
               <FixtureList
                 matches={day.matches}
@@ -229,13 +236,13 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
                 pokemonName={pokemonName}
               />
               {day.byes.length > 0 && (
-                <p className="league-board__byes">Spielfrei: {day.byes.map(nameOf).join(', ')}</p>
+                <p className="league-board__byes">{t.draft.byes(day.byes.map(nameOf).join(', '))}</p>
               )}
             </section>
           ) : (
-            <section className="league-board league-board--upcoming" aria-label="Anpfiff">
+            <section className="league-board league-board--upcoming" aria-label={tx.kickoff}>
               <div className="league-countdown" role="timer" aria-live="off">
-                <span className="league-countdown__label">{secs > 0 ? 'Anpfiff in' : 'Anpfiff!'}</span>
+                <span className="league-countdown__label">{secs > 0 ? tx.kickoffIn : tx.kickoffNow}</span>
                 {secs > 0 && (
                   <span key={secs} className="league-countdown__num">
                     {formatCountdown(secs)} …
@@ -245,12 +252,12 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
               {days[0] && (
                 <>
                   <div className="league-board__bar">
-                    <span>1. Spieltag</span>
-                    <span>Paarungen</span>
+                    <span>{t.draft.matchday(1)}</span>
+                    <span>{tx.fixtures}</span>
                   </div>
                   <FixtureList matches={days[0].matches} you={you} nameOf={nameOf} pokemonName={pokemonName} upcoming />
                   {days[0].byes.length > 0 && (
-                    <p className="league-board__byes">Spielfrei: {days[0].byes.map(nameOf).join(', ')}</p>
+                    <p className="league-board__byes">{t.draft.byes(days[0].byes.map(nameOf).join(', '))}</p>
                   )}
                 </>
               )}
@@ -258,15 +265,13 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
           )}
         </div>
 
-        <aside className="league-ticker__side" aria-label="Tabelle">
-          <h3 className="section-title">{day ? `Tabelle nach dem ${day.round}. Spieltag` : 'Tabelle'}</h3>
+        <aside className="league-ticker__side" aria-label={t.draft.table}>
+          <h3 className="section-title">{day ? tx.tableAfter(day.round) : t.draft.table}</h3>
           <LiveTable table={table} day={day} you={you} nameOf={nameOf} />
         </aside>
       </div>
 
-      <p className="league-ticker__note muted small">
-        Alle sehen dieselbe Saison gleichzeitig. Überspringen gilt nur für dich.
-      </p>
+      <p className="league-ticker__note muted small">{tx.note}</p>
       <p className="sr-only" aria-live="polite" aria-atomic="true">
         {announcement}
       </p>
@@ -286,6 +291,7 @@ interface FixtureListProps {
 
 /** Alle Spiele eines Spieltags – das eigene zuerst und hervorgehoben. */
 export function FixtureList({ matches, you, nameOf, pokemonName, upcoming, className = '' }: FixtureListProps) {
+  const t = useT();
   const sorted = you == null ? matches : [...matches].sort((a, b) => Number(isOwn(b, you)) - Number(isOwn(a, you)));
   return (
     <ol className={`league-fixtures ${className}`}>
@@ -303,7 +309,10 @@ export function FixtureList({ matches, you, nameOf, pokemonName, upcoming, class
               <span className={`league-fixture__team league-fixture__team--home ${m.home === you ? 'is-you' : ''}`}>
                 {nameOf(m.home)}
               </span>
-              <span className="league-fixture__score" aria-label={upcoming ? 'noch offen' : `${m.hg} zu ${m.ag}`}>
+              <span
+                className="league-fixture__score"
+                aria-label={upcoming ? t.draft.ticker.scoreOpen : t.draft.ticker.scoreAria(m.hg, m.ag)}
+              >
                 {upcoming ? '–:–' : `${m.hg}:${m.ag}`}
               </span>
               <span className={`league-fixture__team league-fixture__team--away ${m.away === you ? 'is-you' : ''}`}>
@@ -315,7 +324,7 @@ export function FixtureList({ matches, you, nameOf, pokemonName, upcoming, class
                 <span className="league-fixture__scorers league-fixture__scorers--home">{home}</span>
                 <span className="league-fixture__mid">
                   {result && (
-                    <span className={`league-fixture__outcome is-${result.outcome}`}>{OUTCOME_WORD[result.outcome]}</span>
+                    <span className={`league-fixture__outcome is-${result.outcome}`}>{t.draft.outcome[result.outcome]}</span>
                   )}
                 </span>
                 <span className="league-fixture__scorers league-fixture__scorers--away">{away}</span>
@@ -334,11 +343,12 @@ function isOwn(m: Match, team: number): boolean {
 
 /** ▲/▼ – Platzveränderung gegenüber dem Vorspieltag. */
 function Trend({ delta }: { delta: number }) {
+  const t = useT();
   if (!delta) {
     return (
       <span className="league-trend league-trend--same">
         <span aria-hidden="true">–</span>
-        <span className="sr-only"> (unverändert)</span>
+        <span className="sr-only">{t.draft.ticker.unchanged}</span>
       </span>
     );
   }
@@ -352,7 +362,7 @@ function Trend({ delta }: { delta: number }) {
       </span>
       <span className="sr-only">
         {' '}
-        ({n} {n === 1 ? 'Platz' : 'Plätze'} {up ? 'geklettert' : 'abgerutscht'})
+        {t.draft.ticker.trend(n, up)}
       </span>
     </span>
   );
@@ -367,35 +377,36 @@ interface LiveTableProps {
 
 /** Komplette Tabelle nach dem Spieltag (höchstens 8 Teams) mit Trendpfeilen. */
 function LiveTable({ table, day, you, nameOf }: LiveTableProps) {
+  const c = useT().draft.col;
   return (
     <div className="table-scroll">
       <table className="league-table league-live">
         <thead>
           <tr>
-            <th scope="col" title="Platz">
-              Pl.
+            <th scope="col" title={c.placeTitle}>
+              {c.place}
             </th>
             <th scope="col" className="left">
-              Team
+              {c.team}
             </th>
-            <th scope="col" title="Spiele">
-              Sp
+            <th scope="col" title={c.playedTitle}>
+              {c.played}
             </th>
-            <th scope="col" title="Siege">
-              S
+            <th scope="col" title={c.wonTitle}>
+              {c.won}
             </th>
-            <th scope="col" title="Unentschieden">
-              U
+            <th scope="col" title={c.drawnTitle}>
+              {c.drawn}
             </th>
-            <th scope="col" title="Niederlagen">
-              N
+            <th scope="col" title={c.lostTitle}>
+              {c.lost}
             </th>
-            <th scope="col">Tore</th>
-            <th scope="col" title="Tordifferenz">
-              Diff
+            <th scope="col">{c.goals}</th>
+            <th scope="col" title={c.diffTitle}>
+              {c.diff}
             </th>
-            <th scope="col" title="Punkte">
-              Pkt
+            <th scope="col" title={c.ptsTitle}>
+              {c.pts}
             </th>
           </tr>
         </thead>

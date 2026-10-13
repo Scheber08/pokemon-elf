@@ -13,9 +13,10 @@ import game from './game';
 import info from './info';
 import leaderboard from './leaderboard';
 import nav from './nav';
+import online from './online';
 import result from './result';
 import scouting from './scouting';
 
-export const de = { common, nav, game, builder, challenge, result, daily, leaderboard, draft, scouting, info, errors };
+export const de = { common, nav, game, builder, challenge, result, daily, leaderboard, draft, online, scouting, info, errors };
 
 export type Messages = typeof de;

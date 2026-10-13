@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftSettings } from '../lib/api/draftContract';
 import { copyText } from '../lib/exportImage';
@@ -11,6 +12,7 @@ import {
   loadTeamPrefs,
   saveTeamPrefs,
   startBlocker,
+  teamLabel,
   type DraftRoom,
   type TeamPrefs,
 } from '../state/useDraftRoom';
@@ -20,6 +22,7 @@ import '../styles/draft.css';
 
 /** Liga-Code groß + Link kopieren / Teilen. */
 function DraftCodeCard({ code }: { code: string }) {
+  const t = useT();
   const toast = useToast();
   const link = draftLink(code);
   const nav = navigator as Navigator & { share?: (data: ShareData) => Promise<void> };
@@ -27,18 +30,18 @@ function DraftCodeCard({ code }: { code: string }) {
   return (
     <section className="card draft-code" aria-labelledby="draft-code-title">
       <span id="draft-code-title" className="kicker">
-        Liga-Code
+        {t.online.leagueCode}
       </span>
-      <p className="draft-code__value" aria-label={`Liga-Code ${code.split('').join(' ')}`}>
+      <p className="draft-code__value" aria-label={t.online.codeAria(code.split('').join(' '))}>
         {code}
       </p>
       <div className="draft-code__actions">
         <button
           type="button"
           className="btn btn--primary"
-          onClick={async () => toast((await copyText(link)) ? 'Link kopiert' : 'Kopieren hat nicht geklappt')}
+          onClick={async () => toast((await copyText(link)) ? t.online.linkCopied : t.online.copyFailed)}
         >
-          Link kopieren
+          {t.online.copyLink}
         </button>
         {canShare && (
           <button
@@ -46,24 +49,25 @@ function DraftCodeCard({ code }: { code: string }) {
             className="btn"
             onClick={() =>
               nav
-                .share?.({ title: 'Pokémon Elf – Fantasy-Draft', text: `Komm in meine Draft-Liga! Code: ${code}`, url: link })
+                .share?.({ title: t.online.shareTitle, text: t.online.shareText(code), url: link })
                 .catch(() => {
                   /* abgebrochen */
                 })
             }
           >
-            Teilen
+            {t.online.share}
           </button>
         )}
       </div>
       <p className="muted small draft-code__link">{link}</p>
-      <p className="muted small">Freunde öffnen den Link oder geben den Code unter „Mit Code beitreten" ein.</p>
+      <p className="muted small">{t.online.codeCardHint}</p>
     </section>
   );
 }
 
 /** Beitreten (Teamname + Formation). */
 function JoinCard({ room }: { room: DraftRoom }) {
+  const t = useT();
   const [prefs, setPrefs] = useState<TeamPrefs>(loadTeamPrefs);
   const s = room.state!;
   const submit = (e: FormEvent) => {
@@ -74,18 +78,16 @@ function JoinCard({ room }: { room: DraftRoom }) {
     return (
       <section className="card" aria-labelledby="draft-join-title">
         <h2 id="draft-join-title" className="section-title">
-          Mitspielen
+          {t.online.playAlong}
         </h2>
-        <p className="notice">
-          Die Liga ist voll ({s.teams.length}/{s.settings.maxTeams}). Du kannst zuschauen – vielleicht wird noch ein Platz frei.
-        </p>
+        <p className="notice">{t.online.leagueFull(s.teams.length, s.settings.maxTeams)}</p>
       </section>
     );
   }
   return (
     <form className="card" aria-labelledby="draft-join-title" onSubmit={submit}>
       <h2 id="draft-join-title" className="section-title">
-        Mitspielen
+        {t.online.playAlong}
       </h2>
       <DraftTeamFields
         name={prefs.name}
@@ -99,7 +101,7 @@ function JoinCard({ room }: { room: DraftRoom }) {
         disabled={!cleanTeamName(prefs.name) || room.status !== 'open' || room.busy.join}
         aria-busy={room.busy.join}
       >
-        {room.busy.join ? 'Trete bei …' : 'Beitreten'}
+        {room.busy.join ? t.online.joining : t.online.join}
       </button>
     </form>
   );
@@ -107,6 +109,7 @@ function JoinCard({ room }: { room: DraftRoom }) {
 
 /** Eigenes Team bearbeiten + Liga verlassen. */
 function MyTeamCard({ room }: { room: DraftRoom }) {
+  const t = useT();
   const navigate = useNavigate();
   const toast = useToast();
   const me = room.me!;
@@ -129,13 +132,11 @@ function MyTeamCard({ room }: { room: DraftRoom }) {
   };
 
   const leave = () => {
-    const msg = room.isHost
-      ? 'Liga wirklich verlassen? Ein anderes Team wird Host.'
-      : 'Liga wirklich verlassen? Dein Team wird entfernt.';
+    const msg = room.isHost ? t.online.leaveConfirmHost : t.online.leaveConfirm;
     if (!window.confirm(msg)) return;
     if (room.leave()) {
       forgetLeague(room.state!.code);
-      toast('Liga verlassen');
+      toast(t.online.left);
       navigate('/draft');
     }
   };
@@ -143,7 +144,7 @@ function MyTeamCard({ room }: { room: DraftRoom }) {
   return (
     <section className="card" aria-labelledby="draft-me-title">
       <h2 id="draft-me-title" className="section-title">
-        Dein Team
+        {t.online.yourTeam}
       </h2>
       <DraftTeamFields
         name={nameDraft ?? me.name}
@@ -155,7 +156,7 @@ function MyTeamCard({ room }: { room: DraftRoom }) {
         }}
       />
       <button type="button" className="btn btn--ghost btn--small" onClick={leave}>
-        Liga verlassen
+        {t.online.leave}
       </button>
     </section>
   );
@@ -164,11 +165,12 @@ function MyTeamCard({ room }: { room: DraftRoom }) {
 /** Lobby: Code teilen, Teams, eigenes Team, Einstellungen (Host live), Start. readOnly: öffentliche Vorschau ohne Live-Verbindung. */
 export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOnly?: boolean }) {
   const { list } = usePokemonData();
+  const t = useT();
   const s = room.state!;
   const { me } = room;
   // Host-Werkzeuge nur mit Live-Verbindung (die Vorschau kennt die eigene Rolle nicht)
   const isHost = room.isHost && !readOnly;
-  const blocker = startBlocker(s, list);
+  const blocker = startBlocker(s, list, t);
   /** Liganame tippt der Host lokal; gesendet wird kurz nach der letzten Taste */
   const [leagueName, setLeagueName] = useState<string | null>(null);
 
@@ -189,7 +191,7 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
   };
 
   const move = (index: number, dir: -1 | 1) => {
-    const ids = s.teams.map((t) => t.id);
+    const ids = s.teams.map((x) => x.id);
     const j = index + dir;
     if (j < 0 || j >= ids.length) return;
     [ids[index], ids[j]] = [ids[j], ids[index]];
@@ -202,64 +204,66 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
         <DraftCodeCard code={s.code} />
         <section className="card" aria-labelledby="draft-teams-title">
           <h2 id="draft-teams-title" className="section-title">
-            Teams{' '}
+            {t.online.teams}{' '}
             <span className="muted">
               ({s.teams.length}/{s.settings.maxTeams})
             </span>
           </h2>
           <ol className="draft-lobby__teams">
-            {s.teams.map((t, i) => (
-              <li key={t.id} className={`draft-lobby__team ${t.id === s.you ? 'is-mine' : ''}`}>
-                <span className="draft__no">{i + 1}</span>
-                <span className="draft-lobby__name">
-                  <strong>{t.name}</strong>
-                  <small>{t.formation}</small>
-                </span>
-                <DraftTeamTags team={t} host={t.id === s.hostTeamId} you={t.id === s.you} />
-                {isHost && (
-                  <span className="draft-lobby__tools">
-                    {s.settings.order === 'host' && (
-                      <>
-                        <button
-                          type="button"
-                          className="draft-icon-btn"
-                          aria-label={`${t.name} nach oben`}
-                          disabled={i === 0}
-                          onClick={() => move(i, -1)}
-                        >
-                          ↑
-                        </button>
-                        <button
-                          type="button"
-                          className="draft-icon-btn"
-                          aria-label={`${t.name} nach unten`}
-                          disabled={i === s.teams.length - 1}
-                          onClick={() => move(i, 1)}
-                        >
-                          ↓
-                        </button>
-                      </>
-                    )}
-                    {t.id !== s.hostTeamId && (
-                      <button
-                        type="button"
-                        className="draft-icon-btn draft-icon-btn--danger"
-                        aria-label={`${t.name} entfernen`}
-                        title="Team entfernen"
-                        onClick={() => (t.cpu || window.confirm(`${t.name} aus der Liga entfernen?`)) && room.removeTeam(t.id)}
-                      >
-                        ×
-                      </button>
-                    )}
+            {s.teams.map((team, i) => {
+              // Vereinsnamen der CPU-Teams erst bei der Anzeige übersetzen
+              const name = teamLabel(team, t);
+              return (
+                <li key={team.id} className={`draft-lobby__team ${team.id === s.you ? 'is-mine' : ''}`}>
+                  <span className="draft__no">{i + 1}</span>
+                  <span className="draft-lobby__name">
+                    <strong>{name}</strong>
+                    <small>{team.formation}</small>
                   </span>
-                )}
-              </li>
-            ))}
+                  <DraftTeamTags team={team} host={team.id === s.hostTeamId} you={team.id === s.you} />
+                  {isHost && (
+                    <span className="draft-lobby__tools">
+                      {s.settings.order === 'host' && (
+                        <>
+                          <button
+                            type="button"
+                            className="draft-icon-btn"
+                            aria-label={t.online.moveUp(name)}
+                            disabled={i === 0}
+                            onClick={() => move(i, -1)}
+                          >
+                            ↑
+                          </button>
+                          <button
+                            type="button"
+                            className="draft-icon-btn"
+                            aria-label={t.online.moveDown(name)}
+                            disabled={i === s.teams.length - 1}
+                            onClick={() => move(i, 1)}
+                          >
+                            ↓
+                          </button>
+                        </>
+                      )}
+                      {team.id !== s.hostTeamId && (
+                        <button
+                          type="button"
+                          className="draft-icon-btn draft-icon-btn--danger"
+                          aria-label={t.online.removeAria(name)}
+                          title={t.online.removeTitle}
+                          onClick={() => (team.cpu || window.confirm(t.online.removeConfirm(name))) && room.removeTeam(team.id)}
+                        >
+                          ×
+                        </button>
+                      )}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ol>
           <p className="muted small">
-            {s.settings.order === 'random'
-              ? 'Die Draft-Reihenfolge wird beim Start ausgelost.'
-              : 'Draft-Reihenfolge wie in der Liste (Runde 2 rückwärts – Snake-Draft).'}
+            {s.settings.order === 'random' ? t.online.orderRandom : t.online.orderHost}
           </p>
           {isHost && (
             <button
@@ -271,7 +275,7 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
               aria-busy={room.busy['add-cpu']}
               onClick={() => !room.busy['add-cpu'] && room.addCpu()}
             >
-              CPU-Team hinzufügen
+              {t.online.addCpu}
             </button>
           )}
         </section>
@@ -280,12 +284,9 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
         ) : readOnly ? (
           <section className="card" aria-labelledby="draft-join-title">
             <h2 id="draft-join-title" className="section-title">
-              Mitspielen
+              {t.online.playAlong}
             </h2>
-            <p className="notice draft-readonly">
-              Nur Ansicht – die Live-Verbindung steht noch nicht. Beitreten (bzw. dein Team, falls du schon dabei bist)
-              gibt es, sobald sie da ist.
-            </p>
+            <p className="notice draft-readonly">{t.online.readOnlyLobby}</p>
           </section>
         ) : (
           <JoinCard room={room} />
@@ -295,7 +296,7 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
       <div className="draft-lobby__side">
         <section className="card" aria-labelledby="draft-settings-title">
           <h2 id="draft-settings-title" className="section-title">
-            Einstellungen
+            {t.online.settings}
           </h2>
           {isHost ? (
             <DraftSettingsForm
@@ -310,10 +311,11 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
               <DraftSettingsSummary settings={s.settings} />
               <p className="hint hint--active draft-wait" role="status">
                 {readOnly ? (
-                  'Nur Ansicht – ohne Live-Verbindung.'
+                  t.online.readOnlySettings
                 ) : (
                   <>
-                    <span className="boot__ball boot__ball--small" aria-hidden="true" /> Warte auf den Host …
+                    <span className="boot__ball boot__ball--small" aria-hidden="true" />
+                    {t.online.waitingHost}
                   </>
                 )}
               </p>
@@ -329,16 +331,14 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
               aria-busy={room.busy.start}
               onClick={room.start}
             >
-              {room.busy.start ? 'Draft wird gestartet …' : 'Draft starten'}
+              {room.busy.start ? t.online.starting : t.online.start}
             </button>
             {blocker ? (
               <p className="hint">{blocker}</p>
             ) : (
               <p className="hint">
-                {s.teams.length} Teams · Snake-Draft über {s.settings.setPiece ? 12 : 11} Runden.{' '}
-                {s.settings.pickSeconds
-                  ? `Läuft der ${s.settings.pickSeconds}-s-Timer ab, wählt der Server automatisch.`
-                  : 'Ohne Timer kannst du für abwesende Teams automatisch wählen lassen.'}
+                {t.online.startInfo(s.teams.length, s.settings.setPiece ? 12 : 11)}{' '}
+                {s.settings.pickSeconds ? t.online.startTimer(s.settings.pickSeconds) : t.online.startNoTimer}
               </p>
             )}
           </section>

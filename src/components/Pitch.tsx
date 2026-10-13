@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { FORMATIONS } from '../config/formations';
-import { POSITIONS } from '../config/positions';
+import { useT } from '../i18n';
 import { usePokemonData } from '../state/PokemonData';
 import type { FormationId, PosCode, Pokemon, Slots, SpriteStyle } from '../types';
 import { PitchMarkings } from './PitchMarkings';
@@ -67,10 +67,11 @@ export function Pitch({
   highlight,
   tooltips = true,
   positionTips = false,
-  ariaLabel = 'Spielfeld',
+  ariaLabel,
   className = '',
 }: Props) {
   const { byId } = usePokemonData();
+  const t = useT();
   const wrapRef = useRef<HTMLDivElement>(null);
   const press = useRef<Press | null>(null);
   const suppressClick = useRef(false);
@@ -226,8 +227,8 @@ export function Pitch({
       .filter(Boolean)
       .join(' ');
     const label = pokemon
-      ? `${POSITIONS[pos].name}: ${pokemon.de}${onSlotClick ? ' – austauschen' : ''}`
-      : `${POSITIONS[pos].name}: leer${onSlotClick ? ' – Pokémon wählen' : ''}`;
+      ? t.builder.pitch.filled(t.game.posName[pos], t.game.pokemon(pokemon), !!onSlotClick)
+      : t.builder.pitch.empty(t.game.posName[pos], !!onSlotClick);
     const content = <PlayerToken key={`${index}-${id ?? 'x'}`} pos={pos} pokemon={pokemon} sprite={sprite} />;
     if (!interactive) {
       return (
@@ -273,15 +274,15 @@ export function Pitch({
       className={`pitch-wrap ${drag ? 'is-dragging' : ''} ${className}`}
       style={{ ['--pw' as string]: `${pw || 560}px`, ['--ps' as string]: (pw || 560) / 560 }}
     >
-      <div className="pitch" role="group" aria-label={ariaLabel}>
+      <div className="pitch" role="group" aria-label={ariaLabel ?? t.builder.pitch.label}>
         <PitchMarkings />
         {defs.map((d, i) => renderSlot(i, { left: `${d.x}%`, top: `${d.y}%`, zIndex: Math.round(d.y) }))}
       </div>
       {ss !== undefined && (
         <div className="bench">
-          <span className="bench__label">Standardschütze</span>
+          <span className="bench__label">{t.game.posName.SS}</span>
           {renderSlot(SS_INDEX)}
-          <span className="bench__note">zählt nicht zum Team-Score</span>
+          <span className="bench__note">{t.builder.pitch.ssNote}</span>
         </div>
       )}
       {tip &&

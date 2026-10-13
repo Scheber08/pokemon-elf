@@ -1,24 +1,29 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { FORMATION_IDS } from '../config/formations';
+import { useT } from '../i18n';
 import type { ChallengeStats } from '../lib/challengeStats';
 import { formatRecord } from '../lib/season';
 import type { FormationId } from '../types';
 import { Segmented } from './Segmented';
 import '../styles/run.css';
 
+/** Beispielverein im Platzhalter des Teamnamens (intern deutscher Name, übersetzt per game.club) */
+const EXAMPLE_CLUB = 'Dynamo Mahagonia';
+
 export function StatCards({ stats }: { stats: ChallengeStats }) {
+  const t = useT();
   return (
     <div className="statcards">
       <div className="statcard">
-        <span className="statcard__label">Bester Score</span>
+        <span className="statcard__label">{t.challenge.bestScore}</span>
         <span className="statcard__value">{stats.bestScore ?? '–'}</span>
       </div>
       <div className="statcard">
-        <span className="statcard__label">Beste Bilanz</span>
+        <span className="statcard__label">{t.challenge.bestRecord}</span>
         <span className="statcard__value">{stats.bestRecord ? formatRecord(stats.bestRecord) : '–'}</span>
       </div>
       <div className="statcard">
-        <span className="statcard__label">Runs</span>
+        <span className="statcard__label">{t.challenge.runs}</span>
         <span className="statcard__value">{stats.runs}</span>
       </div>
     </div>
@@ -26,9 +31,10 @@ export function StatCards({ stats }: { stats: ChallengeStats }) {
 }
 
 export function HowItWorks({ children }: { children: ReactNode }) {
+  const t = useT();
   return (
-    <aside className="howto card" aria-label="So funktioniert's">
-      <h2 className="section-title">So funktioniert's</h2>
+    <aside className="howto card" aria-label={t.challenge.howItWorks}>
+      <h2 className="section-title">{t.challenge.howItWorks}</h2>
       <p>{children}</p>
     </aside>
   );
@@ -48,40 +54,41 @@ interface SetupProps {
 }
 
 export function RunSetup({ formation, ssEnabled, teamName, onChange, onStart, extra, starting, note }: SetupProps) {
+  const t = useT();
   return (
-    <section className="card setup" aria-label="Run vorbereiten">
+    <section className="card setup" aria-label={t.challenge.setupAria}>
       {extra}
       <Segmented
-        label="Formation"
+        label={t.challenge.formation}
         wrap
         value={formation}
         onChange={(f) => onChange({ formation: f, ssEnabled, teamName })}
         options={FORMATION_IDS.map((f) => ({ value: f, label: f }))}
       />
       <Segmented
-        label="Standardschütze"
+        label={t.game.posName.SS}
         value={ssEnabled}
         onChange={(v) => onChange({ formation, ssEnabled: v, teamName })}
         options={[
-          { value: false, label: 'Aus' },
-          { value: true, label: 'An' },
+          { value: false, label: t.challenge.off },
+          { value: true, label: t.challenge.on },
         ]}
       />
       <div className="field">
         <label className="field__label" htmlFor="run-team-name">
-          Teamname <small>(optional)</small>
+          {t.challenge.teamName} <small>{t.challenge.optional}</small>
         </label>
         <input
           id="run-team-name"
           className="input"
           maxLength={32}
           value={teamName}
-          placeholder="z. B. Dynamo Mahagonia"
+          placeholder={t.challenge.teamNamePlaceholder(t.game.club(EXAMPLE_CLUB))}
           onChange={(e) => onChange({ formation, ssEnabled, teamName: e.target.value })}
         />
       </div>
       <button type="button" className="btn btn--primary btn--big" onClick={onStart} disabled={starting} aria-busy={starting}>
-        {starting ? 'Starte …' : 'Run starten'}
+        {starting ? t.challenge.starting : t.challenge.start}
       </button>
       {note && <div className="setup__note">{note}</div>}
     </section>
@@ -101,6 +108,7 @@ interface RollCardProps {
 
 /** Große Karte mit Slot-Machine-Animation. Klick/Tippen überspringt die Animation. */
 export function RollCard({ label, value, rolling, reel, onSkip, color, textColor }: RollCardProps) {
+  const t = useT();
   const [tick, setTick] = useState(0);
   const reelRef = useRef(reel);
   reelRef.current = reel;
@@ -119,7 +127,7 @@ export function RollCard({ label, value, rolling, reel, onSkip, color, textColor
       style={!rolling && color ? { background: color, color: textColor } : undefined}
       onClick={onSkip}
       aria-live="polite"
-      aria-label={rolling ? `${label}: wird gewürfelt – tippen zum Überspringen` : undefined}
+      aria-label={rolling ? t.challenge.rollingAria(label) : undefined}
     >
       <span className="rollcard__label">{label}</span>
       <span className="rollcard__value" key={rolling ? `r${tick}` : 'final'}>

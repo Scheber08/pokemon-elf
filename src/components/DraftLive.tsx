@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { FORMATIONS } from '../config/formations';
-import { POSITIONS } from '../config/positions';
+import { useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam } from '../lib/api/draftContract';
 import { autoPickChoice, autoPickOpensAt, DRAFT_SS_SLOT, freeSlots, poolOf, type DraftState } from '../lib/draftEngine';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
-import { draftedKey, ownerOfPicks, pickAnnouncement, pickFeed, type DraftRoom } from '../state/useDraftRoom';
+import { draftedKey, ownerOfPicks, pickAnnouncement, pickFeed, teamLabel, type DraftRoom } from '../state/useDraftRoom';
 import type { Pokemon } from '../types';
 import { DraftBoard, DraftPickFeed } from './DraftBoard';
 import { DraftCountdown } from './DraftCountdown';
@@ -25,6 +25,7 @@ function asState(s: DraftSnapshot): DraftState {
  * jedes Mitglied für es wählen – vorher läuft ein Countdown. Eigene Komponente, damit nur sie tickt.
  */
 function AutoPickNotice({ room, team, opensAt }: { room: DraftRoom; team: DraftTeam; opensAt: number }) {
+  const t = useT();
   const [now, setNow] = useState(() => Date.now() + room.clockOffset);
   const wait = opensAt - now;
   useEffect(() => {
@@ -39,8 +40,8 @@ function AutoPickNotice({ room, team, opensAt }: { room: DraftRoom; team: DraftT
   return (
     <div className="notice draft-hostauto">
       <span>
-        <strong>{team.name}</strong> {team.online ? 'überlegt schon sehr lange.' : 'ist offline.'}
-        {wait > 0 && <> Auto-Pick in {Math.ceil(wait / 1000)} s möglich.</>}
+        <strong>{teamLabel(team, t)}</strong> {team.online ? t.online.thinkingLong : t.online.isOffline}
+        {wait > 0 && t.online.autoPickIn(Math.ceil(wait / 1000))}
       </span>
       {wait <= 0 && (
         <button
@@ -52,7 +53,7 @@ function AutoPickNotice({ room, team, opensAt }: { room: DraftRoom; team: DraftT
           aria-busy={busy}
           onClick={() => !busy && room.autoPick(team.id)}
         >
-          {busy ? 'Wird gewählt …' : `Automatisch für ${team.name} wählen`}
+          {busy ? t.online.autoPicking : t.online.autoPickFor(teamLabel(team, t))}
         </button>
       )}
     </div>
@@ -63,6 +64,7 @@ function AutoPickNotice({ room, team, opensAt }: { room: DraftRoom; team: DraftT
 export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnly?: boolean }) {
   const { list, byId, scale } = usePokemonData();
   const { sprite } = useSettings();
+  const t = useT();
   const s = room.state!;
   const { me, current, myTurn, pending } = room;
   const [selected, setSelected] = useState<number | null>(null);
@@ -92,7 +94,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   const owners = useMemo(() => ownerOfPicks(s), [takenKey]);
   const items = useMemo(() => (showTaken ? pool : pool.filter((p) => !owners.has(p.id))), [pool, owners, showTaken]);
   const filtered = useFilteredPokemon(items, filters);
-  const feed = useMemo(() => pickFeed(s, byId), [s, byId]);
+  const feed = useMemo(() => pickFeed(s, byId, undefined, t), [s, byId, t]);
   // Raster nur bei anderem Filter/Pool wieder von vorn – ein Pick nimmt nur eine Karte heraus
   const gridKey = `${region}|${legends}|${showTaken}|${filters.region}|${filters.type ?? ''}|${filters.query}`;
   const filtering = !!filters.query.trim() || !!filters.type || filters.region !== 0;
@@ -102,7 +104,10 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     if (selected == null) return;
     const owner = owners.get(selected);
     if (!owner) return;
-    if (owner.id !== me?.id) setInfo(`${byId.get(selected)?.de ?? 'Dein Favorit'} ist weg – ${owner.name} war schneller.`);
+    if (owner.id !== me?.id) {
+      const mon = byId.get(selected);
+      setInfo(t.online.favouriteGone(mon ? t.game.pokemon(mon) : t.online.favouriteFallback, teamLabel(owner, t)));
+    }
     setSelected(null);
     setSuggestSlot(null);
   }, [owners]);
@@ -117,7 +122,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   const selectedMon = selected != null ? byId.get(selected) : undefined;
   const lastPick = room.lastPick;
   const lastMon = lastPick ? byId.get(lastPick.pokemonId) : undefined;
-  const lastTeam = lastPick ? s.teams.find((t) => t.id === lastPick.teamId) : undefined;
+  const lastTeam = lastPick ? s.teams.find((tm) => tm.id === lastPick.teamId) : undefined;
   const pitchTeam = me ?? current;
   const mySlots = me ? freeSlots(me, s.settings) : [];
 
@@ -137,7 +142,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
       setSelected(choice.pokemonId);
       setSuggestSlot(choice.slot);
     } catch {
-      setInfo('Kein Vorschlag möglich');
+      setInfo(t.online.noSuggestion);
     }
   };
 
@@ -146,11 +151,11 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     const filled = i === DRAFT_SS_SLOT ? me.ss != null : me.slots[i] != null;
     if (filled) return;
     if (selected == null) {
-      setInfo('Wähle zuerst ein Pokémon aus dem Pool.');
+      setInfo(t.online.chooseFirst);
       return;
     }
     if (!myTurn) {
-      setInfo('Du bist noch nicht dran – dein Favorit bleibt vorgemerkt.');
+      setInfo(t.online.notYourTurnYet);
       return;
     }
     room.pick(selected, i);
@@ -171,19 +176,21 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   const hint = !me ? null : myTurn ? (
     selectedMon ? (
       <>
-        <strong>{selectedMon.de}</strong> gewählt
-        {suggestPos ? <> – Vorschlag: {POSITIONS[suggestPos].name}</> : null}. Klicke auf einen freien Platz auf deinem
-        Feld.
+        <strong>{t.game.pokemon(selectedMon)}</strong>
+        {t.online.hintChosen}
+        {suggestPos ? t.online.hintSuggestion(t.game.posName[suggestPos]) : null}
+        {t.online.hintClickSlot}
       </>
     ) : (
-      'Wähle ein Pokémon aus dem Pool und dann einen freien Platz auf deinem Feld.'
+      t.online.hintChoose
     )
   ) : selectedMon ? (
     <>
-      <strong>{selectedMon.de}</strong> ist vorgemerkt. Sobald du dran bist, klickst du auf einen freien Platz.
+      <strong>{t.game.pokemon(selectedMon)}</strong>
+      {t.online.hintQueued}
     </>
   ) : (
-    `${current?.name ?? 'Ein anderes Team'} ist dran. Du kannst schon stöbern und einen Favoriten vormerken.`
+    t.online.hintWaiting(current ? teamLabel(current, t) : t.online.anotherTeam)
   );
 
   // Abwesendes Team am Zug: jedes Mitglied darf nach der Frist für es wählen (Server prüft dasselbe)
@@ -193,26 +200,26 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     <div className="draft-live" ref={rootRef}>
       {/* Einzige Live-Region für Picks: eine kurze Ansage pro Pick („Du bist dran!" meldet sich selbst) */}
       <p className="sr-only" aria-live="polite" aria-atomic="true">
-        {pickAnnouncement(s, byId)}
+        {pickAnnouncement(s, byId, t)}
       </p>
       <div className={`draft-turnbar ${myTurn ? 'is-my-turn' : ''}`} ref={barRef}>
         <div className="statusline">
           <span className="statusline__item">
-            Runde{' '}
+            {t.online.round}{' '}
             <strong>
               {room.round}/{room.rounds}
             </strong>
           </span>
           <span className="statusline__item">
-            Pick{' '}
+            {t.online.pick}{' '}
             <strong>
               {room.pickNo}/{room.totalPicks}
             </strong>
           </span>
           <span className="statusline__item draft-turnbar__team">
-            Am Zug: <strong>{myTurn ? 'Du' : current?.name ?? '–'}</strong>
-            {current?.cpu && ' (CPU)'}
-            {current && !current.cpu && !current.online && ' (offline)'}
+            {t.online.onTheClock} <strong>{myTurn ? t.online.you : current ? teamLabel(current, t) : '–'}</strong>
+            {current?.cpu && t.online.cpuTag}
+            {current && !current.cpu && !current.online && t.online.offlineTag}
           </span>
         </div>
         <DraftCountdown
@@ -223,15 +230,15 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
         />
         {lastPick && lastMon && (
           <p className="draft-turnbar__last">
-            Letzter Pick: <strong>{lastMon.de}</strong> → {lastTeam?.name}
-            {lastPick.auto && ' (auto)'}
+            {t.online.lastPick} <strong>{t.game.pokemon(lastMon)}</strong> → {lastTeam && teamLabel(lastTeam, t)}
+            {lastPick.auto && t.online.autoTag}
           </p>
         )}
       </div>
 
       {myTurn && (
         <div className="draft-myturn" role="alert">
-          Du bist dran!
+          {t.online.yourTurn}
         </div>
       )}
 
@@ -244,16 +251,16 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
           {me ? (
             <section aria-labelledby="draft-pool-title">
               <h2 id="draft-pool-title" className="section-title">
-                Pool <span className="muted">({pool.length - owners.size} frei)</span>
+                {t.online.pool} <span className="muted">{t.online.poolFree(pool.length - owners.size)}</span>
               </h2>
               <p className={`hint ${myTurn || selectedMon ? 'hint--active' : ''}`}>{hint}</p>
               <div className="draft-pooltools">
                 <button type="button" className="btn btn--small" onClick={suggest} disabled={!mySlots.length}>
-                  Vorschlag
+                  {t.online.suggest}
                 </button>
                 <label className="draft-check">
-                  <input type="checkbox" checked={showTaken} onChange={(e) => setShowTaken(e.target.checked)} /> Vergebene
-                  zeigen
+                  <input type="checkbox" checked={showTaken} onChange={(e) => setShowTaken(e.target.checked)} />{' '}
+                  {t.online.showTaken}
                 </label>
               </div>
               <FilterBar
@@ -272,24 +279,22 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                 onPick={choose}
                 disabledReason={(p) => {
                   const owner = owners.get(p.id);
-                  return owner ? `Vergeben an ${owner.name}` : null;
+                  return owner ? t.online.takenBy(teamLabel(owner, t)) : null;
                 }}
                 className="pgrid-wrap--compact"
               />
             </section>
           ) : readOnly ? (
-            <p className="notice draft-readonly">
-              Nur Ansicht – die Live-Verbindung steht noch nicht. Sobald sie da ist, kannst du hier wieder mitmachen.
-            </p>
+            <p className="notice draft-readonly">{t.online.readOnlyLive}</p>
           ) : (
-            <p className="notice">Du schaust zu – der Draft hat ohne dich begonnen. Alle Picks erscheinen hier live.</p>
+            <p className="notice">{t.online.spectating}</p>
           )}
         </div>
         <div className="challenge__pitch" ref={pitchRef}>
           {pitchTeam && (
             <>
               <h2 className="section-title">
-                {pitchTeam === me ? 'Dein Team' : pitchTeam.name} · {pitchTeam.formation}
+                {pitchTeam === me ? t.online.yourTeam : teamLabel(pitchTeam, t)} · {pitchTeam.formation}
               </h2>
               <Pitch
                 formation={pitchTeam.formation}
@@ -299,9 +304,9 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                 slotState={slotState}
                 positionTips
                 onSlotClick={pitchTeam === me ? onSlotClick : undefined}
-                ariaLabel={`Spielfeld ${pitchTeam.name}, Formation ${pitchTeam.formation}`}
+                ariaLabel={t.online.pitchAria(teamLabel(pitchTeam, t), pitchTeam.formation)}
               />
-              {pending && <p className="hint draft-pending">Pick wird gesendet …</p>}
+              {pending && <p className="hint draft-pending">{t.online.pickSending}</p>}
             </>
           )}
         </div>

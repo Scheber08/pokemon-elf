@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { useT } from '../i18n';
 
 interface Props {
   title: ReactNode;
@@ -12,6 +13,7 @@ interface Props {
 
 /** Barrierearmer Dialog: Fokusfalle, Esc schließt, Fokus kehrt zum Auslöser zurück. Mobil als Vollbild-Sheet. */
 export function Modal({ title, onClose, children, footer, className = '', labelId = 'modal-title' }: Props) {
+  const t = useT();
   const ref = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -67,7 +69,7 @@ export function Modal({ title, onClose, children, footer, className = '', labelI
           <h2 id={labelId} className="modal__title">
             {title}
           </h2>
-          <button type="button" className="icon-btn" onClick={onClose} aria-label="Schließen">
+          <button type="button" className="icon-btn" onClick={onClose} aria-label={t.common.close}>
             ✕
           </button>
         </header>

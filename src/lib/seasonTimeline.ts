@@ -4,6 +4,7 @@
  * (keine Zufallszahlen), die Tabelle je Spieltag entsteht mit buildTable.
  */
 import { SEASON } from '../config/season';
+import { messages } from '../i18n';
 import type { Record3 } from '../types';
 import { buildTable, type Goal, type Match, type SeasonResult, type TableRow, type UserMatch } from './season';
 
@@ -137,10 +138,12 @@ export interface ScorerGroup {
 
 /** Fasst die Tore eines Spiels je Schütze zusammen (Reihenfolge des ersten Treffers). */
 export function scorerGroups(scorers: Goal[], nameOf: (pokemonId: number) => string): ScorerGroup[] {
+  const t = messages().result;
   const groups = new Map<string, ScorerGroup>();
   for (const g of scorers) {
     const setPiece = g.pos === 'SS';
-    const label = nameOf(g.pokemonId) + (setPiece ? ' (Standard)' : '');
+    const name = nameOf(g.pokemonId);
+    const label = setPiece ? t.setPiece(name) : name;
     const cur = groups.get(label);
     if (cur) cur.goals++;
     else groups.set(label, { pokemonId: g.pokemonId, label, goals: 1, setPiece });

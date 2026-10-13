@@ -5,8 +5,9 @@ import { RunBoard, RunModeBadge, RunNotice } from '../components/RunBoard';
 import { SeasonResultView } from '../components/SeasonResultView';
 import { fetchLeaderboard } from '../lib/api/client';
 import type { LeaderboardRow } from '../lib/api/contract';
+import { useT } from '../i18n';
 import { MODE_RULES } from '../lib/challengeEngine';
-import { dailyNumber, dayKey, formatDay, msUntilNextDay } from '../lib/daily';
+import { dailyNumber, dayKey, msUntilNextDay } from '../lib/daily';
 import { keepDailyRun } from '../lib/dailyRun';
 import { buildDailyShareText, formatCountdown, formatDayLong } from '../lib/dailyShare';
 import { copyText } from '../lib/exportImage';
@@ -19,9 +20,6 @@ import '../styles/daily.css';
 
 /** Deep-Link auf die heutige Tageswertung der Rangliste */
 const BOARD_LINK = '/rangliste?c=daily&p=today';
-
-const HOW_TO =
-  'Jeden Tag dieselben Würfe für alle: Region und Typ werden pro Runde gewürfelt – wie bei der 34–0 Challenge, mit höchstens 2 Legendären und je einem Reroll für Typ und Region. Du hast einen Versuch pro Tag. Gleiche Elf, gleiches Ergebnis – die Saison ist für alle identisch. Schaffst du 34–0?';
 
 interface DailyClock {
   /** Heutiger Tag in Berlin „YYYY-MM-DD" */
@@ -55,6 +53,7 @@ function useDailyClock(): DailyClock {
 
 /** „Neue Elf in 05:12:33" – tickt jede Sekunde (eigene Komponente, damit nur sie neu rendert). */
 function Countdown({ nextAt }: { nextAt: number }) {
+  const t = useT();
   const [now, setNow] = useState(Date.now);
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 1000);
@@ -62,7 +61,7 @@ function Countdown({ nextAt }: { nextAt: number }) {
   }, []);
   return (
     <p className="daily-countdown">
-      <span className="daily-countdown__label">Neue Elf in</span>
+      <span className="daily-countdown__label">{t.daily.countdownLabel}</span>
       <span className="daily-countdown__time" role="timer">
         {formatCountdown(nextAt - now)}
       </span>
@@ -72,12 +71,13 @@ function Countdown({ nextAt }: { nextAt: number }) {
 
 /** Online-Status im Setup – offline klar als „nicht gewertet" markiert. */
 function DailyNetNote({ online }: { online: boolean | null }) {
+  const t = useT();
   const [mod, text] =
     online == null
-      ? ['checking', 'Verbindung wird geprüft …']
+      ? ['checking', t.daily.netChecking]
       : online
-        ? ['online', 'Online – dein Versuch kommt in die Tagesrangliste']
-        : ['offline', 'Offline – nicht gewertet. Auch offline gibt es nur einen Versuch pro Tag.'];
+        ? ['online', t.daily.netOnline]
+        : ['offline', t.daily.netOffline];
   return (
     <p className={`runnet runnet--${mod}`} role="status">
       <span className="runnet__dot" aria-hidden="true" />
@@ -118,18 +118,19 @@ function useTodayEntry(today: string, enabled: boolean, recheck: unknown): Today
 
 /** Kopfzeile der Ergebnisansicht: welche Tägliche Elf, gewertet oder nicht, Countdown. */
 function DailyBar({ day, ranking, children }: { day: string; ranking: RunRanking; children: ReactNode }) {
+  const t = useT();
   const [mod, label] =
     ranking.status === 'ranked'
-      ? ['ranked', 'Gewertet']
+      ? ['ranked', t.daily.ranked]
       : ranking.status === 'offline'
-        ? ['offline', 'Offline – nicht gewertet']
-        : ['offline', 'Nicht gewertet'];
+        ? ['offline', t.daily.offlineUnranked]
+        : ['offline', t.daily.unranked];
   return (
     <div className="daily-bar card">
       <div className="daily-bar__info">
-        <span className="kicker">{formatDayLong(day)}</span>
+        <span className="kicker">{formatDayLong(day, t)}</span>
         <p className="daily-bar__title">
-          Tägliche Elf <span className="daily-no">#{dailyNumber(day)}</span>
+          {t.game.challenge.daily} <span className="daily-no">#{dailyNumber(day)}</span>
           <span className={`runbadge runbadge--${mod} daily-bar__badge`}>{label}</span>
         </p>
       </div>
@@ -143,22 +144,26 @@ const EMOJI_LINE = /^[🟩🟨🟥]+$/u;
 
 /** Teilen im „Wordle-Stil": Vorschau + Teilen-Knopf, eingebettet in die Saisonbilanz. */
 function DailyShare({ day, run }: { day: string; run: ComputedRun }) {
+  const t = useT();
   const toast = useToast();
   const titleId = useId();
   const { season, evaluation } = run;
   const text = useMemo(
     () =>
-      buildDailyShareText({
-        day,
-        number: dailyNumber(day),
-        record: season.record,
-        points: season.points,
-        score: evaluation.score,
-        position: season.position,
-        outcomes: [...season.userMatches].sort((a, b) => a.round - b.round).map((m) => m.outcome),
-        url: `${window.location.origin}${import.meta.env.BASE_URL}taeglich`,
-      }),
-    [day, season, evaluation.score],
+      buildDailyShareText(
+        {
+          day,
+          number: dailyNumber(day),
+          record: season.record,
+          points: season.points,
+          score: evaluation.score,
+          position: season.position,
+          outcomes: [...season.userMatches].sort((a, b) => a.round - b.round).map((m) => m.outcome),
+          url: `${window.location.origin}${import.meta.env.BASE_URL}taeglich`,
+        },
+        t,
+      ),
+    [day, season, evaluation.score, t],
   );
 
   const onShare = async () => {
@@ -171,13 +176,13 @@ function DailyShare({ day, run }: { day: string; run: ComputedRun }) {
         if ((e as Error).name === 'AbortError') return;
       }
     }
-    toast((await copyText(text)) ? 'Ergebnis kopiert' : 'Kopieren nicht möglich');
+    toast((await copyText(text)) ? t.daily.copied : t.daily.copyFailed);
   };
 
   return (
     <section className="daily-share" aria-labelledby={titleId}>
       <h2 id={titleId} className="daily-share__title">
-        Tägliche Elf #{dailyNumber(day)} teilen
+        {t.daily.shareTitle(dailyNumber(day))}
       </h2>
       <pre className="daily-share__preview">
         {text.split('\n').map((line, i) => (
@@ -188,10 +193,10 @@ function DailyShare({ day, run }: { day: string; run: ComputedRun }) {
       </pre>
       <div className="actionbar daily-share__actions">
         <button type="button" className="btn btn--accent" onClick={() => void onShare()}>
-          Ergebnis teilen
+          {t.daily.shareButton}
         </button>
         <Link className="btn" to={BOARD_LINK}>
-          Zur Tagesrangliste
+          {t.daily.toBoard}
         </Link>
       </div>
     </section>
@@ -200,41 +205,40 @@ function DailyShare({ day, run }: { day: string; run: ComputedRun }) {
 
 /** Online schon gespielt: Versuch verbraucht – kein Übungsrun, nur Platzierung + Rangliste. */
 function PlayedToday({ entry, message }: { entry: TodayEntry; message: string | null }) {
+  const t = useT();
   const titleId = useId();
   const { row, players } = entry;
   return (
     <section className="card daily-done" aria-labelledby={titleId}>
       <h2 id={titleId} className="section-title">
-        Heute schon gespielt
+        {t.daily.playedTitle}
       </h2>
       {message && <RunNotice>{message}</RunNotice>}
-      <p>
-        Dein gewerteter Versuch für die Tägliche Elf #{dailyNumber(entry.day)} ist verbraucht. Morgen gibt es neue
-        Würfe – wieder für alle dieselben.
-      </p>
+      <p>{t.daily.playedText(dailyNumber(entry.day))}</p>
       <dl className="facts daily-done__facts">
         <div>
-          <dt>Platz</dt>
-          <dd>{row.rank}.</dd>
+          <dt>{t.daily.factRank}</dt>
+          <dd>{t.daily.rankValue(row.rank)}</dd>
         </div>
         <div>
-          <dt>Bilanz</dt>
+          <dt>{t.daily.factRecord}</dt>
           <dd>{formatRecord(row.record)}</dd>
         </div>
         <div>
-          <dt>Punkte</dt>
+          <dt>{t.daily.factPoints}</dt>
           <dd>{row.points}</dd>
         </div>
         <div>
-          <dt>Score</dt>
+          <dt>{t.daily.factScore}</dt>
           <dd>{row.score}</dd>
         </div>
       </dl>
       <p className="muted small">
-        {players.toLocaleString('de-DE')} Spieler heute{row.teamName ? ` · dein Team: ${row.teamName}` : ''}
+        {t.daily.playersToday(players)}
+        {row.teamName ? t.daily.yourTeam(row.teamName) : ''}
       </p>
       <Link className="btn btn--primary btn--big daily-done__cta" to={BOARD_LINK}>
-        Zur Tagesrangliste
+        {t.daily.toBoard}
       </Link>
     </section>
   );
@@ -246,6 +250,7 @@ function PlayedToday({ entry, message }: { entry: TodayEntry; message: string | 
  * Run-Logik: useChallengeRun('daily'); diese Seite regelt nur Tageswechsel und Darstellung.
  */
 export function Daily() {
+  const t = useT();
   const { sprite } = useSettings();
   // Nur ein Versuch pro Tag: Antwortet der Server beim Start nicht, nicht still offline starten.
   const run = useChallengeRun('daily', { offlineFallback: 'ask' });
@@ -292,9 +297,9 @@ export function Daily() {
             <Countdown nextAt={nextAt} />
           ) : (
             <p className="daily-new">
-              <span>Die neue Tägliche Elf #{dailyNumber(today)} ist da!</span>
+              <span>{t.daily.newDailyReady(dailyNumber(today))}</span>
               <button type="button" className="btn btn--primary btn--small" onClick={reset}>
-                Jetzt spielen
+                {t.daily.playNow}
               </button>
             </p>
           )}
@@ -323,26 +328,24 @@ export function Daily() {
     <div className="page challenge daily">
       <header className="page-head daily-head">
         <div className="daily-head__main">
-          <span className="kicker">{formatDayLong(day)}</span>
+          <span className="kicker">{formatDayLong(day, t)}</span>
           <h1 className="page-title">
-            Tägliche Elf <span className="daily-no">#{dailyNumber(day)}</span>
+            {t.game.challenge.daily} <span className="daily-no">#{dailyNumber(day)}</span>
           </h1>
-          <p className="page-lead">Jeden Tag eine neue Elf – dieselben Würfe für alle.</p>
+          <p className="page-lead">{t.daily.lead}</p>
         </div>
         {day === today ? (
           <Countdown nextAt={nextAt} />
         ) : (
           <div className="daily-new">
-            <p>Die neue Elf ist schon da – dieser Run zählt noch für den {formatDay(day)}.</p>
+            <p>{t.daily.stillCountsFor(t.game.day(day))}</p>
             {phase === 'play' && (
               <button
                 type="button"
                 className="btn btn--ghost btn--small"
-                onClick={() =>
-                  window.confirm(`Den Run vom ${formatDay(day)} verwerfen? Er wird dann nicht mehr gewertet.`) && reset()
-                }
+                onClick={() => window.confirm(t.daily.discardConfirm(t.game.day(day))) && reset()}
               >
-                Verwerfen und heutige Elf spielen
+                {t.daily.discardButton}
               </button>
             )}
           </div>
@@ -374,7 +377,7 @@ export function Daily() {
       ) : (
         <div className="challenge__setup">
           <div>
-            <HowItWorks>{HOW_TO}</HowItWorks>
+            <HowItWorks>{t.daily.howTo}</HowItWorks>
             <StatCards stats={run.stats} />
           </div>
           {entry ? (
@@ -397,13 +400,11 @@ export function Daily() {
                       disabled={run.starting}
                       onClick={() => void run.start({ offline: true })}
                     >
-                      Offline spielen (ohne Wertung – zählt als Tagesversuch)
+                      {t.daily.playOffline}
                     </button>
                   )}
                   <DailyNetNote online={run.apiOnline} />
-                  <p className="muted small">
-                    Ein Versuch pro Tag: Ein gestarteter Run lässt sich nicht abbrechen oder neu starten.
-                  </p>
+                  <p className="muted small">{t.daily.oneAttempt}</p>
                 </>
               }
             />

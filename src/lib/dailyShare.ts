@@ -1,9 +1,10 @@
 /**
  * Tägliche Elf: Texte zum Teilen („Wordle-Stil") und kleine Anzeige-Helfer.
- * Rein – keine Browser-APIs, damit es auch in Tests läuft.
+ * Rein – keine Browser-APIs, damit es auch in Tests läuft. Texte kommen aus dem Katalog
+ * (t.daily) in der aktiven Sprache bzw. der übergebenen.
  */
+import { messages, type Messages } from '../i18n';
 import type { Record3 } from '../types';
-import { formatDay } from './daily';
 
 /** Ausgang eines Spiels aus Sicht des eigenen Teams: Sieg, Unentschieden, Niederlage. */
 export type MatchOutcome = 'S' | 'U' | 'N';
@@ -37,37 +38,35 @@ export function isPerfectRecord(r: Record3): boolean {
 }
 
 /**
- * Teil-Text der Tages-Challenge – fünf Zeilen:
+ * Teil-Text der Tages-Challenge – fünf Zeilen (Wörter in der Sprache von t, Standard: aktive):
  *   Pokémon Elf · Tägliche Elf #1 (12.10.2026)
  *   30–2–2 · 92 Pkt · Score 812 · Platz 1        (bei 34–0–0 mit „ 🏆")
  *   Hinrunde (Spiele 1–17) als Emojis
  *   Rückrunde (Spiele 18–34) als Emojis
  *   Link
  */
-export function buildDailyShareText(i: DailyShareInput): string {
+export function buildDailyShareText(i: DailyShareInput, t: Messages = messages()): string {
   const { w, d, l } = i.record;
   const half = Math.ceil(i.outcomes.length / 2);
   const trophy = isPerfectRecord(i.record) ? ' 🏆' : '';
   return [
-    `Pokémon Elf · Tägliche Elf #${i.number} (${formatDay(i.day)})`,
-    `${w}–${d}–${l} · ${i.points} Pkt · Score ${i.score} · Platz ${i.position}${trophy}`,
+    t.daily.shareHeader(i.number, t.game.day(i.day)),
+    `${t.daily.shareStats(`${w}–${d}–${l}`, i.points, i.score, i.position)}${trophy}`,
     outcomeEmojis(i.outcomes.slice(0, half)),
     outcomeEmojis(i.outcomes.slice(half)),
     i.url,
   ].join('\n');
 }
 
-const WEEKDAYS = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
-
-/** Deutscher Wochentag eines Tages „YYYY-MM-DD" (unabhängig von der Zeitzone des Geräts). */
-export function weekdayName(day: string): string {
+/** Wochentag eines Tages „YYYY-MM-DD" (unabhängig von der Zeitzone des Geräts), Sprache von t. */
+export function weekdayName(day: string, t: Messages = messages()): string {
   const [y, m, d] = day.split('-').map(Number);
-  return WEEKDAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
+  return t.daily.weekdays[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
 }
 
-/** „Montag, 12.10.2026" */
-export function formatDayLong(day: string): string {
-  return `${weekdayName(day)}, ${formatDay(day)}`;
+/** „Montag, 12.10.2026" (en: „Monday, Oct 12, 2026") */
+export function formatDayLong(day: string, t: Messages = messages()): string {
+  return t.daily.dayLong(weekdayName(day, t), t.game.day(day));
 }
 
 /** Restzeit als „05:12:33" – aufgerundet auf volle Sekunden, nie negativ. */

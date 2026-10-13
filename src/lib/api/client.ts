@@ -2,6 +2,7 @@
  * Browser-Client für das Cloudflare-Backend. Ohne Backend (z. B. `npm run dev`)
  * meldet apiAvailable() false und die App spielt lokal/ungewertet weiter.
  */
+import { currentLang, messages } from '../../i18n';
 import type { ChallengeKey } from '../../types';
 import { getDevice } from '../device';
 import type {
@@ -16,7 +17,8 @@ import type {
 } from './contract';
 
 const BASE = `${(import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') ?? ''}/api`;
-const RATE_LIMITED = 'Zu viele Anfragen in kurzer Zeit – bitte später erneut versuchen';
+/** Sprache der Server-Meldungen – in dieser Sprache werden sie unverändert gezeigt. */
+const SERVER_LANG = 'de';
 
 export class ApiRequestError extends Error {
   constructor(
@@ -26,6 +28,44 @@ export class ApiRequestError extends Error {
   ) {
     super(message);
     this.name = 'ApiRequestError';
+  }
+}
+
+/**
+ * Anzeigbare Meldung zu einem Fehler des Servers in der aktiven Sprache. Der Server meldet
+ * auf Deutsch: Im deutschen Modus bleibt seine Meldung unverändert, sonst wird sie über den
+ * stabilen Fehlercode übersetzt (unbekannter Code → Meldung des Servers).
+ */
+export function apiErrorMessage(code: string, serverMessage: string): string {
+  if (currentLang() === SERVER_LANG) return serverMessage;
+  return translateServerError(code, serverMessage) ?? serverMessage;
+}
+
+function translateServerError(code: string, msg: string): string | null {
+  const t = messages().errors;
+  switch (code) {
+    case 'not_found':
+      return msg === 'Run nicht gefunden' ? t.runNotFound : t.code.not_found;
+    case 'already_played': {
+      // „Die Tägliche Elf vom 12.10.2026 hast du schon gespielt …"
+      const m = /(\d{2})\.(\d{2})\.(\d{4})/.exec(msg);
+      return m ? t.alreadyPlayedOn(messages().game.day(`${m[3]}-${m[2]}-${m[1]}`)) : t.code.already_played;
+    }
+    case 'invalid_run': {
+      const m = /\(Runde (\d+)\)/.exec(msg);
+      return m ? t.invalidRunInRound(Number(m[1])) : t.code.invalid_run;
+    }
+    case 'token_expired': {
+      const m = /(\d+) Stunden/.exec(msg);
+      return m ? t.tokenExpired(Number(m[1])) : t.code.token_expired;
+    }
+    case 'rate_limited':
+      if (/Geräte/.test(msg)) return t.tooManyDevices;
+      if (/gewertete Runs/.test(msg)) return t.tooManyFinishes;
+      if (/Runs/.test(msg)) return t.tooManyRuns;
+      return t.code.rate_limited;
+    default:
+      return Object.prototype.hasOwnProperty.call(t.code, code) ? t.code[code as ApiErrorCode] : null;
   }
 }
 
@@ -40,7 +80,7 @@ async function request<T>(path: string, init?: RequestInit & { timeoutMs?: numbe
       signal: controller.signal,
     });
   } catch {
-    throw new ApiRequestError('Server nicht erreichbar', 0, 'network');
+    throw new ApiRequestError(messages().errors.network, 0, 'network');
   } finally {
     clearTimeout(timer);
   }
@@ -50,13 +90,15 @@ async function request<T>(path: string, init?: RequestInit & { timeoutMs?: numbe
     const err = body as ApiErrorBody | null;
     // 429 ohne JSON (z. B. vom CDN) trotzdem als Rate-Limit melden
     const limited = res.status === 429;
+    const code = err?.error ?? (limited ? 'rate_limited' : 'server_error');
+    const t = messages().errors;
     throw new ApiRequestError(
-      err?.message ?? (limited ? RATE_LIMITED : `HTTP ${res.status}`),
+      err?.message != null ? apiErrorMessage(code, err.message) : limited ? t.rateLimited : t.http(res.status),
       res.status,
-      err?.error ?? (limited ? 'rate_limited' : 'server_error'),
+      code,
     );
   }
-  if (!isJson) throw new ApiRequestError('Unerwartete Antwort vom Server', res.status, 'server_error');
+  if (!isJson) throw new ApiRequestError(messages().errors.unexpected, res.status, 'server_error');
   return body as T;
 }
 

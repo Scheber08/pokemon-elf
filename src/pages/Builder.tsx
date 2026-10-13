@@ -6,6 +6,7 @@ import { Pitch, SS_INDEX } from '../components/Pitch';
 import { PickerModal } from '../components/PickerModal';
 import { Segmented } from '../components/Segmented';
 import { TeamSheet } from '../components/TeamSheet';
+import { useT } from '../i18n';
 import { copyText, downloadBlob } from '../lib/exportImage';
 import { remapFormation } from '../lib/formation';
 import { shuffle } from '../lib/rng';
@@ -52,6 +53,7 @@ function normalize(s: Partial<BuilderState>): BuilderState {
 export function Builder() {
   const { list, byId } = usePokemonData();
   const { sprite, setSprite } = useSettings();
+  const t = useT();
   const toast = useToast();
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -67,12 +69,12 @@ export function Builder() {
     if (shared) {
       setState(normalize({ ...shared }));
       setSprite(shared.sprite);
-      toast('Geteilte Aufstellung geladen');
+      toast(t.builder.sharedLoaded);
     } else {
-      toast('Der Link konnte nicht gelesen werden');
+      toast(t.builder.linkUnreadable);
     }
     navigate('/', { replace: true });
-  }, [params, list.length, navigate, setSprite, toast]);
+  }, [params, list.length, navigate, setSprite, toast, t]);
 
   useEffect(() => save(STORAGE_KEYS.lineup, state), [state]);
 
@@ -135,13 +137,13 @@ export function Builder() {
         sprite,
         byId,
         teamName: state.teamName,
-        subtitle: `${state.formation} · ${state.region ? REGIONS[state.region - 1].name : 'Alle Regionen'}`,
+        subtitle: `${state.formation} · ${state.region ? t.game.region[state.region] : t.common.allRegions}`,
       });
       downloadBlob(blob, `${slugify(state.teamName || 'pokemon-elf')}.png`);
-      toast('Bild gespeichert');
+      toast(t.builder.imageSaved);
     } catch (e) {
       console.error(e);
-      toast('Bild konnte nicht erstellt werden');
+      toast(t.builder.imageFailed);
     } finally {
       setBusy(false);
     }
@@ -149,10 +151,10 @@ export function Builder() {
 
   const copyLink = async () => {
     const url = shareUrl({ ...state, sprite, ss: state.ssEnabled ? state.ss : null });
-    toast((await copyText(url)) ? 'Link kopiert!' : 'Kopieren nicht möglich');
+    toast((await copyText(url)) ? t.common.linkCopied : t.common.copyFailed);
   };
 
-  const description = `Aufstellung ${regionPhrase(state.region)}, ${state.legends ? 'mit Legendären und Mysteriösen' : 'ohne Legendäre'}.`;
+  const description = t.builder.description(regionPhrase(state.region, t), state.legends);
   const pickingPos: PosCode | null =
     picking == null ? null : picking === SS_INDEX ? 'SS' : formationDef.slots[picking]?.pos ?? null;
 
@@ -160,13 +162,8 @@ export function Builder() {
     <div className="page builder">
       <div className="builder__main">
         <p className="hint hint--pitch">
-          <span className="only-fine">
-            Klicke auf einen Spieler, um ihn auszutauschen, oder fahre darüber für seine Werte. Zieh einen Spieler auf
-            einen anderen, um die Plätze zu tauschen.
-          </span>
-          <span className="only-coarse">
-            Tippe auf einen Spieler, um ihn auszutauschen, oder halte gedrückt für seine Werte.
-          </span>
+          <span className="only-fine">{t.builder.hintFine}</span>
+          <span className="only-coarse">{t.builder.hintCoarse}</span>
         </p>
         {state.teamName && <h1 className="team-title">{state.teamName}</h1>}
         <Pitch
@@ -176,31 +173,31 @@ export function Builder() {
           sprite={sprite}
           onSlotClick={setPicking}
           onSwap={swap}
-          ariaLabel={`Spielfeld, Formation ${state.formation}`}
+          ariaLabel={t.builder.pitchAria(state.formation)}
         />
-        <div className="actionbar" role="toolbar" aria-label="Aktionen">
+        <div className="actionbar" role="toolbar" aria-label={t.builder.actions}>
           <button type="button" className="btn btn--primary" onClick={saveImage} disabled={busy}>
-            {busy ? 'Erstelle Bild …' : 'Bild speichern'}
+            {busy ? t.builder.savingImage : t.builder.saveImage}
           </button>
           <button type="button" className="btn" onClick={copyLink}>
-            Link kopieren
+            {t.common.copyLink}
           </button>
           <button type="button" className="btn" onClick={randomize}>
-            Zufällig
+            {t.builder.random}
           </button>
           <button
             type="button"
             className="btn"
             onClick={() => setState((s) => ({ ...s, formation: DEFAULT_FORMATION, slots: DEFAULT_ELF, ss: DEFAULT_STATE.ss }))}
           >
-            Zurücksetzen
+            {t.builder.reset}
           </button>
           <button
             type="button"
             className="btn btn--ghost"
             onClick={() => setState((s) => ({ ...s, slots: s.slots.map(() => null), ss: null }))}
           >
-            Alles leeren
+            {t.builder.clearAll}
           </button>
         </div>
       </div>
@@ -216,30 +213,34 @@ export function Builder() {
 
         <section className="card settings" aria-labelledby="settings-title">
           <h2 id="settings-title" className="section-title">
-            Einstellungen
+            {t.common.settings}
           </h2>
           <Segmented
-            label="Region"
+            label={t.builder.region}
             wrap
             value={state.region}
             onChange={(region) => setState((s) => ({ ...s, region }))}
             options={[
-              ...REGIONS.map((r) => ({ value: r.gen as RegionFilter, label: r.name, title: `Gen ${r.gen}` })),
-              { value: 0 as RegionFilter, label: 'Alle', title: 'Gen 1–9' },
+              ...REGIONS.map((r) => ({
+                value: r.gen as RegionFilter,
+                label: t.game.region[r.gen],
+                title: t.builder.gen(r.gen),
+              })),
+              { value: 0 as RegionFilter, label: t.game.allRegions, title: t.builder.allGens },
             ]}
           />
           <Segmented
-            label="Pokémon / Legendäre"
+            label={t.builder.pool}
             value={state.legends}
             onChange={(legends) => setState((s) => ({ ...s, legends }))}
             options={[
-              { value: false, label: 'Pokémon' },
-              { value: true, label: 'Legendäre' },
+              { value: false, label: t.builder.poolPokemon },
+              { value: true, label: t.builder.poolLegends },
             ]}
           />
           <p className="settings__desc">{description}</p>
           <Segmented
-            label="Formation"
+            label={t.builder.formation}
             wrap
             value={state.formation}
             onChange={(formation) =>
@@ -248,29 +249,29 @@ export function Builder() {
             options={FORMATION_IDS.map((f) => ({ value: f, label: f }))}
           />
           <Segmented
-            label="Standardschütze"
+            label={t.game.posName.SS}
             value={state.ssEnabled}
             onChange={(ssEnabled) => setState((s) => ({ ...s, ssEnabled }))}
             options={[
-              { value: false, label: 'Aus' },
-              { value: true, label: 'An' },
+              { value: false, label: t.common.off },
+              { value: true, label: t.common.on },
             ]}
           />
           <Segmented
-            label="Sprites"
+            label={t.builder.sprites}
             value={sprite}
             onChange={setSprite}
             options={(Object.keys(SPRITE_STYLE_LABEL) as SpriteStyle[]).map((s) => ({ value: s, label: SPRITE_STYLE_LABEL[s] }))}
           />
           <div className="field">
             <label className="field__label" htmlFor="team-name">
-              Teamname <small>(optional, erscheint im Bild)</small>
+              {t.builder.teamName} <small>{t.builder.teamNameNote}</small>
             </label>
             <input
               id="team-name"
               className="input"
               maxLength={32}
-              placeholder="z. B. Rot-Weiß Alabastia"
+              placeholder={t.builder.teamNamePlaceholder}
               value={state.teamName}
               onChange={(e) => setState((s) => ({ ...s, teamName: e.target.value }))}
             />

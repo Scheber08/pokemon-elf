@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useT } from '../i18n';
 import { draftSeason } from '../lib/draftEngine';
 import { leagueRatings, resolveLeague } from '../lib/leagueTimeline';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
-import type { DraftRoom } from '../state/useDraftRoom';
+import { teamLabel, type DraftRoom } from '../state/useDraftRoom';
 import { DraftResults } from './DraftResults';
 import { LeagueTicker } from './LeagueTicker';
 import '../styles/draft.css';
@@ -17,6 +18,7 @@ import '../styles/draft.css';
  * synchronen Ticker, danach das Ergebnis.
  */
 export function DraftSeasonStage({ room }: { room: DraftRoom }) {
+  const t = useT();
   const { byId, scale } = usePokemonData();
   const { sprite } = useSettings();
   const s = room.state!;
@@ -28,7 +30,7 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
   // Nur neu auswerten, wenn sich etwas Saison-Relevantes ändert (nicht bei Online-Status u. ä.)
   const key = JSON.stringify([
     season?.seed,
-    s.teams.map((t) => [t.name, t.formation, t.slots, t.ss]),
+    s.teams.map((tm) => [tm.name, tm.formation, tm.slots, tm.ss]),
     storedRaw ?? null,
     ratingsRaw ?? null,
   ]);
@@ -37,7 +39,8 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
     [key, byId, scale],
   );
   const ratings = useMemo(() => (league ? leagueRatings(league, ratingsRaw) : []), [league, key]);
-  const teamNames = useMemo(() => s.teams.map((t) => t.name), [key]);
+  // Vereinsnamen der CPU-Teams erst bei der Anzeige übersetzen – gespeichert bleibt der deutsche Name
+  const teamNames = useMemo(() => s.teams.map((tm) => teamLabel(tm, t)), [key, t]);
   const matchdays = useMemo(() => league?.matches.reduce((max, m) => Math.max(max, m.round), 0) ?? 0, [league]);
   const endsAt = season ? season.startsAt + matchdays * season.stepMs : 0;
   // Einmal beim Öffnen entscheiden; danach beendet der Ticker selbst (onDone)
@@ -47,12 +50,12 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
     return (
       <div className="boot" role="status">
         <div className="boot__ball" aria-hidden="true" />
-        <p>Saison wird vorbereitet …</p>
+        <p>{t.draft.season.preparing}</p>
       </div>
     );
   }
 
-  const meIndex = room.me ? s.teams.findIndex((t) => t.id === room.me!.id) : -1;
+  const meIndex = room.me ? s.teams.findIndex((tm) => tm.id === room.me!.id) : -1;
   const highlight = meIndex >= 0 ? meIndex : null;
 
   return (
@@ -80,7 +83,7 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
       )}
       <div className="actionbar">
         <Link className="btn" to="/draft">
-          Neue Liga
+          {t.draft.season.newLeague}
         </Link>
       </div>
     </div>

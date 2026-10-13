@@ -1,7 +1,11 @@
+// Ohne Laufzeit-Import der Übersetzungen: Engine und Server laden diese Datei mit und bleiben
+// sprachneutral. Texte bekommen die Helfer als Katalog (t) übergeben.
+import type { Messages } from '../i18n/de';
 import type { RegionFilter } from '../types';
 
 export interface Region {
   gen: number;
+  /** Deutscher Name (Daten) – angezeigt wird t.game.region[gen] bzw. regionName(gen, t) */
   name: string;
   /** Nationaldex-Bereich der Generation */
   from: number;
@@ -20,18 +24,27 @@ export const REGIONS: Region[] = [
   { gen: 9, name: 'Paldea', from: 906, to: 1025 },
 ];
 
-export function regionName(gen: number): string {
-  return REGIONS.find((r) => r.gen === gen)?.name ?? '?';
+/** Die Texte, die die Regions-Helfer brauchen (Teil des Katalogs, z. B. useT() oder messages()). */
+export interface RegionTexts {
+  game: Pick<Messages['game'], 'region' | 'allRegions'>;
+  common: Pick<Messages['common'], 'regionPhrase'>;
 }
 
-export function regionLabel(filter: RegionFilter): string {
-  return filter === 0 ? 'Alle' : regionName(filter);
+/** Regionsname in der Sprache von t. */
+export function regionName(gen: number, t: RegionTexts): string {
+  return REGIONS.some((r) => r.gen === gen) ? t.game.region[gen] : '?';
 }
 
-/** Satzbaustein für die dynamische Beschreibung im Builder. */
-export function regionPhrase(filter: RegionFilter): string {
-  if (filter === 0) return 'aus allen 1.025 Pokémon';
-  if (filter === 1) return 'aus den ersten 151 Pokémon';
+/** „Alle" bzw. Regionsname in der Sprache von t. */
+export function regionLabel(filter: RegionFilter, t: RegionTexts): string {
+  return filter === 0 ? t.game.allRegions : regionName(filter, t);
+}
+
+/** Satzbaustein für die dynamische Beschreibung im Builder („aus Kanto (Nr. 1–151)"). */
+export function regionPhrase(filter: RegionFilter, t: RegionTexts): string {
+  const rp = t.common.regionPhrase;
+  if (filter === 0) return rp.all;
+  if (filter === 1) return rp.first151;
   const r = REGIONS[filter - 1];
-  return `aus ${r.name} (Nr. ${r.from}–${r.to})`;
+  return rp.range(regionName(r.gen, t), r.from, r.to);
 }

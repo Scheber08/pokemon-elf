@@ -1,3 +1,4 @@
+import { useT } from '../i18n';
 import type { PosCode, Pokemon, SpriteStyle } from '../types';
 import { PosBadge } from './Badges';
 import { Sprite, type SpriteSource } from './Sprite';
@@ -12,11 +13,12 @@ interface Props {
 
 /** Spieler auf dem Feld: Sprite über einem Namensschild – oder ein leerer, gestrichelter Slot. */
 export function PlayerToken({ pos, pokemon, sprite, source }: Props) {
+  const t = useT();
   if (!pokemon) {
     return (
       <span className="token token--empty">
         <span className="token__ring">
-          <span className="token__ring-label">{pos}</span>
+          <span className="token__ring-label">{t.game.posShort[pos]}</span>
         </span>
       </span>
     );
@@ -28,7 +30,7 @@ export function PlayerToken({ pos, pokemon, sprite, source }: Props) {
       </span>
       <span className="token__plate">
         <PosBadge pos={pos} className="token__pos" />
-        <span className="token__name">{pokemon.de}</span>
+        <span className="token__name">{t.game.pokemon(pokemon)}</span>
       </span>
     </span>
   );

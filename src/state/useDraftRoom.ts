@@ -30,6 +30,7 @@ import {
   teamIndexForPick,
 } from '../lib/draftEngine';
 import { DEFAULT_FORMATION, FORMATION_IDS } from '../config/formations';
+import { currentLang, LANGS, messages, type Lang, type Messages } from '../i18n';
 import { load, save } from '../lib/storage';
 import type { FormationId, Pokemon } from '../types';
 import { usePokemonData } from './PokemonData';
@@ -104,15 +105,89 @@ export function draftRoomView(s: DraftSnapshot | null): DraftRoomView {
 }
 
 /** Warum der Host (noch) nicht starten kann – oder null. */
-export function startBlocker(s: DraftSnapshot, list: Pokemon[]): string | null {
-  if (s.phase !== 'lobby') return 'Der Draft läuft schon';
-  if (s.teams.length < DRAFT_LIMITS.minTeams) {
-    return `Mindestens ${DRAFT_LIMITS.minTeams} Teams – lade Leute ein oder füge CPU-Teams hinzu`;
-  }
+export function startBlocker(s: DraftSnapshot, list: Pokemon[], t: Messages = messages()): string | null {
+  if (s.phase !== 'lobby') return t.online.draftRunning;
+  if (s.teams.length < DRAFT_LIMITS.minTeams) return t.online.server.fmt.tooFewTeams(DRAFT_LIMITS.minTeams);
   const needed = s.teams.length * rounds(s.settings);
   const pool = poolOf(s.settings, list).length;
-  if (pool < needed) return `Der Pool hat nur ${pool} Pokémon, gebraucht werden ${needed}`;
+  if (pool < needed) return t.online.server.fmt.poolHas(pool, needed);
   return null;
+}
+
+type ServerTexts = Messages['online']['server'];
+type FmtKey = keyof ServerTexts['fmt'];
+type MsgKey = keyof ServerTexts['msg'];
+type ClientKey = keyof Messages['online']['client'];
+
+const fmtPatterns = new Map<FmtKey, RegExp>();
+
+/** Muster einer deutschen Meldung mit Platzhaltern (aus dem deutschen Katalog): Platzhalter → Fanggruppe. */
+function fmtPattern(key: FmtKey): RegExp {
+  let re = fmtPatterns.get(key);
+  if (!re) {
+    const fn = messages('de').online.server.fmt[key] as (...args: string[]) => string;
+    const marks = Array.from({ length: fn.length }, (_, i) => `\u0000${i}\u0000`);
+    let src = fn(...marks).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    for (const m of marks) src = src.replace(m, '(.+?)');
+    re = new RegExp(`^${src}$`);
+    fmtPatterns.set(key, re);
+  }
+  return re;
+}
+
+/**
+ * Meldung von Server bzw. Draft-Engine in der aktiven Sprache. Sie kommen deutsch mit festem
+ * Code: Auf Deutsch bleibt die Meldung unverändert. Sonst wird sie über die bekannten Meldungen,
+ * die Muster mit Zahlen/Namen und zuletzt den Code übersetzt – Unbekanntes wird ein allgemeiner
+ * Text. list: deutsche Pokémon-Namen in Meldungen („Glurak ist schon vergeben") mitübersetzen.
+ * Ersatzmeldungen des Draft-Clients (in der Sprache beim Abruf erzeugt) folgen der aktiven Sprache.
+ * Leere Meldung ohne Code → '' (die Aufrufer haben eigene Ersatztexte).
+ */
+export function draftErrorText(
+  message: string,
+  code?: string,
+  list?: readonly Pick<Pokemon, 'de' | 'en'>[],
+  lang: Lang = currentLang(),
+): string {
+  const t = messages(lang);
+  for (const l of LANGS) {
+    const client = messages(l).online.client;
+    const key = (Object.keys(client) as ClientKey[]).find((k) => client[k] === message);
+    if (key) return t.online.client[key];
+  }
+  if (lang === 'de') return message;
+  const source = messages('de').online.server;
+  const server = t.online.server;
+  const known = (Object.keys(source.msg) as MsgKey[]).find((k) => source.msg[k] === message);
+  if (known) return server.msg[known];
+  for (const key of Object.keys(source.fmt) as FmtKey[]) {
+    const m = message ? fmtPattern(key).exec(message) : null;
+    if (!m) continue;
+    const args: (string | number)[] = m.slice(1).map((a) => (/^\d+$/.test(a) ? Number(a) : a));
+    if (key === 'taken') {
+      const p = list?.find((x) => x.de === args[0]);
+      if (p) args[0] = t.game.pokemon(p);
+    }
+    return (server.fmt[key] as (...a: (string | number)[]) => string)(...args);
+  }
+  if (code && Object.hasOwn(server.code, code)) return server.code[code as keyof ServerTexts['code']];
+  return message || code ? server.unknown : '';
+}
+
+/**
+ * Fehler im Raum – erst beim Rendern Text (folgt so einem Sprachwechsel, während er zu sehen ist):
+ * Meldung von Server bzw. Engine mit Code und/oder ein eigener Text (online.<fallback>), der auch
+ * gilt, wenn die Meldung leer ist.
+ */
+interface RoomError {
+  message?: string;
+  code?: string;
+  fallback?: 'noAnswer' | 'noConnection' | 'teamNameMissing' | 'unknownError' | 'authRejected';
+}
+
+function roomErrorText(e: RoomError, list?: readonly Pick<Pokemon, 'de' | 'en'>[]): string {
+  const text = e.message || e.code ? draftErrorText(e.message ?? '', e.code, list) : '';
+  return text || (e.fallback ? messages().online[e.fallback] : '');
 }
 
 /** Wie viele Teams der Pool mit diesen Einstellungen trägt (höchstens maxTeams-Grenze). */
@@ -150,20 +225,31 @@ export interface FeedItem {
   auto: boolean;
 }
 
-/** Die letzten Picks, neuester zuerst. */
-export function pickFeed(s: DraftSnapshot, byId: Map<number, Pokemon>, limit = 8): FeedItem[] {
-  const names = new Map(s.teams.map((t) => [t.id, t.name]));
+/**
+ * Anzeigename eines Teams: Vereinsnamen der CPU-Teams (intern deutsch gespeichert) in der Sprache
+ * von t, selbst gewählte Namen unverändert.
+ */
+export function teamLabel(team: Pick<DraftTeam, 'name' | 'cpu'>, t: Messages = messages()): string {
+  return team.cpu ? t.game.club(team.name) : team.name;
+}
+
+/** Die letzten Picks, neuester zuerst (Pokémon- und CPU-Vereinsnamen in der Sprache von t). */
+export function pickFeed(s: DraftSnapshot, byId: Map<number, Pokemon>, limit = 8, t: Messages = messages()): FeedItem[] {
+  const names = new Map(s.teams.map((tm) => [tm.id, teamLabel(tm, t)]));
   return s.picks
     .slice(-limit)
     .reverse()
-    .map((p) => ({
-      key: `${p.pick}-${p.pokemonId}`,
-      no: p.pick + 1,
-      pokemon: byId.get(p.pokemonId)?.de ?? `#${p.pokemonId}`,
-      team: names.get(p.teamId) ?? '?',
-      teamId: p.teamId,
-      auto: p.auto,
-    }));
+    .map((p) => {
+      const mon = byId.get(p.pokemonId);
+      return {
+        key: `${p.pick}-${p.pokemonId}`,
+        no: p.pick + 1,
+        pokemon: mon ? t.game.pokemon(mon) : `#${p.pokemonId}`,
+        team: names.get(p.teamId) ?? '?',
+        teamId: p.teamId,
+        auto: p.auto,
+      };
+    });
 }
 
 /** Pokémon-ID → Team, das es gedraftet hat. */
@@ -270,14 +356,16 @@ export function remainingMs(deadline: number | null, clockOffset: number, now = 
  * „Pick 3: Glurak an FC Blitz (automatisch). Am Zug: FC Donner." – „Am Zug" entfällt, wenn
  * man selbst dran ist (das meldet „Du bist dran!").
  */
-export function pickAnnouncement(s: DraftSnapshot, byId: Map<number, Pokemon>): string {
+export function pickAnnouncement(s: DraftSnapshot, byId: Map<number, Pokemon>, t: Messages = messages()): string {
   const last = s.picks.length ? s.picks[s.picks.length - 1] : null;
   if (!last) return '';
-  const team = last.teamId === s.you ? 'dich' : (s.teams.find((t) => t.id === last.teamId)?.name ?? '?');
-  const name = byId.get(last.pokemonId)?.de ?? `#${last.pokemonId}`;
-  let text = `Pick ${last.pick + 1}: ${name} an ${team}${last.auto ? ' (automatisch)' : ''}.`;
+  const owner = s.teams.find((x) => x.id === last.teamId);
+  const team = last.teamId === s.you ? t.online.announceYou : owner ? teamLabel(owner, t) : '?';
+  const mon = byId.get(last.pokemonId);
+  const name = mon ? t.game.pokemon(mon) : `#${last.pokemonId}`;
+  let text = t.online.announcePick(last.pick + 1, name, team, last.auto);
   const cur = currentTeam(s);
-  if (cur && cur.id !== s.you) text += ` Am Zug: ${cur.name}.`;
+  if (cur && cur.id !== s.you) text += t.online.announceNext(teamLabel(cur, t));
   return text;
 }
 
@@ -419,8 +507,8 @@ export function useDraftRoom(code: string): DraftRoom {
   const valid = isDraftCode(code);
   const [status, setStatus] = useState<DraftRoomStatus>(valid ? 'connecting' : 'not_found');
   const [state, setState] = useState<DraftSnapshot | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [authError, setAuthError] = useState<string | null>(null);
+  const [error, setError] = useState<RoomError | null>(null);
+  const [authError, setAuthError] = useState<RoomError | null>(null);
   const [clockOffset, setClockOffset] = useState(0);
   const [live, setLive] = useState(false);
   const [generation, setGeneration] = useState(0);
@@ -536,11 +624,12 @@ export function useDraftRoom(code: string): DraftRoom {
         }
         // Antwort auf eine eigene Aktion → deren Sperre lösen
         setFlight(releaseInFlight(flightRef.current, err.for));
+        const raw = { message: err.message, code: err.code };
         if (err.hello) {
-          setAuthError(err.message || 'Anmeldung abgelehnt');
+          setAuthError({ ...raw, fallback: 'authRejected' });
           return;
         }
-        setError(err.message || 'Unbekannter Fehler');
+        setError({ ...raw, fallback: 'unknownError' });
       },
       onStatus(next) {
         if (!alive || gone) return;
@@ -606,7 +695,7 @@ export function useDraftRoom(code: string): DraftRoom {
       }
       setFlight(map);
       // Einstellungen ohne Änderung bekommen evtl. keine eigene Bestätigung – dann still freigeben
-      if (expired.some((a) => a !== 'settings')) setError('Keine Antwort vom Server – bitte erneut versuchen');
+      if (expired.some((a) => a !== 'settings')) setError({ fallback: 'noAnswer' });
       conn.current?.checkAlive();
     }, wait);
     return () => window.clearTimeout(id);
@@ -628,7 +717,7 @@ export function useDraftRoom(code: string): DraftRoom {
 
   const send = useCallback((msg: DraftClientMessage): boolean => {
     const ok = conn.current?.send(msg) ?? false;
-    if (!ok) setError('Keine Verbindung zum Server – einen Moment, es wird neu verbunden …');
+    if (!ok) setError({ fallback: 'noConnection' });
     return ok;
   }, []);
 
@@ -648,7 +737,7 @@ export function useDraftRoom(code: string): DraftRoom {
     (name: string, formation: FormationId) => {
       const teamName = cleanTeamName(name);
       if (!teamName) {
-        setError('Gib deinem Team einen Namen');
+        setError({ fallback: 'teamNameMissing' });
         return false;
       }
       return sendOnce('join', { type: 'join', teamName, formation });
@@ -662,7 +751,7 @@ export function useDraftRoom(code: string): DraftRoom {
       if (patch.name !== undefined) {
         const teamName = cleanTeamName(patch.name);
         if (!teamName) {
-          setError('Gib deinem Team einen Namen');
+          setError({ fallback: 'teamNameMissing' });
           return false;
         }
         msg.teamName = teamName;
@@ -692,7 +781,7 @@ export function useDraftRoom(code: string): DraftRoom {
       if (!s || !s.you || flightRef.current.pick) return false;
       const err = pickError(s, s.you, pokemonId, slot, list);
       if (err) {
-        setError(err);
+        setError({ message: err, code: 'bad_pick' });
         return false;
       }
       return sendOnce('pick', { type: 'pick', pokemonId, slot });
@@ -718,9 +807,9 @@ export function useDraftRoom(code: string): DraftRoom {
     status,
     state,
     live,
-    error,
+    error: error && roomErrorText(error, list),
     clearError: useCallback(() => setError(null), []),
-    authError,
+    authError: authError && roomErrorText(authError, list),
     clockOffset,
     pending: busy.pick,
     busy,

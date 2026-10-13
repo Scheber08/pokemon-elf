@@ -1,6 +1,7 @@
 import { useMemo, type KeyboardEvent, type RefObject } from 'react';
 import { TYPE_KEYS, TYPES } from '../config/pokemonTypes';
 import { REGIONS } from '../config/regions';
+import { useT } from '../i18n';
 import type { Pokemon, RegionFilter, TypeKey } from '../types';
 
 export interface PokemonFilters {
@@ -16,9 +17,9 @@ const fold = (s: string) =>
     .replace(/[̀-ͯ]/g, '')
     .replace(/ß/g, 'ss');
 
-/** Suche nach deutschem/englischem Namen oder Nummer. */
+/** Suche nach deutschem/englischem Namen oder Nummer („25", „#25", „Nr. 25", „No. 25"). */
 export function matchesQuery(p: Pokemon, query: string): boolean {
-  const q = fold(query.trim()).replace(/^#|^nr\.?\s*/, '');
+  const q = fold(query.trim()).replace(/^#|^nr\.?\s*|^no\.?\s*(?=\d)/, '');
   if (!q) return true;
   if (/^\d+$/.test(q)) return String(p.id).startsWith(String(Number(q))) || String(p.id).padStart(4, '0').startsWith(q);
   return fold(p.de).includes(q) || fold(p.en).includes(q);
@@ -48,18 +49,19 @@ interface Props {
 }
 
 export function FilterBar({ filters, onChange, showType = true, showRegion = true, searchRef, onSearchKeyDown, resultCount }: Props) {
+  const t = useT();
   return (
     <div className="filterbar">
       <div className="filterbar__search">
         <label className="sr-only" htmlFor="pokemon-search">
-          Pokémon suchen
+          {t.builder.filter.searchLabel}
         </label>
         <input
           id="pokemon-search"
           ref={searchRef}
           type="search"
           className="input"
-          placeholder="Name oder Nummer suchen …"
+          placeholder={t.builder.filter.searchPlaceholder}
           value={filters.query}
           autoComplete="off"
           onChange={(e) => onChange({ ...filters, query: e.target.value })}
@@ -67,43 +69,43 @@ export function FilterBar({ filters, onChange, showType = true, showRegion = tru
         />
         {resultCount != null && (
           <span className="filterbar__count" aria-live="polite">
-            {resultCount} Treffer
+            {t.builder.filter.results(resultCount)}
           </span>
         )}
       </div>
       {showType && (
-        <div className="chips" role="group" aria-label="Typ-Filter">
+        <div className="chips" role="group" aria-label={t.builder.filter.typeFilter}>
           <button
             type="button"
             className={`chip ${!filters.type ? 'is-active' : ''}`}
             aria-pressed={!filters.type}
             onClick={() => onChange({ ...filters, type: null })}
           >
-            Alle Typen
+            {t.common.allTypes}
           </button>
-          {TYPE_KEYS.map((t) => (
+          {TYPE_KEYS.map((type) => (
             <button
-              key={t}
+              key={type}
               type="button"
-              className={`chip chip--type ${filters.type === t ? 'is-active' : ''}`}
-              style={{ ['--chip-color' as string]: TYPES[t].color, ['--chip-text' as string]: TYPES[t].text }}
-              aria-pressed={filters.type === t}
-              onClick={() => onChange({ ...filters, type: filters.type === t ? null : t })}
+              className={`chip chip--type ${filters.type === type ? 'is-active' : ''}`}
+              style={{ ['--chip-color' as string]: TYPES[type].color, ['--chip-text' as string]: TYPES[type].text }}
+              aria-pressed={filters.type === type}
+              onClick={() => onChange({ ...filters, type: filters.type === type ? null : type })}
             >
-              {TYPES[t].de}
+              {t.game.type[type]}
             </button>
           ))}
         </div>
       )}
       {showRegion && (
-        <div className="chips" role="group" aria-label="Regions-Filter">
+        <div className="chips" role="group" aria-label={t.builder.filter.regionFilter}>
           <button
             type="button"
             className={`chip ${filters.region === 0 ? 'is-active' : ''}`}
             aria-pressed={filters.region === 0}
             onClick={() => onChange({ ...filters, region: 0 })}
           >
-            Alle Regionen
+            {t.common.allRegions}
           </button>
           {REGIONS.map((r) => (
             <button
@@ -113,7 +115,7 @@ export function FilterBar({ filters, onChange, showType = true, showRegion = tru
               aria-pressed={filters.region === r.gen}
               onClick={() => onChange({ ...filters, region: r.gen as RegionFilter })}
             >
-              {r.name}
+              {t.game.region[r.gen]}
             </button>
           ))}
         </div>

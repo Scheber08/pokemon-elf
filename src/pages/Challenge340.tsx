@@ -2,11 +2,13 @@ import { useEffect } from 'react';
 import { HowItWorks, RunSetup, StatCards } from '../components/ChallengeParts';
 import { OnlineNote, RunBoard, RunModeBadge, RunNotice } from '../components/RunBoard';
 import { SeasonResultView } from '../components/SeasonResultView';
+import { useT } from '../i18n';
 import { MODE_RULES } from '../lib/challengeEngine';
 import { useSettings } from '../state/Settings';
 import { useChallengeRun } from '../state/useChallengeRun';
 
 export function Challenge340() {
+  const t = useT();
   const { sprite } = useSettings();
   const run = useChallengeRun('c340');
   const { phase, result, markRevealed } = run;
@@ -41,8 +43,8 @@ export function Challenge340() {
   return (
     <div className="page challenge">
       <header className="page-head">
-        <h1 className="page-title">34–0 Challenge</h1>
-        <p className="page-lead">Alle 1.025 Pokémon. Schaffst du 34–0?</p>
+        <h1 className="page-title">{t.game.challenge.c340}</h1>
+        <p className="page-lead">{t.challenge.c340Lead}</p>
       </header>
 
       {phase === 'play' && run.engine ? (
@@ -71,10 +73,7 @@ export function Challenge340() {
       ) : (
         <div className="challenge__setup">
           <div>
-            <HowItWorks>
-              Jede Runde würfelt eine Region und einen Typ. Setze ein passendes Pokémon auf einen freien Platz, mit
-              höchstens 2 Legendären. Fülle alle 11 Plätze und spiel dann eine Saison mit 34 Spielen. Schaffst du 34–0?
-            </HowItWorks>
+            <HowItWorks>{t.challenge.c340HowTo}</HowItWorks>
             <StatCards stats={run.stats} />
           </div>
           <RunSetup

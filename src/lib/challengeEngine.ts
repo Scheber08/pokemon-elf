@@ -85,10 +85,42 @@ export interface EngineData {
   byId: Map<number, Pokemon>;
 }
 
+/** Stabiler Code eines Engine-Fehlers – die Oberfläche übersetzt danach (die Meldung bleibt deutsch). */
+export type EngineErrorCode =
+  | 'finished'
+  | 'no_reroll'
+  | 'no_other_roll'
+  | 'unknown_pokemon'
+  | 'not_allowed'
+  | 'in_team'
+  | 'no_match'
+  | 'legend_limit'
+  | 'slot_taken'
+  | 'pool_empty'
+  | 'unknown_challenge'
+  | 'unknown_formation'
+  | 'bad_seed'
+  | 'bad_log'
+  | 'bad_pick';
+
+/** Code + Angaben für die übersetzte Anzeige. */
+export interface EngineErrorInfo {
+  code: EngineErrorCode;
+  pokemonId?: number;
+  slot?: number;
+  kind?: RerollKind;
+  /** Legendären-Limit */
+  max?: number;
+  /** Unbekannte Challenge/Formation */
+  value?: string;
+}
+
 export class EngineError extends Error {
-  constructor(message: string) {
+  readonly info: EngineErrorInfo | null;
+  constructor(message: string, info: EngineErrorInfo | null = null) {
     super(message);
     this.name = 'EngineError';
+    this.info = info;
   }
 }
 
@@ -112,7 +144,12 @@ export const isLegend = (p: Pokemon) => !!(p.leg || p.myth);
 
 export function rulesOf(config: RunConfig): ModeRules {
   const rules = MODE_RULES[config.challenge];
-  if (!rules) throw new EngineError(`Unbekannte Challenge: ${config.challenge}`);
+  if (!rules) {
+    throw new EngineError(`Unbekannte Challenge: ${config.challenge}`, {
+      code: 'unknown_challenge',
+      value: String(config.challenge),
+    });
+  }
   return rules;
 }
 
@@ -217,7 +254,7 @@ function baseRoll(round: number, ctx: Ctx): Roll {
           TYPE_KEYS.map((type) => ({ region: ctx.rules.roll === 'type' ? null : region, type, pokemonId: null })),
         );
   const found = shuffle(rng, combos).find((r) => hasPickable(r, ctx));
-  if (!found) throw new EngineError('Kein wählbares Pokémon mehr im Pool');
+  if (!found) throw new EngineError('Kein wählbares Pokémon mehr im Pool', { code: 'pool_empty' });
   return found;
 }
 
@@ -244,9 +281,14 @@ function rerollRoll(state: RunState, kind: RerollKind, ctx: Ctx): Roll | null {
 }
 
 export function startRun(config: RunConfig, data: EngineData): RunState {
-  if (!FORMATIONS[config.formation]) throw new EngineError(`Unbekannte Formation: ${config.formation}`);
+  if (!FORMATIONS[config.formation]) {
+    throw new EngineError(`Unbekannte Formation: ${config.formation}`, {
+      code: 'unknown_formation',
+      value: String(config.formation),
+    });
+  }
   rulesOf(config);
-  if (!Number.isInteger(config.seed) || config.seed < 0) throw new EngineError('Ungültiger Seed');
+  if (!Number.isInteger(config.seed) || config.seed < 0) throw new EngineError('Ungültiger Seed', { code: 'bad_seed' });
   const base = {
     config: { ...config },
     slots: FORMATIONS[config.formation].slots.map(() => null) as Slots,
@@ -279,10 +321,10 @@ export function canReroll(state: RunState, kind: RerollKind, data: EngineData): 
 }
 
 export function applyReroll(state: RunState, kind: RerollKind, data: EngineData): RunState {
-  if (isComplete(state)) throw new EngineError('Der Run ist bereits fertig');
-  if (rerollsLeft(state, kind) <= 0) throw new EngineError(`Kein ${kind}-Reroll mehr übrig`);
+  if (isComplete(state)) throw new EngineError('Der Run ist bereits fertig', { code: 'finished' });
+  if (rerollsLeft(state, kind) <= 0) throw new EngineError(`Kein ${kind}-Reroll mehr übrig`, { code: 'no_reroll', kind });
   const roll = rerollRoll(state, kind, ctxOf(state, data));
-  if (!roll) throw new EngineError('Kein anderer Wurf möglich');
+  if (!roll) throw new EngineError('Kein anderer Wurf möglich', { code: 'no_other_roll' });
   return {
     ...state,
     roll,
@@ -298,22 +340,34 @@ export function isFreeSlot(state: RunState, slot: number): boolean {
 
 /** Grund, warum ein Pokémon gerade nicht gewählt werden kann – oder null. */
 export function pickError(state: RunState, pokemonId: number, data: EngineData): string | null {
-  if (isComplete(state) || !state.roll) return 'Der Run ist bereits fertig';
+  return pickIssue(state, pokemonId, data)?.message ?? null;
+}
+
+/** Wie pickError, zusätzlich mit Code für die übersetzte Anzeige. */
+function pickIssue(state: RunState, pokemonId: number, data: EngineData): (EngineErrorInfo & { message: string }) | null {
+  if (isComplete(state) || !state.roll) return { code: 'finished', message: 'Der Run ist bereits fertig' };
   const p = data.byId.get(pokemonId);
-  if (!p) return `Unbekanntes Pokémon #${pokemonId}`;
+  if (!p) return { code: 'unknown_pokemon', pokemonId, message: `Unbekanntes Pokémon #${pokemonId}` };
   const ctx = ctxOf(state, data);
-  if (!poolOf(data, ctx.rules.pool).includes(p)) return `${p.de} ist in dieser Challenge nicht erlaubt`;
-  if (ctx.used.has(p.id)) return `${p.de} steht schon im Team`;
-  if (!matchesRoll(p, state.roll, ctx.rules)) return `${p.de} passt nicht zum Wurf`;
-  if (legendBlocked(state, p, data)) return 'Schon 2 Legendäre im Team';
+  if (!poolOf(data, ctx.rules.pool).includes(p)) {
+    return { code: 'not_allowed', pokemonId, message: `${p.de} ist in dieser Challenge nicht erlaubt` };
+  }
+  if (ctx.used.has(p.id)) return { code: 'in_team', pokemonId, message: `${p.de} steht schon im Team` };
+  if (!matchesRoll(p, state.roll, ctx.rules)) return { code: 'no_match', pokemonId, message: `${p.de} passt nicht zum Wurf` };
+  if (legendBlocked(state, p, data)) {
+    return { code: 'legend_limit', pokemonId, max: ctx.rules.maxLegends ?? 2, message: 'Schon 2 Legendäre im Team' };
+  }
   return null;
 }
 
 /** Legt ein Pokémon auf einen freien Slot und würfelt die nächste Runde. */
 export function place(state: RunState, pokemonId: number, slot: number, data: EngineData): RunState {
-  const err = pickError(state, pokemonId, data);
-  if (err) throw new EngineError(err);
-  if (!isFreeSlot(state, slot)) throw new EngineError(`Slot ${slot} ist nicht frei`);
+  const issue = pickIssue(state, pokemonId, data);
+  if (issue) {
+    const { message, ...info } = issue;
+    throw new EngineError(message, info);
+  }
+  if (!isFreeSlot(state, slot)) throw new EngineError(`Slot ${slot} ist nicht frei`, { code: 'slot_taken', slot });
   const slots = slot === SS_SLOT ? state.slots : state.slots.map((v, i) => (i === slot ? pokemonId : v));
   const ss = slot === SS_SLOT ? pokemonId : state.ss;
   const round = state.round + 1;
@@ -344,9 +398,11 @@ export function replayRun(config: RunConfig, picks: PickLog[], data: EngineData)
   for (const pick of picks) {
     try {
       if (!pick || !Array.isArray(pick.rerolls) || !pick.rerolls.every((k) => REROLL_KINDS.includes(k))) {
-        throw new EngineError('Ungültiges Zug-Protokoll');
+        throw new EngineError('Ungültiges Zug-Protokoll', { code: 'bad_log' });
       }
-      if (!Number.isInteger(pick.pokemonId) || !Number.isInteger(pick.slot)) throw new EngineError('Ungültiger Zug');
+      if (!Number.isInteger(pick.pokemonId) || !Number.isInteger(pick.slot)) {
+        throw new EngineError('Ungültiger Zug', { code: 'bad_pick' });
+      }
       for (const kind of pick.rerolls) state = applyReroll(state, kind, data);
       state = place(state, pick.pokemonId, pick.slot, data);
     } catch (e) {

@@ -6,6 +6,7 @@
  * Ohne Token oder ohne Server läuft alles lokal (ungewertet). In beiden Fällen
  * wird die Saison im Browser mit demselben Seed simuliert.
  */
+import { messages } from '../i18n';
 import type { ChallengeKey, Pokemon } from '../types';
 import { ApiRequestError, apiAvailable, finishRun as apiFinishRun, renamePlayer } from './api/client';
 import { recordRun as recordStats, type ChallengeStats } from './challengeStats';
@@ -33,8 +34,13 @@ export interface RunRanking {
   rankAllTime: number | null;
   /** Tag der Wertung (Europe/Berlin) */
   day: string | null;
-  /** Anzeigbarer Hinweis (z. B. Ablehnungsgrund) */
+  /** Anzeigbarer Hinweis (z. B. Ablehnungsgrund) – in der Sprache beim Abschluss */
   message: string | null;
+  /**
+   * Fester Hinweis ohne Server-Meldung – die Anzeige übersetzt ihn in die aktuelle Sprache
+   * (fehlt bei älteren gespeicherten Ergebnissen; dann gilt `message`).
+   */
+  note?: 'played_offline' | 'unreachable';
 }
 
 export interface FinishOutcome {
@@ -63,11 +69,6 @@ export interface FinishOptions {
   networkFallback?: boolean;
 }
 
-const FINISH_FAILED =
-  'Server nicht erreichbar – dein Run ist noch nicht gewertet. Sende ihn gleich noch einmal oder werte ihn offline aus (dann ohne Wertung).';
-const ALREADY_RANKED =
-  'Dieser Run ist auf dem Server schon gewertet, das Ergebnis ist hier aber noch nicht angekommen. Sende ihn gleich noch einmal, um dein gewertetes Ergebnis zu laden.';
-
 /** Meldung als Satz: ergänzt den Punkt, falls kein Satzzeichen am Ende steht. */
 const sentence = (msg: string) => (/[.!?…]$/.test(msg) ? msg : `${msg}.`);
 
@@ -93,22 +94,21 @@ export function isAlreadyRanked(e: unknown): boolean {
 
 /** Anzeigbarer Fehler, wenn finishRun geworfen hat (der Run bleibt dann in 'play'). */
 export function finishErrorMessage(e: unknown): string {
-  if (isAlreadyRanked(e)) return ALREADY_RANKED;
-  if (isRateLimited(e)) {
-    const msg = sentence((e as ApiRequestError).message);
-    return `${msg} Dein Run ist noch nicht gewertet – sende ihn später noch einmal oder werte ihn offline aus (dann ohne Wertung).`;
-  }
-  if (isRetryable(e)) return FINISH_FAILED;
-  return `Auswertung fehlgeschlagen: ${e instanceof Error ? e.message : String(e)}`;
+  const t = messages().challenge;
+  if (isAlreadyRanked(e)) return t.alreadyRanked;
+  if (isRateLimited(e)) return t.finishRateLimited(sentence((e as ApiRequestError).message));
+  if (isRetryable(e)) return t.finishFailed;
+  return t.finishError(e instanceof Error ? e.message : String(e));
 }
 
-const offline = (message: string | null, day: string | null): RunRanking => ({
+const offline = (message: string | null, day: string | null, note?: RunRanking['note']): RunRanking => ({
   status: 'offline',
   entryId: null,
   rankToday: null,
   rankAllTime: null,
   day,
   message,
+  ...(note ? { note } : {}),
 });
 
 export async function finishRun(o: FinishOptions): Promise<FinishOutcome> {
@@ -116,7 +116,8 @@ export async function finishRun(o: FinishOptions): Promise<FinishOutcome> {
   const challenge: ChallengeKey = config.challenge;
   let seasonSeed: number | null = null;
   let expectedScore: number | null = null;
-  let ranking: RunRanking = offline(o.token ? null : 'Offline gespielt – nicht gewertet', o.day);
+  const t = messages().challenge;
+  let ranking: RunRanking = o.token ? offline(null, o.day) : offline(t.playedOffline, o.day, 'played_offline');
 
   if (o.token) {
     try {
@@ -143,11 +144,11 @@ export async function finishRun(o: FinishOptions): Promise<FinishOutcome> {
       if (isAlreadyRanked(e)) throw e;
       if (o.networkFallback === false && isRetryable(e)) throw e;
       if (isRateLimited(e)) {
-        ranking = offline(`${(e as ApiRequestError).message} – Run nicht gewertet`, o.day);
+        ranking = offline(t.notRanked((e as ApiRequestError).message), o.day);
       } else if (e instanceof ApiRequestError && e.status >= 400 && e.status < 500) {
         ranking = { ...offline(e.message, o.day), status: 'rejected' };
       } else {
-        ranking = offline('Server nicht erreichbar – Run nicht gewertet', o.day);
+        ranking = offline(t.unreachableNotRanked, o.day, 'unreachable');
       }
     }
   }

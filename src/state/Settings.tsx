@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { detectLang, isLang, setCurrentLang, type Lang } from '../i18n/lang';
+import { currentLang, detectLang, isLang, setCurrentLang, type Lang } from '../i18n/lang';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
 import type { SpriteStyle } from '../types';
 
@@ -61,8 +61,24 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
+const noop = () => {};
+
+/**
+ * Ohne Provider – statisches Rendern (Tests) oder eigene Wurzeln wie der Bild-Export:
+ * gespeicherte Werte in der aktiven Sprache, Änderungen wirken nicht.
+ */
+function fallbackSettings(): SettingsCtx {
+  const stored = load<Partial<GlobalSettings>>(STORAGE_KEYS.settings, {});
+  return {
+    sprite: stored.sprite ?? 'pixel',
+    theme: stored.theme ?? 'dark',
+    lang: currentLang(),
+    setSprite: noop,
+    setTheme: noop,
+    setLang: noop,
+  };
+}
+
 export function useSettings(): SettingsCtx {
-  const v = useContext(Ctx);
-  if (!v) throw new Error('useSettings außerhalb des Providers');
-  return v;
+  return useContext(Ctx) ?? fallbackSettings();
 }

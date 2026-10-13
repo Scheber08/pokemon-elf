@@ -4,24 +4,11 @@ import { DraftLive } from '../components/DraftLive';
 import { DraftLobby } from '../components/DraftLobby';
 import { DraftSeasonStage } from '../components/DraftSeasonStage';
 import { RunNotice } from '../components/RunBoard';
+import { useT } from '../i18n';
 import { isDraftCode, normalizeDraftCode } from '../lib/api/draftClient';
-import { DRAFT_LIMITS, type DraftPhase } from '../lib/api/draftContract';
+import { DRAFT_LIMITS } from '../lib/api/draftContract';
 import { draftRoomReady, useDraftRoom, type DraftRoomStatus } from '../state/useDraftRoom';
 import '../styles/draft.css';
-
-const PHASE_LEAD: Record<DraftPhase, string> = {
-  lobby: 'Lobby – teilt den Code, wählt Teamnamen und Formation. Der Host startet den Draft.',
-  drafting: 'Snake-Draft läuft – jeder sieht jeden Pick sofort.',
-  done: 'Draft abgeschlossen – die Saison läuft für alle gleichzeitig.',
-};
-
-const STATUS_TEXT: Record<DraftRoomStatus, string> = {
-  connecting: 'Verbinde …',
-  open: 'Verbunden',
-  reconnecting: 'Verbinde neu …',
-  closed: 'Getrennt',
-  not_found: 'Nicht gefunden',
-};
 
 /** Verbindungsstatus als kleine Pille (mit „Jetzt verbinden" beim Warten bzw. nach abgelehnter Anmeldung). */
 function ConnectionPill({
@@ -33,14 +20,15 @@ function ConnectionPill({
   failed: boolean;
   onReconnect: () => void;
 }) {
+  const t = useT();
   const offline = failed && status !== 'open';
   return (
     <div className={`draft-conn draft-conn--${offline ? 'failed' : status}`} role="status">
       <span className="draft-conn__dot" aria-hidden="true" />
-      <span>{offline ? 'Verbindung fehlgeschlagen' : STATUS_TEXT[status]}</span>
+      <span>{offline ? t.online.connFailed : t.online.status[status]}</span>
       {(offline || status === 'reconnecting' || status === 'closed') && (
         <button type="button" className="draft-conn__retry" onClick={onReconnect}>
-          {offline ? 'Erneut versuchen' : 'Jetzt verbinden'}
+          {offline ? t.online.retry : t.online.connectNow}
         </button>
       )}
     </div>
@@ -51,6 +39,7 @@ function ConnectionPill({
 export function DraftRoom() {
   const { code: raw = '' } = useParams();
   const navigate = useNavigate();
+  const t = useT();
   const code = normalizeDraftCode(raw);
   const room = useDraftRoom(code);
   const s = room.state;
@@ -63,22 +52,21 @@ export function DraftRoom() {
   // Tab-Titel: „(Du bist dran)" vorne, solange man am Zug ist
   const leagueName = s?.settings.name;
   useEffect(() => {
-    const base = `${leagueName || `Liga ${code}`} · Pokémon Elf`;
-    document.title = room.myTurn ? `(Du bist dran) ${base}` : base;
-  }, [room.myTurn, leagueName, code, raw]);
+    const base = `${leagueName || t.online.leagueFallback(code)} · Pokémon Elf`;
+    document.title = room.myTurn ? t.online.yourTurnTitle(base) : base;
+  }, [room.myTurn, leagueName, code, raw, t]);
 
   if (room.status === 'not_found') {
     return (
       <div className="page draft draft-room">
         <section className="card prose empty draft-notfound">
-          <span className="kicker">Online-Liga {code || raw}</span>
-          <h1 className="page-title">Liga nicht gefunden</h1>
-          <p>
-            Diesen Code gibt es nicht (mehr). Prüf den Link bzw. Code – Ligen werden {DRAFT_LIMITS.retentionDays} Tage
-            nach dem Erstellen gelöscht.
-          </p>
+          <span className="kicker">
+            {t.online.onlineLeague} {code || raw}
+          </span>
+          <h1 className="page-title">{t.online.notFoundTitle}</h1>
+          <p>{t.online.notFoundText(DRAFT_LIMITS.retentionDays)}</p>
           <Link className="btn btn--primary" to="/draft">
-            Zum Fantasy-Draft
+            {t.online.toDraft}
           </Link>
         </section>
       </div>
@@ -90,17 +78,17 @@ export function DraftRoom() {
   const readOnly = !room.live || room.status === 'closed';
   const failed = room.authError != null && room.status !== 'open';
   // Was gerade zu sehen ist: der letzte eigene Stand (live) oder die öffentliche Vorschau
-  const shown = room.live ? 'deinen letzten Stand' : 'den öffentlichen Stand';
+  const shown = room.live ? t.online.shownLive : t.online.shownPublic;
 
   return (
     <div className="page draft draft-room">
       <header className="page-head draft-room__head">
         <div className="draft-room__title">
           <span className="kicker">
-            Online-Liga · <span className="draft-room__code">{code}</span>
+            {t.online.onlineLeague} · <span className="draft-room__code">{code}</span>
           </span>
-          <h1 className="page-title">{leagueName || 'Fantasy-Draft'}</h1>
-          {s && <p className="page-lead">{PHASE_LEAD[s.phase]}</p>}
+          <h1 className="page-title">{leagueName || t.online.title}</h1>
+          {s && <p className="page-lead">{t.online.phaseLead[s.phase]}</p>}
         </div>
         <ConnectionPill status={room.status} failed={failed} onReconnect={room.reconnect} />
       </header>
@@ -114,38 +102,32 @@ export function DraftRoom() {
         {failed ? (
           <div className="notice notice--error draft-authfail" role="alert">
             <p>
-              <strong>Verbindung fehlgeschlagen – erneut versuchen</strong>
-              <span className="draft-authfail__reason">Anmeldung beim Server: {room.authError}</span>
+              <strong>{t.online.authFailTitle}</strong>
+              <span className="draft-authfail__reason">{t.online.authReason(room.authError ?? '')}</span>
               <span>
-                {room.status === 'closed' ? 'Kein automatischer Neuversuch mehr.' : 'Ein neuer Versuch läuft automatisch.'}
-                {s ? ` Bis dahin siehst du ${shown} (nur ansehen).` : ''}
+                {room.status === 'closed' ? t.online.noAutoRetry : t.online.autoRetry}
+                {s ? t.online.untilThen(shown) : ''}
               </span>
             </p>
             <button type="button" className="btn btn--small" onClick={room.reconnect}>
-              Erneut versuchen
+              {t.online.retry}
             </button>
           </div>
         ) : room.status === 'closed' && s ? (
           <div className="notice draft-authfail" role="alert">
             <p>
-              <strong>Verbindung beendet</strong>
-              <span>
-                Zum Beispiel, weil die Liga in einem anderen Tab geöffnet wurde. Du siehst {shown} (nur ansehen).
-              </span>
+              <strong>{t.online.closedTitle}</strong>
+              <span>{t.online.closedText(shown)}</span>
             </p>
             <button type="button" className="btn btn--small" onClick={room.reconnect}>
-              Hier weitermachen
+              {t.online.continueHere}
             </button>
           </div>
         ) : (
           room.status === 'reconnecting' &&
           s && (
             <RunNotice>
-              {room.me
-                ? 'Verbindung unterbrochen – es wird automatisch neu verbunden. Dein Platz bleibt reserviert.'
-                : room.live
-                  ? 'Verbindung unterbrochen – es wird automatisch neu verbunden.'
-                  : 'Noch keine Live-Verbindung – neuer Versuch läuft. Bis dahin siehst du den öffentlichen Stand (nur ansehen).'}
+              {room.me ? t.online.lostMember : room.live ? t.online.lost : t.online.lostPreview}
             </RunNotice>
           )
         )}
@@ -156,12 +138,12 @@ export function DraftRoom() {
           <div className="boot__ball" aria-hidden="true" />
           <p>
             {room.status === 'closed'
-              ? 'Verbindung beendet – über „Jetzt verbinden" geht es weiter.'
+              ? t.online.bootClosed
               : failed
-                ? 'Verbindung fehlgeschlagen – neuer Versuch läuft …'
+                ? t.online.bootFailed
                 : room.status === 'reconnecting'
-                  ? 'Server nicht erreichbar – neuer Versuch läuft …'
-                  : `Verbinde mit Liga ${code} …`}
+                  ? t.online.bootUnreachable
+                  : t.online.bootConnecting(code)}
           </p>
         </div>
       ) : s!.phase === 'lobby' ? (

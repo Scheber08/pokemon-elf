@@ -1,25 +1,20 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useT } from '../i18n';
 import type { Pokemon, SpriteStyle, StatKey } from '../types';
 import { TypeBadges } from './Badges';
 import { Sprite } from './Sprite';
-import { dexNo, StatTooltip } from './StatTooltip';
+import { StatTooltip } from './StatTooltip';
 
-const MINI: { key: StatKey; label: string }[] = [
-  { key: 'hp', label: 'KP' },
-  { key: 'atk', label: 'ANG' },
-  { key: 'def', label: 'VER' },
-  { key: 'spa', label: 'SPA' },
-  { key: 'spd', label: 'SPV' },
-  { key: 'spe', label: 'INI' },
-];
+const MINI: StatKey[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
 
 export function MiniStats({ pokemon }: { pokemon: Pokemon }) {
-  const title = MINI.map((m) => `${m.label} ${pokemon[m.key]}`).join(' · ');
+  const labels = useT().builder.grid.mini;
+  const title = MINI.map((k) => `${labels[k]} ${pokemon[k]}`).join(' · ');
   return (
     <span className="ministats" title={title} aria-label={title}>
-      {MINI.map((m) => (
-        <span key={m.key} className="ministats__bar" data-label={m.label}>
-          <span style={{ height: `${Math.min(100, (pokemon[m.key] / 180) * 100)}%` }} />
+      {MINI.map((k) => (
+        <span key={k} className="ministats__bar" data-label={labels[k]}>
+          <span style={{ height: `${Math.min(100, (pokemon[k] / 180) * 100)}%` }} />
         </span>
       ))}
     </span>
@@ -58,12 +53,13 @@ export function PokemonGrid({
   disabledReason,
   note,
   emptyOption,
-  ariaLabel = 'Pokémon-Auswahl',
+  ariaLabel,
   pageSize = 84,
   autoFocus,
   className = '',
   resetKey,
 }: Props) {
+  const t = useT();
   const [limit, setLimit] = useState(pageSize);
   const gridRef = useRef<HTMLDivElement>(null);
   const sentinel = useRef<HTMLDivElement>(null);
@@ -132,7 +128,7 @@ export function PokemonGrid({
   const visible = items.slice(0, limit);
   return (
     <div className={`pgrid-wrap ${className}`}>
-      <div ref={gridRef} className="pgrid" role="list" aria-label={ariaLabel} onKeyDown={onKeyDown}>
+      <div ref={gridRef} className="pgrid" role="list" aria-label={ariaLabel ?? t.builder.grid.label} onKeyDown={onKeyDown}>
         {emptyOption && (
           <div role="listitem">
             <button type="button" className="pcard pcard--empty" data-grid-item onClick={emptyOption.onPick}>
@@ -167,11 +163,11 @@ export function PokemonGrid({
                 }}
               >
                 <Sprite pokemon={p} style={sprite} className="pcard__sprite" />
-                <span className="pcard__no">{dexNo(p.id)}</span>
-                <span className="pcard__name">{p.de}</span>
+                <span className="pcard__no">{t.game.dexNo(p.id)}</span>
+                <span className="pcard__name">{t.game.pokemon(p)}</span>
                 <TypeBadges types={p.types} small />
                 <MiniStats pokemon={p} />
-                {(p.leg || p.myth) ? <span className="pcard__legend">{p.myth ? 'Myst.' : 'Leg.'}</span> : null}
+                {(p.leg || p.myth) ? <span className="pcard__legend">{p.myth ? t.builder.grid.mythShort : t.builder.grid.legShort}</span> : null}
                 {hint && <span className="pcard__note">{hint}</span>}
                 {reason && <span className="pcard__reason">{reason}</span>}
               </button>
@@ -179,7 +175,7 @@ export function PokemonGrid({
           );
         })}
       </div>
-      {items.length === 0 && !emptyOption && <p className="pgrid__empty">Keine Pokémon gefunden.</p>}
+      {items.length === 0 && !emptyOption && <p className="pgrid__empty">{t.builder.grid.none}</p>}
       {limit < items.length && <div ref={sentinel} className="pgrid__sentinel" aria-hidden="true" />}
       {tip && <StatTooltip pokemon={tip.pokemon} anchor={tip.rect} />}
     </div>

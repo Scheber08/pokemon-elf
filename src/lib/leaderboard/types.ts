@@ -1,3 +1,4 @@
+import { messages } from '../../i18n';
 import type { ChallengeKey, FormationId, Record3 } from '../../types';
 import { dayKey } from '../daily';
 
@@ -32,12 +33,20 @@ export interface LeaderboardService {
   top(challenge: ChallengeKey, period: Period, limit?: number): Promise<LeaderboardEntry[]>;
 }
 
-export const CHALLENGE_LABEL: Record<ChallengeKey, string> = {
-  c340: '34–0 Challenge',
-  daily: 'Tägliche Elf',
-  retro340: 'Retro 34–0',
-  c151: '151 Challenge',
-};
+const CHALLENGE_KEYS: readonly ChallengeKey[] = ['c340', 'daily', 'retro340', 'c151'];
+
+/**
+ * Anzeigenamen der Challenges in der aktiven Sprache – liest bei jedem Zugriff
+ * t.game.challenge (Quelle der Namen). In Komponenten besser direkt useT().game.challenge.
+ */
+export const CHALLENGE_LABEL: Readonly<Record<ChallengeKey, string>> = Object.freeze(
+  Object.defineProperties(
+    {} as Record<ChallengeKey, string>,
+    Object.fromEntries(
+      CHALLENGE_KEYS.map((k) => [k, { enumerable: true, get: () => messages().game.challenge[k] }]),
+    ),
+  ),
+);
 
 /** Sortierung: Punkte, dann Team-Score, dann früherer Eintrag. */
 export function compareEntries(a: LeaderboardEntry, b: LeaderboardEntry): number {

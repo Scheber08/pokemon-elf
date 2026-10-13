@@ -1,6 +1,233 @@
 /** Texts: draft (English). Must have exactly the keys of ../de/draft.ts (checked by TypeScript). */
 import type { Messages } from '../de';
 
-const draft: Messages['draft'] = {};
+/** 1st, 2nd, 3rd, 4th … 11th, 12th, 13th, 21st … */
+function ordinal(n: number): string {
+  const rem100 = n % 100;
+  if (rem100 >= 11 && rem100 <= 13) return `${n}th`;
+  return `${n}${['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'}`;
+}
+
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+const draft: Messages['draft'] = {
+  // ---------------------------------------------------------------- Shared
+  cpu: 'CPU',
+  you: 'You',
+  host: 'Host',
+  teams: 'Teams',
+  pool: 'Pool',
+  formation: 'Formation',
+  on: 'On',
+  off: 'Off',
+  draftBoard: 'Draft board',
+  topScorers: 'Top scorers',
+  table: 'Table',
+  matchday: (n) => `Matchday ${n}`,
+  byes: (names) => `Bye: ${names}`,
+  pts: (n) => plural(n, 'pt', 'pts'),
+  placeNo: (n) => ordinal(n),
+  outcome: { S: 'Win', U: 'Draw', N: 'Defeat' },
+  col: {
+    place: 'Pos',
+    placeTitle: 'Position',
+    team: 'Team',
+    score: 'Score',
+    teamScore: 'Team score',
+    played: 'P',
+    playedTitle: 'Played',
+    won: 'W',
+    wonTitle: 'Won',
+    drawn: 'D',
+    drawnTitle: 'Drawn',
+    lost: 'L',
+    lostTitle: 'Lost',
+    goals: 'Goals',
+    diff: 'GD',
+    diffTitle: 'Goal difference',
+    pts: 'Pts',
+    ptsTitle: 'Points',
+  },
+
+  // ---------------------------------------------------------------- /draft (mode + local hot-seat draft)
+  modeLabel: 'Game mode',
+  modeOnline: 'Online league',
+  modeLocal: 'One device',
+  local: {
+    myTeam: 'My Team',
+    title: 'Fantasy Draft',
+    lead: '2–8 teams, one shared pool, snake draft over 11 rounds. Then everyone plays everyone – home and away.',
+    teamCount: 'Number of teams',
+    teamNameAria: (no) => `Team ${no} name`,
+    teamFormationAria: (no) => `Team ${no} formation`,
+    human: 'Human',
+    hotSeatNote: 'Human teams pick in turn on the same device (hot seat).',
+    region: 'Region',
+    legendsLabel: 'Pokémon / Legendaries',
+    pokemon: 'Pokémon',
+    legends: 'Legendaries',
+    poolDesc: (from, legends) => `Draft ${from}, ${legends ? 'with legendaries' : 'without legendaries'}.`,
+    poolTooSmall: (size, teams, rounds, need) =>
+      `Only ${size} Pokémon in the pool – ${teams} teams × ${rounds} rounds need ${need}. Choose a bigger region, “All” or fewer teams.`,
+    start: 'Start draft',
+    leagueTitle: 'Draft league',
+    leagueLead: (matches) => `Everyone plays everyone, home and away – ${plural(matches, 'match', 'matches')}.`,
+    roundNo: (n) => `MD${n}`,
+    allMatches: 'All matches',
+    squads: 'Squads',
+    squadAria: (team) => `${team} squad`,
+    replay: 'Replay league',
+    newDraft: 'New draft',
+    round: 'Round',
+    pick: 'Pick',
+    onTheClock: 'On the clock:',
+    cpuTag: '(CPU)',
+    cpuScouting: (team) => `${team} is scouting …`,
+    pickTitle: 'Pick a Pokémon',
+    selectedHint: ' selected. Click a free spot on the pitch.',
+    yourTurn: (team) => `${team}, you’re up.`,
+    abortConfirm: 'Cancel the draft?',
+    abort: 'Cancel draft',
+  },
+
+  // ---------------------------------------------------------------- League settings (online draft)
+  settings: {
+    leagueName: 'League name',
+    optional: '(optional)',
+    leagueNamePlaceholder: 'e.g. Monday League',
+    poolTooSmall: (teams) => `Pool too small for ${teams} teams`,
+    poolNote: (size, capacity) => `${size} Pokémon, enough for up to ${plural(capacity, 'team', 'teams')}`,
+    legends: 'Legendaries',
+    setPiece: 'Set-piece taker',
+    setPieceRound: 'Round 12',
+    tooManyTeams: 'The pool isn’t big enough for that many teams',
+    alreadyJoined: (n) => (n === 1 ? '1 team has already joined' : `${n} teams have already joined`),
+    order: 'Draft order',
+    orderRandom: 'Random',
+    orderHost: 'Set by host',
+    timer: 'Pick timer',
+    seconds: (s) => `${s} s`,
+    timerNote: 'When time runs out, the server picks automatically.',
+    noTimerNote: 'No time limit – the host can pick for absent teams.',
+    lobby: 'Lobby',
+    private: 'Private',
+    public: 'Public',
+    privateNote: 'Private: only people with the link or code can join.',
+    publicNote: 'Public: the league appears in the list of public lobbies – anyone can join.',
+    teamName: 'Team name',
+    teamNamePlaceholder: 'e.g. FC Charizard',
+  },
+  summary: {
+    pool: (region) => `Pool: ${region}`,
+    withLegends: 'with legendaries',
+    withoutLegends: 'no legendaries',
+    withSetPiece: 'with set-piece taker',
+    withoutSetPiece: 'no set-piece taker',
+    maxTeams: (n) => `up to ${n} teams`,
+    orderRandom: 'random order',
+    orderHost: 'order set by host',
+    perPick: (s) => `${s} s per pick`,
+    noTimer: 'no pick timer',
+    public: 'public',
+    private: 'private',
+  },
+
+  // ---------------------------------------------------------------- Draft board
+  board: {
+    onlineTitle: 'Online',
+    offlineTitle: 'Offline',
+    onlineAria: 'online',
+    offlineAria: 'offline',
+    recentPicks: 'Recent picks',
+    auto: ' (auto)',
+  },
+
+  // ---------------------------------------------------------------- Online league result
+  results: {
+    none: 'There’s no result for this league yet.',
+    copied: 'Result copied',
+    copyFailed: 'Couldn’t copy',
+    kicker: (code) => `Online draft ${code}`,
+    championLabel: 'Champions: ',
+    heroLine: (r, rating) =>
+      `${plural(r.pts, 'pt', 'pts')} · ${r.w}–${r.d}–${r.l} · Goals ${r.gf}:${r.ga} · Team score ${rating}`,
+    youChampion: 'Congratulations – your team won the league!',
+    yourPlace: (team, place, pts) => `Your team ${team}: ${ordinal(place)} place · ${plural(pts, 'pt', 'pts')}`,
+    share: 'Share result',
+    finalTable: 'Final table',
+    yourTeamSr: ' (your team)',
+    noGoals: 'No goals this season.',
+    setPieceOnly: 'Set-piece taker',
+    setPiecePart: (n) => `${n} from set pieces`,
+    goalsAria: (n) => plural(n, 'goal', 'goals'),
+    lineups: 'Line-ups',
+    rosterMeta: (formation, pts, gf, ga) => `${formation} · ${plural(pts, 'pt', 'pts')} · Goals ${gf}:${ga}`,
+    lineupAria: (team) => `${team} line-up`,
+    allMatchdays: 'All matchdays',
+  },
+
+  // ---------------------------------------------------------------- Season (preparation + ticker)
+  season: {
+    preparing: 'Preparing the season …',
+    newLeague: 'New league',
+  },
+  ticker: {
+    startsSoon: 'The shared season is about to start.',
+    fullTime: 'Full time!',
+    matchdayColon: (n) => `Matchday ${n}:`,
+    result: (outcome, gf, ga, home, opponent, place) =>
+      `${outcome} ${gf}:${ga} ${home ? 'v' : 'at'} ${opponent}, ${ordinal(place)} place.`,
+    bye: (place) => `Your team has a bye, ${ordinal(place)} place.`,
+    championLine: (team, pts) => `Champions: ${team} with ${plural(pts, 'point', 'points')}.`,
+    leaderLine: (team, pts) => `Top of the table: ${team} with ${plural(pts, 'point', 'points')}.`,
+    statusEnd: 'FT',
+    statusLive: 'Live',
+    statusSoon: 'Soon',
+    sharedSeason: 'Shared season',
+    title: 'Season ticker',
+    toResult: 'See result',
+    skip: 'Skip',
+    matchdayLabel: 'Matchday',
+    progressAria: 'Season progress',
+    progressText: (md, total) => `Matchday ${md} of ${total}`,
+    place: 'Position',
+    points: 'Points',
+    record: 'Record',
+    goals: 'Goals',
+    championLabel: 'Champions: ',
+    youChampion: 'Your team won the league!',
+    yourPlace: (place) => `Your team: ${ordinal(place)} place`,
+    finalScores: 'Final scores',
+    results: 'Results',
+    kickoff: 'Kick-off',
+    kickoffIn: 'Kick-off in',
+    kickoffNow: 'Kick-off!',
+    fixtures: 'Fixtures',
+    tableAfter: (n) => `Table after matchday ${n}`,
+    note: 'Everyone sees the same season at the same time. Skipping only applies to you.',
+    scoreOpen: 'not played yet',
+    scoreAria: (hg, ag) => `${hg} to ${ag}`,
+    unchanged: ' (unchanged)',
+    trend: (n, up) => `(${up ? 'up' : 'down'} ${plural(n, 'place', 'places')})`,
+  },
+
+  // ---------------------------------------------------------------- Title decider + share text (leagueTimeline)
+  tie: {
+    tiebreakLabel: 'team name (alphabetical)',
+    and: ' and ',
+    gd: (names, c, r) => `Level on points with ${names} – decided on goal difference (${c} to ${r})`,
+    gf: (names, c, r) => `Level on points with ${names} and the same goal difference – decided on goals scored (${c} to ${r})`,
+    rating: (names, c, r) =>
+      `Level on points with ${names}, same goal difference and goals scored – decided on team score (${c} to ${r})`,
+    tiebreak: (names, label) =>
+      `Level on points with ${names}, same goal difference and goals scored – decided on ${label}`,
+    level: (names) => `Level on points with ${names}`,
+  },
+  share: {
+    line: (code, champion, pts, tie) =>
+      `Pokémon Elf – Online draft ${code}: ${champion} won the league (${plural(pts, 'pt', 'pts')})${tie}.`,
+    own: (team, place) => ` My team ${team} finished ${ordinal(place)}.`,
+  },
+};
 
 export default draft;

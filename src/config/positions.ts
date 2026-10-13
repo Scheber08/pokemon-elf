@@ -185,32 +185,14 @@ export const POSITIONS: Record<PosCode, PositionDef> = {
   SS: { code: 'SS', name: 'Standardschütze', profile: 'SS', line: 'att', teamWeight: 0 },
 };
 
-/** Gruppen für den Scouting-Guide. */
-export const PROFILE_GROUPS: { title: string; profiles: { key: ProfileKey; codes: string }[] }[] = [
-  {
-    title: 'Abwehr & Torwart',
-    profiles: [
-      { key: 'TW', codes: 'TW' },
-      { key: 'IV', codes: 'IV' },
-      { key: 'AV', codes: 'LV/RV' },
-      { key: 'WB', codes: 'LWB/RWB' },
-    ],
-  },
-  {
-    title: 'Mittelfeld',
-    profiles: [
-      { key: 'DM', codes: 'DM' },
-      { key: 'ZM', codes: 'ZM' },
-      { key: 'OM', codes: 'OM' },
-      { key: 'FM', codes: 'LM/RM' },
-    ],
-  },
-  {
-    title: 'Angriff',
-    profiles: [
-      { key: 'FL', codes: 'LF/RF' },
-      { key: 'ST', codes: 'ST' },
-      { key: 'SS', codes: 'SS' },
-    ],
-  },
+export type ProfileGroupKey = 'defense' | 'midfield' | 'attack';
+
+/**
+ * Gruppen für den Scouting-Guide. Überschriften und Kürzel kommen aus den Übersetzungen
+ * (scouting.groups[key], game.profileCodes[profil]).
+ */
+export const PROFILE_GROUPS: { key: ProfileGroupKey; profiles: ProfileKey[] }[] = [
+  { key: 'defense', profiles: ['TW', 'IV', 'AV', 'WB'] },
+  { key: 'midfield', profiles: ['DM', 'ZM', 'OM', 'FM'] },
+  { key: 'attack', profiles: ['FL', 'ST', 'SS'] },
 ];

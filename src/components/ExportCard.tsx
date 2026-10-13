@@ -1,4 +1,5 @@
 import { FORMATIONS } from '../config/formations';
+import { useT } from '../i18n';
 import type { FormationId, Pokemon, SpriteStyle } from '../types';
 import { PitchMarkings } from './PitchMarkings';
 import { PlayerToken } from './PlayerToken';
@@ -31,20 +32,21 @@ const PITCH_W = 880;
 
 /** Statisches 1200×1500-Bild (Spielfeld, Teamname, ggf. Saisonbilanz) für html2canvas. */
 export function ExportCard({ formation, players, ss, sprite, images, teamName, subtitle, result, watermark }: Props) {
+  const t = useT();
   const defs = FORMATIONS[formation].slots;
   return (
     <div className="export-card" style={{ width: EXPORT_W, height: EXPORT_H }}>
       <div className="export-card__head">
         <div>
           <div className="export-card__kicker">Pokémon Elf{result ? ` · ${result.label}` : ''}</div>
-          <div className="export-card__team">{teamName || 'Meine Elf'}</div>
+          <div className="export-card__team">{teamName || t.builder.exportCard.defaultTeam}</div>
           <div className="export-card__sub">{subtitle ?? formation}</div>
         </div>
         {result && (
           <div className="export-card__result">
             <div className="export-card__record">{result.record}</div>
             <div className="export-card__stats">
-              {result.points} Pkt · Score {result.score} · Platz {result.position}
+              {t.builder.exportCard.stats(result.points, result.score, result.position)}
             </div>
           </div>
         )}

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { DraftSettingsForm, DraftTeamFields } from '../components/DraftSettingsForm';
-import { regionLabel } from '../config/regions';
+import { useT, type Messages } from '../i18n';
 import { ApiRequestError } from '../lib/api/client';
 import { createDraft, fetchPublicLobbies, isDraftCode, normalizeDraftCode } from '../lib/api/draftClient';
 import {
@@ -15,6 +15,7 @@ import { load, save } from '../lib/storage';
 import { usePokemonData } from '../state/PokemonData';
 import {
   cleanTeamName,
+  draftErrorText,
   loadRecentLeagues,
   loadTeamPrefs,
   saveTeamPrefs,
@@ -38,28 +39,31 @@ function initialSettings(list: Pokemon[]): DraftSettings {
   }
 }
 
-function errorText(e: unknown): string {
-  return e instanceof ApiRequestError ? e.message : 'Unbekannter Fehler – bitte erneut versuchen';
+function errorText(e: unknown, t: Messages): string {
+  return e instanceof ApiRequestError ? draftErrorText(e.message, e.code) : t.online.unknownRetry;
 }
 
 /** Neue Liga erstellen → /draft/CODE */
 function CreateLeague() {
+  const t = useT();
   const { list } = usePokemonData();
   const navigate = useNavigate();
   const [settings, setSettings] = useState<DraftSettings>(() => initialSettings(list));
   const [team, setTeam] = useState<TeamPrefs>(loadTeamPrefs);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  /** Fehler – Text erst beim Rendern (folgt der Sprache) */
+  const [failure, setFailure] = useState<{ err: unknown } | 'teamNameMissing' | null>(null);
+  const error = failure === 'teamNameMissing' ? t.online.teamNameMissing : failure ? errorText(failure.err, t) : null;
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     const teamName = cleanTeamName(team.name);
     if (!teamName) {
-      setError('Gib deinem Team einen Namen');
+      setFailure('teamNameMissing');
       return;
     }
     setBusy(true);
-    setError(null);
+    setFailure(null);
     try {
       const { code } = await createDraft({
         settings: { ...settings, name: settings.name.trim() },
@@ -70,7 +74,7 @@ function CreateLeague() {
       save(SETTINGS_KEY, { ...settings, name: '' });
       navigate(`/draft/${code}`);
     } catch (err) {
-      setError(errorText(err));
+      setFailure({ err });
       setBusy(false);
     }
   };
@@ -78,15 +82,15 @@ function CreateLeague() {
   return (
     <form className="card draft-create" aria-labelledby="draft-create-title" onSubmit={submit}>
       <h2 id="draft-create-title" className="section-title">
-        Neue Liga erstellen
+        {t.online.createTitle}
       </h2>
       <DraftSettingsForm value={settings} onChange={(patch) => setSettings((s) => ({ ...s, ...patch }))} list={list} />
-      <h3 className="draft-subtitle">Dein Team</h3>
+      <h3 className="draft-subtitle">{t.online.yourTeam}</h3>
       <DraftTeamFields
         name={team.name}
         formation={team.formation}
-        onName={(name) => setTeam((t) => ({ ...t, name }))}
-        onFormation={(formation) => setTeam((t) => ({ ...t, formation }))}
+        onName={(name) => setTeam((x) => ({ ...x, name }))}
+        onFormation={(formation) => setTeam((x) => ({ ...x, formation }))}
       />
       {error && (
         <p className="notice notice--error" role="alert">
@@ -94,15 +98,16 @@ function CreateLeague() {
         </p>
       )}
       <button type="submit" className="btn btn--primary btn--big" disabled={busy || !cleanTeamName(team.name)} aria-busy={busy}>
-        {busy ? 'Liga wird erstellt …' : 'Liga erstellen'}
+        {busy ? t.online.creating : t.online.create}
       </button>
-      <p className="muted small">Du bist Host: Du stellst ein, fügst CPU-Teams hinzu und startest den Draft.</p>
+      <p className="muted small">{t.online.createHint}</p>
     </form>
   );
 }
 
 /** Mit Code beitreten (auch eingefügte Links werden erkannt). */
 function JoinByCode() {
+  const t = useT();
   const navigate = useNavigate();
   const id = useId();
   const [code, setCode] = useState('');
@@ -117,10 +122,10 @@ function JoinByCode() {
       }}
     >
       <h2 id={`${id}-title`} className="section-title">
-        Mit Code beitreten
+        {t.online.joinByCode}
       </h2>
       <label className="sr-only" htmlFor={id}>
-        Liga-Code
+        {t.online.leagueCode}
       </label>
       <div className="draft-joincode__row">
         <input
@@ -135,44 +140,39 @@ function JoinByCode() {
           onChange={(e) => setCode(normalizeDraftCode(e.target.value))}
         />
         <button type="submit" className="btn btn--primary" disabled={!valid}>
-          Beitreten
+          {t.online.join}
         </button>
       </div>
       <p id={`${id}-hint`} className="muted small">
-        {DRAFT_LIMITS.codeLength} Zeichen – oder einfach den Einladungslink einfügen.
+        {t.online.codeHint(DRAFT_LIMITS.codeLength)}
       </p>
     </form>
   );
 }
 
-const PHASE_LABEL: Record<RecentLeague['phase'], string> = {
-  lobby: 'Lobby',
-  drafting: 'Draft läuft',
-  done: 'Fertig',
-};
-
 /** Ligen, in denen dieses Gerät mitspielt – zum Zurückkehren ohne Link (nur lokal gespeichert). */
 function RecentLeagues() {
+  const t = useT();
   const [leagues] = useState(() => loadRecentLeagues());
   if (!leagues.length) return null;
   return (
     <section className="card draft-lobbies" aria-labelledby="draft-recent-title">
       <h2 id="draft-recent-title" className="section-title">
-        Deine Ligen
+        {t.online.recentTitle}
       </h2>
       <ul className="draft-lobbies__list">
         {leagues.map((l) => (
           <li key={l.code} className="draft-lobbies__item">
             <div className="draft-lobbies__info">
-              <strong className="draft-lobbies__name">{l.name || `Liga ${l.code}`}</strong>
+              <strong className="draft-lobbies__name">{l.name || t.online.leagueFallback(l.code)}</strong>
               <span className="draft-lobbies__facts">
                 <span>{l.team}</span>
-                <span>{PHASE_LABEL[l.phase] ?? ''}</span>
-                <span>{ago(l.at)}</span>
+                <span>{phaseLabel(l.phase, t)}</span>
+                <span>{ago(l.at, t)}</span>
               </span>
             </div>
             <Link className={`btn btn--small ${l.phase === 'done' ? '' : 'btn--primary'}`} to={`/draft/${l.code}`}>
-              {l.phase === 'done' ? 'Ergebnis' : 'Weiter'}
+              {l.phase === 'done' ? t.online.result : t.online.resume}
             </Link>
           </li>
         ))}
@@ -181,31 +181,39 @@ function RecentLeagues() {
   );
 }
 
-function timerLabel(seconds: number): string {
-  return seconds ? `${seconds} s` : 'ohne Timer';
+/** Phase einer gemerkten Liga (lokal gespeichert – Unbekanntes bleibt leer). */
+function phaseLabel(phase: RecentLeague['phase'], t: Messages): string {
+  return Object.hasOwn(t.online.phase, phase) ? t.online.phase[phase] : '';
 }
 
-function ago(ms: number): string {
+function timerLabel(seconds: number, t: Messages): string {
+  return seconds ? t.online.timerSeconds(seconds) : t.online.noTimer;
+}
+
+function ago(ms: number, t: Messages): string {
   const min = Math.max(0, Math.round((Date.now() - ms) / 60_000));
-  if (min < 1) return 'gerade eben';
-  if (min < 60) return `vor ${min} Min.`;
-  return `vor ${Math.round(min / 60)} Std.`;
+  if (min < 1) return t.online.justNow;
+  if (min < 60) return t.online.minutesAgo(min);
+  return t.online.hoursAgo(Math.round(min / 60));
 }
 
 /** Liste der öffentlichen Lobbys mit Aktualisieren. */
 function PublicLobbies() {
+  const t = useT();
   const [lobbies, setLobbies] = useState<PublicLobby[] | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  /** Fehler der letzten Abfrage – Text erst beim Rendern (folgt der Sprache) */
+  const [failure, setFailure] = useState<{ err: unknown } | null>(null);
+  const error = failure ? errorText(failure.err, t) : null;
 
   const refresh = useCallback(() => {
     setLoading(true);
     fetchPublicLobbies()
       .then((res) => {
         setLobbies([...(res.lobbies ?? [])].sort((a, b) => b.createdAt - a.createdAt));
-        setError(null);
+        setFailure(null);
       })
-      .catch((e: unknown) => setError(errorText(e)))
+      .catch((err: unknown) => setFailure({ err }))
       .finally(() => setLoading(false));
   }, []);
 
@@ -219,15 +227,15 @@ function PublicLobbies() {
     <section className="card draft-lobbies" aria-labelledby="draft-lobbies-title">
       <div className="draft-lobbies__head">
         <h2 id="draft-lobbies-title" className="section-title">
-          Öffentliche Lobbys
+          {t.online.publicTitle}
         </h2>
         <button type="button" className="btn btn--small btn--ghost" onClick={refresh} disabled={loading} aria-busy={loading}>
-          {loading ? 'Lädt …' : 'Aktualisieren'}
+          {loading ? t.online.loading : t.online.refresh}
         </button>
       </div>
       {error && <p className="notice notice--error">{error}</p>}
       {lobbies && !lobbies.length && !error && (
-        <p className="muted small">Gerade wartet keine öffentliche Liga. Erstelle selbst eine – Lobby „Öffentlich".</p>
+        <p className="muted small">{t.online.noPublic}</p>
       )}
       {lobbies && lobbies.length > 0 && (
         <ul className="draft-lobbies__list">
@@ -236,30 +244,26 @@ function PublicLobbies() {
             return (
               <li key={l.code} className="draft-lobbies__item">
                 <div className="draft-lobbies__info">
-                  <strong className="draft-lobbies__name">{l.name || `Liga ${l.code}`}</strong>
-                  <span className="muted small">
-                    von {l.hostName} · {ago(l.createdAt)}
-                  </span>
+                  <strong className="draft-lobbies__name">{l.name || t.online.leagueFallback(l.code)}</strong>
+                  <span className="muted small">{t.online.byHost(l.hostName, ago(l.createdAt, t))}</span>
                   <span className="draft-lobbies__facts">
+                    <span>{t.online.teamsOf(l.teams, l.maxTeams)}</span>
                     <span>
-                      {l.teams}/{l.maxTeams} Teams
+                      {l.region === 0 ? t.game.allRegions : (t.game.region[l.region] ?? '?')}
+                      {l.legends ? t.online.plusLegends : ''}
                     </span>
-                    <span>
-                      {regionLabel(l.region)}
-                      {l.legends ? ' + Legendäre' : ''}
-                    </span>
-                    <span>{timerLabel(l.pickSeconds)}</span>
+                    <span>{timerLabel(l.pickSeconds, t)}</span>
                   </span>
                 </div>
                 <Link className={`btn btn--small ${full ? '' : 'btn--primary'}`} to={`/draft/${l.code}`}>
-                  {full ? 'Zuschauen' : 'Beitreten'}
+                  {full ? t.online.watch : t.online.join}
                 </Link>
               </li>
             );
           })}
         </ul>
       )}
-      {!lobbies && !error && <p className="muted small">Lädt …</p>}
+      {!lobbies && !error && <p className="muted small">{t.online.loading}</p>}
     </section>
   );
 }
@@ -275,34 +279,31 @@ interface Props {
 
 /** Online-Modus von /draft: Liga erstellen, mit Code beitreten, öffentliche Lobbys. */
 export function DraftOnline({ modeSwitch, supported, onRetry, onLocal }: Props) {
+  const t = useT();
   return (
     <div className="page draft draft-online">
       {modeSwitch}
       <header className="page-head">
-        <h1 className="page-title">Fantasy-Draft</h1>
-        <p className="page-lead">
-          Online-Liga mit Freunden: Liga erstellen, Link teilen, live im Snake-Draft wählen – mit Pick-Timer, CPU-Teams
-          und einer gemeinsamen Saison zum Schluss.
-        </p>
+        <h1 className="page-title">{t.online.title}</h1>
+        <p className="page-lead">{t.online.lead}</p>
       </header>
       {supported == null && (
         <p className="runnet runnet--checking" role="status">
           <span className="runnet__dot" aria-hidden="true" />
-          Prüfe, ob Online-Ligen verfügbar sind …
+          {t.online.checking}
         </p>
       )}
       {supported === false && (
         <div className="notice draft-offline" role="status">
           <p>
-            <strong>Online-Ligen sind gerade nicht verfügbar</strong> – der Server ist nicht erreichbar oder kann noch
-            keine Ligen. Ihr könnt trotzdem an einem Gerät draften.
+            <strong>{t.online.offlineTitle}</strong> {t.online.offlineText}
           </p>
           <div className="actionbar">
             <button type="button" className="btn btn--primary btn--small" onClick={onLocal}>
-              An einem Gerät spielen
+              {t.online.playLocal}
             </button>
             <button type="button" className="btn btn--small" onClick={onRetry}>
-              Erneut prüfen
+              {t.online.checkAgain}
             </button>
           </div>
         </div>
@@ -315,8 +316,8 @@ export function DraftOnline({ modeSwitch, supported, onRetry, onLocal }: Props) 
             <JoinByCode />
             <PublicLobbies />
             <p className="muted small">
-              Ligen werden nach {DRAFT_LIMITS.retentionDays} Tagen gelöscht. Mehr dazu im{' '}
-              <Link to="/datenschutz">Datenschutz</Link>.
+              {t.online.retention(DRAFT_LIMITS.retentionDays)}{' '}
+              <Link to="/datenschutz">{t.online.privacyLink}</Link>.
             </p>
           </div>
         </div>

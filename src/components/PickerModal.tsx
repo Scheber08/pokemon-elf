@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { POSITIONS } from '../config/positions';
+import { useT } from '../i18n';
 import type { PosCode, Pokemon, RegionFilter, SpriteStyle } from '../types';
 import { PosBadge } from './Badges';
 import { FilterBar, useFilteredPokemon, type PokemonFilters } from './FilterBar';
@@ -20,6 +20,7 @@ interface Props {
 
 /** „Wähle ein Pokémon" – Suche, Typ-/Regionsfilter, Raster, Tastatur (Pfeile, Enter, Esc). */
 export function PickerModal({ pos, pool, initialRegion, sprite, currentId, onField, onPick, onClose }: Props) {
+  const t = useT();
   const [filters, setFilters] = useState<PokemonFilters>({ query: '', type: null, region: initialRegion });
   const items = useFilteredPokemon(pool, filters);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -49,7 +50,7 @@ export function PickerModal({ pos, pool, initialRegion, sprite, currentId, onFie
       onClose={onClose}
       title={
         <>
-          <PosBadge pos={pos} /> Wähle ein Pokémon <span className="picker__pos">{POSITIONS[pos].name}</span>
+          <PosBadge pos={pos} /> {t.builder.picker.title} <span className="picker__pos">{t.game.posName[pos]}</span>
         </>
       }
     >
@@ -61,17 +62,15 @@ export function PickerModal({ pos, pool, initialRegion, sprite, currentId, onFie
           onSearchKeyDown={onSearchKeyDown}
           resultCount={items.length}
         />
-        <p className="hint hint--small">
-          Wählst du jemanden, der schon auf dem Feld steht, tauschen die beiden die Plätze.
-        </p>
+        <p className="hint hint--small">{t.builder.picker.swapHint}</p>
         <PokemonGrid
           items={items}
           sprite={sprite}
           selectedId={currentId}
-          emptyOption={{ label: 'Leerer Slot', onPick: () => onPick(null) }}
+          emptyOption={{ label: t.builder.picker.emptySlot, onPick: () => onPick(null) }}
           note={(p) => {
             const at = onField.get(p.id);
-            return at && p.id !== currentId ? `auf dem Feld: ${at}` : null;
+            return at && p.id !== currentId ? t.builder.picker.onField(t.game.posShort[at]) : null;
           }}
           onPick={(p) => onPick(p.id)}
         />

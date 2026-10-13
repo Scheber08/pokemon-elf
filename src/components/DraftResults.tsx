@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react';
+import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftTeam } from '../lib/api/draftContract';
 import { copyText } from '../lib/exportImage';
@@ -6,6 +7,7 @@ import { draftShareText, leagueTimeline, titleRace, titleTieNote, topScorers } f
 import type { LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
+import { teamLabel } from '../state/useDraftRoom';
 import type { SpriteStyle } from '../types';
 import { Confetti } from './Confetti';
 import { FixtureList } from './LeagueTicker';
@@ -37,6 +39,9 @@ const TOP_SCORERS = 10;
  * Zwischenablage.
  */
 export function DraftResults({ league, teams, ratings, highlight, sprite, code, leagueName }: Props) {
+  const t = useT();
+  const tx = t.draft.results;
+  const c = t.draft.col;
   const { byId } = usePokemonData();
   const toast = useToast();
   const days = useMemo(() => leagueTimeline(league), [league]);
@@ -44,22 +49,34 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
   const table = league.table;
   const you = highlight != null && highlight >= 0 && highlight < league.teams.length ? highlight : null;
 
+  // Vereinsnamen der CPU-Teams erst bei der Anzeige übersetzen – gespeichert bleibt der deutsche Name
   const nameOf = useCallback(
-    (t: number) => teams[t]?.name || league.teams[t]?.name || `Team ${t + 1}`,
-    [teams, league.teams],
+    (i: number) => {
+      const team = teams[i];
+      if (team?.name) return teamLabel(team, t);
+      const stored = league.teams[i]?.name;
+      return stored ? t.game.club(stored) : `Team ${i + 1}`;
+    },
+    [teams, league.teams, t],
   );
-  const pokemonName = useCallback((id: number) => byId.get(id)?.de ?? `#${id}`, [byId]);
-  const ratingOf = (t: number) => ratings[t] ?? league.teams[t]?.rating ?? 0;
+  const pokemonName = useCallback(
+    (id: number) => {
+      const p = byId.get(id);
+      return p ? t.game.pokemon(p) : `#${id}`;
+    },
+    [byId, t],
+  );
+  const ratingOf = (i: number) => ratings[i] ?? league.teams[i]?.rating ?? 0;
 
   const champion = table[0];
   const race = titleRace(table);
   const ownIndex = you != null ? table.findIndex((r) => r.team === you) : -1;
   const ownRow = ownIndex >= 0 ? table[ownIndex] : null;
   /** Standardschützen-Slot nur, wenn die Liga mit Standardschütze gedraftet hat */
-  const hasSs = teams.some((t) => t.ss != null);
+  const hasSs = teams.some((tm) => tm.ss != null);
 
   if (!champion) {
-    return <p className="notice">Für diese Liga gibt es noch kein Ergebnis.</p>;
+    return <p className="notice">{tx.none}</p>;
   }
 
   const championName = nameOf(champion.team);
@@ -84,7 +101,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
         if ((e as Error).name === 'AbortError') return;
       }
     }
-    toast((await copyText(shareText)) ? 'Ergebnis kopiert' : 'Kopieren nicht möglich');
+    toast((await copyText(shareText)) ? tx.copied : tx.copyFailed);
   };
 
   return (
@@ -93,29 +110,26 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
 
       <section className={`card draft-results__hero ${youAreChampion ? 'is-you' : ''}`} aria-labelledby="draft-results-champion">
         <span className="kicker">
-          {leagueName ? `${leagueName} · ` : ''}Online-Draft {code}
+          {leagueName ? `${leagueName} · ` : ''}
+          {tx.kicker(code)}
         </span>
         <h2 id="draft-results-champion" className="draft-results__champion">
           <span className="draft-results__trophy" aria-hidden="true">
             ★
           </span>
-          Meister: {championName}
+          {tx.championLabel}
+          {championName}
         </h2>
-        <p className="draft-results__line">
-          {champion.pts} Pkt · {champion.w}–{champion.d}–{champion.l} · Tore {champion.gf}:{champion.ga} · Team-Score{' '}
-          {ratingOf(champion.team)}
-        </p>
+        <p className="draft-results__line">{tx.heroLine(champion, ratingOf(champion.team))}</p>
         {tieNote && <p className="draft-results__tie">{tieNote}</p>}
         {ownRow && (
           <p className="draft-results__you">
-            {youAreChampion
-              ? 'Glückwunsch – dein Team ist Meister!'
-              : `Dein Team ${nameOf(ownRow.team)}: Platz ${ownIndex + 1} · ${ownRow.pts} Pkt`}
+            {youAreChampion ? tx.youChampion : tx.yourPlace(nameOf(ownRow.team), ownIndex + 1, ownRow.pts)}
           </p>
         )}
         <div className="draft-results__actions">
           <button type="button" className="btn btn--primary" onClick={onShare}>
-            Ergebnis teilen
+            {tx.share}
           </button>
         </div>
       </section>
@@ -123,37 +137,37 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
       <div className="result-grid">
         <section className="card" aria-labelledby="draft-results-table">
           <h2 id="draft-results-table" className="section-title">
-            Abschlusstabelle
+            {tx.finalTable}
           </h2>
           <div className="table-scroll">
             <table className="league-table draft-results__table">
               <thead>
                 <tr>
-                  <th scope="col" title="Platz">
-                    Pl.
+                  <th scope="col" title={c.placeTitle}>
+                    {c.place}
                   </th>
                   <th scope="col" className="left">
-                    Team
+                    {c.team}
                   </th>
-                  <th scope="col">Team-Score</th>
-                  <th scope="col" title="Spiele">
-                    Sp
+                  <th scope="col">{c.teamScore}</th>
+                  <th scope="col" title={c.playedTitle}>
+                    {c.played}
                   </th>
-                  <th scope="col" title="Siege">
-                    S
+                  <th scope="col" title={c.wonTitle}>
+                    {c.won}
                   </th>
-                  <th scope="col" title="Unentschieden">
-                    U
+                  <th scope="col" title={c.drawnTitle}>
+                    {c.drawn}
                   </th>
-                  <th scope="col" title="Niederlagen">
-                    N
+                  <th scope="col" title={c.lostTitle}>
+                    {c.lost}
                   </th>
-                  <th scope="col">Tore</th>
-                  <th scope="col" title="Tordifferenz">
-                    Diff
+                  <th scope="col">{c.goals}</th>
+                  <th scope="col" title={c.diffTitle}>
+                    {c.diff}
                   </th>
-                  <th scope="col" title="Punkte">
-                    Pkt
+                  <th scope="col" title={c.ptsTitle}>
+                    {c.pts}
                   </th>
                 </tr>
               </thead>
@@ -163,8 +177,8 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                     <td>{i + 1}</td>
                     <td className="left draft-results__name">
                       {nameOf(r.team)}
-                      {teams[r.team]?.cpu && <span className="rating">CPU</span>}
-                      {r.team === you && <span className="sr-only"> (dein Team)</span>}
+                      {teams[r.team]?.cpu && <span className="rating">{t.draft.cpu}</span>}
+                      {r.team === you && <span className="sr-only">{tx.yourTeamSr}</span>}
                     </td>
                     <td>{ratingOf(r.team)}</td>
                     <td>{r.played}</td>
@@ -187,10 +201,10 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
 
         <section className="card" aria-labelledby="draft-results-scorers">
           <h2 id="draft-results-scorers" className="section-title">
-            Torjäger
+            {t.draft.topScorers}
           </h2>
           {scorers.length === 0 ? (
-            <p className="muted">Keine Tore in dieser Saison.</p>
+            <p className="muted">{tx.noGoals}</p>
           ) : (
             <ol className="scorers draft-results__scorers">
               {scorers.map((s, i) => {
@@ -203,11 +217,11 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                       {pokemonName(s.pokemonId)} <small className="muted">{nameOf(s.teamIndex)}</small>
                       {s.setPieceGoals > 0 && (
                         <small className="draft-results__setpiece">
-                          {s.setPieceGoals === s.goals ? 'Standardschütze' : `davon ${s.setPieceGoals} Standard`}
+                          {s.setPieceGoals === s.goals ? tx.setPieceOnly : tx.setPiecePart(s.setPieceGoals)}
                         </small>
                       )}
                     </span>
-                    <span className="scorers__goals" aria-label={`${s.goals} ${s.goals === 1 ? 'Tor' : 'Tore'}`}>
+                    <span className="scorers__goals" aria-label={tx.goalsAria(s.goals)}>
                       {s.goals}
                     </span>
                   </li>
@@ -220,34 +234,32 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
 
       <section aria-labelledby="draft-results-rosters">
         <h2 id="draft-results-rosters" className="section-title">
-          Aufstellungen
+          {tx.lineups}
         </h2>
         <div className="draft-results__rosters">
           {table.map((r, i) => {
-            const t = teams[r.team];
-            if (!t) return null;
+            const team = teams[r.team];
+            if (!team) return null;
             return (
-              <article key={t.id} className={`card draft-results__roster ${r.team === you ? 'is-you' : ''}`}>
+              <article key={team.id} className={`card draft-results__roster ${r.team === you ? 'is-you' : ''}`}>
                 <header className="draft-results__roster-head">
-                  <span className="draft-results__place">{i + 1}.</span>
+                  <span className="draft-results__place">{t.draft.placeNo(i + 1)}</span>
                   <h3 className="draft-results__roster-name">
                     {nameOf(r.team)}
-                    {r.team === you && <span className="draft-results__you-tag">Du</span>}
-                    {t.cpu && <span className="rating">CPU</span>}
+                    {r.team === you && <span className="draft-results__you-tag">{t.draft.you}</span>}
+                    {team.cpu && <span className="rating">{t.draft.cpu}</span>}
                   </h3>
-                  <span className="draft-results__score" title="Team-Score">
+                  <span className="draft-results__score" title={c.teamScore}>
                     {ratingOf(r.team)}
                   </span>
                 </header>
-                <p className="draft-results__roster-meta muted small">
-                  {t.formation} · {r.pts} Pkt · Tore {r.gf}:{r.ga}
-                </p>
+                <p className="draft-results__roster-meta muted small">{tx.rosterMeta(team.formation, r.pts, r.gf, r.ga)}</p>
                 <Pitch
-                  formation={t.formation}
-                  slots={t.slots}
-                  ss={hasSs ? t.ss : undefined}
+                  formation={team.formation}
+                  slots={team.slots}
+                  ss={hasSs ? team.ss : undefined}
                   sprite={sprite}
-                  ariaLabel={`Aufstellung ${nameOf(r.team)}`}
+                  ariaLabel={tx.lineupAria(nameOf(r.team))}
                 />
               </article>
             );
@@ -256,13 +268,13 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
       </section>
 
       <details className="card details draft-results__days">
-        <summary>Alle Spieltage</summary>
+        <summary>{tx.allMatchdays}</summary>
         <ol className="draft-results__daylist">
           {days.map((d) => (
             <li key={d.round} className="draft-results__day">
-              <h3 className="draft-results__day-title">{d.round}. Spieltag</h3>
+              <h3 className="draft-results__day-title">{t.draft.matchday(d.round)}</h3>
               <FixtureList matches={d.matches} you={you} nameOf={nameOf} pokemonName={pokemonName} className="league-fixtures--plain" />
-              {d.byes.length > 0 && <p className="muted small draft-results__byes">Spielfrei: {d.byes.map(nameOf).join(', ')}</p>}
+              {d.byes.length > 0 && <p className="muted small draft-results__byes">{t.draft.byes(d.byes.map(nameOf).join(', '))}</p>}
             </li>
           ))}
         </ol>

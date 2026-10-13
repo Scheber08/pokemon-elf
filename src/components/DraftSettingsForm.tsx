@@ -1,6 +1,7 @@
 import { useId, type ReactNode } from 'react';
 import { FORMATION_IDS } from '../config/formations';
-import { REGIONS, regionLabel } from '../config/regions';
+import { REGIONS } from '../config/regions';
+import { useT, type Messages } from '../i18n';
 import { DRAFT_LIMITS, type DraftSettings, type PickSeconds } from '../lib/api/draftContract';
 import { poolOf } from '../lib/draftEngine';
 import { fitSettingsPatch, poolCapacity } from '../state/useDraftRoom';
@@ -69,12 +70,20 @@ export function DraftChoice<T extends string | number | boolean>({
   );
 }
 
-const REGION_OPTIONS: { value: RegionFilter; label: string }[] = [
-  ...REGIONS.map((r) => ({ value: r.gen as RegionFilter, label: r.name })),
-  { value: 0 as RegionFilter, label: 'Alle' },
-];
+/** Pool-Auswahl: alle Regionen, dann „Alle" (Namen in der aktiven Sprache) */
+function regionOptions(t: Messages): { value: RegionFilter; label: string }[] {
+  return [
+    ...REGIONS.map((r) => ({ value: r.gen as RegionFilter, label: t.game.region[r.gen] })),
+    { value: 0 as RegionFilter, label: t.game.allRegions },
+  ];
+}
 
-const TIMER_LABEL: Record<PickSeconds, string> = { 30: '30 s', 60: '60 s', 90: '90 s', 0: 'Aus' };
+/** „Kanto" bzw. „Alle" für die Kurzfassung */
+function regionText(t: Messages, filter: RegionFilter): string {
+  return filter === 0 ? t.game.allRegions : t.game.region[filter] ?? '?';
+}
+
+const timerLabel = (t: Messages, s: PickSeconds) => (s ? t.draft.settings.seconds(s) : t.draft.off);
 const TIMER_OPTIONS: PickSeconds[] = [30, 60, 90, 0];
 
 interface Props {
@@ -93,6 +102,8 @@ interface Props {
 
 /** Liga-Einstellungen – beim Erstellen und live in der Lobby (Host). */
 export function DraftSettingsForm({ value, onChange, list, teamsJoined = 0, disabled, busy }: Props) {
+  const t = useT();
+  const tx = t.draft.settings;
   const nameId = useId();
   const poolSize = poolOf(value, list).length;
   const capacity = poolCapacity(value, list);
@@ -104,68 +115,64 @@ export function DraftSettingsForm({ value, onChange, list, teamsJoined = 0, disa
     if (fitted) onChange(fitted);
   };
   const blocked = (patch: Partial<DraftSettings>) => fitSettingsPatch(value, patch, list, teamsJoined) == null;
-  const tooSmall = `Pool zu klein für ${floor} Teams`;
+  const tooSmall = tx.poolTooSmall(floor);
 
   return (
     <div className="draft-settings">
       <div className="field">
         <label className="field__label" htmlFor={nameId}>
-          Liganame <small>(optional)</small>
+          {tx.leagueName} <small>{tx.optional}</small>
         </label>
         <input
           id={nameId}
           className="input"
           value={value.name}
           maxLength={DRAFT_LIMITS.leagueNameMax}
-          placeholder="z. B. Montagsliga"
+          placeholder={tx.leagueNamePlaceholder}
           disabled={disabled}
           autoComplete="off"
           onChange={(e) => onChange({ name: e.target.value })}
         />
       </div>
       <DraftChoice
-        label="Pool"
+        label={t.draft.pool}
         wrap
         value={value.region}
         disabled={disabled}
         busy={busy}
         onChange={(region) => change({ region })}
-        options={REGION_OPTIONS.map((o) => {
+        options={regionOptions(t).map((o) => {
           const off = blocked({ region: o.value });
           return { ...o, disabled: off, title: off ? tooSmall : undefined };
         })}
-        note={
-          <>
-            {poolSize} Pokémon, reicht für bis zu {capacity} Teams
-          </>
-        }
+        note={tx.poolNote(poolSize, capacity)}
       />
       <div className="draft-settings__pair">
         <DraftChoice
-          label="Legendäre"
+          label={tx.legends}
           value={value.legends}
           disabled={disabled}
           busy={busy}
           onChange={(legends) => change({ legends })}
           options={[
-            { value: false, label: 'Aus', disabled: blocked({ legends: false }), title: blocked({ legends: false }) ? tooSmall : undefined },
-            { value: true, label: 'An' },
+            { value: false, label: t.draft.off, disabled: blocked({ legends: false }), title: blocked({ legends: false }) ? tooSmall : undefined },
+            { value: true, label: t.draft.on },
           ]}
         />
         <DraftChoice
-          label="Standardschütze"
+          label={tx.setPiece}
           value={value.setPiece}
           disabled={disabled}
           busy={busy}
           onChange={(setPiece) => change({ setPiece })}
           options={[
-            { value: false, label: 'Aus' },
-            { value: true, label: 'An', disabled: blocked({ setPiece: true }), title: blocked({ setPiece: true }) ? tooSmall : '12. Runde' },
+            { value: false, label: t.draft.off },
+            { value: true, label: t.draft.on, disabled: blocked({ setPiece: true }), title: blocked({ setPiece: true }) ? tooSmall : tx.setPieceRound },
           ]}
         />
       </div>
       <DraftChoice
-        label="Teams"
+        label={t.draft.teams}
         wrap
         value={value.maxTeams}
         disabled={disabled}
@@ -179,45 +186,41 @@ export function DraftSettingsForm({ value, onChange, list, teamsJoined = 0, disa
             value: n,
             label: String(n),
             disabled: over || under,
-            title: over ? 'Der Pool reicht nicht für so viele Teams' : under ? `Es sind schon ${teamsJoined} Teams dabei` : undefined,
+            title: over ? tx.tooManyTeams : under ? tx.alreadyJoined(teamsJoined) : undefined,
           };
         })}
       />
       <DraftChoice
-        label="Draft-Reihenfolge"
+        label={tx.order}
         value={value.order}
         disabled={disabled}
         busy={busy}
         onChange={(order) => change({ order })}
         options={[
-          { value: 'random', label: 'Zufällig' },
-          { value: 'host', label: 'Host legt fest' },
+          { value: 'random', label: tx.orderRandom },
+          { value: 'host', label: tx.orderHost },
         ]}
       />
       <DraftChoice
-        label="Pick-Timer"
+        label={tx.timer}
         value={value.pickSeconds}
         disabled={disabled}
         busy={busy}
         onChange={(pickSeconds) => change({ pickSeconds })}
-        options={TIMER_OPTIONS.map((s) => ({ value: s, label: TIMER_LABEL[s] }))}
-        note={value.pickSeconds ? 'Läuft die Zeit ab, wählt der Server automatisch.' : 'Ohne Zeitlimit – der Host kann für abwesende Teams wählen.'}
+        options={TIMER_OPTIONS.map((s) => ({ value: s, label: timerLabel(t, s) }))}
+        note={value.pickSeconds ? tx.timerNote : tx.noTimerNote}
       />
       <DraftChoice
-        label="Lobby"
+        label={tx.lobby}
         value={value.visibility}
         disabled={disabled}
         busy={busy}
         onChange={(visibility) => change({ visibility })}
         options={[
-          { value: 'private', label: 'Privat' },
-          { value: 'public', label: 'Öffentlich' },
+          { value: 'private', label: tx.private },
+          { value: 'public', label: tx.public },
         ]}
-        note={
-          value.visibility === 'private'
-            ? 'Privat: nur wer Link oder Code hat, kann beitreten.'
-            : 'Öffentlich: Die Liga steht in der Liste der öffentlichen Lobbys – jeder kann beitreten.'
-        }
+        note={value.visibility === 'private' ? tx.privateNote : tx.publicNote}
       />
     </div>
   );
@@ -225,19 +228,21 @@ export function DraftSettingsForm({ value, onChange, list, teamsJoined = 0, disa
 
 /** Kurzfassung der Einstellungen (für Mitspieler und Lobby-Liste). */
 export function DraftSettingsSummary({ settings }: { settings: DraftSettings }) {
+  const t = useT();
+  const tx = t.draft.summary;
   const items = [
-    `Pool: ${regionLabel(settings.region)}`,
-    settings.legends ? 'mit Legendären' : 'ohne Legendäre',
-    settings.setPiece ? 'mit Standardschütze' : 'ohne Standardschütze',
-    `bis ${settings.maxTeams} Teams`,
-    settings.order === 'random' ? 'Reihenfolge zufällig' : 'Reihenfolge vom Host',
-    settings.pickSeconds ? `${settings.pickSeconds} s pro Pick` : 'ohne Pick-Timer',
-    settings.visibility === 'public' ? 'öffentlich' : 'privat',
+    tx.pool(regionText(t, settings.region)),
+    settings.legends ? tx.withLegends : tx.withoutLegends,
+    settings.setPiece ? tx.withSetPiece : tx.withoutSetPiece,
+    tx.maxTeams(settings.maxTeams),
+    settings.order === 'random' ? tx.orderRandom : tx.orderHost,
+    settings.pickSeconds ? tx.perPick(settings.pickSeconds) : tx.noTimer,
+    settings.visibility === 'public' ? tx.public : tx.private,
   ];
   return (
     <ul className="draft-summary">
-      {items.map((t) => (
-        <li key={t}>{t}</li>
+      {items.map((item) => (
+        <li key={item}>{item}</li>
       ))}
     </ul>
   );
@@ -255,19 +260,20 @@ interface TeamFieldsProps {
 
 /** Teamname + Formation – beim Erstellen, Beitreten und Ändern des eigenen Teams. */
 export function DraftTeamFields({ name, formation, onName, onFormation, onCommit, disabled }: TeamFieldsProps) {
+  const t = useT();
   const id = useId();
   return (
     <div className="draft-teamfields">
       <div className="field">
         <label className="field__label" htmlFor={id}>
-          Teamname
+          {t.draft.settings.teamName}
         </label>
         <input
           id={id}
           className="input"
           value={name}
           maxLength={DRAFT_LIMITS.teamNameMax}
-          placeholder="z. B. FC Glurak"
+          placeholder={t.draft.settings.teamNamePlaceholder}
           autoComplete="off"
           disabled={disabled}
           onChange={(e) => onName(e.target.value)}
@@ -278,7 +284,7 @@ export function DraftTeamFields({ name, formation, onName, onFormation, onCommit
         />
       </div>
       <Segmented
-        label="Formation"
+        label={t.draft.formation}
         wrap
         value={formation}
         onChange={(f) => !disabled && onFormation(f)}

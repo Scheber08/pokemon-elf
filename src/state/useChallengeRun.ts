@@ -43,7 +43,7 @@
  *                          kommt direkt die Bilanz. Darf sofort beim Anzeigen aufgerufen werden.
  *   reset()                Zurück zu 'setup', Setup-Werte bleiben.
  *   starting, finishing    laufende Anfragen (Buttons sperren)
- *   error, clearError()    anzeigbarer Fehler (deutsch)
+ *   error, clearError()    anzeigbarer Fehler (in der Sprache beim Auftreten)
  *   notice, clearNotice()  Hinweis, z. B. „Server nicht erreichbar – Run läuft offline"
  *   stats                  lokale Bestwerte der aktiven Challenge, nach finish() aktualisiert
  *
@@ -57,11 +57,13 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DEFAULT_FORMATION, FORMATION_IDS } from '../config/formations';
+import { messages } from '../i18n';
 import { ApiRequestError, apiAvailable, apiEverOnline, onApiHealth, startRun as apiStartRun } from '../lib/api/client';
 import { LIMITS } from '../lib/api/contract';
 import {
   applyReroll,
   createEngineData,
+  EngineError,
   isComplete,
   MODE_RULES,
   place as placeOnEngine,
@@ -84,7 +86,7 @@ import {
   type RunRanking,
 } from '../lib/runFinish';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
-import type { ChallengeKey, FormationId } from '../types';
+import type { ChallengeKey, FormationId, Pokemon } from '../types';
 import { usePokemonData } from './PokemonData';
 
 export type RunPhase = 'setup' | 'play' | 'result';
@@ -173,11 +175,55 @@ interface Persisted {
   result: RunResult | null;
 }
 
-const OFFLINE_FALLBACK = 'Server nicht erreichbar – dieser Run läuft offline und wird nicht gewertet.';
-const START_FAILED =
-  'Keine Verbindung zum Server – dein Run wurde noch nicht gestartet. Versuch es gleich noch einmal oder spiel offline (ohne Wertung).';
 /** Steht für „Backend beim Start nicht erreichbar" (Health-Check gescheitert). */
-const UNREACHABLE = new ApiRequestError('Server nicht erreichbar', 0, 'network');
+const unreachable = () => new ApiRequestError(messages().errors.network, 0, 'network');
+
+/**
+ * Anzeigbarer Text zu einem Fehler der Engine (Reroll/Setzen/Start) in der aktiven Sprache –
+ * über den Code des EngineError; ohne Code die Meldung selbst.
+ */
+export function engineErrorText(e: unknown, byId: Map<number, Pokemon>): string {
+  if (!(e instanceof EngineError) || !e.info) return e instanceof Error ? e.message : String(e);
+  const { game, challenge } = messages();
+  const t = challenge.engine;
+  const info = e.info;
+  const p = info.pokemonId != null ? byId.get(info.pokemonId) : undefined;
+  const name = p ? game.pokemon(p) : `#${info.pokemonId}`;
+  switch (info.code) {
+    case 'finished':
+      return t.finished;
+    case 'no_reroll':
+      return t.noReroll(info.kind ?? '');
+    case 'no_other_roll':
+      return t.noOtherRoll;
+    case 'unknown_pokemon':
+      return t.unknownPokemon(info.pokemonId ?? 0);
+    case 'not_allowed':
+      return t.notAllowed(name);
+    case 'in_team':
+      return t.inTeam(name);
+    case 'no_match':
+      return t.noMatch(name);
+    case 'legend_limit':
+      return challenge.legendLimit(info.max ?? 2);
+    case 'slot_taken':
+      return t.slotTaken(info.slot ?? 0);
+    case 'pool_empty':
+      return t.poolEmpty;
+    case 'unknown_challenge':
+      return t.unknownChallenge(info.value ?? '');
+    case 'unknown_formation':
+      return t.unknownFormation(info.value ?? '');
+    case 'bad_seed':
+      return t.badSeed;
+    case 'bad_log':
+      return t.badLog;
+    case 'bad_pick':
+      return t.badPick;
+    default:
+      return e.message;
+  }
+}
 
 /** Reaktion von start() auf einen gescheiterten Online-Start. */
 export type StartFailure =
@@ -194,15 +240,16 @@ export type StartFailure =
  * andere 4xx dürfen nie das ungewertete Spielen verhindern.
  */
 export function startFailure(e: unknown, offlineFallback: 'auto' | 'ask'): StartFailure {
+  const t = messages().challenge;
   if (e instanceof ApiRequestError && e.code === 'already_played') return { kind: 'stop', error: e.message };
   // 4xx inkl. 429: Meldung des Servers zeigen; Netzwerk/5xx: „nicht erreichbar"
   const serverMsg = e instanceof ApiRequestError && e.status >= 400 && e.status < 500 ? e.message : null;
-  if (offlineFallback === 'ask') return { kind: 'ask', error: serverMsg ?? START_FAILED };
+  if (offlineFallback === 'ask') return { kind: 'ask', error: serverMsg ?? t.startFailed };
   // Ohne Backend (statisches Hosting, `npm run dev`) hat das Setup schon „Offline" angezeigt –
   // dann still offline starten; nur ein Ausfall eines eben noch erreichbaren Servers bekommt den Hinweis.
-  if (!serverMsg) return { kind: 'offline', notice: apiEverOnline() ? OFFLINE_FALLBACK : null };
+  if (!serverMsg) return { kind: 'offline', notice: apiEverOnline() ? t.offlineFallback : null };
   const sentence = /[.!?…]$/.test(serverMsg) ? serverMsg : `${serverMsg}.`;
-  return { kind: 'offline', notice: `${sentence} Dieser Run läuft offline und wird nicht gewertet.` };
+  return { kind: 'offline', notice: t.offlineWithReason(sentence) };
 }
 
 type Obj = Record<string, unknown>;
@@ -423,7 +470,7 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
         if (!opts.offline) {
           try {
             // Ein zwischengespeicherter Fehlschlag wird vor dem Start neu geprüft.
-            if (!(await apiAvailable(true))) throw UNREACHABLE;
+            if (!(await apiAvailable(true))) throw unreachable();
             const res = await apiStartRun(challenge);
             seed = res.seed;
             token = res.token;
@@ -453,13 +500,13 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
         setRevealFor(null);
         setNotice(info);
       } catch (e) {
-        if (gen === generation.current) setError(`Run konnte nicht gestartet werden: ${(e as Error).message}`);
+        if (gen === generation.current) setError(messages().challenge.startError(engineErrorText(e, byId)));
       } finally {
         startingRef.current = false;
         setStarting(false);
       }
     },
-    [commit, data, offlineFallback],
+    [byId, commit, data, offlineFallback],
   );
 
   const reroll = useCallback(
@@ -470,10 +517,10 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
         commit({ ...cur, engine: applyReroll(cur.engine, kind, data) });
         setError(null);
       } catch (e) {
-        setError((e as Error).message);
+        setError(engineErrorText(e, byId));
       }
     },
-    [commit, data],
+    [byId, commit, data],
   );
 
   const place = useCallback(
@@ -484,10 +531,10 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
         commit({ ...cur, engine: placeOnEngine(cur.engine, pokemonId, slot, data) });
         setError(null);
       } catch (e) {
-        setError((e as Error).message);
+        setError(engineErrorText(e, byId));
       }
     },
-    [commit, data],
+    [byId, commit, data],
   );
 
   const finish = useCallback(async (opts: FinishOptions = {}): Promise<boolean> => {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useT } from '../i18n';
 import { remainingMs } from '../state/useDraftRoom';
 import '../styles/draft.css';
 
@@ -22,6 +23,7 @@ function formatSeconds(ms: number): string {
  * nur sie tickt. Keine Live-Region: Picks sagt DraftLive einmal an.
  */
 export function DraftCountdown({ deadline, pickSeconds, clockOffset, cpu }: Props) {
+  const t = useT();
   const [now, setNow] = useState(Date.now);
   useEffect(() => {
     if (deadline == null) return;
@@ -33,16 +35,15 @@ export function DraftCountdown({ deadline, pickSeconds, clockOffset, cpu }: Prop
   if (cpu) {
     return (
       <div className="draft-timer draft-timer--idle">
-        <span className="boot__ball boot__ball--small" aria-hidden="true" /> CPU wählt …
+        <span className="boot__ball boot__ball--small" aria-hidden="true" />
+        {t.online.cpuPicking}
       </div>
     );
   }
   const left = remainingMs(deadline, clockOffset, now);
   if (left == null || !pickSeconds) {
     return (
-      <div className="draft-timer draft-timer--idle">
-        ohne Timer
-      </div>
+      <div className="draft-timer draft-timer--idle">{t.online.noTimer}</div>
     );
   }
   const share = Math.max(0, Math.min(1, left / (pickSeconds * 1000)));
@@ -52,7 +53,7 @@ export function DraftCountdown({ deadline, pickSeconds, clockOffset, cpu }: Prop
       <div
         className="draft-timer__bar"
         role="progressbar"
-        aria-label="Restzeit für diesen Pick"
+        aria-label={t.online.timeLeftAria}
         aria-valuemin={0}
         aria-valuemax={pickSeconds}
         aria-valuenow={Math.ceil(left / 1000)}

@@ -5,6 +5,7 @@
  * Der Server ist maßgeblich – hier wird nichts entschieden, nur übertragen.
  */
 import type { DeviceAuth, HealthResponse, ApiErrorBody } from './contract';
+import { messages } from '../../i18n';
 import { getDevice } from '../device';
 import { ApiRequestError, apiHealth } from './client';
 import {
@@ -162,7 +163,7 @@ async function draftRequest<T>(path: string, init?: RequestInit): Promise<T> {
       signal: controller.signal,
     });
   } catch {
-    throw new ApiRequestError('Server nicht erreichbar', 0, 'network');
+    throw new ApiRequestError(messages().online.client.unreachable, 0, 'network');
   } finally {
     clearTimeout(timer);
   }
@@ -171,18 +172,15 @@ async function draftRequest<T>(path: string, init?: RequestInit): Promise<T> {
   if (!res.ok) {
     const err = body as ApiErrorBody | null;
     const limited = res.status === 429;
+    const texts = messages().online.client;
     throw new ApiRequestError(
       err?.message ??
-        (limited
-          ? 'Zu viele Anfragen in kurzer Zeit – bitte später erneut versuchen'
-          : res.status === 404
-            ? 'Liga nicht gefunden'
-            : `HTTP ${res.status}`),
+        (limited ? texts.rateLimited : res.status === 404 ? texts.notFound : `HTTP ${res.status}`),
       res.status,
       err?.error ?? (limited ? 'rate_limited' : res.status === 404 ? 'not_found' : 'server_error'),
     );
   }
-  if (!isJson) throw new ApiRequestError('Unerwartete Antwort vom Server', res.status, 'server_error');
+  if (!isJson) throw new ApiRequestError(messages().online.client.unexpected, res.status, 'server_error');
   return body as T;
 }
 

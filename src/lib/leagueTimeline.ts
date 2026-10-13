@@ -7,6 +7,7 @@
  * Torjägerliste, das vom Server gespeicherte Ergebnis, die Titelentscheidung bei
  * Punktgleichheit und der Teilen-Text.
  */
+import { messages } from '../i18n';
 import { buildTable, type Goal, type LeagueResult, type LeagueTeam, type Match, type TableRow } from './season';
 
 export interface Matchday {
@@ -272,8 +273,11 @@ export interface TitleRace {
   level: TableRow[];
 }
 
-/** Wie buildTable bei völligem Gleichstand (Punkte, Tordifferenz, Tore und Team-Score) entscheidet */
-export const TIEBREAK_LABEL = 'dem Teamnamen (alphabetisch)';
+/**
+ * Wie buildTable bei völligem Gleichstand (Punkte, Tordifferenz, Tore und Team-Score) entscheidet –
+ * deutsche Fassung; die Hinweise nutzen die der aktiven Sprache (messages().draft.tie.tiebreakLabel).
+ */
+export const TIEBREAK_LABEL = messages('de').draft.tie.tiebreakLabel;
 
 /**
  * Titelentscheidung aus der Abschlusstabelle (Platz 1 gegen Platz 2). Ändert nichts an
@@ -301,10 +305,10 @@ export function titleRace(table: readonly TableRow[]): TitleRace | null {
   return other;
 }
 
-/** „A", „A und B", „A, B und C" */
+/** „A", „A und B", „A, B und C" (Bindewort in der aktiven Sprache) */
 function joinNames(names: string[]): string {
   if (names.length <= 1) return names.join('');
-  return `${names.slice(0, -1).join(', ')} und ${names[names.length - 1]}`;
+  return `${names.slice(0, -1).join(', ')}${messages().draft.tie.and}${names[names.length - 1]}`;
 }
 
 /** „+3", „0", „-2" (wie in den Tabellen) */
@@ -322,17 +326,19 @@ export function titleTieNote(race: TitleRace | null, nameOf: (team: number) => s
   if (!race || race.decidedBy === 'pts' || !race.runnerUp || !race.level.length) return null;
   const { champion: c, runnerUp: r, level } = race;
   const names = joinNames(level.map((x) => nameOf(x.team)));
+  // Text in der aktiven Sprache (Tests: Deutsch)
+  const tx = messages().draft.tie;
   switch (race.decidedBy) {
     case 'gd':
-      return `Punktgleich mit ${names} – entschieden nach Tordifferenz (${formatGd(c.gd)} zu ${formatGd(r.gd)})`;
+      return tx.gd(names, formatGd(c.gd), formatGd(r.gd));
     case 'gf':
-      return `Punktgleich mit ${names} bei gleicher Tordifferenz – entschieden nach Toren (${c.gf} zu ${r.gf})`;
+      return tx.gf(names, c.gf, r.gf);
     case 'rating':
-      return `Punktgleich mit ${names}, gleiche Tordifferenz und gleich viele Tore – entschieden nach Team-Score (${Math.round(c.rating)} zu ${Math.round(r.rating)})`;
+      return tx.rating(names, Math.round(c.rating), Math.round(r.rating));
     case 'tiebreak':
-      return `Punktgleich mit ${names}, gleiche Tordifferenz und gleich viele Tore – entschieden nach ${TIEBREAK_LABEL}`;
+      return tx.tiebreak(names, tx.tiebreakLabel);
     default:
-      return `Punktgleich mit ${names}`;
+      return tx.level(names);
   }
 }
 
@@ -358,10 +364,10 @@ export interface DraftShareInput {
  * Bei Punktgleichheit an der Spitze folgt der Hinweis nach einem Gedankenstrich.
  */
 export function draftShareText(i: DraftShareInput): string {
+  const tx = messages().draft.share;
   const tie = i.tieNote ? ` – ${i.tieNote.charAt(0).toLowerCase()}${i.tieNote.slice(1)}` : '';
   return [
-    `Pokémon Elf – Online-Draft ${i.code}: Meister ${i.championName} (${i.championPts} Pkt)${tie}.` +
-      (i.own ? ` Mein Team ${i.own.name}: Platz ${i.own.place}.` : ''),
+    tx.line(i.code, i.championName, i.championPts, tie) + (i.own ? tx.own(i.own.name, i.own.place) : ''),
     i.url,
   ].join('\n');
 }

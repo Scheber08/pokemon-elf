@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type SyntheticEvent } from 'react';
+import { useT } from '../i18n';
 import { spriteKind, spriteUrls, type SpriteKind } from '../lib/sprites';
 import type { Pokemon, SpriteStyle } from '../types';
 
@@ -25,6 +26,7 @@ interface Props {
  * ihre relative Größe behalten (ein Wattzapf bleibt kleiner als ein Wailord).
  */
 export function Sprite({ pokemon, style, className = '', loading = 'lazy', source }: Props) {
+  const t = useT();
   const urls = useMemo(() => spriteUrls(pokemon, style), [pokemon, style]);
   const [index, setIndex] = useState(0);
   useEffect(() => setIndex(0), [urls]);
@@ -41,7 +43,7 @@ export function Sprite({ pokemon, style, className = '', loading = 'lazy', sourc
     <img
       className={`sprite sprite--${kind} ${kind === 'art' ? '' : 'sprite--pixel'} ${className}`}
       src={url}
-      alt={pokemon.de}
+      alt={t.game.pokemon(pokemon)}
       loading={loading}
       decoding="async"
       crossOrigin={source ? undefined : 'anonymous'}

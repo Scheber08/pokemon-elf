@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useT } from '../i18n';
 import { buildScale, type Scale } from '../lib/fit';
 import type { Pokemon } from '../types';
 
@@ -18,6 +19,7 @@ export function PokemonDataProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
   const scales = useRef(new Map<ScaleKind, Scale>());
+  const t = useT();
 
   useEffect(() => {
     let cancelled = false;
@@ -54,9 +56,9 @@ export function PokemonDataProvider({ children }: { children: ReactNode }) {
   if (error) {
     return (
       <div className="boot boot--error" role="alert">
-        <p>Die Pokémon-Daten konnten nicht geladen werden ({error}).</p>
+        <p>{t.builder.data.error(error)}</p>
         <button className="btn btn--primary" onClick={() => setAttempt((a) => a + 1)}>
-          Erneut versuchen
+          {t.common.retry}
         </button>
       </div>
     );
@@ -65,7 +67,7 @@ export function PokemonDataProvider({ children }: { children: ReactNode }) {
     return (
       <div className="boot" role="status" aria-live="polite">
         <div className="boot__ball" aria-hidden="true" />
-        <p>Lade Kader …</p>
+        <p>{t.builder.data.loading}</p>
       </div>
     );
   }

@@ -2,9 +2,9 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { FORMATIONS } from '../config/formations';
 import { POSITIONS } from '../config/positions';
+import { fmtNumber, LANGS, messages, useT, type Messages } from '../i18n';
 import type { ChallengeStats } from '../lib/challengeStats';
 import { downloadBlob, shareImage } from '../lib/exportImage';
-import { CHALLENGE_LABEL } from '../lib/leaderboard';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import {
   computeRun,
@@ -47,41 +47,61 @@ interface Props {
   stats?: ChallengeStats;
 }
 
-function verdict(s: SeasonResult): string {
-  if (s.perfect) return 'Perfekte Saison! Kein einziger Punkt abgegeben.';
-  if (s.record.l === 0) return 'Ungeschlagen! Nur die Remis trennen dich von der Perfektion.';
-  if (s.position === 1) return 'Meister! Die Schale geht an dein Team.';
-  if (s.position <= 4) return 'Platz in der Königsklasse – starke Saison.';
-  if (s.position <= 7) return 'Europapokal-Kurs. Da geht noch was.';
-  if (s.position <= 12) return 'Gesichertes Mittelfeld.';
-  if (s.position <= 15) return 'Zittern bis zum Schluss – aber drin geblieben.';
-  return 'Abstieg. Zeit für einen Kaderumbruch.';
+function verdict(s: SeasonResult, v: Messages['result']['verdict']): string {
+  if (s.perfect) return v.perfect;
+  if (s.record.l === 0) return v.unbeaten;
+  if (s.position === 1) return v.champion;
+  if (s.position <= 4) return v.top4;
+  if (s.position <= 7) return v.europe;
+  if (s.position <= 12) return v.midTable;
+  if (s.position <= 15) return v.survived;
+  return v.relegated;
 }
 
-export const EXPLAINER =
-  'Jedes Pokémon wird danach bewertet, wie gut es auf seine Position passt – aus Basiswerten, Größe, Gewicht und Typ. Torwart, Innenverteidiger und Stürmer zählen am meisten, und deine drei schwächsten Positionen ziehen das ganze Team runter. Gegner reichen von 350 bis 910.';
+/**
+ * Fester Hinweis eines Ergebnisses – auch bei älteren gespeicherten Ergebnissen ohne `note`,
+ * die nur die Meldung (in einer der Sprachen) kennen.
+ */
+function fixedNote(ranking: RunRanking): RunRanking['note'] {
+  if (ranking.note) return ranking.note;
+  const msg = ranking.message;
+  if (msg == null) return undefined;
+  const known = LANGS.map((l) => messages(l).challenge);
+  if (known.some((c) => c.playedOffline === msg)) return 'played_offline';
+  if (known.some((c) => c.unreachableNotRanked === msg)) return 'unreachable';
+  return undefined;
+}
 
 /** Online-Wertung im Kopf der Bilanz: gewertet (mit Plätzen), offline oder abgelehnt. */
 function RankingNote({ ranking, challenge }: { ranking: RunRanking; challenge: ChallengeKey }) {
+  const t = useT();
   if (ranking.status === 'ranked') {
-    const parts = ['Online gewertet'];
-    if (ranking.rankToday != null) parts.push(`Platz ${ranking.rankToday} heute`);
-    if (ranking.rankAllTime != null) parts.push(`Platz ${ranking.rankAllTime} allzeit`);
+    const parts = [t.result.rankedOnline];
+    if (ranking.rankToday != null) parts.push(t.result.rankToday(ranking.rankToday));
+    if (ranking.rankAllTime != null) parts.push(t.result.rankAllTime(ranking.rankAllTime));
     return (
       <p className="result-ranking result-ranking--ranked">
         <span className="result-ranking__badge">{parts.join(' · ')}</span>
-        <Link to={`/rangliste?c=${challenge}&p=today`}>Rangliste</Link>
+        <Link to={`/rangliste?c=${challenge}&p=today`}>{t.nav.tabs.leaderboard}</Link>
       </p>
     );
   }
   if (ranking.status === 'rejected') {
     return (
       <p className="notice notice--error result-ranking" role="alert">
-        {ranking.message ?? 'Der Server hat diesen Run nicht gewertet.'}
+        {ranking.message ?? t.result.rejected}
       </p>
     );
   }
-  return <p className="result-ranking muted small">{ranking.message ?? 'Nicht gewertet'}</p>;
+  // Feste Hinweise in der aktuellen Sprache (gespeicherte Meldung gilt nur für Server-Texte)
+  const fixed = fixedNote(ranking);
+  const note =
+    fixed === 'played_offline'
+      ? t.challenge.playedOffline
+      : fixed === 'unreachable'
+        ? t.challenge.unreachableNotRanked
+        : ranking.message;
+  return <p className="result-ranking muted small">{note ?? t.result.notRanked}</p>;
 }
 
 export function SeasonResultView({
@@ -94,9 +114,11 @@ export function SeasonResultView({
   reveal = false,
   ranking = null,
   extra,
-  newRunLabel = 'Neuer Run',
+  newRunLabel,
   stats,
 }: Props) {
+  const t = useT();
+  const tr = t.result;
   const { byId, scale } = usePokemonData();
   const toast = useToast();
   const run = useMemo(() => computeRun(input, byId, scale(scaleKind)), [input, byId, scale, scaleKind]);
@@ -127,8 +149,13 @@ export function SeasonResultView({
 
   const defs = FORMATIONS[input.formation].slots;
   const record = formatRecord(season.record);
-  const teamName = input.teamName || 'Meine Elf';
-  const nameOf = (id: number) => byId.get(id)?.de ?? '?';
+  const teamName = input.teamName || tr.defaultTeamName;
+  const nameOf = (id: number) => {
+    const p = byId.get(id);
+    return p ? t.game.pokemon(p) : '?';
+  };
+  /** Vereinsnamen sind intern deutsch – das eigene Team heißt immer teamName */
+  const teamLabel = (r: { name: string; isUser: boolean }) => (r.isUser ? teamName : t.game.club(r.name));
 
   const makeImage = () =>
     lineupImage({
@@ -138,13 +165,13 @@ export function SeasonResultView({
       sprite,
       byId,
       teamName,
-      subtitle: `${input.formation} · ${CHALLENGE_LABEL[challenge]}`,
+      subtitle: `${input.formation} · ${t.game.challenge[challenge]}`,
       result: {
         record,
         points: season.points,
         score: evaluation.score,
         position: season.position,
-        label: 'Saisonbilanz',
+        label: tr.title,
       },
     });
 
@@ -152,12 +179,12 @@ export function SeasonResultView({
     setBusy(true);
     try {
       const blob = await makeImage();
-      const text = `Ich bin mit meiner Pokémon-Elf ${record} gegangen! Score ${evaluation.score}`;
+      const text = tr.shareText(record, evaluation.score);
       const how = await shareImage(blob, `${slugify(teamName)}-${record}.png`, `${text} ${window.location.origin}`);
-      if (how === 'downloaded') toast('Bild gespeichert, Text in die Zwischenablage kopiert');
+      if (how === 'downloaded') toast(tr.imageSaved);
     } catch (e) {
       console.error(e);
-      toast('Teilen nicht möglich');
+      toast(tr.shareFailed);
     } finally {
       setBusy(false);
     }
@@ -168,7 +195,7 @@ export function SeasonResultView({
     try {
       downloadBlob(await makeImage(), `${slugify(teamName)}-${record}.png`);
     } catch {
-      toast('Bild konnte nicht erstellt werden');
+      toast(tr.imageFailed);
     } finally {
       setBusy(false);
     }
@@ -179,15 +206,18 @@ export function SeasonResultView({
     try {
       const { online } = await savePlayerName(name, entryId);
       setName(playerName());
-      toast(online ? 'Name gespeichert – auch online' : 'Name gespeichert');
+      toast(online ? tr.nameSavedOnline : tr.nameSaved);
     } catch {
-      toast('Name konnte nicht gespeichert werden');
+      toast(tr.nameFailed);
     } finally {
       setSavingName(false);
     }
   };
 
-  const weakCodes = evaluation.weakest.map((i) => defs[i].pos);
+  const weakCodes = evaluation.weakest.map((i) => t.game.posShort[defs[i].pos]);
+  const runLabel = newRunLabel === undefined ? tr.newRun : newRunLabel;
+  const weight = (pos: keyof typeof POSITIONS) => fmtNumber(POSITIONS[pos].teamWeight, 1);
+  const { posShort } = t.game;
 
   // Während des Tickers keine Bestwerte – sie zeigen den neuen Rekord schon vor dem letzten Spieltag.
   if (showTicker) {
@@ -210,56 +240,62 @@ export function SeasonResultView({
               ss={input.ss}
               sprite={sprite}
               highlight={evaluation.weakest}
-              ariaLabel="Deine Elf"
+              ariaLabel={tr.yourTeam}
             />
           </div>
           <div className="result-hero__info">
-            <span className="kicker">Saisonbilanz · {CHALLENGE_LABEL[challenge]}</span>
+            <span className="kicker">
+              {tr.title} · {t.game.challenge[challenge]}
+            </span>
             <h1 id="result-title" className="result-hero__team" ref={titleRef} tabIndex={-1}>
               {teamName}
             </h1>
-            <div className={`result-hero__record ${season.perfect ? 'is-perfect' : ''}`} aria-label={`Bilanz ${season.record.w} Siege, ${season.record.d} Unentschieden, ${season.record.l} Niederlagen`}>
+            <div
+              className={`result-hero__record ${season.perfect ? 'is-perfect' : ''}`}
+              aria-label={tr.recordAria(season.record.w, season.record.d, season.record.l)}
+            >
               {record}
             </div>
             <div className="result-hero__legend" aria-hidden="true">
-              Siege – Remis – Niederlagen
+              {tr.recordLegend}
             </div>
             {ranking && <RankingNote ranking={ranking} challenge={challenge} />}
             <dl className="facts">
               <div>
-                <dt>Punkte</dt>
+                <dt>{tr.points}</dt>
                 <dd>{season.points}</dd>
               </div>
               <div>
-                <dt>Team-Score</dt>
+                <dt>{tr.teamScore}</dt>
                 <dd>{evaluation.score}</dd>
               </div>
               <div>
-                <dt>Platz</dt>
-                <dd>{season.position}.</dd>
+                <dt>{tr.place}</dt>
+                <dd>{tr.ordinal(season.position)}</dd>
               </div>
               <div>
-                <dt>Tore</dt>
+                <dt>{tr.goals}</dt>
                 <dd>
                   {season.goalsFor}:{season.goalsAgainst}
                 </dd>
               </div>
             </dl>
-            <p className="result-hero__verdict">{verdict(season)}</p>
+            <p className="result-hero__verdict">{verdict(season, tr.verdict)}</p>
             <p className="result-hero__weak">
-              Schwachstellen laut Scouting: <strong>{weakCodes.join(', ')}</strong>
-              <span className="muted"> (auf dem Feld markiert)</span>
+              {tr.weakSpots}
+              <strong>{weakCodes.join(', ')}</strong>
+              <span className="muted">{tr.weakSpotsNote}</span>
             </p>
             <div className="actionbar">
               <button type="button" className="btn btn--primary" onClick={onShare} disabled={busy}>
-                Teilen
+                {tr.share}
               </button>
               <button type="button" className="btn" onClick={onSaveImage} disabled={busy}>
-                Bild speichern
+                {tr.saveImage}
               </button>
-              {newRunLabel !== null && (
+              {runLabel !== null && (
                 <button type="button" className="btn btn--accent" onClick={onNewRun}>
-                  {newRunLabel}
+                  {runLabel}
                 </button>
               )}
             </div>
@@ -272,12 +308,12 @@ export function SeasonResultView({
               }}
             >
               <label className="field__label" htmlFor="player-name">
-                Dein Name auf der Rangliste
+                {tr.nameLabel}
               </label>
               <div className="namefield__row">
                 <input id="player-name" className="input" maxLength={24} value={name} onChange={(e) => setName(e.target.value)} />
                 <button type="submit" className="btn" disabled={savingName}>
-                  Speichern
+                  {tr.save}
                 </button>
               </div>
             </form>
@@ -287,23 +323,31 @@ export function SeasonResultView({
         <div className="result-grid">
           <section className="card" aria-labelledby="table-title">
             <h2 id="table-title" className="section-title">
-              Abschlusstabelle
+              {tr.finalTable}
             </h2>
             <div className="table-scroll">
               <table className="league-table">
                 <thead>
                   <tr>
-                    <th scope="col">Pl.</th>
+                    <th scope="col">{tr.col.place}</th>
                     <th scope="col" className="left">
-                      Team
+                      {tr.col.team}
                     </th>
-                    <th scope="col" title="Spiele">Sp</th>
-                    <th scope="col" title="Siege">S</th>
-                    <th scope="col" title="Unentschieden">U</th>
-                    <th scope="col" title="Niederlagen">N</th>
-                    <th scope="col">Tore</th>
-                    <th scope="col">Diff</th>
-                    <th scope="col">Pkt</th>
+                    <th scope="col" title={tr.col.playedTitle}>
+                      {tr.col.played}
+                    </th>
+                    <th scope="col" title={tr.col.wonTitle}>
+                      {tr.col.won}
+                    </th>
+                    <th scope="col" title={tr.col.drawnTitle}>
+                      {tr.col.drawn}
+                    </th>
+                    <th scope="col" title={tr.col.lostTitle}>
+                      {tr.col.lost}
+                    </th>
+                    <th scope="col">{tr.col.goals}</th>
+                    <th scope="col">{tr.col.diff}</th>
+                    <th scope="col">{tr.col.pts}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -311,7 +355,7 @@ export function SeasonResultView({
                     <tr key={r.team} className={r.isUser ? 'is-user' : ''}>
                       <td>{i + 1}</td>
                       <td className="left">
-                        {r.name}
+                        {teamLabel(r)}
                         {!r.isUser && <span className="rating">{r.rating}</span>}
                       </td>
                       <td>{r.played}</td>
@@ -334,10 +378,10 @@ export function SeasonResultView({
 
           <section className="card" aria-labelledby="scorers-title">
             <h2 id="scorers-title" className="section-title">
-              Torschützenliste
+              {tr.topScorers}
             </h2>
             {season.scorers.length === 0 ? (
-              <p className="muted">Keine Tore – autsch.</p>
+              <p className="muted">{tr.noGoals}</p>
             ) : (
               <ol className="scorers">
                 {season.scorers.map((s) => {
@@ -346,7 +390,7 @@ export function SeasonResultView({
                     <li key={`${s.pokemonId}-${s.pos}`}>
                       <PosBadge pos={s.pos} />
                       {p && <Sprite pokemon={p} style={sprite} className="scorers__sprite" />}
-                      <span className="scorers__name">{p?.de}</span>
+                      <span className="scorers__name">{p && t.game.pokemon(p)}</span>
                       <span className="scorers__goals">{s.goals}</span>
                     </li>
                   );
@@ -357,19 +401,19 @@ export function SeasonResultView({
         </div>
 
         <details className="card details">
-          <summary>Saisondetails – alle {season.userMatches.length} Spiele</summary>
+          <summary>{tr.details(season.userMatches.length)}</summary>
           <ol className="matches">
             {season.userMatches.map((m) => (
               <li key={m.round} className={`match match--${m.outcome}`}>
                 <span className="match__round">{m.round}.</span>
-                <span className="match__venue">{m.isHome ? 'H' : 'A'}</span>
+                <span className="match__venue">{m.isHome ? tr.venueHome : tr.venueAway}</span>
                 <span className="match__opp">
-                  {m.isHome ? 'vs.' : '@'} {m.opponent}
+                  {m.isHome ? tr.vsHome : tr.vsAway} {t.game.club(m.opponent)}
                 </span>
                 <span className="match__score">
                   {m.gf}:{m.ga}
                 </span>
-                <span className={`match__outcome match__outcome--${m.outcome}`}>{m.outcome}</span>
+                <span className={`match__outcome match__outcome--${m.outcome}`}>{tr.outcomeShort[m.outcome]}</span>
                 {m.scorers.length > 0 && (
                   <span className="match__scorers">{scorerSummary(m.scorers, nameOf)}</span>
                 )}
@@ -378,11 +422,17 @@ export function SeasonResultView({
           </ol>
         </details>
 
-        <p className="explainer">{EXPLAINER}</p>
+        <p className="explainer">{tr.explainer}</p>
         <p className="muted small">
-          Positionen nach Gewicht: TW {POSITIONS.TW.teamWeight.toLocaleString('de-DE')} · ST{' '}
-          {POSITIONS.ST.teamWeight.toLocaleString('de-DE')} · IV/OM {POSITIONS.IV.teamWeight.toLocaleString('de-DE')} ·
-          DM {POSITIONS.DM.teamWeight.toLocaleString('de-DE')} · übrige 1,0
+          {tr.weights(
+            [
+              [posShort.TW, weight('TW')],
+              [posShort.ST, weight('ST')],
+              [`${posShort.IV}/${posShort.OM}`, weight('IV')],
+              [posShort.DM, weight('DM')],
+            ],
+            fmtNumber(1, 1),
+          )}
         </p>
       </div>
       {stats && <StatCards stats={stats} />}

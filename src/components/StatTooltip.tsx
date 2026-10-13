@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { FACTOR_LABEL, FACTOR_LONG, POSITIONS, PROFILES, type Level } from '../config/positions';
-import { regionName } from '../config/regions';
+import { LEVEL_SYMBOL, POSITIONS, PROFILES, type Level } from '../config/positions';
+import { fmtNumber, localeOf, messages, useLang, useT } from '../i18n';
 import type { FactorKey, PosCode, Pokemon, StatKey } from '../types';
 import '../styles/tips.css';
 import { PosBadge, TypeBadge, TypeBadges } from './Badges';
@@ -9,11 +9,12 @@ import { LevelIcon } from './LevelIcon';
 
 const STATS: StatKey[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
 
-export const fmtNum = (n: number, digits = 1) =>
-  n.toLocaleString('de-DE', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+/** Zahl im Format der aktiven Sprache (de: 1,5 · en: 1.5). */
+export const fmtNum = (n: number, digits = 1) => fmtNumber(n, digits);
 
+/** Nationaldex-Nummer in der aktiven Sprache („Nr. 0025" bzw. „#0025"). */
 export function dexNo(id: number) {
-  return `Nr. ${String(id).padStart(4, '0')}`;
+  return messages().game.dexNo(id);
 }
 
 /** Gewichtung eines Faktors auf einer Position (Schlüssel 3 … Zählt nicht 0). */
@@ -21,6 +22,7 @@ const levelAt = (pos: PosCode, f: FactorKey): Level => PROFILES[POSITIONS[pos].p
 
 /** Basiswerte als Balken; mit `pos` markiert ein Symbol, wie wichtig jeder Wert dort ist. */
 export function StatBars({ pokemon, pos }: { pokemon: Pokemon; pos?: PosCode }) {
+  const t = useT();
   return (
     <dl className={`statbars ${pos ? 'statbars--pos' : ''}`}>
       {STATS.map((k) => (
@@ -31,7 +33,7 @@ export function StatBars({ pokemon, pos }: { pokemon: Pokemon; pos?: PosCode }) 
                 <LevelIcon level={levelAt(pos, k)} size={12} />
               </span>
             )}
-            {FACTOR_LONG[k]}
+            {t.game.factorLong[k]}
           </dt>
           <dd>
             <span className="statbars__val">{pokemon[k]}</span>
@@ -96,15 +98,16 @@ function FloatingTip({ anchor, className, children }: { anchor: DOMRect; classNa
 
 /** Typ-Bonus der Position; Typen, die das Pokémon hat, werden hervorgehoben. */
 function TypeBonusLine({ pos, pokemon }: { pos: PosCode; pokemon?: Pokemon }) {
+  const t = useT();
   const types = PROFILES[POSITIONS[pos].profile].types;
-  if (!types.length) return <p className="pos-tip__types muted small">Kein Typ-Bonus</p>;
+  if (!types.length) return <p className="pos-tip__types muted small">{t.builder.statTip.noTypeBonus}</p>;
   return (
     <p className="pos-tip__types">
-      <span className="pos-tip__label">Typ-Bonus</span>
+      <span className="pos-tip__label">{t.builder.statTip.typeBonus}</span>
       <span className="type-badges">
-        {types.map((t) => (
-          <span key={t} className={pokemon && !pokemon.types.includes(t) ? 'pos-tip__type--off' : ''}>
-            <TypeBadge type={t} small />
+        {types.map((type) => (
+          <span key={type} className={pokemon && !pokemon.types.includes(type) ? 'pos-tip__type--off' : ''}>
+            <TypeBadge type={type} small />
           </span>
         ))}
       </span>
@@ -117,22 +120,27 @@ function TypeBonusLine({ pos, pokemon }: { pos: PosCode; pokemon?: Pokemon }) {
  * Mit `pos` zeigt er zusätzlich, welche Werte auf dieser Position zählen.
  */
 export function StatTooltip({ pokemon, anchor, pos }: { pokemon: Pokemon; anchor: DOMRect; pos?: PosCode }) {
+  const t = useT();
+  const lang = useLang();
+  // Auf Deutsch zusätzlich der englische Name (sofern er sich unterscheidet)
+  const altName = lang === 'de' && pokemon.de !== pokemon.en ? pokemon.en : null;
+  const legend = ([3, 2, 1, 0] as Level[]).map((l) => `${LEVEL_SYMBOL[l]} ${t.game.level[l]}`).join(' · ');
   return (
     <FloatingTip anchor={anchor} className="stat-tip">
       <div className="stat-tip__head">
-        <span className="stat-tip__no">{dexNo(pokemon.id)}</span>
-        <strong className="stat-tip__name">{pokemon.de}</strong>
-        {pokemon.de !== pokemon.en && <span className="stat-tip__en">{pokemon.en}</span>}
+        <span className="stat-tip__no">{t.game.dexNo(pokemon.id)}</span>
+        <strong className="stat-tip__name">{t.game.pokemon(pokemon)}</strong>
+        {altName && <span className="stat-tip__en">{altName}</span>}
       </div>
       <div className="stat-tip__types">
         <TypeBadges types={pokemon.types} small />
         {(pokemon.leg || pokemon.myth) ? (
-          <span className="legend-chip">{pokemon.myth ? 'Mysteriös' : 'Legendär'}</span>
+          <span className="legend-chip">{pokemon.myth ? t.game.mythical : t.game.legendary}</span>
         ) : null}
       </div>
       {pos && (
-        <p className="pos-tip__as" title="● Schlüssel · ◕ Hilft · ◔ Kleiner Anteil · ○ Zählt nicht">
-          <PosBadge pos={pos} /> Wichtig als {POSITIONS[pos].name}
+        <p className="pos-tip__as" title={legend}>
+          <PosBadge pos={pos} /> {t.builder.statTip.importantAs(t.game.posName[pos])}
         </p>
       )}
       <StatBars pokemon={pokemon} pos={pos} />
@@ -143,7 +151,7 @@ export function StatTooltip({ pokemon, anchor, pos }: { pokemon: Pokemon; anchor
               <LevelIcon level={levelAt(pos, 'height')} size={11} />
             </span>
           )}
-          Größe {fmtNum(pokemon.h)} m
+          {t.builder.statTip.height(fmtNumber(pokemon.h, 1, lang))}
         </span>
         <span>
           {pos && (
@@ -151,47 +159,46 @@ export function StatTooltip({ pokemon, anchor, pos }: { pokemon: Pokemon; anchor
               <LevelIcon level={levelAt(pos, 'weight')} size={11} />
             </span>
           )}
-          Gewicht {fmtNum(pokemon.w)} kg
+          {t.builder.statTip.weight(fmtNumber(pokemon.w, 1, lang))}
         </span>
-        <span>{regionName(pokemon.gen)}</span>
+        <span>{t.game.region[pokemon.gen] ?? '?'}</span>
       </div>
       {pos && <TypeBonusLine pos={pos} pokemon={pokemon} />}
     </FloatingTip>
   );
 }
 
-const LEVEL_GROUPS: { level: Level; label: string }[] = [
-  { level: 3, label: 'Schlüssel' },
-  { level: 2, label: 'Hilft' },
-  { level: 1, label: 'Kleiner Anteil' },
-];
+const LEVEL_GROUPS: Level[] = [3, 2, 1];
 
 /** Was auf einer Position zählt – für leere Slots (z. B. beim Draften). */
 export function PositionTooltip({ pos, anchor }: { pos: PosCode; anchor: DOMRect }) {
+  const t = useT();
+  const lang = useLang();
   const def = POSITIONS[pos];
+  const notes = t.game.profileNotes[def.profile];
   const profile = PROFILES[def.profile];
   const factorsAt = (level: Level) => (Object.keys(profile.weights) as FactorKey[]).filter((f) => profile.weights[f] === level);
   return (
     <FloatingTip anchor={anchor} className="stat-tip pos-tip">
       <div className="pos-tip__head">
         <PosBadge pos={pos} />
-        <strong className="stat-tip__name">{def.name}</strong>
+        <strong className="stat-tip__name">{t.game.posName[pos]}</strong>
       </div>
-      <p className="pos-tip__role">{profile.role}</p>
+      <p className="pos-tip__role">{t.game.profileRole[def.profile]}</p>
       <dl className="pos-tip__groups">
-        {LEVEL_GROUPS.map(({ level, label }) => {
+        {LEVEL_GROUPS.map((level) => {
           const factors = factorsAt(level);
           if (!factors.length) return null;
           return (
             <div key={level} className="pos-tip__group">
               <dt className={`lvl lvl--${level}`}>
-                <LevelIcon level={level} size={13} /> {label}
+                <LevelIcon level={level} size={13} /> {t.game.level[level]}
               </dt>
               <dd>
                 {factors.map((f) => (
-                  <span key={f} className="pos-tip__factor" title={FACTOR_LONG[f]}>
-                    {FACTOR_LABEL[f]}
-                    {profile.notes?.[f] && <small> ({profile.notes[f]})</small>}
+                  <span key={f} className="pos-tip__factor" title={t.game.factorLong[f]}>
+                    {t.game.factor[f]}
+                    {notes?.[f] && <small> ({notes[f]})</small>}
                   </span>
                 ))}
               </dd>
@@ -202,7 +209,7 @@ export function PositionTooltip({ pos, anchor }: { pos: PosCode; anchor: DOMRect
       <TypeBonusLine pos={pos} />
       {pos !== 'SS' && (
         <p className="pos-tip__weight muted small">
-          Gewicht im Team-Score: {def.teamWeight.toLocaleString('de-DE')}
+          {t.builder.statTip.teamWeight(def.teamWeight.toLocaleString(localeOf(lang)))}
         </p>
       )}
     </FloatingTip>

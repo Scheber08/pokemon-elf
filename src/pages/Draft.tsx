@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { DEFAULT_FORMATION, FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { POSITIONS } from '../config/positions';
-import { REGIONS, regionPhrase } from '../config/regions';
+import { REGIONS } from '../config/regions';
 import { CLUB_NAMES } from '../config/season';
 import { PosBadge } from '../components/Badges';
 import { FilterBar, useFilteredPokemon, type PokemonFilters } from '../components/FilterBar';
@@ -9,6 +9,7 @@ import { Pitch, type SlotState } from '../components/Pitch';
 import { PokemonGrid } from '../components/PokemonGrid';
 import { Segmented } from '../components/Segmented';
 import { Sprite } from '../components/Sprite';
+import { useT } from '../i18n';
 import { draftsSupported } from '../lib/api/draftClient';
 import { positionFit } from '../lib/fit';
 import { emptySlots } from '../lib/formation';
@@ -23,6 +24,9 @@ import { DraftOnline } from './DraftOnline';
 import '../styles/draft.css';
 
 const ROUNDS = 11;
+
+/** Vorgabe-Name des eigenen Teams – so gespeichert, angezeigt in der aktiven Sprache */
+const OWN_TEAM = 'Mein Team';
 
 interface DraftTeam {
   name: string;
@@ -44,7 +48,7 @@ interface DraftState {
 function defaultTeams(n: number): DraftTeam[] {
   const names = shuffle(Math.random, CLUB_NAMES);
   return Array.from({ length: n }, (_, i) => ({
-    name: i === 0 ? 'Mein Team' : names[i],
+    name: i === 0 ? OWN_TEAM : names[i],
     cpu: i !== 0,
     formation: i === 0 ? DEFAULT_FORMATION : FORMATION_IDS[i % FORMATION_IDS.length],
     slots: emptySlots(i === 0 ? DEFAULT_FORMATION : FORMATION_IDS[i % FORMATION_IDS.length]),
@@ -70,6 +74,8 @@ function teamForPick(pick: number, n: number): number {
 
 /** Hot-Seat-Draft an einem Gerät (Modus „An einem Gerät"). */
 function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
+  const t = useT();
+  const tx = t.draft.local;
   const { list, byId, scale } = usePokemonData();
   const { sprite } = useSettings();
   const [state, setState] = useState<DraftState>(() => ({ ...INITIAL, ...load<Partial<DraftState>>(STORAGE_KEYS.draft, {}) }));
@@ -84,9 +90,11 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   const team = state.teams[currentTeam];
 
   const drafted = useMemo(
-    () => new Set(state.teams.flatMap((t) => t.slots.filter((id): id is number => id != null))),
+    () => new Set(state.teams.flatMap((tm) => tm.slots.filter((id): id is number => id != null))),
     [state.teams],
   );
+  /** Teamname für die Anzeige: Vorgabe „Mein Team" und Vereinsnamen (CPU) in der aktiven Sprache */
+  const teamName = (name: string) => (name === OWN_TEAM ? tx.myTeam : t.game.club(name));
   const pool = useMemo(
     () =>
       list.filter(
@@ -104,8 +112,8 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
 
   const lock = (teamIdx: number, slot: number, pokemonId: number) =>
     setState((s) => {
-      const teams = s.teams.map((t, i) =>
-        i === teamIdx ? { ...t, slots: t.slots.map((v, j) => (j === slot ? pokemonId : v)) } : t,
+      const teams = s.teams.map((tm, i) =>
+        i === teamIdx ? { ...tm, slots: tm.slots.map((v, j) => (j === slot ? pokemonId : v)) } : tm,
       );
       const pick = s.pick + 1;
       return {
@@ -149,7 +157,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
       pick: 0,
       selected: null,
       seed: null,
-      teams: s.teams.map((t) => ({ ...t, slots: emptySlots(t.formation) })),
+      teams: s.teams.map((tm) => ({ ...tm, slots: emptySlots(tm.formation) })),
     }));
     setFilters({ query: '', type: null, region: state.region });
   };
@@ -157,7 +165,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   const setTeamCount = (count: number) =>
     setState((s) => {
       const teams = s.teams.slice(0, count);
-      const free = shuffle(Math.random, CLUB_NAMES).filter((name) => !teams.some((t) => t.name === name));
+      const free = shuffle(Math.random, CLUB_NAMES).filter((name) => !teams.some((tm) => tm.name === name));
       while (teams.length < count) {
         const formation = FORMATION_IDS[teams.length % FORMATION_IDS.length];
         teams.push({ name: free.shift() ?? `Team ${teams.length + 1}`, cpu: true, formation, slots: emptySlots(formation) });
@@ -168,25 +176,33 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   const updateTeam = (i: number, patch: Partial<DraftTeam>) =>
     setState((s) => ({
       ...s,
-      teams: s.teams.map((t, j) =>
-        j === i ? { ...t, ...patch, slots: patch.formation ? emptySlots(patch.formation) : t.slots } : t,
+      teams: s.teams.map((tm, j) =>
+        j === i ? { ...tm, ...patch, slots: patch.formation ? emptySlots(patch.formation) : tm.slots } : tm,
       ),
     }));
 
   const reset = () => setState({ ...INITIAL, teams: defaultTeams(state.teams.length) });
 
+  /** Satzbaustein für die Pool-Beschreibung wie im Builder: „aus Kanto (Nr. 1–151)" */
+  const poolPhrase = useMemo(() => {
+    const rp = t.common.regionPhrase;
+    const r = state.region === 0 ? undefined : REGIONS[state.region - 1];
+    if (!r) return rp.all;
+    return r.gen === 1 ? rp.first151 : rp.range(t.game.region[r.gen], r.from, r.to);
+  }, [state.region, t]);
+
   // ---------- Liga ----------
   const league = useMemo(() => {
     if (state.phase !== 'league' || state.seed == null) return null;
     const sc = scale('all');
-    const leagueTeams: LeagueTeam[] = state.teams.map((t) => {
-      const players = t.slots.map((id) => (id != null ? byId.get(id) ?? null : null));
-      const ev = evaluateTeam(t.formation, players, sc);
-      const defs = FORMATIONS[t.formation].slots;
+    const leagueTeams: LeagueTeam[] = state.teams.map((tm) => {
+      const players = tm.slots.map((id) => (id != null ? byId.get(id) ?? null : null));
+      const ev = evaluateTeam(tm.formation, players, sc);
+      const defs = FORMATIONS[tm.formation].slots;
       return {
-        name: t.name,
+        name: tm.name,
         rating: ev.score,
-        isUser: !t.cpu,
+        isUser: !tm.cpu,
         squad: players.flatMap((p, i) => (p ? [{ pokemonId: p.id, pos: defs[i].pos, atk: p.atk, spa: p.spa }] : [])),
       };
     });
@@ -212,39 +228,36 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
       <div className="page draft">
         {modeSwitch}
         <header className="page-head">
-          <h1 className="page-title">Fantasy-Draft</h1>
-          <p className="page-lead">
-            2–8 Teams, ein gemeinsamer Pool, Snake-Draft über 11 Runden. Danach spielt jeder gegen jeden – Hin- und
-            Rückrunde.
-          </p>
+          <h1 className="page-title">{tx.title}</h1>
+          <p className="page-lead">{tx.lead}</p>
         </header>
         <div className="draft__setup">
           <section className="card" aria-labelledby="draft-teams">
             <h2 id="draft-teams" className="section-title">
-              Teams
+              {t.draft.teams}
             </h2>
             <Segmented
-              label="Anzahl Teams"
+              label={tx.teamCount}
               value={n}
               onChange={setTeamCount}
               options={[2, 3, 4, 5, 6, 7, 8].map((v) => ({ value: v, label: String(v) }))}
               wrap
             />
             <ol className="draft__teamlist">
-              {state.teams.map((t, i) => (
+              {state.teams.map((tm, i) => (
                 <li key={i} className="draft__teamrow">
                   <span className="draft__no">{i + 1}</span>
                   <input
                     className="input"
-                    aria-label={`Name Team ${i + 1}`}
-                    value={t.name}
+                    aria-label={tx.teamNameAria(i + 1)}
+                    value={teamName(tm.name)}
                     maxLength={28}
                     onChange={(e) => updateTeam(i, { name: e.target.value })}
                   />
                   <select
                     className="input select"
-                    aria-label={`Formation Team ${i + 1}`}
-                    value={t.formation}
+                    aria-label={tx.teamFormationAria(i + 1)}
+                    value={tm.formation}
                     onChange={(e) => updateTeam(i, { formation: e.target.value as FormationId })}
                   >
                     {FORMATION_IDS.map((f) => (
@@ -253,51 +266,44 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   </select>
                   <button
                     type="button"
-                    className={`btn btn--small ${t.cpu ? '' : 'btn--accent'}`}
-                    aria-pressed={!t.cpu}
-                    onClick={() => updateTeam(i, { cpu: !t.cpu })}
+                    className={`btn btn--small ${tm.cpu ? '' : 'btn--accent'}`}
+                    aria-pressed={!tm.cpu}
+                    onClick={() => updateTeam(i, { cpu: !tm.cpu })}
                   >
-                    {t.cpu ? 'CPU' : 'Mensch'}
+                    {tm.cpu ? t.draft.cpu : tx.human}
                   </button>
                 </li>
               ))}
             </ol>
-            <p className="muted small">Menschliche Teams wählen nacheinander am selben Gerät (Hot-Seat).</p>
+            <p className="muted small">{tx.hotSeatNote}</p>
           </section>
           <section className="card" aria-labelledby="draft-pool">
             <h2 id="draft-pool" className="section-title">
-              Pool
+              {t.draft.pool}
             </h2>
             <Segmented
-              label="Region"
+              label={tx.region}
               wrap
               value={state.region}
               onChange={(region) => setState((s) => ({ ...s, region }))}
               options={[
-                ...REGIONS.map((r) => ({ value: r.gen as RegionFilter, label: r.name })),
-                { value: 0 as RegionFilter, label: 'Alle' },
+                ...REGIONS.map((r) => ({ value: r.gen as RegionFilter, label: t.game.region[r.gen] })),
+                { value: 0 as RegionFilter, label: t.game.allRegions },
               ]}
             />
             <Segmented
-              label="Pokémon / Legendäre"
+              label={tx.legendsLabel}
               value={state.legends}
               onChange={(legends) => setState((s) => ({ ...s, legends }))}
               options={[
-                { value: false, label: 'Pokémon' },
-                { value: true, label: 'Legendäre' },
+                { value: false, label: tx.pokemon },
+                { value: true, label: tx.legends },
               ]}
             />
-            <p className="settings__desc">
-              Draft {regionPhrase(state.region)}, {state.legends ? 'mit Legendären' : 'ohne Legendäre'}.
-            </p>
-            {poolTooSmall && (
-              <p className="notice notice--error">
-                Nur {poolSize} Pokémon im Pool – für {n} Teams × 11 Runden braucht ihr {n * ROUNDS}. Wählt eine größere
-                Region, „Alle" oder weniger Teams.
-              </p>
-            )}
+            <p className="settings__desc">{tx.poolDesc(poolPhrase, state.legends)}</p>
+            {poolTooSmall && <p className="notice notice--error">{tx.poolTooSmall(poolSize, n, ROUNDS, n * ROUNDS)}</p>}
             <button type="button" className="btn btn--primary btn--big" onClick={start} disabled={poolTooSmall}>
-              Draft starten
+              {tx.start}
             </button>
           </section>
         </div>
@@ -306,34 +312,33 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   }
 
   if (state.phase === 'league' && league) {
+    const c = t.draft.col;
     return (
       <div className="page draft">
         {modeSwitch}
         <header className="page-head">
-          <h1 className="page-title">Draft-Liga</h1>
-          <p className="page-lead">
-            Jeder gegen jeden, Hin- und Rückrunde – {league.matches.length} Spiele.
-          </p>
+          <h1 className="page-title">{tx.leagueTitle}</h1>
+          <p className="page-lead">{tx.leagueLead(league.matches.length)}</p>
         </header>
         <div className="result-grid">
           <section className="card" aria-labelledby="draft-table">
             <h2 id="draft-table" className="section-title">
-              Tabelle
+              {t.draft.table}
             </h2>
             <div className="table-scroll">
               <table className="league-table">
                 <thead>
                   <tr>
-                    <th>Pl.</th>
-                    <th className="left">Team</th>
-                    <th>Score</th>
-                    <th>Sp</th>
-                    <th>S</th>
-                    <th>U</th>
-                    <th>N</th>
-                    <th>Tore</th>
-                    <th>Diff</th>
-                    <th>Pkt</th>
+                    <th>{c.place}</th>
+                    <th className="left">{c.team}</th>
+                    <th>{c.score}</th>
+                    <th>{c.played}</th>
+                    <th>{c.won}</th>
+                    <th>{c.drawn}</th>
+                    <th>{c.lost}</th>
+                    <th>{c.goals}</th>
+                    <th>{c.diff}</th>
+                    <th>{c.pts}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -341,7 +346,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     <tr key={r.team} className={r.isUser ? 'is-user' : ''}>
                       <td>{i + 1}</td>
                       <td className="left">
-                        {r.name} {state.teams[r.team].cpu && <span className="rating">CPU</span>}
+                        {teamName(r.name)} {state.teams[r.team].cpu && <span className="rating">{t.draft.cpu}</span>}
                       </td>
                       <td>{r.rating}</td>
                       <td>{r.played}</td>
@@ -363,7 +368,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           </section>
           <section className="card" aria-labelledby="draft-scorers">
             <h2 id="draft-scorers" className="section-title">
-              Torjäger
+              {t.draft.topScorers}
             </h2>
             <ol className="scorers">
               {league.scorers.map((s) => {
@@ -372,7 +377,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   <li key={s.id}>
                     {p && <Sprite pokemon={p} style={sprite} className="scorers__sprite" />}
                     <span className="scorers__name">
-                      {p?.de} <small className="muted">{state.teams[s.team].name}</small>
+                      {p && t.game.pokemon(p)} <small className="muted">{teamName(state.teams[s.team].name)}</small>
                     </span>
                     <span className="scorers__goals">{s.goals}</span>
                   </li>
@@ -382,13 +387,13 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           </section>
         </div>
         <details className="card details">
-          <summary>Alle Spiele</summary>
+          <summary>{tx.allMatches}</summary>
           <ol className="matches">
             {league.matches.map((m, i) => (
               <li key={i} className="match">
-                <span className="match__round">{m.round}.</span>
+                <span className="match__round">{tx.roundNo(m.round)}</span>
                 <span className="match__opp">
-                  {state.teams[m.home].name} – {state.teams[m.away].name}
+                  {teamName(state.teams[m.home].name)} – {teamName(state.teams[m.away].name)}
                 </span>
                 <span className="match__score">
                   {m.hg}:{m.ag}
@@ -397,20 +402,20 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
             ))}
           </ol>
         </details>
-        <section className="draft__rosters" aria-label="Kader">
-          {state.teams.map((t, i) => (
+        <section className="draft__rosters" aria-label={tx.squads}>
+          {state.teams.map((tm, i) => (
             <div key={i} className="card draft__roster">
-              <h3 className="section-title">{t.name}</h3>
-              <Pitch formation={t.formation} slots={t.slots} sprite={sprite} ariaLabel={`Kader ${t.name}`} />
+              <h3 className="section-title">{teamName(tm.name)}</h3>
+              <Pitch formation={tm.formation} slots={tm.slots} sprite={sprite} ariaLabel={tx.squadAria(teamName(tm.name))} />
             </div>
           ))}
         </section>
         <div className="actionbar">
           <button type="button" className="btn btn--primary" onClick={() => setState((s) => ({ ...s, seed: randomSeed() }))}>
-            Liga neu ausspielen
+            {tx.replay}
           </button>
           <button type="button" className="btn" onClick={reset}>
-            Neuer Draft
+            {tx.newDraft}
           </button>
         </div>
       </div>
@@ -428,16 +433,16 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     <div className="page draft">
         {modeSwitch}
       <header className="page-head">
-        <h1 className="page-title">Fantasy-Draft</h1>
+        <h1 className="page-title">{tx.title}</h1>
         <div className="statusline" role="status">
           <span className="statusline__item">
-            Runde <strong>{round}/{ROUNDS}</strong>
+            {tx.round} <strong>{round}/{ROUNDS}</strong>
           </span>
           <span className="statusline__item">
-            Pick <strong>{state.pick + 1}/{totalPicks}</strong>
+            {tx.pick} <strong>{state.pick + 1}/{totalPicks}</strong>
           </span>
           <span className="statusline__item">
-            Am Zug: <strong>{team?.name}</strong> {team?.cpu ? '(CPU)' : ''}
+            {tx.onTheClock} <strong>{team && teamName(team.name)}</strong> {team?.cpu ? tx.cpuTag : ''}
           </span>
         </div>
       </header>
@@ -445,20 +450,21 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
         <div className="challenge__controls">
           {team?.cpu ? (
             <div className="card cpu-thinking" aria-live="polite">
-              <span className="boot__ball boot__ball--small" aria-hidden="true" /> {team.name} scoutet …
+              <span className="boot__ball boot__ball--small" aria-hidden="true" /> {tx.cpuScouting(teamName(team.name))}
             </div>
           ) : (
             <section aria-labelledby="draft-pick-title">
               <h2 id="draft-pick-title" className="section-title">
-                Wähle ein Pokémon
+                {tx.pickTitle}
               </h2>
               <p className={`hint ${selected ? 'hint--active' : ''}`} aria-live="polite">
                 {selected ? (
                   <>
-                    <strong>{selected.de}</strong> gewählt. Klicke auf einen freien Platz auf dem Feld.
+                    <strong>{t.game.pokemon(selected)}</strong>
+                    {tx.selectedHint}
                   </>
                 ) : (
-                  `${team?.name}, du bist dran.`
+                  tx.yourTurn(teamName(String(team?.name)))
                 )}
               </p>
               <FilterBar filters={filters} onChange={setFilters} showRegion={state.region === 0} resultCount={filtered.length} />
@@ -476,17 +482,17 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               />
             </section>
           )}
-          <section className="draft__board" aria-label="Draft-Board">
-            {state.teams.map((t, i) => (
+          <section className="draft__board" aria-label={t.draft.draftBoard}>
+            {state.teams.map((tm, i) => (
               <div key={i} className={`draft__col ${i === currentTeam ? 'is-current' : ''}`}>
-                <h3>{t.name}</h3>
+                <h3>{teamName(tm.name)}</h3>
                 <ol>
-                  {FORMATIONS[t.formation].slots.map((d, j) => {
-                    const p = t.slots[j] != null ? byId.get(t.slots[j]!) : undefined;
+                  {FORMATIONS[tm.formation].slots.map((d, j) => {
+                    const p = tm.slots[j] != null ? byId.get(tm.slots[j]!) : undefined;
                     return (
                       <li key={j}>
                         <PosBadge pos={d.pos} />
-                        <span>{p?.de ?? '–'}</span>
+                        <span>{p ? t.game.pokemon(p) : '–'}</span>
                       </li>
                     );
                   })}
@@ -494,15 +500,15 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               </div>
             ))}
           </section>
-          <button type="button" className="btn btn--ghost btn--small abort" onClick={() => window.confirm('Draft abbrechen?') && reset()}>
-            Draft abbrechen
+          <button type="button" className="btn btn--ghost btn--small abort" onClick={() => window.confirm(tx.abortConfirm) && reset()}>
+            {tx.abort}
           </button>
         </div>
         <div className="challenge__pitch" ref={pitchRef}>
           {team && (
             <>
               <h2 className="section-title">
-                {team.name} · {team.formation}
+                {teamName(team.name)} · {team.formation}
               </h2>
               <Pitch
                 formation={team.formation}
@@ -539,6 +545,7 @@ function localDraftRunning(): boolean {
  * Ohne Server bzw. bei laufendem lokalem Draft startet der lokale Modus.
  */
 export function Draft() {
+  const t = useT();
   const [supported, setSupported] = useState<boolean | null>(null);
   const [mode, setMode] = useState<DraftMode | null>(() => sessionMode ?? (localDraftRunning() ? 'local' : null));
   const [check, setCheck] = useState(0);
@@ -560,13 +567,13 @@ export function Draft() {
   const modeSwitch = (
     <div className="draft-modes">
       <Segmented
-        label="Spielmodus"
+        label={t.draft.modeLabel}
         hideLabel
         value={effective ?? 'online'}
         onChange={choose}
         options={[
-          { value: 'online' as DraftMode, label: 'Online-Liga' },
-          { value: 'local' as DraftMode, label: 'An einem Gerät' },
+          { value: 'online' as DraftMode, label: t.draft.modeOnline },
+          { value: 'local' as DraftMode, label: t.draft.modeLocal },
         ]}
       />
     </div>

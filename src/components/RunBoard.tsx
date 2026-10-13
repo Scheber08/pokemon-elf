@@ -1,7 +1,8 @@
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { FORMATIONS } from '../config/formations';
 import { TYPE_KEYS, TYPES } from '../config/pokemonTypes';
-import { REGIONS, regionName } from '../config/regions';
+import { REGIONS } from '../config/regions';
+import { useT } from '../i18n';
 import {
   canReroll,
   candidates,
@@ -24,14 +25,10 @@ import { RollCard, StatusLine, useRolling } from './ChallengeParts';
 import { Pitch, type SlotState } from './Pitch';
 import { PokemonGrid } from './PokemonGrid';
 import { Sprite } from './Sprite';
-import { dexNo } from './StatTooltip';
 import '../styles/run.css';
 
 /** So lange nach einem Reroll werden weitere Reroll-Klicks ignoriert (Doppelklick-Schutz). */
 const REROLL_LOCK_MS = 400;
-
-const REGION_REEL = REGIONS.map((r) => r.name);
-const TYPE_REEL = TYPE_KEYS.map((t) => TYPES[t].de);
 
 interface Props {
   state: RunState;
@@ -73,6 +70,8 @@ export function RunBoard({
   statusExtra,
   notice,
 }: Props) {
+  const t = useT();
+  const tc = t.challenge;
   const { challenge, formation, ssEnabled } = state.config;
   const rules = MODE_RULES[challenge];
   const style: SpriteStyle = challenge === 'retro340' ? 'retro' : sprite;
@@ -90,6 +89,8 @@ export function RunBoard({
    */
   const [acceptReroll] = useState(() => createClickGuard(REROLL_LOCK_MS));
   const titleId = useId();
+  const regionReel = useMemo(() => REGIONS.map((r) => t.game.region[r.gen]), [t]);
+  const typeReel = useMemo(() => TYPE_KEYS.map((k) => t.game.type[k]), [t]);
 
   // Jeder neue Wurf wird animiert – auch der erste nach dem Start. Bewusst nur an rollKey
   // gebunden: startRolling ist bei jedem Render neu, soll aber nur bei neuem Wurf laufen.
@@ -119,10 +120,10 @@ export function RunBoard({
             .map((p) => (
               <span key={p.id} className="rollmon">
                 <span className="rollmon__ball" aria-hidden="true" />
-                <span>{p.de}</span>
+                <span>{t.game.pokemon(p)}</span>
               </span>
             )),
-    [data, rules],
+    [data, rules, t],
   );
 
   const choose = (p: Pokemon) => {
@@ -153,7 +154,7 @@ export function RunBoard({
         type="button"
         className="btn btn--small"
         disabled={!possible || rolling}
-        title={left > 0 && !possible ? 'Kein anderer Wurf möglich' : undefined}
+        title={left > 0 && !possible ? tc.noOtherRoll : undefined}
         onClick={() => {
           if (acceptReroll()) onReroll(kind);
         }}
@@ -162,36 +163,37 @@ export function RunBoard({
       </button>
     );
   };
-  const usedUp = (left: number) => (left > 0 ? `(${left}×)` : '(verbraucht)');
+  const usedUp = tc.rerollsLeft;
 
   const status: ReactNode[] = [
     complete ? (
-      <>Alle Plätze belegt</>
+      <>{tc.allPlaced}</>
     ) : (
       <>
-        Runde <strong>{state.round}/{total}</strong>
+        {tc.round} <strong>{state.round}/{total}</strong>
       </>
     ),
   ];
-  if (challenge === 'c151') status.push(<>Original 151</>);
-  if (challenge === 'retro340') status.push(<>Retro 34–0</>);
+  if (challenge === 'c151') status.push(<>{tc.original151}</>);
+  if (challenge === 'retro340') status.push(<>{t.game.challenge.retro340}</>);
   if (rules.maxLegends != null) {
     status.push(
       <>
-        Legendäre <strong>{legends}/{rules.maxLegends}</strong>
+        {tc.legends} <strong>{legends}/{rules.maxLegends}</strong>
       </>,
     );
   }
   if (rules.rerolls.pokemon > 0) {
     status.push(
       <>
-        Neu würfeln: <strong>{rerollsLeft(state, 'pokemon')}</strong>
+        {tc.rerolls} <strong>{rerollsLeft(state, 'pokemon')}</strong>
       </>,
     );
   }
   if (statusExtra) status.push(statusExtra);
 
   const typeInfo = roll?.type ? TYPES[roll.type] : null;
+  const typeLabel = roll?.type ? t.game.type[roll.type] : '';
   const rolled = rules.roll === 'pokemon' ? selected : undefined;
 
   return (
@@ -204,25 +206,25 @@ export function RunBoard({
           <>
             <div className="rollcards">
               <RollCard
-                label="Region"
+                label={tc.region}
                 rolling={rolling}
-                value={regionName(roll.region ?? 0)}
-                reel={REGION_REEL}
+                value={t.game.region[roll.region ?? 0] || '?'}
+                reel={regionReel}
                 onSkip={skip}
               />
               <RollCard
-                label="Typ"
+                label={tc.type}
                 rolling={rolling}
-                value={typeInfo.de}
-                reel={TYPE_REEL}
+                value={typeLabel}
+                reel={typeReel}
                 color={typeInfo.color}
                 textColor={typeInfo.text}
                 onSkip={skip}
               />
             </div>
             <div className="reroll-row">
-              {rerollButton('type', (left) => `Typ neu würfeln ${usedUp(left)}`)}
-              {rerollButton('region', (left) => `Region neu würfeln ${usedUp(left)}`)}
+              {rerollButton('type', (left) => tc.rerollType(usedUp(left)))}
+              {rerollButton('region', (left) => tc.rerollRegion(usedUp(left)))}
             </div>
           </>
         )}
@@ -231,23 +233,23 @@ export function RunBoard({
           <>
             <div className="rollcards rollcards--single">
               <RollCard
-                label="Typ"
+                label={tc.type}
                 rolling={rolling}
-                value={typeInfo.de}
-                reel={TYPE_REEL}
+                value={typeLabel}
+                reel={typeReel}
                 color={typeInfo.color}
                 textColor={typeInfo.text}
                 onSkip={skip}
               />
             </div>
-            <div className="reroll-row">{rerollButton('type', (left) => `Typ neu würfeln ${usedUp(left)}`)}</div>
+            <div className="reroll-row">{rerollButton('type', (left) => tc.rerollType(usedUp(left)))}</div>
           </>
         )}
 
         {!complete && rules.roll === 'pokemon' && rolled && (
           <>
             <RollCard
-              label="Dein Pokémon"
+              label={tc.yourPokemon}
               rolling={rolling}
               onSkip={skip}
               reel={monReel}
@@ -255,17 +257,19 @@ export function RunBoard({
                 <span className="rollmon rollmon--final">
                   <Sprite pokemon={rolled} style={style} loading="eager" />
                   <span>
-                    <small>{dexNo(rolled.id)}</small>
-                    {rolled.de}
+                    <small>{t.game.dexNo(rolled.id)}</small>
+                    {t.game.pokemon(rolled)}
                     <TypeBadges types={rolled.types} small />
                   </span>
                 </span>
               }
             />
-            <div className="reroll-row">{rerollButton('pokemon', (left) => `Pokémon neu würfeln (${left})`)}</div>
+            <div className="reroll-row">{rerollButton('pokemon', tc.rerollPokemon)}</div>
             {!rolling && (
               <p className="hint hint--active" aria-live="polite">
-                Klicke auf einen freien Platz auf dem Feld, um <strong>{rolled.de}</strong> festzulegen.
+                {tc.placeRolledBefore}
+                <strong>{t.game.pokemon(rolled)}</strong>
+                {tc.placeRolledAfter}
               </p>
             )}
           </>
@@ -274,17 +278,18 @@ export function RunBoard({
         {!complete && rules.roll !== 'pokemon' && !rolling && (
           <section aria-labelledby={titleId} className="cands">
             <h2 id={titleId} className="section-title">
-              Wähle ein Pokémon <span className="muted">({cands.length})</span>
+              {tc.choose} <span className="muted">({cands.length})</span>
             </h2>
             <p className={`hint ${selected ? 'hint--active' : ''}`} aria-live="polite">
               {selected ? (
                 <>
-                  <strong>{selected.de}</strong> gewählt. Klicke auf einen freien Platz auf dem Feld, um ihn festzulegen.
+                  <strong>{t.game.pokemon(selected)}</strong>
+                  {tc.selectedAfter}
                 </>
               ) : rules.roll === 'type' ? (
-                'Wähle ein Pokémon dieses Typs aus den Original-151.'
+                tc.hintType
               ) : (
-                'Wähle ein Pokémon, das zu Region und Typ passt. Festgelegte Spieler bleiben stehen.'
+                tc.hintRegionType
               )}
             </p>
             <PokemonGrid
@@ -292,9 +297,7 @@ export function RunBoard({
               sprite={style}
               selectedId={selectedId}
               onPick={choose}
-              disabledReason={(p) =>
-                legendBlocked(state, p, data) ? `Schon ${rules.maxLegends} Legendäre im Team` : null
-              }
+              disabledReason={(p) => (legendBlocked(state, p, data) ? tc.legendLimit(rules.maxLegends ?? 0) : null)}
               className="pgrid-wrap--compact"
             />
           </section>
@@ -302,7 +305,7 @@ export function RunBoard({
 
         {complete && (
           <div className="done-box card">
-            <p>Deine Elf steht. Zeit für die Saison!</p>
+            <p>{tc.done}</p>
             <button
               type="button"
               className="btn btn--primary btn--big"
@@ -310,11 +313,11 @@ export function RunBoard({
               disabled={finishing}
               aria-busy={finishing}
             >
-              {finishing ? 'Saison läuft …' : onFinishOffline ? 'Erneut senden' : 'Ergebnis ansehen'}
+              {finishing ? tc.seasonRunning : onFinishOffline ? tc.resend : tc.showResult}
             </button>
             {onFinishOffline && (
               <button type="button" className="btn btn--ghost btn--small" onClick={onFinishOffline} disabled={finishing}>
-                Offline auswerten (ohne Wertung)
+                {tc.finishOffline}
               </button>
             )}
           </div>
@@ -325,9 +328,9 @@ export function RunBoard({
             type="button"
             className="btn btn--ghost btn--small abort"
             disabled={finishing}
-            onClick={() => window.confirm('Run wirklich abbrechen?') && onAbort()}
+            onClick={() => window.confirm(tc.abortConfirm) && onAbort()}
           >
-            Run abbrechen
+            {tc.abort}
           </button>
         )}
       </div>
@@ -340,7 +343,7 @@ export function RunBoard({
           sprite={style}
           onSlotClick={onSlotClick}
           slotState={slotState}
-          ariaLabel={`Spielfeld, Formation ${FORMATIONS[formation].label}`}
+          ariaLabel={tc.pitchAria(FORMATIONS[formation].label)}
         />
       </div>
     </div>
@@ -349,12 +352,13 @@ export function RunBoard({
 
 /** Online-Status im Setup: kommen Runs in die Rangliste? */
 export function OnlineNote({ online }: { online: boolean | null }) {
+  const t = useT();
   const [mod, text] =
     online == null
-      ? ['checking', 'Verbindung wird geprüft …']
+      ? ['checking', t.challenge.netChecking]
       : online
-        ? ['online', 'Online – deine Runs kommen in die Rangliste']
-        : ['offline', 'Offline – Runs werden nur lokal gespeichert'];
+        ? ['online', t.challenge.netOnline]
+        : ['offline', t.challenge.netOffline];
   return (
     <p className={`runnet runnet--${mod}`} role="status">
       <span className="runnet__dot" aria-hidden="true" />
@@ -365,11 +369,12 @@ export function OnlineNote({ online }: { online: boolean | null }) {
 
 /** Hinweis- bzw. Fehlerzeile mit optionalem Schließen-Knopf. */
 export function RunNotice({ children, error, onClose }: { children: ReactNode; error?: boolean; onClose?: () => void }) {
+  const t = useT();
   return (
     <p className={`notice run-notice ${error ? 'notice--error' : ''}`} role={error ? 'alert' : 'status'}>
       <span className="run-notice__text">{children}</span>
       {onClose && (
-        <button type="button" className="run-notice__close" aria-label="Hinweis schließen" onClick={onClose}>
+        <button type="button" className="run-notice__close" aria-label={t.challenge.closeNotice} onClick={onClose}>
           ×
         </button>
       )}
@@ -379,12 +384,13 @@ export function RunNotice({ children, error, onClose }: { children: ReactNode; e
 
 /** Kleines Badge für die Statuszeile: gewerteter Online-Run oder lokaler Run. */
 export function RunModeBadge({ online }: { online: boolean }) {
+  const t = useT();
   return (
     <span
       className={`runbadge ${online ? 'runbadge--ranked' : 'runbadge--offline'}`}
-      title={online ? 'Dieser Run kommt in die Online-Rangliste' : 'Dieser Run wird nur lokal gespeichert'}
+      title={online ? t.challenge.badgeRankedTitle : t.challenge.badgeOfflineTitle}
     >
-      {online ? 'Gewertet' : 'Offline'}
+      {online ? t.challenge.badgeRanked : t.challenge.badgeOffline}
     </span>
   );
 }

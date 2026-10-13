@@ -3,6 +3,7 @@ import { HowItWorks, RunSetup, StatCards } from '../components/ChallengeParts';
 import { OnlineNote, RunBoard, RunModeBadge, RunNotice } from '../components/RunBoard';
 import { Segmented } from '../components/Segmented';
 import { SeasonResultView } from '../components/SeasonResultView';
+import { useT } from '../i18n';
 import { MODE_RULES } from '../lib/challengeEngine';
 import { useSettings } from '../state/Settings';
 import { useChallengeRun } from '../state/useChallengeRun';
@@ -11,13 +12,9 @@ import type { ChallengeKey, SpriteStyle } from '../types';
 type Mode151 = 'c151' | 'retro340';
 const MODES: readonly ChallengeKey[] = ['c151', 'retro340'];
 
-const HOW_TO: Record<Mode151, string> = {
-  c151: 'Jede Runde würfelt ein zufälliges Pokémon aus den Original-151. Setze es auf einen beliebigen freien Platz, fülle alle 11 und spiel dann eine Saison mit 34 Spielen. Schaffst du 34–0?',
-  retro340:
-    'Retro-Look, Gen-1-Skalierung: Jede Runde würfelt einen Typ. Wähle ein passendes Pokémon aus den Original-151 und setze es auf einen freien Platz, mit höchstens 2 Legendären. Fülle alle 11 Plätze und spiel eine Saison mit 34 Spielen. Schaffst du 34–0?',
-};
-
 export function Challenge151() {
+  const t = useT();
+  const howTo: Record<Mode151, string> = { c151: t.challenge.c151HowTo, retro340: t.challenge.retro340HowTo };
   const settings = useSettings();
   const run = useChallengeRun('c151', { challenge: 'c151', allowed: MODES });
   const { phase, result, markRevealed } = run;
@@ -54,8 +51,8 @@ export function Challenge151() {
   return (
     <div className={`page challenge ${mode === 'retro340' ? 'challenge--retro' : ''}`}>
       <header className="page-head">
-        <h1 className="page-title">{mode === 'c151' ? '151 Challenge' : 'Retro 34–0'}</h1>
-        <p className="page-lead">Nur die Original-151. Eigene Gen-1-Skalierung, eigene Rangliste.</p>
+        <h1 className="page-title">{t.game.challenge[mode]}</h1>
+        <p className="page-lead">{t.challenge.c151Lead}</p>
       </header>
 
       {phase === 'play' && run.engine ? (
@@ -84,7 +81,7 @@ export function Challenge151() {
       ) : (
         <div className="challenge__setup">
           <div>
-            <HowItWorks>{HOW_TO[mode]}</HowItWorks>
+            <HowItWorks>{howTo[mode]}</HowItWorks>
             <StatCards stats={run.stats} />
           </div>
           <RunSetup
@@ -96,12 +93,12 @@ export function Challenge151() {
             starting={run.starting}
             extra={
               <Segmented<Mode151>
-                label="Modus"
+                label={t.challenge.mode}
                 value={mode}
                 onChange={(challenge) => run.setSetup({ challenge })}
                 options={[
-                  { value: 'c151', label: '151 Challenge' },
-                  { value: 'retro340', label: 'Retro 34–0' },
+                  { value: 'c151', label: t.game.challenge.c151 },
+                  { value: 'retro340', label: t.game.challenge.retro340 },
                 ]}
               />
             }

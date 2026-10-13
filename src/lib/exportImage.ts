@@ -85,7 +85,10 @@ export async function nodeToPng(node: HTMLElement, options: { scale?: number; ba
   );
 }
 
-/** Rendert ein React-Element unsichtbar außerhalb des Viewports und exportiert es als PNG. */
+/**
+ * Rendert ein React-Element unsichtbar außerhalb des Viewports und exportiert es als PNG.
+ * Eigene Wurzel ohne App-Kontext – Texte kommen in der aktiven Sprache (useSettings-Rückfall).
+ */
 export async function renderToPng(element: ReactElement, background = '#0d1b2a'): Promise<Blob> {
   const host = document.createElement('div');
   host.setAttribute('aria-hidden', 'true');

@@ -1,10 +1,11 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Segmented } from '../components/Segmented';
-import { fetchLeaderboard } from '../lib/api/client';
+import { useT, type Messages } from '../i18n';
+import { ApiRequestError, fetchLeaderboard } from '../lib/api/client';
 import type { LeaderboardResponse } from '../lib/api/contract';
-import { dayKey, formatDay } from '../lib/daily';
-import { CHALLENGE_LABEL, leaderboard, type LeaderboardEntry, type Period } from '../lib/leaderboard';
+import { dayKey } from '../lib/daily';
+import { leaderboard, type LeaderboardEntry, type Period } from '../lib/leaderboard';
 import { playerName, savePlayerName } from '../lib/runFinish';
 import { formatRecord } from '../lib/season';
 import { useToast } from '../state/Toast';
@@ -34,12 +35,29 @@ interface BoardRow {
   me: boolean;
 }
 
-/** Ergebnis einer Abfrage, gebunden an ihren Schlüssel (Challenge/Zeitraum/Neuladen). */
-type Loaded<T> = { key: string; data: T; error?: undefined } | { key: string; data?: undefined; error: string };
+/** Fehler einer Abfrage: Code der API (falls vorhanden) + deutsche Meldung – übersetzt wird beim Anzeigen. */
+interface LoadError {
+  code: string | null;
+  message: string;
+}
 
-const errorText = (e: unknown) => (e instanceof Error ? e.message : String(e));
+/** Ergebnis einer Abfrage, gebunden an ihren Schlüssel (Challenge/Zeitraum/Neuladen). */
+type Loaded<T> = { key: string; data: T; error?: undefined } | { key: string; data?: undefined; error: LoadError };
+
+const loadError = (e: unknown): LoadError => ({
+  code: e instanceof ApiRequestError ? e.code : null,
+  message: e instanceof Error ? e.message : String(e),
+});
+
+/** Fehlertext in der aktiven Sprache (Deutsch: unverändert die Meldung). */
+const errorText = (t: Messages, e: LoadError) => t.leaderboard.apiError(e.code, e.message);
+
+/** „Heute · 12.10.2026" bzw. „Allzeit" */
+const periodText = (t: Messages, period: Period, day: string) =>
+  period === 'today' ? t.leaderboard.todayOn(t.game.day(day)) : t.leaderboard.allTime;
 
 function BoardTable({ rows, mine }: { rows: BoardRow[]; mine: BoardRow | null }) {
+  const t = useT();
   const line = (r: BoardRow) => (
     <tr key={r.key} className={r.me ? 'is-user' : ''} aria-current={r.me ? 'true' : undefined}>
       <td>{r.rank}</td>
@@ -59,13 +77,13 @@ function BoardTable({ rows, mine }: { rows: BoardRow[]; mine: BoardRow | null })
       <table className="league-table leaderboard__table">
         <thead>
           <tr>
-            <th scope="col">Platz</th>
+            <th scope="col">{t.leaderboard.colRank}</th>
             <th scope="col" className="left">
-              Spieler
+              {t.leaderboard.colPlayer}
             </th>
-            <th scope="col">Bilanz</th>
-            <th scope="col">Pkt</th>
-            <th scope="col">Score</th>
+            <th scope="col">{t.leaderboard.colRecord}</th>
+            <th scope="col">{t.leaderboard.colPoints}</th>
+            <th scope="col">{t.leaderboard.colScore}</th>
           </tr>
         </thead>
         <tbody>{rows.map(line)}</tbody>
@@ -73,7 +91,7 @@ function BoardTable({ rows, mine }: { rows: BoardRow[]; mine: BoardRow | null })
           <tbody className="lb-mine">
             <tr className="lb-mine__label">
               <th scope="rowgroup" colSpan={5} className="left">
-                Deine Platzierung
+                {t.leaderboard.yourRank}
               </th>
             </tr>
             {line(mine)}
@@ -85,11 +103,12 @@ function BoardTable({ rows, mine }: { rows: BoardRow[]; mine: BoardRow | null })
 }
 
 function EmptyBoard({ challenge, children }: { challenge: ChallengeKey; children: ReactNode }) {
+  const t = useT();
   return (
     <div className="empty">
       <p>{children}</p>
       <Link className="btn btn--primary" to={PLAY_LINK[challenge]}>
-        Jetzt spielen
+        {t.leaderboard.playNow}
       </Link>
     </div>
   );
@@ -97,6 +116,7 @@ function EmptyBoard({ challenge, children }: { challenge: ChallengeKey; children
 
 /** Online-Rangliste (Cloudflare) – nur Runs, die online gestartet wurden. */
 function OnlineBoard({ challenge, period, reload, onRetry }: { challenge: ChallengeKey; period: Period; reload: number; onRetry: () => void }) {
+  const t = useT();
   const key = `${challenge}:${period}:${reload}`;
   const [loaded, setLoaded] = useState<Loaded<LeaderboardResponse> | null>(null);
 
@@ -104,7 +124,7 @@ function OnlineBoard({ challenge, period, reload, onRetry }: { challenge: Challe
     let alive = true;
     fetchLeaderboard(challenge, period, LIMIT).then(
       (data) => alive && setLoaded({ key, data }),
-      (e: unknown) => alive && setLoaded({ key, error: errorText(e) }),
+      (e: unknown) => alive && setLoaded({ key, error: loadError(e) }),
     );
     return () => {
       alive = false;
@@ -114,8 +134,8 @@ function OnlineBoard({ challenge, period, reload, onRetry }: { challenge: Challe
   const current = loaded?.key === key ? loaded : null;
   const day = current?.data?.day ?? dayKey();
   const players = current?.data?.players;
-  const meta = [period === 'today' ? `Heute · ${formatDay(day)}` : 'Allzeit'];
-  if (players) meta.push(`${players.toLocaleString('de-DE')} Spieler`);
+  const meta = [periodText(t, period, day)];
+  if (players) meta.push(t.leaderboard.players(players));
 
   const toRow = (r: LeaderboardResponse['rows'][number]): BoardRow => ({
     key: r.entryId,
@@ -130,18 +150,18 @@ function OnlineBoard({ challenge, period, reload, onRetry }: { challenge: Challe
 
   let body: ReactNode;
   if (!current) {
-    body = <p className="muted">Lade …</p>;
+    body = <p className="muted">{t.leaderboard.loading}</p>;
   } else if (current.error != null) {
     body = (
       <div className="notice notice--error lb-error" role="alert">
-        <span>Rangliste nicht erreichbar: {current.error}</span>
+        <span>{t.leaderboard.loadError(errorText(t, current.error))}</span>
         <button type="button" className="btn btn--small" onClick={onRetry}>
-          Erneut versuchen
+          {t.leaderboard.retry}
         </button>
       </div>
     );
   } else if (current.data.rows.length === 0) {
-    body = <EmptyBoard challenge={challenge}>Noch keine Einträge – sei der Erste!</EmptyBoard>;
+    body = <EmptyBoard challenge={challenge}>{t.leaderboard.emptyOnline}</EmptyBoard>;
   } else {
     const { rows, mine } = current.data;
     const outside = mine && !rows.some((r) => r.me) ? toRow(mine) : null;
@@ -160,6 +180,7 @@ function OnlineBoard({ challenge, period, reload, onRetry }: { challenge: Challe
 
 /** Runs dieses Geräts (lokale Historie) – bester Run je Spielername. */
 function LocalBoard({ challenge, period, me }: { challenge: ChallengeKey; period: Period; me: string }) {
+  const t = useT();
   const key = `${challenge}:${period}`;
   const [loaded, setLoaded] = useState<Loaded<LeaderboardEntry[]> | null>(null);
 
@@ -167,7 +188,7 @@ function LocalBoard({ challenge, period, me }: { challenge: ChallengeKey; period
     let alive = true;
     leaderboard.top(challenge, period, LIMIT).then(
       (data) => alive && setLoaded({ key, data }),
-      (e: unknown) => alive && setLoaded({ key, error: errorText(e) }),
+      (e: unknown) => alive && setLoaded({ key, error: loadError(e) }),
     );
     return () => {
       alive = false;
@@ -179,13 +200,13 @@ function LocalBoard({ challenge, period, me }: { challenge: ChallengeKey; period
 
   let body: ReactNode;
   if (!current) {
-    body = <p className="muted">Lade …</p>;
+    body = <p className="muted">{t.leaderboard.loading}</p>;
   } else if (current.error != null) {
-    body = <p className="notice notice--error">Runs dieses Geräts nicht lesbar: {current.error}</p>;
+    body = <p className="notice notice--error">{t.leaderboard.localError(errorText(t, current.error))}</p>;
   } else if (current.data.length === 0) {
     body = (
       <EmptyBoard challenge={challenge}>
-        {period === 'today' ? 'Heute noch keine Runs auf diesem Gerät.' : 'Noch keine Runs auf diesem Gerät.'}
+        {period === 'today' ? t.leaderboard.emptyLocalToday : t.leaderboard.emptyLocal}
       </EmptyBoard>
     );
   } else {
@@ -206,9 +227,7 @@ function LocalBoard({ challenge, period, me }: { challenge: ChallengeKey; period
 
   return (
     <>
-      <p className="lb-meta">
-        {period === 'today' ? `Heute · ${formatDay(dayKey())}` : 'Allzeit'} · nur dieses Gerät, auch ungewertete Runs
-      </p>
+      <p className="lb-meta">{t.leaderboard.localMeta(periodText(t, period, dayKey()))}</p>
       {body}
     </>
   );
@@ -219,6 +238,7 @@ function LocalBoard({ challenge, period, me }: { challenge: ChallengeKey; period
  * Deep-Links: /rangliste?c=<challenge>&p=<today|all>
  */
 export function Leaderboard() {
+  const t = useT();
   const toast = useToast();
   const apiOnline = useApiOnline();
   const [params, setParams] = useSearchParams();
@@ -253,13 +273,13 @@ export function Leaderboard() {
       setName(clean);
       setSavedName(clean);
       if (res.online) {
-        toast('Name gespeichert – auch online aktualisiert');
+        toast(t.leaderboard.nameSavedOnline);
         setReload((r) => r + 1);
       } else {
-        toast(apiOnline ? 'Name gespeichert – online gerade nicht möglich' : 'Name gespeichert');
+        toast(apiOnline ? t.leaderboard.nameSavedNotOnline : t.leaderboard.nameSaved);
       }
     } catch {
-      toast('Name konnte nicht gespeichert werden');
+      toast(t.leaderboard.nameSaveFailed);
     } finally {
       setSaving(false);
     }
@@ -270,51 +290,42 @@ export function Leaderboard() {
     notice = (
       <p className="runnet runnet--checking" role="status">
         <span className="runnet__dot" aria-hidden="true" />
-        Verbindung zur Online-Rangliste wird geprüft …
+        {t.leaderboard.checking}
       </p>
     );
   } else if (!apiOnline) {
-    notice = <p className="notice">Server nicht erreichbar – du siehst die Runs dieses Geräts.</p>;
+    notice = <p className="notice">{t.leaderboard.serverDown}</p>;
   } else if (source === 'online') {
-    notice = (
-      <p className="notice">
-        Online-Rangliste – gewertet werden nur Runs, die online gestartet wurden. Dein Gerät ist dein Profil, ganz ohne
-        Anmeldung.
-      </p>
-    );
+    notice = <p className="notice">{t.leaderboard.noticeOnline}</p>;
   } else {
-    notice = (
-      <p className="notice">
-        Runs dieses Geräts – auch offline gespielte, die nicht in die Online-Rangliste kommen.
-      </p>
-    );
+    notice = <p className="notice">{t.leaderboard.noticeLocal}</p>;
   }
 
   return (
     <div className="page leaderboard">
       <header className="page-head">
-        <h1 className="page-title">Rangliste</h1>
-        <p className="page-lead">Pro Spieler zählt der beste Run – sortiert nach Punkten, dann Team-Score.</p>
+        <h1 className="page-title">{t.leaderboard.title}</h1>
+        <p className="page-lead">{t.leaderboard.lead}</p>
       </header>
 
       <div className="lb-top">
         {notice}
         {apiOnline && (
           <Segmented
-            label="Quelle"
+            label={t.leaderboard.sourceLabel}
             hideLabel
             value={source}
             onChange={setSource}
             options={[
-              { value: 'online', label: 'Online' },
-              { value: 'local', label: 'Dieses Gerät' },
+              { value: 'online', label: t.leaderboard.sourceOnline },
+              { value: 'local', label: t.leaderboard.sourceLocal },
             ]}
           />
         )}
       </div>
 
       <div className="leaderboard__controls">
-        <div className="tabs-inline" role="tablist" aria-label="Challenge">
+        <div className="tabs-inline" role="tablist" aria-label={t.leaderboard.challengeTabs}>
           {CHALLENGES.map((c) => (
             <button
               key={c}
@@ -324,25 +335,25 @@ export function Leaderboard() {
               className={`tab-inline ${challenge === c ? 'is-active' : ''}`}
               onClick={() => select(c, defaultPeriod(c))}
             >
-              {CHALLENGE_LABEL[c]}
+              {t.game.challenge[c]}
             </button>
           ))}
         </div>
         <Segmented
-          label="Zeitraum"
+          label={t.leaderboard.periodLabel}
           hideLabel
           value={period}
           onChange={(p) => select(challenge, p)}
           options={[
-            { value: 'today', label: 'Heute' },
-            { value: 'all', label: 'Allzeit' },
+            { value: 'today', label: t.leaderboard.today },
+            { value: 'all', label: t.leaderboard.allTime },
           ]}
         />
       </div>
 
-      <section className="card" role="tabpanel" aria-label={CHALLENGE_LABEL[challenge]}>
+      <section className="card" role="tabpanel" aria-label={t.game.challenge[challenge]}>
         {apiOnline == null ? (
-          <p className="muted">Lade …</p>
+          <p className="muted">{t.leaderboard.loading}</p>
         ) : online ? (
           <OnlineBoard
             challenge={challenge}
@@ -363,19 +374,15 @@ export function Leaderboard() {
         }}
       >
         <label className="field__label" htmlFor="lb-name">
-          Dein Name auf der Rangliste
+          {t.leaderboard.nameLabel}
         </label>
         <div className="namefield__row">
           <input id="lb-name" className="input" maxLength={24} value={name} onChange={(e) => setName(e.target.value)} />
           <button type="submit" className="btn" disabled={saving} aria-busy={saving}>
-            Speichern
+            {t.leaderboard.save}
           </button>
         </div>
-        <p className="muted small lb-namehint">
-          {apiOnline
-            ? 'Gilt online für alle Runs dieses Geräts und lokal für neue Runs.'
-            : 'Gilt für neue Runs auf diesem Gerät.'}
-        </p>
+        <p className="muted small lb-namehint">{apiOnline ? t.leaderboard.nameHintOnline : t.leaderboard.nameHintLocal}</p>
       </form>
     </div>
   );
