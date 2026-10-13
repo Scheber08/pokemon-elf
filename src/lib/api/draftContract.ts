@@ -37,7 +37,7 @@ export const DRAFT_LIMITS = {
   /** Vorlauf bis zum ersten Spieltag der gemeinsamen Saison – Zeit, sich die fertigen Kader anzusehen */
   seasonLeadMs: 30_000,
   /** Dauer eines Spieltags im gemeinsamen Ticker */
-  seasonStepMs: 4000,
+  seasonStepMs: 8000,
   /** So lange bleibt eine Liga erhalten (danach wird sie gelöscht) */
   retentionDays: 14,
   /** Andere Mitglieder dürfen für ein Team auto-picken, das so lange offline ist (ms) */
