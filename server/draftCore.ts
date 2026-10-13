@@ -47,6 +47,7 @@ import {
   lobbyRegionOf,
   mayAutoPick,
   poolHasLegends,
+  rematchTemplate,
   removeTeam,
   setOnline,
   setOrder,
@@ -65,7 +66,7 @@ import type { Scale } from '../src/lib/fit';
 import type { FormationId, Pokemon, TypeKey } from '../src/types';
 import { authenticateDevice, HOUR_MS, normalizeIp } from './auth';
 import { randomHex, sha256Hex, timingSafeEqual } from './crypto';
-import type { CreateRoomInput, CreateRoomResult, Db, Env } from './env';
+import type { CreateRoomInput, CreateRoomResult, Db, Env, RematchTemplateResult } from './env';
 import { ApiError } from './http';
 import { ensureSchema } from './schema';
 import { cleanText, hasVisible, parseDeviceAuth } from './validate';
@@ -760,6 +761,41 @@ export class DraftRoomCore {
         if (err instanceof DraftError) return { ok: false, code: err.code, message: err.message };
         throw err;
       }
+    });
+  }
+
+  /** Revanche: Vorlage aus dieser fertigen Liga (RPC von POST /api/drafts/:code/rematch) – oder die schon angelegte. */
+  rematchTemplate(deviceId: string): Promise<RematchTemplateResult> {
+    return this.exclusive(async () => {
+      const rec = await this.load();
+      if (!rec) return { ok: false, code: 'not_found', message: 'Diese Liga gibt es nicht (mehr)' };
+      if (rec.state.rematch) return { ok: true, existing: rec.state.rematch };
+      try {
+        return { ok: true, template: rematchTemplate(rec.state, deviceId, this.ports.now()) };
+      } catch (err) {
+        if (err instanceof DraftError) return { ok: false, code: err.code, message: err.message };
+        throw err;
+      }
+    });
+  }
+
+  /** Revanche: legt die Liga aus der Vorlage an (RPC – Code und Seed hat der Server vergeben). */
+  createFrom(state: DraftState): Promise<CreateRoomResult> {
+    return this.exclusive(async () => {
+      if (await this.load()) return { ok: false, code: 'exists', message: 'Diese Liga gibt es schon' };
+      await this.commit(null, state, this.ports.now());
+      return { ok: true };
+    });
+  }
+
+  /** Revanche merken und verteilen – der erste Code gilt (gleichzeitige Anfragen). null ohne Liga. */
+  setRematch(code: string): Promise<string | null> {
+    return this.exclusive(async () => {
+      const rec = await this.load();
+      if (!rec) return null;
+      if (rec.state.rematch) return rec.state.rematch;
+      await this.commit(rec.state, { ...rec.state, rematch: code }, this.ports.now());
+      return code;
     });
   }
 

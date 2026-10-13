@@ -244,6 +244,7 @@ const online = {
       leagueFull: 'Die Liga ist voll',
       notJoinedYet: 'Du bist in dieser Liga noch nicht dabei',
       notJoined: 'Du bist in dieser Liga nicht dabei',
+      notDone: 'Die Liga ist noch nicht fertig',
       cannotRemoveHost: 'Der Host kann sich nicht selbst entfernen',
       noTeam: 'Dieses Team gibt es nicht',
       badOrder: 'Die Reihenfolge muss jedes Team genau einmal enthalten',

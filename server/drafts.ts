@@ -27,6 +27,7 @@ import {
   DRAFT_CREATES_PER_IP,
   getLobby,
   insertLobby,
+  lobbyFields,
   lobbyPoolFields,
   noteLobbyByIp,
   publicLobbies,
@@ -110,18 +111,13 @@ function namespace(env: Env): DraftNamespace {
   return env.DRAFTS;
 }
 
-/** POST /api/drafts – neue Liga (Code + Lobby-Zeile, dann der Raum im Durable Object). */
-export async function createDraftEndpoint(request: Request, env: Env): Promise<Response> {
-  const ns = namespace(env);
-  const input = parseCreateDraft(await readJsonBody(request));
-  const now = Date.now();
-  await authenticate(request, env, input.auth, now);
+/** Limits neuer Ligen (pro Gerät und pro IP) – gelten auch für Revanchen. */
+async function checkCreateLimits(request: Request, env: Env, deviceId: string, now: number): Promise<void> {
   const db = env.DB;
-
   // Geschlossene Lobbys zählen nur eine Stunde fürs Limit – danach weg damit (ebenso alte IP-Zähler).
   await purgeClosedLobbies(db, now - HOUR_MS);
   await purgeLobbyIpCounters(db, now);
-  if ((await countLobbiesByHost(db, input.auth.deviceId, now - HOUR_MS)) >= DRAFT_LIMITS.createsPerHour) {
+  if ((await countLobbiesByHost(db, deviceId, now - HOUR_MS)) >= DRAFT_LIMITS.createsPerHour) {
     throw rateLimited('Zu viele neue Ligen in kurzer Zeit – bitte später erneut versuchen');
   }
   // Geräte kosten nichts – daher zusätzlich pro IP (gesalzener Hash, nur für die laufende Stunde).
@@ -130,6 +126,25 @@ export async function createDraftEndpoint(request: Request, env: Env): Promise<R
   if (ipHash && (await noteLobbyByIp(db, ipHash, now)) > DRAFT_CREATES_PER_IP) {
     throw rateLimited('Zu viele neue Ligen von dieser Verbindung – bitte später erneut versuchen');
   }
+}
+
+/** Freien Code finden und die Lobby-Zeile anlegen. */
+async function reserveCode(db: Db, deviceId: string, fields: LobbyFields, now: number): Promise<string> {
+  for (let i = 0; i < CODE_ATTEMPTS; i++) {
+    const candidate = randomCode();
+    if (await insertLobby(db, candidate, deviceId, fields, now)) return candidate;
+  }
+  throw new Error('Kein freier Liga-Code gefunden');
+}
+
+/** POST /api/drafts – neue Liga (Code + Lobby-Zeile, dann der Raum im Durable Object). */
+export async function createDraftEndpoint(request: Request, env: Env): Promise<Response> {
+  const ns = namespace(env);
+  const input = parseCreateDraft(await readJsonBody(request));
+  const now = Date.now();
+  await authenticate(request, env, input.auth, now);
+  const db = env.DB;
+  await checkCreateLimits(request, env, input.auth.deviceId, now);
 
   const s = input.settings;
   const fields: LobbyFields = {
@@ -143,12 +158,7 @@ export async function createDraftEndpoint(request: Request, env: Env): Promise<R
     visibility: s.visibility,
     phase: 'lobby',
   };
-  let code: string | null = null;
-  for (let i = 0; i < CODE_ATTEMPTS && !code; i++) {
-    const candidate = randomCode();
-    if (await insertLobby(db, candidate, input.auth.deviceId, fields, now)) code = candidate;
-  }
-  if (!code) throw new Error('Kein freier Liga-Code gefunden');
+  const code = await reserveCode(db, input.auth.deviceId, fields, now);
 
   let result: CreateRoomResult;
   try {
@@ -172,6 +182,46 @@ export async function createDraftEndpoint(request: Request, env: Env): Promise<R
   }
   const body: CreateDraftResponse = { code };
   return json(body);
+}
+
+/**
+ * POST /api/drafts/:code/rematch – Revanche einer fertigen Liga: gleiche Einstellungen und Teams,
+ * neuer Code und Seed. Gibt es schon eine, kommt deren Code (auch bei gleichzeitigen Anfragen
+ * gilt nur die erste). Nur Mitglieder; zählt wie eine neue Liga zum Limit.
+ */
+export async function rematchEndpoint(request: Request, env: Env, rawCode: string): Promise<Response> {
+  const ns = namespace(env);
+  const code = parseCode(rawCode);
+  const auth = parseDeviceAuth(await readJsonBody(request));
+  const now = Date.now();
+  await authenticate(request, env, auth, now);
+  await requireLobby(env, code);
+  const old = roomOf(ns, code);
+  const tpl = await old.rematchTemplate(auth.deviceId);
+  if (!tpl.ok) {
+    if (tpl.code === 'not_found') throw notFound();
+    throw new ApiError(409, 'bad_request', tpl.message);
+  }
+  if ('existing' in tpl) return json({ code: tpl.existing } satisfies CreateDraftResponse);
+
+  await checkCreateLimits(request, env, auth.deviceId, now);
+  const db = env.DB;
+  const next = await reserveCode(db, auth.deviceId, lobbyFields(tpl.template), now);
+  let result: CreateRoomResult;
+  try {
+    result = await roomOf(ns, next).createFrom({ ...tpl.template, code: next, seed: randomHex(32) });
+  } catch (err) {
+    await deleteLobby(db, next).catch(() => undefined);
+    throw err;
+  }
+  if (!result.ok) {
+    await deleteLobby(db, next).catch(() => undefined);
+    throw new Error(`Revanche ${next}: ${result.message}`);
+  }
+  const winner = await old.setRematch(next);
+  // Eine gleichzeitige Anfrage war schneller: deren Liga gilt, unsere Zeile verschwindet wieder
+  if (winner !== next) await deleteLobby(db, next).catch(() => undefined);
+  return json({ code: winner ?? next } satisfies CreateDraftResponse);
 }
 
 const lastPurge = new WeakMap<Db, number>();
@@ -248,12 +298,15 @@ export interface DraftRoute {
 }
 
 const SOCKET_PATH_RE = /^\/api\/drafts\/([^/]+)\/ws$/;
+const REMATCH_PATH_RE = /^\/api\/drafts\/([^/]+)\/rematch$/;
 const CODE_PATH_RE = /^\/api\/drafts\/([^/]+)$/;
 
 /** Route unter /api/drafts (Pfad ohne abschließenden Slash) – oder null. */
 export function draftRoute(path: string): DraftRoute | null {
   if (path === '/api/drafts') return { method: 'POST', run: createDraftEndpoint };
   if (path === '/api/drafts/public') return { method: 'GET', run: (_req, env) => publicDraftsEndpoint(env) };
+  const rematch = REMATCH_PATH_RE.exec(path);
+  if (rematch) return { method: 'POST', run: (req, env) => rematchEndpoint(req, env, rematch[1]) };
   const ws = SOCKET_PATH_RE.exec(path);
   if (ws) return { method: 'GET', run: (req, env) => draftSocketEndpoint(req, env, ws[1]) };
   const snap = CODE_PATH_RE.exec(path);

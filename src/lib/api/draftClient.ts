@@ -192,6 +192,14 @@ export function createDraft(req: Omit<CreateDraftRequest, keyof DeviceAuth>): Pr
   });
 }
 
+/** Revanche einer fertigen Liga (nur Mitglieder) – liefert den Code der neuen bzw. schon angelegten Liga. */
+export function requestRematch(code: string): Promise<CreateDraftResponse> {
+  return draftRequest<CreateDraftResponse>(`/drafts/${encodeURIComponent(code)}/rematch`, {
+    method: 'POST',
+    body: JSON.stringify(getDevice()),
+  });
+}
+
 export function fetchPublicLobbies(): Promise<PublicLobbiesResponse> {
   return draftRequest<PublicLobbiesResponse>('/drafts/public');
 }

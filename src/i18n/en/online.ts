@@ -225,6 +225,7 @@ const online: Messages['online'] = {
       leagueFull: 'The league is full',
       notJoinedYet: 'You haven’t joined this league yet',
       notJoined: 'You’re not in this league',
+      notDone: 'The league isn’t finished yet',
       cannotRemoveHost: 'The host can’t remove themselves',
       noTeam: 'That team doesn’t exist',
       badOrder: 'The order must contain every team exactly once',

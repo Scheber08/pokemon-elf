@@ -6,9 +6,10 @@
  */
 import { DurableObject } from 'cloudflare:workers';
 import type { DraftSnapshot } from '../src/lib/api/draftContract';
+import type { DraftState } from '../src/lib/draftEngine';
 import { positionFit } from '../src/lib/fit';
 import { DraftRoomCore, type ConnAttachment, type DraftConn, type StoredRoom } from './draftCore';
-import type { CreateRoomInput, CreateRoomResult, Env } from './env';
+import type { CreateRoomInput, CreateRoomResult, Env, RematchTemplateResult } from './env';
 import { DRAFT_LIST, draftScale } from './game';
 import { ApiError, errorResponse } from './http';
 
@@ -112,5 +113,17 @@ export class DraftRoom extends DurableObject<Env> {
 
   async snapshot(): Promise<DraftSnapshot | null> {
     return this.core.snapshot();
+  }
+
+  async rematchTemplate(deviceId: string): Promise<RematchTemplateResult> {
+    return this.core.rematchTemplate(deviceId);
+  }
+
+  async createFrom(state: DraftState): Promise<CreateRoomResult> {
+    return this.core.createFrom(state);
+  }
+
+  async setRematch(code: string): Promise<string | null> {
+    return this.core.setRematch(code);
   }
 }

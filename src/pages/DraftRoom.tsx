@@ -66,9 +66,16 @@ function SoundToggle() {
   );
 }
 
-/** /draft/:code – Lobby, Live-Draft, gemeinsame Saison und Ergebnis einer Online-Liga. */
+/**
+ * /draft/:code – Lobby, Live-Draft, gemeinsame Saison und Ergebnis einer Online-Liga. Ein
+ * anderer Code (z. B. „Zur Revanche") ist ein neuer Raum mit eigener Verbindung.
+ */
 export function DraftRoom() {
   const { code: raw = '' } = useParams();
+  return <DraftRoomPage key={normalizeDraftCode(raw)} raw={raw} />;
+}
+
+function DraftRoomPage({ raw }: { raw: string }) {
   const navigate = useNavigate();
   const t = useT();
   const code = normalizeDraftCode(raw);

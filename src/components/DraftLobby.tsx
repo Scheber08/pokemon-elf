@@ -18,6 +18,7 @@ import {
 } from '../state/useDraftRoom';
 import { DraftTeamTags } from './DraftBoard';
 import { DraftSettingsForm, DraftSettingsSummary, DraftTeamFields } from './DraftSettingsForm';
+import { EternalTable } from './EternalTable';
 import '../styles/draft.css';
 
 /** Liga-Code groß + Link kopieren / Teilen. */
@@ -347,6 +348,7 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
             )}
           </section>
         )}
+        {!!s.history?.length && <EternalTable entries={s.history} youTeamId={me?.id ?? null} title={t.draft.eternal.soFar} />}
       </div>
     </div>
   );

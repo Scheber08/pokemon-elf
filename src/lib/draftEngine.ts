@@ -33,6 +33,8 @@ import {
   DRAFT_ROLL_MODES,
   LOBBY_REGION_MANY,
   type DraftActiveRoll,
+  type DraftHistoryEntry,
+  type DraftHistoryRow,
   type DraftPhase,
   type DraftPickLog,
   type DraftRerollCount,
@@ -88,6 +90,10 @@ export interface DraftState {
   roundRoll?: DraftRoll | null;
   /** Genutzte Rerolls je Team-ID (fehlt ein Team: noch keine) */
   rerollsUsed?: Record<string, DraftRerollCount>;
+  /** Frühere Ligen der Gruppe (Revanche-Kette), älteste zuerst */
+  history?: DraftHistoryEntry[];
+  /** Code der Revanche, sobald es eine gibt */
+  rematch?: string | null;
 }
 
 /** Lesende Sicht – passt auf den Server-Zustand und auf Client-Schnappschüsse. */
@@ -1383,5 +1389,105 @@ export function snapshotOf(state: DraftState, you: string | null, now: number): 
     roll: drafting && settings.roll !== 'off' ? (state.roll ?? null) : null,
     ...(settings.roll === 'round' ? { roundRoll: drafting ? (state.roundRoll ?? null) : null } : {}),
     rerollsUsed: state.rerollsUsed ?? {},
+    ...(state.history?.length ? { history: state.history } : {}),
+    ...(state.rematch ? { rematch: state.rematch } : {}),
   };
+}
+
+// ---------------------------------------------------------------- Revanche & ewige Tabelle
+
+/** Abschluss einer fertigen Liga für den Verlauf der Gruppe – null ohne gespeichertes Ergebnis. */
+export function historyEntryOf(
+  state: Pick<DraftState, 'code' | 'phase' | 'settings' | 'teams' | 'league' | 'picks' | 'createdAt'>,
+): DraftHistoryEntry | null {
+  if (state.phase !== 'done' || !state.league) return null;
+  const rows = state.league.table.flatMap((r, i): DraftHistoryRow[] => {
+    const team = state.teams[r.team];
+    if (!team) return [];
+    return [{ teamId: team.id, name: team.name, cpu: team.cpu, rank: i + 1, played: r.played, w: r.w, d: r.d, l: r.l, gf: r.gf, ga: r.ga, pts: r.pts }];
+  });
+  const last = state.picks[state.picks.length - 1];
+  return { code: state.code, name: state.settings.name, finishedAt: last?.at ?? state.createdAt, rows };
+}
+
+/**
+ * Revanche einer fertigen Liga (ohne Code und Seed – die vergibt der Server): gleiche
+ * Einstellungen, gleiche Teams mit gleichen IDs (die Menschen sind sofort wieder Mitglied, der
+ * Host bleibt Host), leere Kader, Lobby. Der Verlauf bekommt diese Liga dazu. Nur Mitglieder
+ * dürfen sie anlegen. Fehler: not_done, not_joined.
+ */
+export function rematchTemplate(state: DraftState, deviceId: string, now: number): Omit<DraftState, 'code' | 'seed'> {
+  if (state.phase !== 'done') fail('not_done', 'Die Liga ist noch nicht fertig');
+  if (!teamOfDevice(state, deviceId)) fail('not_joined', 'Du bist in dieser Liga nicht dabei');
+  const entry = historyEntryOf(state) ?? fail('not_done', 'Die Liga ist noch nicht fertig');
+  return {
+    phase: 'lobby',
+    settings: withoutLegacy(upgradeSettings(state.settings)),
+    // Menschen gelten als offline, bis sie die neue Liga öffnen
+    teams: state.teams.map((t) => ({ ...makeTeam(t.id, t.name, t.formation, t.cpu), ...(t.cpu ? {} : { offlineSince: now }) })),
+    owners: { ...state.owners },
+    hostTeamId: state.hostTeamId,
+    pickIndex: 0,
+    deadline: null,
+    picks: [],
+    season: null,
+    createdAt: now,
+    ...(state.banned?.length ? { banned: [...state.banned] } : {}),
+    history: [...(state.history ?? []), entry].slice(-DRAFT_LIMITS.historyMax),
+  };
+}
+
+/** Zeile der ewigen Tabelle (je Team-ID über alle Ligen der Gruppe) */
+export interface EternalRow {
+  teamId: string;
+  /** Zuletzt verwendeter Name */
+  name: string;
+  cpu: boolean;
+  leagues: number;
+  titles: number;
+  played: number;
+  w: number;
+  d: number;
+  l: number;
+  gf: number;
+  ga: number;
+  pts: number;
+}
+
+/**
+ * Ewige Tabelle: alle Ligen des Verlaufs (plus optional die aktuelle, wenn sie fertig ist)
+ * zusammengezählt – nach Punkten, Tordifferenz, Toren, Titeln.
+ */
+export function eternalTable(entries: readonly DraftHistoryEntry[]): EternalRow[] {
+  const rows = new Map<string, EternalRow>();
+  for (const entry of entries) {
+    for (const r of entry.rows) {
+      const row = rows.get(r.teamId) ?? {
+        teamId: r.teamId, name: r.name, cpu: r.cpu, leagues: 0, titles: 0, played: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0,
+      };
+      row.name = r.name;
+      row.cpu = r.cpu;
+      row.leagues++;
+      if (r.rank === 1) row.titles++;
+      row.played += r.played;
+      row.w += r.w;
+      row.d += r.d;
+      row.l += r.l;
+      row.gf += r.gf;
+      row.ga += r.ga;
+      row.pts += r.pts;
+      rows.set(r.teamId, row);
+    }
+  }
+  return [...rows.values()].sort(
+    (a, b) => b.pts - a.pts || b.gf - b.ga - (a.gf - a.ga) || b.gf - a.gf || b.titles - a.titles || a.name.localeCompare(b.name),
+  );
+}
+
+/** Verlauf samt der aktuellen Liga, wenn sie fertig ist (Grundlage der ewigen Tabelle). */
+export function groupEntries(
+  state: Pick<DraftState, 'code' | 'phase' | 'settings' | 'teams' | 'league' | 'picks' | 'createdAt' | 'history'>,
+): DraftHistoryEntry[] {
+  const current = historyEntryOf(state);
+  return [...(state.history ?? []), ...(current ? [current] : [])];
 }

@@ -5,6 +5,7 @@
  *   GET  /api/drafts/public                             → PublicLobbiesResponse
  *   GET  /api/drafts/:code                              → DraftSnapshot (you = null)
  *   GET  /api/drafts/:code/ws      WebSocket (Upgrade)  → DraftServerMessage-Strom
+ *   POST /api/drafts/:code/rematch DeviceAuth           → CreateDraftResponse (Revanche)
  *
  * WebSocket: Der Client schickt zuerst { type: 'hello', deviceId, deviceSecret }.
  * Danach bekommt er bei jeder Änderung { type: 'state', state } mit dem vollen
@@ -17,6 +18,10 @@
  *       → done (Saison-Seed + Startzeit stehen fest; der Server berechnet das Ergebnis
  *         einmal und schickt es mit (league) – alle Clients spielen dieselbe Saison
  *         synchron als Ticker ab).
+ *
+ * Revanche: Ein Mitglied einer fertigen Liga legt eine neue an – gleiche Einstellungen, gleiche
+ * Teams (Menschen sind sofort wieder dabei), neuer Seed. Die alte Liga zeigt auf sie (rematch),
+ * die neue trägt die Ergebnisse aller Vorgänger mit (history) – daraus die ewige Tabelle.
  */
 import { TYPE_KEYS } from '../../config/pokemonTypes';
 import type { FormationId, RegionFilter, TypeKey } from '../../types';
@@ -58,6 +63,8 @@ export const DRAFT_LIMITS = {
   maxMegas: [1, 2, 3] as const,
   /** Höchstens so viele Typ- bzw. Regions-Rerolls pro Team und Draft */
   rerollsMax: 3,
+  /** Höchstens so viele frühere Ligen im Verlauf einer Gruppe (ewige Tabelle) */
+  historyMax: 30,
 } as const;
 
 export type PickSeconds = (typeof DRAFT_LIMITS.pickSeconds)[number];
@@ -270,6 +277,36 @@ export interface DraftSnapshot {
   roundRoll?: DraftRoll | null;
   /** Genutzte Rerolls je Team-ID (fehlt ein Team: noch keine) */
   rerollsUsed?: Record<string, DraftRerollCount>;
+  /** Frühere Ligen der Gruppe, älteste zuerst (fehlt bzw. leer: keine) */
+  history?: DraftHistoryEntry[];
+  /** Code der Revanche, sobald es eine gibt */
+  rematch?: string | null;
+}
+
+/** Abschluss eines Teams in einer früheren Liga der Gruppe */
+export interface DraftHistoryRow {
+  /** Team-ID – bleibt bei Revanchen gleich (Schlüssel der ewigen Tabelle) */
+  teamId: string;
+  name: string;
+  cpu: boolean;
+  /** Platz (1 = Meister) */
+  rank: number;
+  played: number;
+  w: number;
+  d: number;
+  l: number;
+  gf: number;
+  ga: number;
+  pts: number;
+}
+
+/** Eine frühere Liga der Gruppe (Revanche-Kette) */
+export interface DraftHistoryEntry {
+  code: string;
+  name: string;
+  /** Ende des Drafts (ms) */
+  finishedAt: number;
+  rows: DraftHistoryRow[];
 }
 
 export interface CreateDraftRequest extends DeviceAuth {

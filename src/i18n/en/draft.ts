@@ -239,7 +239,23 @@ const draft: Messages['draft'] = {
   season: {
     preparing: 'Preparing the season …',
     newLeague: 'New league',
+    rematch: 'Rematch',
+    rematchBusy: 'Setting up the rematch …',
+    rematchTitle: 'New league with the same teams and settings – everyone is straight back in',
+    toRematch: 'Go to rematch',
+    rematchFailed: 'The rematch couldn’t be set up',
   },
+  eternal: {
+    title: 'All-time table',
+    leagues: (n) => (n === 1 ? '1 league' : `${n} leagues`),
+    note: 'All leagues of this group added up – every rematch counts.',
+    soFar: 'So far in this group',
+    leaguesCol: 'L',
+    leaguesTitle: 'Leagues',
+    titlesCol: '★',
+    titlesTitle: 'Titles',
+  },
+
   ticker: {
     startsSoon: 'The shared season is about to start.',
     fullTime: 'Full time!',

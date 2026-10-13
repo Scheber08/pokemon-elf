@@ -1,13 +1,17 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useT } from '../i18n';
-import { draftSeason } from '../lib/draftEngine';
+import { ApiRequestError } from '../lib/api/client';
+import { requestRematch } from '../lib/api/draftClient';
+import { draftSeason, groupEntries } from '../lib/draftEngine';
 import { leagueRatings, resolveLeague } from '../lib/leagueTimeline';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
-import { teamLabel, type DraftRoom } from '../state/useDraftRoom';
+import { useToast } from '../state/Toast';
+import { draftErrorText, teamLabel, type DraftRoom } from '../state/useDraftRoom';
 import { DraftResults } from './DraftResults';
 import { DraftSquads } from './DraftSquads';
+import { EternalTable } from './EternalTable';
 import { LeagueTicker } from './LeagueTicker';
 import '../styles/draft.css';
 
@@ -46,6 +50,21 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
   const endsAt = season ? season.startsAt + matchdays * season.stepMs : 0;
   // Einmal beim Öffnen entscheiden; danach beendet der Ticker selbst (onDone)
   const [ticker, setTicker] = useState(() => !!season && Date.now() + room.clockOffset < endsAt);
+  // Ewige Tabelle: frühere Ligen der Gruppe plus diese
+  const entries = useMemo(() => groupEntries(s), [s.history, s.league, s.code]);
+  const navigate = useNavigate();
+  const toast = useToast();
+  const [rematching, setRematching] = useState(false);
+  const rematch = async () => {
+    setRematching(true);
+    try {
+      const { code } = await requestRematch(s.code);
+      navigate(`/draft/${code}`);
+    } catch (err) {
+      setRematching(false);
+      toast(err instanceof ApiRequestError ? draftErrorText(err.message, err.code) || t.draft.season.rematchFailed : t.draft.season.rematchFailed);
+    }
+  };
 
   if (!league || !season) {
     return (
@@ -92,7 +111,20 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           leagueName={s.settings.name}
         />
       )}
+      {!ticker && entries.length > 1 && <EternalTable entries={entries} youTeamId={room.me?.id ?? null} />}
       <div className="actionbar">
+        {s.rematch ? (
+          <Link className="btn btn--primary" to={`/draft/${s.rematch}`}>
+            {t.draft.season.toRematch}
+          </Link>
+        ) : (
+          room.me &&
+          room.live && (
+            <button type="button" className="btn btn--primary" disabled={rematching} title={t.draft.season.rematchTitle} onClick={rematch}>
+              {rematching ? t.draft.season.rematchBusy : t.draft.season.rematch}
+            </button>
+          )
+        )}
         <Link className="btn" to="/draft">
           {t.draft.season.newLeague}
         </Link>

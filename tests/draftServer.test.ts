@@ -335,6 +335,9 @@ describe('Online-Draft: HTTP-Endpunkte', () => {
       },
       snapshot: async () => null,
       fetch: async () => new Response(null, { status: 500 }),
+      rematchTemplate: async () => ({ ok: false, code: 'not_found', message: '' }),
+      createFrom: async () => ({ ok: true }),
+      setRematch: async () => null,
     });
     const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const res = await call<ApiErrorBody>('POST', '/api/drafts', createBody(newDevice()), {}, { DB: db, DRAFTS: broken });

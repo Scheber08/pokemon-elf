@@ -256,6 +256,22 @@ const draft = {
   season: {
     preparing: 'Saison wird vorbereitet …',
     newLeague: 'Neue Liga',
+    rematch: 'Revanche',
+    rematchBusy: 'Revanche wird angelegt …',
+    rematchTitle: 'Neue Liga mit denselben Teams und Einstellungen – alle sind sofort wieder dabei',
+    toRematch: 'Zur Revanche',
+    rematchFailed: 'Die Revanche konnte nicht angelegt werden',
+  },
+  /** Ewige Tabelle einer Gruppe (Revanchen) */
+  eternal: {
+    title: 'Ewige Tabelle',
+    leagues: (n: number) => (n === 1 ? '1 Liga' : `${n} Ligen`),
+    note: 'Alle Ligen dieser Gruppe zusammengezählt – jede Revanche kommt dazu.',
+    soFar: 'Bisher in dieser Gruppe',
+    leaguesCol: 'L',
+    leaguesTitle: 'Ligen',
+    titlesCol: '★',
+    titlesTitle: 'Meistertitel',
   },
   ticker: {
     startsSoon: 'Die gemeinsame Saison beginnt gleich.',
