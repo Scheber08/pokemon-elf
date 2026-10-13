@@ -263,7 +263,11 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
             })}
           </ol>
           <p className="muted small">
-            {s.settings.order === 'random' ? t.online.orderRandom : t.online.orderHost}
+            {s.settings.order === 'random'
+              ? t.online.orderRandom
+              : s.settings.snake === false
+                ? t.online.orderHostFixed
+                : t.online.orderHost}
           </p>
           {isHost && (
             <button
@@ -337,7 +341,7 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
               <p className="hint">{blocker}</p>
             ) : (
               <p className="hint">
-                {t.online.startInfo(s.teams.length, s.settings.setPiece ? 12 : 11)}{' '}
+                {t.online.startInfo(s.teams.length, s.settings.setPiece ? 12 : 11, s.settings.snake !== false)}{' '}
                 {s.settings.pickSeconds ? t.online.startTimer(s.settings.pickSeconds) : t.online.startNoTimer}
               </p>
             )}

@@ -99,7 +99,49 @@ const draft = {
     leagueNamePlaceholder: 'z. B. Montagsliga',
     poolTooSmall: (teams: number) => `Pool zu klein für ${teams} Teams`,
     poolNote: (size: number, capacity: number) => `${size} Pokémon, reicht für bis zu ${capacity} Teams`,
-    legends: 'Legendäre',
+    /** Überschrift der Gruppe mit Teams, Reihenfolge, Zufallsmodus und Timer */
+    groupDraft: 'Draft',
+    /** Generationen (Mehrfachauswahl, Chips mit Regionsnamen) */
+    gens: 'Generationen',
+    allGens: 'Alle',
+    allGensTitle: 'Alle Generationen',
+    genTitle: (gen: number) => `Generation ${gen}`,
+    minOneGen: 'Mindestens eine Generation',
+    /** Typen (Mehrfachauswahl) */
+    types: 'Typen',
+    allTypes: 'Alle',
+    allTypesTitle: 'Alle Typen',
+    noTypes: 'Keine',
+    noTypesTitle: 'Neue Auswahl – Typen antippen, dann übernehmen',
+    minOneType: 'Mindestens ein Typ',
+    typesNote: 'Ein Pokémon braucht mindestens einen der gewählten Typen.',
+    pickTypes: 'Tippe die gewünschten Typen an und übernimm sie – bis dahin bleibt die bisherige Auswahl.',
+    /** Neue Typ-Auswahl nach „Keine" (noch nicht übernommen) */
+    typesDraft: (size: number, capacity: number) => `Neue Auswahl: ${size} Pokémon, reicht für bis zu ${capacity} Teams`,
+    applyTypes: 'Übernehmen',
+    cancelTypes: 'Abbrechen',
+    legendary: 'Legendäre',
+    mythical: 'Mysteriöse',
+    maxLegends: 'Legendäre pro Team',
+    unlimited: 'Unbegrenzt',
+    maxLegendsNote: 'Legendäre und Mysteriöse zusammen – der Standardschütze zählt mit.',
+    maxLegendsOff: 'Nur mit Legendären oder Mysteriösen im Pool.',
+    /** Zufallsmodus (wie die 34–0-Challenge) */
+    roll: 'Zufallsmodus',
+    rollPick: 'Pro Pick',
+    rollRound: 'Pro Runde',
+    rollOffNote: 'Freie Wahl aus dem ganzen Pool.',
+    rollPickNote: 'Jeder Pick bekommt einen eigenen Wurf aus Generation und Typ – gewählt wird ein passendes Pokémon.',
+    rollRoundNote: 'Ein Wurf pro Runde für alle Teams. Hat er für ein Team nichts Passendes mehr, würfelt es für diesen Pick neu.',
+    rerollsType: 'Typ-Rerolls',
+    rerollsRegion: 'Regions-Rerolls',
+    rerollsNote: 'Pro Team und Draft. Ein Reroll ändert nur den Wurf des eigenen Picks.',
+    /** Reroll-Art ohne Alternative im Pool (nur eine Generation bzw. ein Typ) */
+    rerollsTypeOff: 'Typ-Rerolls gibt es nur mit mehreren Typen.',
+    rerollsRegionOff: 'Regions-Rerolls gibt es nur mit mehreren Generationen.',
+    snake: 'Snake-Draft',
+    snakeNote: 'Jede zweite Runde rückwärts.',
+    fixedNote: 'Jede Runde dieselbe Reihenfolge.',
     setPiece: 'Standardschütze',
     setPieceRound: '12. Runde',
     tooManyTeams: 'Der Pool reicht nicht für so viele Teams',
@@ -122,8 +164,25 @@ const draft = {
   /** Kurzfassung der Einstellungen (Mitspieler, Lobby-Liste) */
   summary: {
     pool: (region: string) => `Pool: ${region}`,
-    withLegends: 'mit Legendären',
-    withoutLegends: 'ohne Legendäre',
+    /** Mehr als drei Generationen (aber nicht alle) */
+    gensCount: (n: number) => `${n} Generationen`,
+    /** Typen (nicht alle): Namen bzw. Anzahl */
+    types: (list: string) => `Typen: ${list}`,
+    typesCount: (n: number, total: number) => `${n} von ${total} Typen`,
+    legendsBoth: 'mit Legendären und Mysteriösen',
+    legendaryOnly: 'mit Legendären, ohne Mysteriöse',
+    mythicalOnly: 'mit Mysteriösen, ohne Legendäre',
+    withoutLegends: 'ohne Legendäre und Mysteriöse',
+    maxLegends: (n: number) => (n === 1 ? 'höchstens ein Legendäres pro Team' : `höchstens ${n} Legendäre pro Team`),
+    rollPick: 'Zufallsmodus: pro Pick',
+    rollRound: 'Zufallsmodus: pro Runde',
+    rerolls: (type: number, region: number) => `Rerolls: ${type}× Typ, ${region}× Region`,
+    /** Nur eine Reroll-Art nutzbar (die andere hat im Pool keine Alternative bzw. steht auf 0) */
+    rerollsTypeOnly: (n: number) => `Rerolls: ${n}× Typ`,
+    rerollsRegionOnly: (n: number) => `Rerolls: ${n}× Region`,
+    noRerolls: 'ohne Rerolls',
+    snake: 'Snake-Draft',
+    fixedOrder: 'jede Runde gleiche Reihenfolge',
     withSetPiece: 'mit Standardschütze',
     withoutSetPiece: 'ohne Standardschütze',
     maxTeams: (n: number) => `bis ${n} Teams`,
@@ -143,6 +202,11 @@ const draft = {
     offlineAria: 'offline',
     recentPicks: 'Letzte Picks',
     auto: ' (auto)',
+    /** Legendäre im Team bei einem Limit („★ 1/2") – Tooltip */
+    legendsTitle: (n: number, max: number) =>
+      `${n} von höchstens ${max === 1 ? 'einem Legendären/Mysteriösen' : `${max} Legendären/Mysteriösen`}`,
+    /** Wurf, unter dem ein Pick fiel (Verlauf) */
+    rollTitle: (region: string, type: string) => `Wurf: ${region} + ${type}`,
   },
 
   // ---------------------------------------------------------------- Ergebnis der Online-Liga

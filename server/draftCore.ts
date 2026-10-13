@@ -8,26 +8,34 @@
  * speichern → personalisierte Schnappschüsse an alle angemeldeten Sockets → Lobby-Zeile
  * in D1 abgleichen → Alarm neu stellen (CPU-Pick, Ablauf der Bedenkzeit, Gnadenfristen
  * für Host-Wechsel und Auto-Pick, Löschfrist). Die D1-Prüfung des hello läuft außerhalb
- * der Warteschlange – nur das Anmelden selbst reiht sich ein.
+ * der Warteschlange – nur das Anmelden selbst reiht sich ein. Gespeicherte Stände älterer
+ * Ligen (Einstellungen region/legends) bringt load() mit upgradeState in die aktuelle Form.
  *
  * Verbindungen: Wer sich nicht binnen DRAFT_HELLO_TIMEOUT_MS anmeldet, fliegt raus;
  * unangemeldete Verbindungen sind pro Raum und IP begrenzt (die älteste weicht), angemeldete
  * pro Gerät und Raum – Team-Besitzer verdrängen notfalls Zuschauer, nie umgekehrt.
  * Dazu die D1-Abfragen der Lobby-Tabelle (auch für die HTTP-Endpunkte in server/drafts.ts).
  */
+import { TYPE_KEYS } from '../src/config/pokemonTypes';
 import type { DeviceAuth } from '../src/lib/api/contract';
 import {
+  DRAFT_ALL_GENS,
   DRAFT_LIMITS,
+  DRAFT_REROLL_KINDS,
   type DraftClientMessage,
   type DraftPhase,
+  type DraftRerollKind,
   type DraftServerMessage,
   type DraftSettings,
+  type DraftSettingsPatch,
   type DraftSnapshot,
+  type LobbyRegion,
   type PickSeconds,
 } from '../src/lib/api/draftContract';
 import {
   addCpuTeam,
   applyPick,
+  applyReroll,
   autoPickChoice,
   autoPickOpensAt,
   createDraft,
@@ -36,7 +44,9 @@ import {
   hostTransferAt,
   joinDraft,
   leaveDraft,
+  lobbyRegionOf,
   mayAutoPick,
+  poolHasLegends,
   removeTeam,
   setOnline,
   setOrder,
@@ -46,11 +56,13 @@ import {
   transferHost,
   updateSettings,
   updateTeam,
+  upgradeSettings,
+  upgradeState,
   withLeague,
   type DraftState,
 } from '../src/lib/draftEngine';
 import type { Scale } from '../src/lib/fit';
-import type { FormationId, Pokemon, RegionFilter } from '../src/types';
+import type { FormationId, Pokemon, TypeKey } from '../src/types';
 import { authenticateDevice, HOUR_MS, normalizeIp } from './auth';
 import { randomHex, sha256Hex, timingSafeEqual } from './crypto';
 import type { CreateRoomInput, CreateRoomResult, Db, Env } from './env';
@@ -203,16 +215,82 @@ export function cleanDraftName(v: unknown, max: number, what: string, allowEmpty
 
 export const cleanTeamName = (v: unknown) => cleanDraftName(v, DRAFT_LIMITS.teamNameMax, 'Teamname', false);
 
-const SETTING_KEYS = ['name', 'region', 'legends', 'setPiece', 'maxTeams', 'pickSeconds', 'order', 'visibility'] as const;
+/**
+ * Schlüssel, die ein Einstellungs-Patch haben darf: die aktuellen und die älteren region/legends
+ * (zwischengespeicherte Clients schicken sie noch – normalizeSettings rechnet sie um).
+ */
+export const SETTING_KEYS = [
+  'name',
+  'gens',
+  'types',
+  'legendary',
+  'mythical',
+  'maxLegends',
+  'setPiece',
+  'maxTeams',
+  'pickSeconds',
+  'order',
+  'snake',
+  'roll',
+  'rerolls',
+  'visibility',
+  'region',
+  'legends',
+] as const satisfies readonly (keyof DraftSettingsPatch)[];
 
-/** Einstellungs-Patch: nur bekannte Felder, Liganame gesäubert (Werte prüft normalizeSettings). */
-export function cleanSettingsPatch(raw: unknown): Partial<DraftSettings> {
+const badSettings = (message: string): never => {
+  throw new DraftError('bad_settings', message);
+};
+
+const isBool = (v: unknown): v is boolean => typeof v === 'boolean';
+
+/**
+ * Einstellungs-Patch säubern: nur bekannte Felder (auch die älteren region/legends), Liganame
+ * gesäubert, Listen und rerolls frisch kopiert (rerolls nur mit type/region). Die Feldtypen
+ * werden hier streng geprüft – Wertebereiche, Pool-Größe und Vorrang neuer vor älteren
+ * Schlüsseln prüft bzw. regelt normalizeSettings. Fehler: DraftError 'bad_settings' (Meldungen
+ * wie die der Engine, damit der Client sie übersetzen kann).
+ */
+export function cleanSettingsPatch(raw: unknown): DraftSettingsPatch {
   if (!isObject(raw)) throw new DraftError('bad_settings', 'Ungültige Einstellungen');
   const patch: Obj = {};
-  for (const key of SETTING_KEYS) if (raw[key] !== undefined) patch[key] = raw[key];
+  for (const key of SETTING_KEYS) if (Object.hasOwn(raw, key) && raw[key] !== undefined) patch[key] = raw[key];
   if (patch.name !== undefined) patch.name = cleanDraftName(patch.name, DRAFT_LIMITS.leagueNameMax, 'Liganame', true);
-  return patch as Partial<DraftSettings>;
+  if (patch.gens !== undefined) {
+    const gens = patch.gens;
+    if (!Array.isArray(gens) || gens.length > DRAFT_ALL_GENS.length || !gens.every(isInt)) badSettings('Ungültige Generationen');
+    patch.gens = [...(gens as number[])];
+  }
+  if (patch.types !== undefined) {
+    const types = patch.types;
+    if (!Array.isArray(types) || types.length > TYPE_KEYS.length || !types.every((t) => typeof t === 'string')) {
+      badSettings('Ungültige Typen');
+    }
+    patch.types = [...(types as string[])];
+  }
+  for (const key of ['legendary', 'mythical', 'setPiece', 'snake', 'legends'] as const) {
+    if (patch[key] !== undefined && !isBool(patch[key])) badSettings('Ungültige Einstellung');
+  }
+  if (patch.maxLegends !== undefined && patch.maxLegends !== null && !isInt(patch.maxLegends)) {
+    badSettings('Ungültiges Legendären-Limit');
+  }
+  if (patch.roll !== undefined && typeof patch.roll !== 'string') badSettings('Ungültiger Zufallsmodus');
+  if (patch.rerolls !== undefined) {
+    const r = patch.rerolls;
+    if (!isObject(r)) return badSettings('Ungültige Rerolls');
+    const rerolls: Obj = {};
+    for (const kind of DRAFT_REROLL_KINDS) {
+      if (!Object.hasOwn(r, kind) || r[kind] === undefined) continue;
+      if (!isInt(r[kind])) badSettings('Ungültige Rerolls');
+      rerolls[kind] = r[kind];
+    }
+    patch.rerolls = rerolls;
+  }
+  if (patch.region !== undefined && !isInt(patch.region)) badSettings('Ungültige Region');
+  return patch as DraftSettingsPatch;
 }
+
+const isRerollKind = (v: unknown): v is DraftRerollKind => (DRAFT_REROLL_KINDS as readonly unknown[]).includes(v);
 
 const byteLength = (s: string) => new TextEncoder().encode(s).length;
 
@@ -256,7 +334,21 @@ export function parseClientMessage(raw: unknown): ParsedMessage {
         ...(d.formation !== undefined ? { formation: d.formation as FormationId } : {}),
       });
     case 'settings':
-      return isObject(d.settings) ? ok({ type: 'settings', settings: d.settings as Partial<DraftSettings> }) : badMessage();
+      return isObject(d.settings) ? ok({ type: 'settings', settings: d.settings as DraftSettingsPatch }) : badMessage();
+    case 'reroll': {
+      // Optional der Zug bzw. Wurf, den der Client gesehen hat (sonst „stale")
+      const roll = d.roll;
+      if (!isRerollKind(d.kind) || (d.pickIndex !== undefined && !isInt(d.pickIndex))) return badMessage();
+      if (roll !== undefined && !(isObject(roll) && isInt(roll.gen) && typeof roll.type === 'string' && roll.type.length <= 16)) {
+        return badMessage();
+      }
+      return ok({
+        type: 'reroll',
+        kind: d.kind,
+        ...(d.pickIndex !== undefined ? { pickIndex: d.pickIndex as number } : {}),
+        ...(roll !== undefined ? { roll: { gen: roll.gen as number, type: roll.type as TypeKey } } : {}),
+      });
+    }
     case 'remove-team':
       return isTeamId(d.teamId) ? ok({ type: 'remove-team', teamId: d.teamId }) : badMessage();
     case 'set-order':
@@ -329,7 +421,9 @@ function newTeamId(state: Pick<DraftState, 'teams'> | null): string {
 export interface LobbyFields {
   name: string;
   hostName: string;
-  region: RegionFilter;
+  /** Pool-Generationen (Spalte region): 0 = alle, 1–9 = genau diese, 10 = mehrere (LOBBY_REGION_MANY) */
+  region: LobbyRegion;
+  /** Legendäre oder Mysteriöse im Pool */
   legends: boolean;
   pickSeconds: PickSeconds;
   teams: number;
@@ -357,6 +451,16 @@ export interface LobbyRow {
 }
 
 /**
+ * Pool-Kurzform der Lobby-Zeile – ohne Schema-Änderung in den alten Spalten: region = 0 bei
+ * allen 9 Generationen, die Generation bei genau einer, sonst 10 („mehrere"); legends =
+ * Legendäre oder Mysteriöse. Ältere Einstellungen (region/legends) werden vorher umgeschrieben.
+ */
+export function lobbyPoolFields(settings: DraftSettings): Pick<LobbyFields, 'region' | 'legends'> {
+  const s = upgradeSettings(settings);
+  return { region: lobbyRegionOf(s), legends: poolHasLegends(s) };
+}
+
+/**
  * Felder der Lobby-Zeile. Mit `now`: Eine öffentliche Lobby, deren Host seit
  * DRAFT_LIMITS.hostGraceMs fehlt (und die keinen neuen Host fand), wird nicht gelistet.
  */
@@ -365,6 +469,7 @@ export function lobbyFields(
   now?: number,
 ): LobbyFields {
   const s = state.settings;
+  const pool = lobbyPoolFields(s);
   const host = state.teams.find((t) => t.id === state.hostTeamId);
   let visibility = s.visibility;
   if (visibility === 'public' && state.phase === 'lobby' && now !== undefined) {
@@ -374,8 +479,8 @@ export function lobbyFields(
   return {
     name: s.name,
     hostName: host?.name ?? '',
-    region: s.region,
-    legends: s.legends,
+    region: pool.region,
+    legends: pool.legends,
     pickSeconds: s.pickSeconds,
     teams: state.teams.length,
     maxTeams: s.maxTeams,
@@ -554,7 +659,10 @@ const fail = (code: string, message: string): never => {
 /** Gleicher Zustand (z. B. Einstellung auf denselben Wert)? Dann wird nichts gespeichert oder verschickt. */
 const sameState = (a: DraftState, b: DraftState) => a === b || JSON.stringify(a) === JSON.stringify(b);
 
-/** Lobby-Änderungen – zusätzlich pro Gerät gedrosselt (jede kostet Speichern und ggf. D1) */
+/**
+ * Lobby-Änderungen – zusätzlich pro Gerät gedrosselt (jede kostet Speichern und ggf. D1). Züge im
+ * Draft (pick, auto-pick, reroll) nicht: Sie begrenzt schon die Engine (nur am Zug, Rerolls je Team).
+ */
 const LOBBY_CHANGES = new Set<DraftClientMessage['type']>(['join', 'leave', 'update-team', 'settings', 'add-cpu', 'remove-team', 'set-order']);
 
 interface Bucket {
@@ -735,13 +843,29 @@ export class DraftRoomCore {
     return run;
   }
 
-  /** Lädt den Raum; beim ersten Laden werden die Online-Flags mit den offenen Verbindungen abgeglichen. */
+  /**
+   * Lädt den Raum; beim ersten Laden wird der Zustand einer älteren Liga (Einstellungen mit
+   * region/legends, ohne die neuen Felder) in die aktuelle Form gebracht und so gespeichert,
+   * dann werden die Online-Flags mit den offenen Verbindungen abgeglichen.
+   */
   private async load(): Promise<RoomRecord | null> {
     if (!this.loaded) {
       const stored = await this.ports.storage.load();
       this.loaded = true;
       this.tomb = stored && isClosedRoom(stored) ? stored : null;
-      this.rec = stored && !isClosedRoom(stored) ? stored : null;
+      this.rec = null;
+      if (stored && !isClosedRoom(stored)) {
+        const state = upgradeState(stored.state);
+        this.rec = state === stored.state ? stored : { ...stored, state };
+        if (this.rec !== stored) {
+          try {
+            await this.ports.storage.save(this.rec);
+          } catch (err) {
+            // Nicht schlimm: Umschreiben geht jederzeit wieder, der nächste commit speichert ohnehin.
+            console.error('Draft-Raum: umgeschriebener Zustand nicht gespeichert', err);
+          }
+        }
+      }
       if (this.rec) {
         // z. B. nach einem Neustart (Deploy): Verbindungen sind weg, ohne dass webSocketClose kam
         const now = this.ports.now();
@@ -1255,6 +1379,20 @@ export class DraftRoomCore {
       case 'pick': {
         const teamId = teamOfDevice(state, deviceId) ?? fail('not_joined', 'Du bist in dieser Liga nicht dabei');
         return applyPick(state, teamId, msg.pokemonId, msg.slot, false, now, list);
+      }
+      case 'reroll': {
+        // Nur das Team am Zug (sein Mensch), nie für andere – die Engine prüft Zug, Wurf und Vorrat.
+        const teamId = teamOfDevice(state, deviceId) ?? fail('not_joined', 'Du bist in dieser Liga nicht dabei');
+        // Gezielt (Pick bzw. Wurf, den der Client gesehen hat), aber der Zug ist schon weiter oder
+        // der Wurf schon neu (Timer, zweiter Tab, Snake-Doppelzug) → nicht den ungesehenen Wurf rerollen
+        const seen = msg.roll;
+        if (
+          (msg.pickIndex !== undefined && msg.pickIndex !== state.pickIndex) ||
+          (seen && (!state.roll || state.roll.gen !== seen.gen || state.roll.type !== seen.type))
+        ) {
+          fail('stale', 'Dieser Zug ist schon vorbei');
+        }
+        return applyReroll(state, teamId, msg.kind, list);
       }
       case 'auto-pick': {
         const cur = currentTeam(state) ?? fail('not_drafting', 'Gerade wird nicht gedraftet');

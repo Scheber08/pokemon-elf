@@ -44,7 +44,8 @@ const online: Messages['online'] = {
   noPublic: 'No public league is waiting right now. Create one yourself – with the lobby set to “Public”.',
   byHost: (host, ago) => `by ${host} · ${ago}`,
   teamsOf: (n, max) => `${n}/${max} teams`,
-  plusLegends: ' + legendaries',
+  plusLegends: ' + legendaries/mythicals',
+  manyGens: 'Several generations',
   watch: 'Watch',
 
   // ------------------------------------------------ /draft/:code
@@ -53,6 +54,7 @@ const online: Messages['online'] = {
     drafting: 'Snake draft in progress – everyone sees every pick instantly.',
     done: 'Draft complete – the season runs for everyone at the same time.',
   },
+  phaseLeadFixed: 'Draft in progress – everyone sees every pick instantly.',
   status: {
     connecting: 'Connecting …',
     open: 'Connected',
@@ -112,6 +114,7 @@ const online: Messages['online'] = {
   removeConfirm: (team) => `Remove ${team} from the league?`,
   orderRandom: 'The draft order is drawn at the start.',
   orderHost: 'Draft order as listed (round 2 in reverse – snake draft).',
+  orderHostFixed: 'Draft order as listed – the same every round.',
   addCpu: 'Add CPU team',
   readOnlyLobby:
     'View only – the live connection isn’t up yet. Once it is, you can join (or edit your team, if you’re already in).',
@@ -120,7 +123,8 @@ const online: Messages['online'] = {
   waitingHost: ' Waiting for the host …',
   starting: 'Starting draft …',
   start: 'Start draft',
-  startInfo: (teams, rounds) => `${plural(teams, 'team', 'teams')} · snake draft over ${plural(rounds, 'round', 'rounds')}.`,
+  startInfo: (teams, rounds, snake = true) =>
+    `${plural(teams, 'team', 'teams')} · ${snake ? 'snake draft' : 'fixed order'} over ${plural(rounds, 'round', 'rounds')}.`,
   startTimer: (s) => `If the ${s}-second timer runs out, the server picks automatically.`,
   startNoTimer: 'Without a timer you can have absent teams’ picks made automatically.',
   draftRunning: 'The draft is already under way',
@@ -164,6 +168,25 @@ const online: Messages['online'] = {
   announcePick: (no, pokemon, team, auto) => `Pick ${no}: ${pokemon} to ${team}${auto ? ' (automatic)' : ''}.`,
   announceYou: 'you',
   announceNext: (team) => ` On the clock: ${team}.`,
+
+  // ------------------------------------------------ Random mode (roll of generation + type)
+  roll: 'Roll',
+  rollAria: (region, type) => `Roll: ${region}, type ${type}`,
+  ownRoll: 'own roll',
+  ownRollTitle: 'This team’s own roll – after a reroll, or because the round roll had nothing suitable left.',
+  roundRoll: (region, type) => `Round roll: ${region} + ${type}`,
+  freeChoice: 'No roll possible – free choice',
+  rerollType: (left) => `Reroll type (${left}×)`,
+  rerollRegion: (left) => `Reroll region (${left}×)`,
+  rerolling: 'Rolling …',
+  noRerollLeft: 'No rerolls of this kind left',
+  noOtherRoll: 'No other roll possible',
+  onlyFitting: 'Matching only',
+  blockedRoll: 'Doesn’t match the roll',
+  blockedLegends: (max) => `Limit: ${plural(max, 'legendary', 'legendaries')}`,
+  favouriteNoMatch: (name) => `${name} doesn’t match your roll – pick one that does.`,
+  hintRoll: (region, type) => ` Wanted: ${region} + ${type}.`,
+  legendsCount: 'Legendaries',
 
   // ------------------------------------------------ Timer
   cpuPicking: ' CPU picking …',
@@ -247,12 +270,29 @@ const online: Messages['online'] = {
       requestBadJson: 'Request is not valid JSON',
       requestNotObject: 'Request must be a JSON object',
       wsOnly: 'This only works via WebSocket',
+      badGens: 'Invalid generations',
+      minOneGen: 'At least one generation',
+      badTypes: 'Invalid types',
+      minOneType: 'At least one type',
+      badMaxLegends: 'Invalid legendary limit',
+      badRollMode: 'Invalid random mode',
+      badRerolls: 'Invalid rerolls',
+      noRoll: 'There’s no roll right now',
+      noTypeReroll: 'No type rerolls left',
+      noRegionReroll: 'No region rerolls left',
+      noOtherRoll: 'No other roll possible',
+      noSlot: 'No free spot left',
+      legendLimitOne: 'At most one legendary/mythical per team',
     },
     fmt: {
       between: (min, max) => `Between ${min} and ${max} teams`,
       poolFits: (teams, rounds) =>
         `The pool is only big enough for ${plural(teams, 'team', 'teams')} of ${rounds} Pokémon each`,
+      poolFitsLegends: (teams, rounds) =>
+        `The pool is only big enough for ${plural(teams, 'team', 'teams')} of ${rounds} Pokémon each (legendary limit)`,
       poolHas: (pool, needed) => `The pool only has ${pool} Pokémon, ${needed} are needed`,
+      poolCapLegends: (capacity, needed) =>
+        `With the legendary limit the pool only covers ${capacity} picks, ${needed} are needed`,
       tooManyTeams: (n) => `${plural(n, 'team has', 'teams have')} already joined`,
       tooFewTeams: (min) => `At least ${plural(min, 'team', 'teams')} – invite people or add CPU teams`,
       taken: (name) => `${name} is already taken`,
@@ -260,6 +300,8 @@ const online: Messages['online'] = {
         `Auto-pick for “${team}” is only possible once the team has been offline for ${seconds} s`,
       teamNameTooLong: (max) => `Team name is too long (max. ${plural(max, 'character', 'characters')})`,
       leagueNameTooLong: (max) => `League name is too long (max. ${plural(max, 'character', 'characters')})`,
+      notRoll: (name) => `${name} doesn’t match the roll`,
+      legendLimit: (max) => `At most ${plural(max, 'legendary/mythical', 'legendaries/mythicals')} per team`,
     },
     code: {
       bad_settings: 'Invalid settings',
@@ -296,6 +338,11 @@ const online: Messages['online'] = {
       room_full: 'Too many spectators – please try again later',
       closed: 'The league was closed',
       network: 'Server unreachable',
+      not_your_turn: 'It’s not your turn',
+      no_roll: 'There’s no roll right now',
+      no_reroll: 'No rerolls left',
+      no_other_roll: 'No other roll possible',
+      no_slot: 'No free spot left',
     },
     unknown: 'Unknown error',
   },

@@ -1,10 +1,10 @@
 import { FORMATIONS } from '../config/formations';
 import { useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam } from '../lib/api/draftContract';
-import { DRAFT_SS_SLOT } from '../lib/draftEngine';
+import { DRAFT_SS_SLOT, isLegend, poolHasLegends } from '../lib/draftEngine';
 import { teamLabel, type FeedItem } from '../state/useDraftRoom';
 import type { Pokemon } from '../types';
-import { PosBadge } from './Badges';
+import { PosBadge, TypeBadge } from './Badges';
 import '../styles/draft.css';
 
 /** Kleine Marker an einem Team: Online-Punkt, Host, CPU, Du. */
@@ -38,6 +38,8 @@ interface Props {
 export function DraftBoard({ state, byId, currentId }: Props) {
   const t = useT();
   const last = state.picks.length ? state.picks[state.picks.length - 1] : null;
+  const maxLegends = state.settings.maxLegends;
+  const legendLimit = maxLegends != null && poolHasLegends(state.settings) ? maxLegends : null;
   return (
     <section className="draft__board draft-board" aria-label={t.draft.draftBoard}>
       {state.teams.map((team, i) => {
@@ -45,6 +47,10 @@ export function DraftBoard({ state, byId, currentId }: Props) {
         const rows = defs.map((d, j) => ({ slot: j, pos: d.pos, id: team.slots[j] }));
         if (state.settings.setPiece) rows.push({ slot: DRAFT_SS_SLOT, pos: 'SS', id: team.ss });
         const filled = rows.filter((r) => r.id != null).length;
+        const legends = rows.filter((r) => {
+          const p = r.id != null ? byId.get(r.id) : undefined;
+          return !!p && isLegend(p);
+        }).length;
         // Vereinsnamen der CPU-Teams erst bei der Anzeige übersetzen
         const name = teamLabel(team, t);
         return (
@@ -60,6 +66,17 @@ export function DraftBoard({ state, byId, currentId }: Props) {
               <span>
                 {filled}/{rows.length}
               </span>
+              {legendLimit != null && (
+                <span
+                  className={`draft-board__legends ${legends >= legendLimit ? 'is-full' : ''}`}
+                  title={t.draft.board.legendsTitle(legends, legendLimit)}
+                >
+                  <span aria-hidden="true">
+                    ★ {legends}/{legendLimit}
+                  </span>
+                  <span className="sr-only">{t.draft.board.legendsTitle(legends, legendLimit)}</span>
+                </span>
+              )}
               <DraftTeamTags team={team} host={team.id === state.hostTeamId} you={team.id === state.you} />
             </p>
             <ol>
@@ -83,7 +100,8 @@ export function DraftBoard({ state, byId, currentId }: Props) {
 
 /** Die letzten Picks als kurzer Verlauf („Glurak → Team X (auto)") – ohne Live-Region (die Ansage kommt aus DraftLive). */
 export function DraftPickFeed({ items, you }: { items: FeedItem[]; you: string | null }) {
-  const tx = useT().draft.board;
+  const t = useT();
+  const tx = t.draft.board;
   if (!items.length) return null;
   return (
     <section className="card draft-feed" aria-labelledby="draft-feed-title">
@@ -98,6 +116,15 @@ export function DraftPickFeed({ items, you }: { items: FeedItem[]; you: string |
               <strong>{f.pokemon}</strong> → {f.team}
               {f.auto && <span className="draft-feed__auto">{tx.auto}</span>}
             </span>
+            {f.roll && (
+              <span className="draft-feed__roll" title={tx.rollTitle(f.roll.region, t.game.type[f.roll.type])}>
+                <span className="sr-only">{tx.rollTitle(f.roll.region, t.game.type[f.roll.type])}</span>
+                <span aria-hidden="true">{f.roll.region}</span>
+                <span aria-hidden="true">
+                  <TypeBadge type={f.roll.type} small />
+                </span>
+              </span>
+            )}
           </li>
         ))}
       </ol>

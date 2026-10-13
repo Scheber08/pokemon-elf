@@ -7,23 +7,46 @@
  * Pool) und um ältere Saisons ohne gespeichertes Ergebnis nachzusimulieren. Kein
  * Math.random, keine Uhr: Zeit und IDs kommen von außen, Zufall aus dem Liga-Seed
  * (leagueRng – ein geheimer Text-Seed wird per SHA-256 je Zweck abgeleitet).
+ *
+ * Zufallsmodus (settings.roll, Idee der 34–0-Challenge): Jeder Pick hat einen Wurf aus
+ * Generation + Typ; gewählt werden darf nur ein noch freies Pool-Pokémon dieser Generation
+ * mit diesem Typ. Zufallsströme (alle geheim, weil aus dem Liga-Seed):
+ *   [seed, 'roll', 'pick', pickIndex]               Wurf eines Picks (Modus 'pick')
+ *   [seed, 'roll', 'round', runde]                  Rundenwurf (Modus 'round')
+ *   [seed, 'roll', 'own', pickIndex]                eigener Wurf, wenn der Rundenwurf leer ist
+ *   [seed, 'roll', 'reroll', art, pickIndex, n]     n-ter Reroll dieser Art des Teams
+ * Gewürfelt wird, bis die Kombination für das Team am Zug etwas Wählbares hat (sonst
+ * deterministisch über alle Kombinationen). Gibt es gar keine, ist roll = null: freie Wahl
+ * aus dem Rest des Pools – der Draft bleibt nie hängen.
  */
 import { FORMATION_IDS, FORMATIONS } from '../config/formations';
+import { TYPE_KEYS } from '../config/pokemonTypes';
 import { POSITIONS } from '../config/positions';
 import { CLUB_NAMES } from '../config/season';
-import type { FormationId, Pokemon, RegionFilter } from '../types';
+import type { FormationId, Pokemon, RegionFilter, TypeKey } from '../types';
 import {
   DEFAULT_DRAFT_SETTINGS,
+  DRAFT_ALL_GENS,
   DRAFT_LIMITS,
+  DRAFT_REROLL_KINDS,
+  DRAFT_ROLL_MODES,
+  LOBBY_REGION_MANY,
+  type DraftActiveRoll,
   type DraftPhase,
   type DraftPickLog,
+  type DraftRerollCount,
+  type DraftRerollKind,
+  type DraftRoll,
   type DraftSeason,
   type DraftSettings,
+  type DraftSettingsPatch,
   type DraftSnapshot,
   type DraftTeam,
+  type LegacySettingsPatch,
+  type LobbyRegion,
 } from './api/draftContract';
 import { positionFit, type Scale } from './fit';
-import { createRng, hashSeed, shuffle, streamRng } from './rng';
+import { createRng, hashSeed, shuffle, streamRng, type Rng } from './rng';
 import { simulateLeague, type LeagueResult, type LeagueTeam } from './season';
 import { evaluateTeam } from './teamScore';
 
@@ -55,10 +78,22 @@ export interface DraftState {
   turnStartedAt?: number | null;
   /** Gespeichertes Saisonergebnis (ab „done", kompakt: Teams ohne Kader) */
   league?: LeagueResult | null;
+  /**
+   * Wurf des aktuellen Picks (Zufallsmodus, nur während des Drafts). null bzw. fehlt
+   * (ältere Stände): freie Wahl aus dem Pool.
+   */
+  roll?: DraftActiveRoll | null;
+  /** Rundenwurf (nur settings.roll = 'round') */
+  roundRoll?: DraftRoll | null;
+  /** Genutzte Rerolls je Team-ID (fehlt ein Team: noch keine) */
+  rerollsUsed?: Record<string, DraftRerollCount>;
 }
 
 /** Lesende Sicht – passt auf den Server-Zustand und auf Client-Schnappschüsse. */
-export type DraftView = Pick<DraftState, 'phase' | 'teams' | 'pickIndex' | 'settings'>;
+export type DraftView = Pick<DraftState, 'phase' | 'teams' | 'pickIndex' | 'settings' | 'roll'>;
+
+/** Lesende Sicht mit Rerolls (rerollsLeft, canReroll) – auch für Schnappschüsse. */
+export type DraftRollView = DraftView & Pick<DraftState, 'rerollsUsed'>;
 
 export class DraftError extends Error {
   constructor(
@@ -142,74 +177,289 @@ export const leagueRng = (seed: number | string, ...parts: (string | number)[]) 
 
 // ---------------------------------------------------------------- Einstellungen & Pool
 
-export function rounds(settings: DraftSettings): number {
+export function rounds(settings: Pick<DraftSettings, 'setPiece'>): number {
   return 11 + (settings.setPiece ? 1 : 0);
 }
 
+type Obj = Record<string, unknown>;
+const isObj = (v: unknown): v is Obj => typeof v === 'object' && v !== null && !Array.isArray(v);
+const isBool = (v: unknown): v is boolean => typeof v === 'boolean';
+
+/** Gleicher Einstellungswert? Tief für Listen und Objekte (gens, types, rerolls) – sonst ===. */
+export function sameSettingValue(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (Array.isArray(a) || Array.isArray(b)) {
+    return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((v, i) => sameSettingValue(v, b[i]));
+  }
+  if (isObj(a) && isObj(b)) {
+    const ka = Object.keys(a);
+    return ka.length === Object.keys(b).length && ka.every((k) => Object.hasOwn(b, k) && sameSettingValue(a[k], b[k]));
+  }
+  return false;
+}
+
+/** Generationen aus einer Eingabe: aufsteigend, ohne Doppelte (evtl. leer) – undefined = ungültig. */
+function gensOf(v: unknown): number[] | undefined {
+  if (!Array.isArray(v) || v.length > 64) return undefined;
+  if (!v.every((g) => Number.isInteger(g) && g >= 1 && g <= 9)) return undefined;
+  return DRAFT_ALL_GENS.filter((g) => v.includes(g));
+}
+
+/** Typen aus einer Eingabe: Reihenfolge wie TYPE_KEYS, ohne Doppelte (evtl. leer) – undefined = ungültig. */
+function typesOf(v: unknown): TypeKey[] | undefined {
+  if (!Array.isArray(v) || v.length > 64) return undefined;
+  if (!v.every((t) => typeof t === 'string' && (TYPE_KEYS as string[]).includes(t))) return undefined;
+  return TYPE_KEYS.filter((t) => v.includes(t));
+}
+
+const nonEmpty = <T>(v: T[] | undefined): T[] | undefined => (v && v.length ? v : undefined);
+
+const isMaxLegends = (v: unknown): v is number | null =>
+  v === null || (DRAFT_LIMITS.maxLegends as readonly unknown[]).includes(v);
+
+const isRerollCount = (v: unknown): v is number =>
+  typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= DRAFT_LIMITS.rerollsMax;
+
+/** Rerolls aus einer (auch teilweisen) Eingabe, fehlende Arten aus base – undefined = ungültig. */
+function rerollsOf(v: unknown, base: DraftRerollCount): DraftRerollCount | undefined {
+  if (!isObj(v)) return undefined;
+  const out: DraftRerollCount = { type: base.type, region: base.region };
+  for (const kind of DRAFT_REROLL_KINDS) {
+    if (v[kind] === undefined) continue;
+    if (!isRerollCount(v[kind])) return undefined;
+    out[kind] = v[kind];
+  }
+  return out;
+}
+
+const isRollMode = (v: unknown): v is DraftSettings['roll'] => (DRAFT_ROLL_MODES as readonly unknown[]).includes(v);
+
+/** Ältere Region (0 = alle, sonst genau diese Generation) → Generationen; undefined = ungültig. */
+function gensOfRegion(v: unknown): number[] | undefined {
+  if (typeof v !== 'number' || !Number.isInteger(v) || v < 0 || v > 9) return undefined;
+  return v === 0 ? [...DRAFT_ALL_GENS] : [v];
+}
+
+/** Ältere Einstellungs-Schlüssel (nur noch beim Einlesen bzw. als Spiegel im Schnappschuss) */
+const LEGACY_SETTING_KEYS: readonly string[] = ['region', 'legends'] satisfies (keyof LegacySettingsPatch)[];
+
+/** Einstellungen ohne die älteren Schlüssel region/legends (neues Objekt). */
+function withoutLegacy(settings: DraftSettings): DraftSettings {
+  const { region: _region, legends: _legends, ...rest } = settings as DraftSettings & LegacySettingsPatch;
+  return rest;
+}
+
+/**
+ * Einstellungen in der aktuellen Form: Gespeicherte Stände älterer Ligen (region/legends,
+ * ohne die neuen Felder) werden umgeschrieben – region 0 → alle Generationen, n → [n];
+ * legends → Legendäre und Mysteriöse. Fehlende bzw. ungültige Felder kommen aus
+ * DEFAULT_DRAFT_SETTINGS. Wirft nie. Schon aktuelle Einstellungen kommen unverändert
+ * (dasselbe Objekt) zurück.
+ */
+export function upgradeSettings(raw: unknown): DraftSettings {
+  const r: Obj = isObj(raw) ? raw : {};
+  const d = DEFAULT_DRAFT_SETTINGS;
+  const legends = isBool(r.legends) ? r.legends : undefined;
+  const next: DraftSettings = {
+    name: typeof r.name === 'string' ? r.name : d.name,
+    gens: nonEmpty(gensOf(r.gens)) ?? gensOfRegion(r.region) ?? [...d.gens],
+    types: nonEmpty(typesOf(r.types)) ?? [...d.types],
+    legendary: isBool(r.legendary) ? r.legendary : (legends ?? d.legendary),
+    mythical: isBool(r.mythical) ? r.mythical : (legends ?? d.mythical),
+    maxLegends: isMaxLegends(r.maxLegends) ? r.maxLegends : d.maxLegends,
+    setPiece: isBool(r.setPiece) ? r.setPiece : d.setPiece,
+    maxTeams:
+      typeof r.maxTeams === 'number' && Number.isInteger(r.maxTeams) && r.maxTeams >= DRAFT_LIMITS.minTeams && r.maxTeams <= DRAFT_LIMITS.maxTeams
+        ? r.maxTeams
+        : d.maxTeams,
+    pickSeconds: (DRAFT_LIMITS.pickSeconds as readonly unknown[]).includes(r.pickSeconds)
+      ? (r.pickSeconds as DraftSettings['pickSeconds'])
+      : d.pickSeconds,
+    order: r.order === 'random' || r.order === 'host' ? r.order : d.order,
+    snake: isBool(r.snake) ? r.snake : d.snake,
+    roll: isRollMode(r.roll) ? r.roll : d.roll,
+    rerolls: rerollsOf(r.rerolls, d.rerolls) ?? { ...d.rerolls },
+    visibility: r.visibility === 'private' || r.visibility === 'public' ? r.visibility : d.visibility,
+  };
+  const keys = Object.keys(next) as (keyof DraftSettings)[];
+  // Die älteren Schlüssel region/legends dürfen zusätzlich dastehen (Schnappschüsse spiegeln sie
+  // für Clients von vor dem Update – siehe snapshotOf); die neuen Schlüssel haben ohnehin Vorrang.
+  const current =
+    Object.keys(r).every((k) => Object.hasOwn(next, k) || LEGACY_SETTING_KEYS.includes(k)) &&
+    keys.every((k) => Object.hasOwn(r, k) && sameSettingValue(r[k], next[k]));
+  return current ? (raw as DraftSettings) : next;
+}
+
+/**
+ * Zustand einer älteren Liga (z. B. ein laufender Durable Object) in die aktuelle Form – der
+ * Server ruft das beim Laden auf. Schon aktuelle Stände kommen unverändert (dasselbe Objekt)
+ * zurück. Ältere Ligen haben keinen Zufallsmodus: roll fehlt = freie Wahl.
+ */
+export function upgradeState(state: DraftState): DraftState {
+  const settings = upgradeSettings(state.settings);
+  return settings === state.settings ? state : { ...state, settings };
+}
+
+/** Pool-relevanter Teil der Einstellungen */
+export type DraftPoolSettings = Pick<DraftSettings, 'gens' | 'types' | 'legendary' | 'mythical'>;
+
+/** Legendär oder mysteriös? (zählt fürs Legendären-Limit) */
+export const isLegend = (p: Pick<Pokemon, 'leg' | 'myth'>): boolean => !!(p.leg || p.myth);
+
 const poolCache = new WeakMap<Pokemon[], Map<string, Pokemon[]>>();
 
-/** Pool der Liga (nach Nummer sortiert). */
-export function poolOf(settings: Pick<DraftSettings, 'region' | 'legends'>, list: Pokemon[]): Pokemon[] {
+/**
+ * Pool der Liga (nach Nummer sortiert): Generation in gens, mindestens ein Typ in types,
+ * Legendäre nur mit legendary, Mysteriöse nur mit mythical. Ältere Einstellungen
+ * (region/legends) werden vorher umgeschrieben.
+ */
+export function poolOf(settings: DraftPoolSettings, list: Pokemon[]): Pokemon[] {
+  const s: DraftPoolSettings = Array.isArray(settings.gens) && Array.isArray(settings.types) ? settings : upgradeSettings(settings);
   let byKey = poolCache.get(list);
   if (!byKey) {
     byKey = new Map();
     poolCache.set(list, byKey);
   }
-  const key = `${settings.region}|${settings.legends}`;
+  const key = `${s.gens.join(',')}|${s.types.join(',')}|${s.legendary ? 1 : 0}${s.mythical ? 1 : 0}`;
   let pool = byKey.get(key);
   if (!pool) {
+    const gens = new Set(s.gens);
+    const types = new Set<string>(s.types);
     pool = list
-      .filter((p) => (settings.region === 0 || p.gen === settings.region) && (settings.legends || (!p.leg && !p.myth)))
+      .filter(
+        (p) =>
+          gens.has(p.gen) &&
+          p.types.some((t) => types.has(t)) &&
+          (!p.leg || s.legendary) &&
+          (!p.myth || s.mythical),
+      )
       .sort((a, b) => a.id - b.id);
     byKey.set(key, pool);
   }
   return pool;
 }
 
-/** Wie viele Teams der Pool höchstens trägt. */
-export function maxTeamsForPool(settings: DraftSettings, list: Pokemon[]): number {
-  return Math.floor(poolOf(settings, list).length / rounds(settings));
+const legendCountCache = new WeakMap<Pokemon[], number>();
+
+/** Legendäre + Mysteriöse in einem (zwischengespeicherten) Pool. */
+function legendCount(pool: Pokemon[]): number {
+  let n = legendCountCache.get(pool);
+  if (n === undefined) {
+    n = pool.filter(isLegend).length;
+    legendCountCache.set(pool, n);
+  }
+  return n;
 }
 
-/** Prüft und vervollständigt Einstellungen (wirft DraftError bei Unsinn). */
-export function normalizeSettings(patch: Partial<DraftSettings>, base: DraftSettings, list: Pokemon[]): DraftSettings {
-  const s: DraftSettings = { ...base };
-  if (patch.name !== undefined) {
-    if (typeof patch.name !== 'string') fail('bad_settings', 'Ungültiger Liganame');
+/** Pool-Einstellungen samt Legendären-Limit (fehlt es – ältere Stände –, gilt: unbegrenzt) */
+export type DraftCapacitySettings = DraftPoolSettings & Partial<Pick<DraftSettings, 'maxLegends'>>;
+
+/**
+ * Wie viele Picks der Pool für `teams` Teams hergibt: alle Nicht-Legendären, Legendäre und
+ * Mysteriöse aber nur so viele, wie das Legendären-Limit aufnimmt (teams × maxLegends).
+ */
+export function poolPickCapacity(settings: DraftCapacitySettings, teams: number, list: Pokemon[]): number {
+  const pool = poolOf(settings, list);
+  const legends = legendCount(pool);
+  const max = settings.maxLegends ?? null;
+  return pool.length - legends + (max == null ? legends : Math.min(legends, Math.max(0, teams) * max));
+}
+
+/**
+ * Wie viele Teams der Pool höchstens trägt: Poolgröße / Runden – mit Legendären-Limit nur so
+ * viele, dass die Pokémon, die das Limit erlaubt, für alle Runden reichen (poolPickCapacity).
+ */
+export function maxTeamsForPool(settings: DraftCapacitySettings & Pick<DraftSettings, 'setPiece'>, list: Pokemon[]): number {
+  const r = rounds(settings);
+  let teams = Math.floor(poolOf(settings, list).length / r);
+  // Jedes weitere Team braucht r Picks, das Limit gibt höchstens maxLegends (≤ 3) dazu → monoton
+  while (teams > 0 && poolPickCapacity(settings, teams, list) < teams * r) teams--;
+  return teams;
+}
+
+/**
+ * Kurzform der Generationen für die Lobby-Zeile (D1-Spalte region): 0 = alle 9,
+ * 1–9 = genau diese eine, sonst LOBBY_REGION_MANY (10 = mehrere).
+ */
+export function lobbyRegionOf(settings: Pick<DraftSettings, 'gens'>): LobbyRegion {
+  const gens = settings.gens;
+  if (DRAFT_ALL_GENS.every((g) => gens.includes(g))) return 0;
+  if (gens.length === 1) return gens[0] as RegionFilter;
+  return LOBBY_REGION_MANY;
+}
+
+/** Legendäre oder Mysteriöse im Pool? (Lobby-Spalte legends; das Limit wirkt nur dann) */
+export const poolHasLegends = (settings: Pick<DraftSettings, 'legendary' | 'mythical'>): boolean =>
+  !!(settings.legendary || settings.mythical);
+
+/**
+ * Prüft und vervollständigt Einstellungen (wirft DraftError bei Unsinn). Nimmt auch die
+ * älteren Schlüssel region/legends an (neue Schlüssel im selben Patch haben Vorrang).
+ */
+export function normalizeSettings(patch: DraftSettingsPatch, base: DraftSettings, list: Pokemon[]): DraftSettings {
+  const p: DraftSettingsPatch = isObj(patch) ? patch : {};
+  // Neues Objekt ohne evtl. gespiegelte ältere Schlüssel (Basis aus einem Schnappschuss)
+  const s: DraftSettings = withoutLegacy(upgradeSettings(base));
+  if (p.name !== undefined) {
+    if (typeof p.name !== 'string') fail('bad_settings', 'Ungültiger Liganame');
     // Nach Codepoints kürzen – nie mitten in einem Ersatzpaar (Emoji)
-    s.name = Array.from(patch.name).slice(0, DRAFT_LIMITS.leagueNameMax).join('');
+    s.name = Array.from(p.name).slice(0, DRAFT_LIMITS.leagueNameMax).join('');
   }
-  if (patch.region !== undefined) {
-    if (!Number.isInteger(patch.region) || patch.region < 0 || patch.region > 9) fail('bad_settings', 'Ungültige Region');
-    s.region = patch.region as RegionFilter;
+  // Ältere Clients: region / legends
+  if (p.region !== undefined) s.gens = gensOfRegion(p.region) ?? fail('bad_settings', 'Ungültige Region');
+  if (p.legends !== undefined) {
+    if (!isBool(p.legends)) fail('bad_settings', 'Ungültige Einstellung');
+    s.legendary = p.legends;
+    s.mythical = p.legends;
   }
-  for (const key of ['legends', 'setPiece'] as const) {
-    if (patch[key] !== undefined) {
-      if (typeof patch[key] !== 'boolean') fail('bad_settings', 'Ungültige Einstellung');
-      s[key] = patch[key] as boolean;
+  if (p.gens !== undefined) {
+    const gens = gensOf(p.gens) ?? fail('bad_settings', 'Ungültige Generationen');
+    if (!gens.length) fail('bad_settings', 'Mindestens eine Generation');
+    s.gens = gens;
+  }
+  if (p.types !== undefined) {
+    const types = typesOf(p.types) ?? fail('bad_settings', 'Ungültige Typen');
+    if (!types.length) fail('bad_settings', 'Mindestens ein Typ');
+    s.types = types;
+  }
+  for (const key of ['legendary', 'mythical', 'setPiece', 'snake'] as const) {
+    if (p[key] !== undefined) {
+      if (!isBool(p[key])) fail('bad_settings', 'Ungültige Einstellung');
+      s[key] = p[key] as boolean;
     }
   }
-  if (patch.maxTeams !== undefined) {
-    if (!Number.isInteger(patch.maxTeams) || patch.maxTeams < DRAFT_LIMITS.minTeams || patch.maxTeams > DRAFT_LIMITS.maxTeams) {
+  if (p.maxLegends !== undefined) {
+    if (!isMaxLegends(p.maxLegends)) fail('bad_settings', 'Ungültiges Legendären-Limit');
+    s.maxLegends = p.maxLegends;
+  }
+  if (p.maxTeams !== undefined) {
+    if (!Number.isInteger(p.maxTeams) || p.maxTeams < DRAFT_LIMITS.minTeams || p.maxTeams > DRAFT_LIMITS.maxTeams) {
       fail('bad_settings', `Zwischen ${DRAFT_LIMITS.minTeams} und ${DRAFT_LIMITS.maxTeams} Teams`);
     }
-    s.maxTeams = patch.maxTeams;
+    s.maxTeams = p.maxTeams;
   }
-  if (patch.pickSeconds !== undefined) {
-    if (!(DRAFT_LIMITS.pickSeconds as readonly number[]).includes(patch.pickSeconds)) fail('bad_settings', 'Ungültiger Timer');
-    s.pickSeconds = patch.pickSeconds;
+  if (p.pickSeconds !== undefined) {
+    if (!(DRAFT_LIMITS.pickSeconds as readonly number[]).includes(p.pickSeconds)) fail('bad_settings', 'Ungültiger Timer');
+    s.pickSeconds = p.pickSeconds;
   }
-  if (patch.order !== undefined) {
-    if (patch.order !== 'random' && patch.order !== 'host') fail('bad_settings', 'Ungültige Reihenfolge');
-    s.order = patch.order;
+  if (p.order !== undefined) {
+    if (p.order !== 'random' && p.order !== 'host') fail('bad_settings', 'Ungültige Reihenfolge');
+    s.order = p.order;
   }
-  if (patch.visibility !== undefined) {
-    if (patch.visibility !== 'private' && patch.visibility !== 'public') fail('bad_settings', 'Ungültige Sichtbarkeit');
-    s.visibility = patch.visibility;
+  if (p.roll !== undefined) {
+    if (!isRollMode(p.roll)) fail('bad_settings', 'Ungültiger Zufallsmodus');
+    s.roll = p.roll;
+  }
+  if (p.rerolls !== undefined) s.rerolls = rerollsOf(p.rerolls, s.rerolls) ?? fail('bad_settings', 'Ungültige Rerolls');
+  if (p.visibility !== undefined) {
+    if (p.visibility !== 'private' && p.visibility !== 'public') fail('bad_settings', 'Ungültige Sichtbarkeit');
+    s.visibility = p.visibility;
   }
   const fits = maxTeamsForPool(s, list);
   if (s.maxTeams > fits) {
-    fail('pool_too_small', `Der Pool reicht nur für ${fits} Teams à ${rounds(s)} Pokémon`);
+    // Liegt es am Legendären-Limit (ohne es reichte der Pool für mehr Teams), steht das dabei
+    const byLimit = fits < Math.floor(poolOf(s, list).length / rounds(s));
+    fail('pool_too_small', `Der Pool reicht nur für ${fits} Teams à ${rounds(s)} Pokémon${byLimit ? ' (Legendären-Limit)' : ''}`);
   }
   return s;
 }
@@ -234,7 +484,7 @@ function makeTeam(id: string, name: string, formation: FormationId, cpu: boolean
 export function createDraft(args: {
   code: string;
   seed: number | string;
-  settings: Partial<DraftSettings>;
+  settings: DraftSettingsPatch;
   host: NewTeam;
   now: number;
   list: Pokemon[];
@@ -325,7 +575,7 @@ export function updateTeam(
 export function updateSettings(
   state: DraftState,
   deviceId: string,
-  patch: Partial<DraftSettings>,
+  patch: DraftSettingsPatch,
   list: Pokemon[],
 ): DraftState {
   requireLobby(state);
@@ -451,16 +701,19 @@ export function totalPicks(state: Pick<DraftState, 'teams' | 'settings'>): numbe
   return state.teams.length * rounds(state.settings);
 }
 
-/** Team am Zug für einen Pick-Index (Snake: Runde 2 rückwärts). */
-export function teamIndexForPick(pick: number, teamCount: number): number {
+/**
+ * Team am Zug für einen Pick-Index. Snake (Standard): jede zweite Runde rückwärts;
+ * snake = false: jede Runde dieselbe Reihenfolge (settings.snake).
+ */
+export function teamIndexForPick(pick: number, teamCount: number, snake = true): number {
   const round = Math.floor(pick / teamCount);
   const idx = pick % teamCount;
-  return round % 2 === 0 ? idx : teamCount - 1 - idx;
+  return !snake || round % 2 === 0 ? idx : teamCount - 1 - idx;
 }
 
 export function currentTeam(state: DraftView): DraftTeam | null {
   if (state.phase !== 'drafting') return null;
-  return state.teams[teamIndexForPick(state.pickIndex, state.teams.length)] ?? null;
+  return state.teams[teamIndexForPick(state.pickIndex, state.teams.length, state.settings.snake ?? true)] ?? null;
 }
 
 export function draftedIds(state: Pick<DraftState, 'teams'>): Set<number> {
@@ -472,7 +725,7 @@ export function draftedIds(state: Pick<DraftState, 'teams'>): Set<number> {
   return ids;
 }
 
-export function freeSlots(team: DraftTeam, settings: DraftSettings): number[] {
+export function freeSlots(team: DraftTeam, settings: Pick<DraftSettings, 'setPiece'>): number[] {
   const out = team.slots.flatMap((id, i) => (id == null ? [i] : []));
   if (settings.setPiece && team.ss == null) out.push(DRAFT_SS_SLOT);
   return out;
@@ -485,6 +738,332 @@ function deadlineFor(state: DraftState, now: number): number | null {
   return now + state.settings.pickSeconds * 1000;
 }
 
+// ---------------------------------------------------------------- Regeln eines Picks (Wurf, Legendären-Limit)
+
+const byIdCache = new WeakMap<Pokemon[], Map<number, Pokemon>>();
+
+function byIdOf(list: Pokemon[]): Map<number, Pokemon> {
+  let byId = byIdCache.get(list);
+  if (!byId) {
+    byId = new Map(list.map((p) => [p.id, p]));
+    byIdCache.set(list, byId);
+  }
+  return byId;
+}
+
+const poolIdCache = new WeakMap<Pokemon[], Set<number>>();
+
+function poolIdsOf(pool: Pokemon[]): Set<number> {
+  let ids = poolIdCache.get(pool);
+  if (!ids) {
+    ids = new Set(pool.map((p) => p.id));
+    poolIdCache.set(pool, ids);
+  }
+  return ids;
+}
+
+/** Legendäre + Mysteriöse im Team (der Standardschütze zählt mit). */
+export function legendsOf(team: Pick<DraftTeam, 'slots' | 'ss'>, list: Pokemon[]): number {
+  const byId = byIdOf(list);
+  let n = 0;
+  for (const id of [...team.slots, team.ss]) {
+    const p = id != null ? byId.get(id) : undefined;
+    if (p && isLegend(p)) n++;
+  }
+  return n;
+}
+
+/** Hat das Team sein Legendären-Limit erreicht? (ohne Limit: nie) */
+function legendLimitHit(settings: Pick<DraftSettings, 'maxLegends'>, team: DraftTeam, list: Pokemon[]): boolean {
+  const max = settings.maxLegends ?? null;
+  return max != null && legendsOf(team, list) >= max;
+}
+
+/** Passt das Pokémon zum Wurf (diese Generation und einer seiner Typen)? */
+export const matchesRoll = (p: Pick<Pokemon, 'gen' | 'types'>, roll: DraftRoll): boolean =>
+  p.gen === roll.gen && p.types.includes(roll.type);
+
+/**
+ * Warum ein Pokémon gerade nicht wählbar ist: 'pool' (nicht im Pool), 'taken' (schon
+ * vergeben), 'roll' (passt nicht zum Wurf), 'legend_limit' (Legendären-Limit erreicht).
+ */
+export type PickBlock = 'pool' | 'taken' | 'roll' | 'legend_limit';
+
+/** Noch freie Pool-Pokémon (nach Nummer sortiert). */
+function remainingPool(state: Pick<DraftState, 'teams' | 'settings'>, list: Pokemon[]): Pokemon[] {
+  const taken = draftedIds(state);
+  return poolOf(state.settings, list).filter((p) => !taken.has(p.id));
+}
+
+/** Wurf des aktuellen Picks – nur, wenn der Zufallsmodus an ist. */
+function stateRollOf(state: DraftView): DraftActiveRoll | null {
+  return state.roll && state.settings.roll !== 'off' ? state.roll : null;
+}
+
+interface PickRules {
+  // Fingerabdruck des Zustands, für den die Regeln gelten (Cache)
+  list: Pokemon[];
+  phase: DraftPhase;
+  pickIndex: number;
+  teams: DraftTeam[];
+  settings: DraftSettings;
+  stateRoll: DraftActiveRoll | null | undefined;
+  // Regeln
+  poolIds: Set<number>;
+  taken: Set<number>;
+  /** Wurf, der für dieses Team gerade gilt (null = freie Wahl) */
+  roll: DraftRoll | null;
+  /** Team hat das Legendären-Limit erreicht … */
+  limitHit: boolean;
+  /** … aber im Rest des Pools gibt es nur noch Legendäre: Limit ausgesetzt (der Draft bleibt nie hängen) */
+  waived: boolean;
+  /** Erlaubte Pokémon (nach Nummer sortiert) */
+  allowed: Pokemon[];
+}
+
+function computeRules(state: DraftView, teamId: string, list: Pokemon[]): PickRules {
+  const pool = poolOf(state.settings, list);
+  const taken = draftedIds(state);
+  const remaining = pool.filter((p) => !taken.has(p.id));
+  const team = state.teams.find((t) => t.id === teamId);
+  const limitHit = !!team && legendLimitHit(state.settings, team, list);
+  const blocked = (p: Pokemon) => limitHit && isLegend(p);
+  const cur = currentTeam(state);
+  const raw = cur && cur.id === teamId ? stateRollOf(state) : null;
+  // Ein Wurf ohne Wählbares (sollte nie vorkommen, z. B. nach geänderten Daten) gilt nicht: freie Wahl
+  const roll = raw && remaining.some((p) => matchesRoll(p, raw) && !blocked(p)) ? { gen: raw.gen, type: raw.type } : null;
+  const waived = limitHit && !roll && !remaining.some((p) => !isLegend(p));
+  const allowed = remaining.filter((p) => (!roll || matchesRoll(p, roll)) && (waived || !blocked(p)));
+  return {
+    list,
+    phase: state.phase,
+    pickIndex: state.pickIndex,
+    teams: state.teams,
+    settings: state.settings,
+    stateRoll: state.roll,
+    poolIds: poolIdsOf(pool),
+    taken,
+    roll,
+    limitHit,
+    waived,
+    allowed,
+  };
+}
+
+/** Regeln je Zustand (Objekt) und Team – das Pool-Raster fragt sie für jede Karte ab. */
+const rulesCache = new WeakMap<object, Map<string, PickRules>>();
+
+function rulesFor(state: DraftView, teamId: string, list: Pokemon[]): PickRules {
+  let byTeam = rulesCache.get(state);
+  if (!byTeam) {
+    byTeam = new Map();
+    rulesCache.set(state, byTeam);
+  }
+  const hit = byTeam.get(teamId);
+  if (
+    hit &&
+    hit.list === list &&
+    hit.phase === state.phase &&
+    hit.pickIndex === state.pickIndex &&
+    hit.teams === state.teams &&
+    hit.settings === state.settings &&
+    hit.stateRoll === state.roll
+  ) {
+    return hit;
+  }
+  const rules = computeRules(state, teamId, list);
+  byTeam.set(teamId, rules);
+  return rules;
+}
+
+function blockOf(rules: PickRules, p: Pokemon): PickBlock | null {
+  if (!rules.poolIds.has(p.id)) return 'pool';
+  if (rules.taken.has(p.id)) return 'taken';
+  if (rules.roll && !matchesRoll(p, rules.roll)) return 'roll';
+  if (rules.limitHit && !rules.waived && isLegend(p)) return 'legend_limit';
+  return null;
+}
+
+/**
+ * Darf das Team dieses Pokémon gerade wählen? null = ja, sonst der Grund (PickBlock). Der Wurf
+ * gilt nur für das Team am Zug, das Legendären-Limit immer (ausgesetzt nur, wenn im Rest des
+ * Pools nur noch Legendäre sind). Ob das Team dran ist und der Slot frei, prüft pickError.
+ * Schnell genug für jede Karte im Pool-Raster (Regeln je Zustand und Team zwischengespeichert).
+ */
+export function pickAllowed(state: DraftView, teamId: string, pokemon: Pokemon | number, list: Pokemon[]): PickBlock | null {
+  const p = typeof pokemon === 'number' ? byIdOf(list).get(pokemon) : pokemon;
+  if (!p) return 'pool';
+  return blockOf(rulesFor(state, teamId, list), p);
+}
+
+/** Alle Pokémon, die das Team gerade wählen darf (nach Nummer sortiert) – wie pickAllowed. */
+export function allowedPicks(state: DraftView, teamId: string, list: Pokemon[]): Pokemon[] {
+  return rulesFor(state, teamId, list).allowed.slice();
+}
+
+/**
+ * Wurf, der für das Team gerade gilt (null = freie Wahl): der Wurf des Zustands, wenn das Team
+ * am Zug ist und er etwas Wählbares hat.
+ */
+export function effectiveRoll(state: DraftView, teamId: string, list: Pokemon[]): DraftRoll | null {
+  return rulesFor(state, teamId, list).roll;
+}
+
+// ---------------------------------------------------------------- Würfe (Zufallsmodus)
+
+/** So oft wird frei gewürfelt, bevor alle Kombinationen der Reihe nach probiert werden */
+const ROLL_ATTEMPTS = 40;
+
+const comboKey = (gen: number, type: TypeKey) => `${gen}|${type}`;
+
+/** Je Kombination (Generation|Typ) die Zahl der Pokémon aus `pokemon`, die `ok` erfüllen. */
+function comboCounts(settings: Pick<DraftSettings, 'types'>, pokemon: Pokemon[], ok: (p: Pokemon) => boolean): Map<string, number> {
+  const types = new Set<TypeKey>(settings.types);
+  const counts = new Map<string, number>();
+  for (const p of pokemon) {
+    if (!ok(p)) continue;
+    for (const t of p.types) {
+      if (!types.has(t)) continue;
+      const key = comboKey(p.gen, t);
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+  }
+  return counts;
+}
+
+/** Für das Team wählbare Kombinationen: frei und nicht durch sein Legendären-Limit gesperrt. */
+function pickableFor(state: Pick<DraftState, 'teams' | 'settings'>, team: DraftTeam, list: Pokemon[], remaining = remainingPool(state, list)) {
+  const hit = legendLimitHit(state.settings, team, list);
+  const counts = comboCounts(state.settings, remaining, (p) => !hit || !isLegend(p));
+  return (c: DraftRoll) => (counts.get(comboKey(c.gen, c.type)) ?? 0) > 0;
+}
+
+/**
+ * Zufälliger Wurf (Generation aus gens, Typ aus types), bis accept[0] passt; danach alle
+ * Kombinationen in zufälliger Reihenfolge – erst nach accept[0], dann accept[1] … null = keine.
+ */
+function drawRoll(rng: Rng, settings: Pick<DraftSettings, 'gens' | 'types'>, accept: ((c: DraftRoll) => boolean)[]): DraftRoll | null {
+  const { gens, types } = settings;
+  if (!gens.length || !types.length) return null;
+  for (let i = 0; i < ROLL_ATTEMPTS; i++) {
+    const c: DraftRoll = { gen: gens[Math.floor(rng() * gens.length)], type: types[Math.floor(rng() * types.length)] };
+    if (accept[0](c)) return c;
+  }
+  const combos = shuffle(
+    rng,
+    gens.flatMap((gen) => types.map((type): DraftRoll => ({ gen, type }))),
+  );
+  for (const ok of accept) {
+    const c = combos.find(ok);
+    if (c) return c;
+  }
+  return null;
+}
+
+/**
+ * Wurf für den aktuellen Pick (nach dem Start und nach jedem Pick). 'pick': eigener Wurf je
+ * Pick. 'round': zu Rundenbeginn ein Rundenwurf (möglichst mit so vielen freien Pokémon wie
+ * Teams); hat er für das Team am Zug nichts Wählbares, bekommt es einen eigenen Wurf. Ohne
+ * wählbare Kombination: roll = null (freie Wahl).
+ */
+function rollsFor(state: DraftState, list: Pokemon[]): Pick<DraftState, 'roll' | 'roundRoll'> {
+  const mode = state.settings.roll;
+  const team = currentTeam(state);
+  if (mode !== 'pick' && mode !== 'round') return { roll: null };
+  if (!team) return mode === 'round' ? { roll: null, roundRoll: null } : { roll: null };
+  const remaining = remainingPool(state, list);
+  const pickable = pickableFor(state, team, list, remaining);
+  if (mode === 'pick') {
+    const r = drawRoll(leagueRng(state.seed, 'roll', 'pick', state.pickIndex), state.settings, [pickable]);
+    return { roll: r && { ...r, own: false } };
+  }
+  const n = state.teams.length;
+  let roundRoll = state.roundRoll ?? null;
+  if (state.pickIndex % n === 0 || state.roundRoll === undefined) {
+    // Möglichst ein Wurf, der für alle Teams der Runde reicht (Legendäre zählen, solange noch ein Team darf)
+    const max = state.settings.maxLegends;
+    const room = max == null || state.teams.some((t) => legendsOf(t, list) < max);
+    const shared = comboCounts(state.settings, remaining, (p) => room || !isLegend(p));
+    const enough = (c: DraftRoll) => pickable(c) && (shared.get(comboKey(c.gen, c.type)) ?? 0) >= n;
+    const round = Math.floor(state.pickIndex / n);
+    roundRoll = drawRoll(leagueRng(state.seed, 'roll', 'round', round), state.settings, [enough, pickable]);
+  }
+  if (roundRoll && pickable(roundRoll)) return { roll: { ...roundRoll, own: false }, roundRoll };
+  const own = drawRoll(leagueRng(state.seed, 'roll', 'own', state.pickIndex), state.settings, [pickable]);
+  return { roll: own && { ...own, own: true }, roundRoll };
+}
+
+const NO_REROLLS: DraftRerollCount = { type: 0, region: 0 };
+
+/** Genutzte Rerolls des Teams. */
+export function rerollsUsedOf(state: Pick<DraftState, 'rerollsUsed'>, teamId: string): DraftRerollCount {
+  return state.rerollsUsed?.[teamId] ?? NO_REROLLS;
+}
+
+/** Übrige Rerolls dieser Art für das Team (0 ohne Zufallsmodus). */
+export function rerollsLeft(state: Pick<DraftState, 'settings' | 'rerollsUsed'>, teamId: string, kind: DraftRerollKind): number {
+  const mode = state.settings.roll;
+  if ((mode !== 'pick' && mode !== 'round') || !DRAFT_REROLL_KINDS.includes(kind)) return 0;
+  return Math.max(0, (state.settings.rerolls?.[kind] ?? 0) - (rerollsUsedOf(state, teamId)[kind] ?? 0));
+}
+
+/**
+ * Kann es für diese Reroll-Art überhaupt eine Alternative geben? Rerolls eingestellt und mehr als
+ * eine Generation (Region) bzw. ein Typ im Pool – sonst ginge der Reroll nie (Formular, Kurzfassung
+ * und Live-Ansicht bieten ihn dann nicht an).
+ */
+export function rerollUsable(settings: Pick<DraftSettings, 'rerolls' | 'gens' | 'types'>, kind: DraftRerollKind): boolean {
+  return (settings.rerolls?.[kind] ?? 0) > 0 && (kind === 'region' ? settings.gens.length > 1 : settings.types.length > 1);
+}
+
+/** Andere wählbare Würfe für einen Reroll: 'type' = gleiche Generation, anderer Typ; 'region' umgekehrt. */
+function rerollOptions(state: DraftView, team: DraftTeam, kind: DraftRerollKind, list: Pokemon[]): DraftRoll[] {
+  const roll = stateRollOf(state);
+  if (!roll) return [];
+  const pickable = pickableFor(state, team, list);
+  const options: DraftRoll[] =
+    kind === 'type'
+      ? state.settings.types.filter((t) => t !== roll.type).map((type) => ({ gen: roll.gen, type }))
+      : state.settings.gens.filter((g) => g !== roll.gen).map((gen) => ({ gen, type: roll.type }));
+  return options.filter(pickable);
+}
+
+/** Kann das Team jetzt neu würfeln (am Zug, kein CPU-Team, Wurf da, Reroll übrig, andere Möglichkeit)? */
+export function canReroll(state: DraftRollView, teamId: string, kind: DraftRerollKind, list: Pokemon[]): boolean {
+  const team = currentTeam(state);
+  if (!team || team.id !== teamId || team.cpu || !stateRollOf(state)) return false;
+  if (rerollsLeft(state, teamId, kind) <= 0) return false;
+  return rerollOptions(state, team, kind, list).length > 0;
+}
+
+/**
+ * Reroll des Teams am Zug: Ändert nur den Wurf seines aktuellen Picks (auch im Runden-Modus –
+ * der Rundenwurf bleibt) – 'type': neuer Typ, gleiche Generation; 'region': neue Generation,
+ * gleicher Typ – gleichverteilt unter den wählbaren Alternativen. Danach gilt er als eigener
+ * Wurf (own). Fehler: not_drafting, not_your_turn, no_roll, no_reroll, no_other_roll.
+ */
+export function applyReroll(state: DraftState, teamId: string, kind: DraftRerollKind, list: Pokemon[]): DraftState {
+  if (state.phase !== 'drafting') return fail('not_drafting', 'Gerade wird nicht gedraftet');
+  const team = currentTeam(state);
+  if (!team || team.id !== teamId || team.cpu) return fail('not_your_turn', 'Du bist nicht dran');
+  if (!stateRollOf(state)) return fail('no_roll', 'Gerade gibt es keinen Wurf');
+  if (rerollsLeft(state, teamId, kind) <= 0) {
+    return fail('no_reroll', kind === 'region' ? 'Kein Regions-Reroll mehr übrig' : 'Kein Typ-Reroll mehr übrig');
+  }
+  const options = rerollOptions(state, team, kind, list);
+  if (!options.length) return fail('no_other_roll', 'Kein anderer Wurf möglich');
+  const used = rerollsUsedOf(state, teamId);
+  const rng = leagueRng(state.seed, 'roll', 'reroll', kind, state.pickIndex, used[kind]);
+  const next = options[Math.floor(rng() * options.length)];
+  return {
+    ...state,
+    roll: { gen: next.gen, type: next.type, own: true },
+    rerollsUsed: { ...state.rerollsUsed, [teamId]: { ...used, [kind]: used[kind] + 1 } },
+  };
+}
+
+// ---------------------------------------------------------------- Picks
+
 export function startDraft(state: DraftState, deviceId: string, now: number, list: Pokemon[]): DraftState {
   requireLobby(state);
   requireHost(state, deviceId);
@@ -492,7 +1071,12 @@ export function startDraft(state: DraftState, deviceId: string, now: number, lis
   const needed = state.teams.length * rounds(state.settings);
   const pool = poolOf(state.settings, list).length;
   if (pool < needed) fail('pool_too_small', `Der Pool hat nur ${pool} Pokémon, gebraucht werden ${needed}`);
-  const teams = state.settings.order === 'random' ? shuffle(leagueRng(state.seed, 'order'), state.teams) : state.teams;
+  // Legendäre zählen nur, soweit das Limit sie aufnimmt (sonst müsste es für alle ausgesetzt werden)
+  const capacity = poolPickCapacity(state.settings, state.teams.length, list);
+  if (capacity < needed) {
+    fail('pool_too_small', `Mit dem Legendären-Limit reicht der Pool nur für ${capacity} Picks, gebraucht werden ${needed}`);
+  }
+  const teams =state.settings.order === 'random' ? shuffle(leagueRng(state.seed, 'order'), state.teams) : state.teams;
   const next: DraftState = {
     ...state,
     phase: 'drafting',
@@ -500,8 +1084,10 @@ export function startDraft(state: DraftState, deviceId: string, now: number, lis
     pickIndex: 0,
     picks: [],
     turnStartedAt: now,
+    rerollsUsed: {},
   };
-  return { ...next, deadline: deadlineFor(next, now) };
+  const rolled: DraftState = { ...next, ...rollsFor(next, list) };
+  return { ...rolled, deadline: deadlineFor(rolled, now) };
 }
 
 /** Grund, warum dieser Pick nicht geht – oder null. */
@@ -510,9 +1096,15 @@ export function pickError(state: DraftView, teamId: string, pokemonId: number, s
   const team = currentTeam(state);
   if (!team || team.id !== teamId) return 'Du bist nicht dran';
   if (!Number.isInteger(pokemonId) || !Number.isInteger(slot)) return 'Ungültiger Pick';
-  const p = poolOf(state.settings, list).find((x) => x.id === pokemonId);
-  if (!p) return 'Dieses Pokémon ist nicht im Pool';
-  if (draftedIds(state).has(pokemonId)) return `${p.de} ist schon vergeben`;
+  const p = byIdOf(list).get(pokemonId);
+  const block = p ? pickAllowed(state, teamId, p, list) : 'pool';
+  if (!p || block === 'pool') return 'Dieses Pokémon ist nicht im Pool';
+  if (block === 'taken') return `${p.de} ist schon vergeben`;
+  if (block === 'roll') return `${p.de} passt nicht zum Wurf`;
+  if (block === 'legend_limit') {
+    const max = state.settings.maxLegends;
+    return max === 1 ? 'Höchstens ein Legendäres/Mysteriöses pro Team' : `Höchstens ${max} Legendäre/Mysteriöse pro Team`;
+  }
   if (!freeSlots(team, state.settings).includes(slot)) return 'Dieser Platz ist nicht frei';
   return null;
 }
@@ -528,6 +1120,7 @@ export function applyPick(
 ): DraftState {
   const err = pickError(state, teamId, pokemonId, slot, list);
   if (err) fail('bad_pick', err);
+  const roll = rulesFor(state, teamId, list).roll;
   const teams = state.teams.map((t) =>
     t.id !== teamId
       ? t
@@ -535,7 +1128,9 @@ export function applyPick(
         ? { ...t, ss: pokemonId }
         : { ...t, slots: t.slots.map((v, i) => (i === slot ? pokemonId : v)) },
   );
-  const picks = [...state.picks, { pick: state.pickIndex, teamId, pokemonId, slot, auto, at: now }];
+  const log: DraftPickLog = { pick: state.pickIndex, teamId, pokemonId, slot, auto, at: now };
+  if (roll) log.roll = { gen: roll.gen, type: roll.type };
+  const picks = [...state.picks, log];
   const pickIndex = state.pickIndex + 1;
   const next: DraftState = { ...state, teams, picks, pickIndex, turnStartedAt: now };
   if (pickIndex >= totalPicks(next)) {
@@ -544,6 +1139,8 @@ export function applyPick(
       phase: 'done',
       deadline: null,
       turnStartedAt: null,
+      roll: null,
+      ...(state.roundRoll !== undefined ? { roundRoll: null } : {}),
       season: {
         seed: leagueSeed(state.seed, 'season'),
         startsAt: now + DRAFT_LIMITS.seasonLeadMs,
@@ -551,13 +1148,15 @@ export function applyPick(
       },
     };
   }
-  return { ...next, deadline: deadlineFor(next, now) };
+  const rolled: DraftState = { ...next, ...rollsFor(next, list) };
+  return { ...rolled, deadline: deadlineFor(rolled, now) };
 }
 
 /**
  * Automatische Wahl: bestes Pokémon für den Slot, der es am meisten braucht –
  * bewertet wie der Team-Score (Fit × Positionsgewicht). CPU-Teams bekommen etwas
- * Zufall aus dem Liga-Seed, Auto-Picks für Menschen (Timer) nicht.
+ * Zufall aus dem Liga-Seed, Auto-Picks für Menschen (Timer) nicht. Gewählt wird nur,
+ * was die Regeln erlauben (Wurf, Legendären-Limit – siehe pickAllowed); CPU-Teams würfeln nie neu.
  */
 export function autoPickChoice(
   state: DraftState,
@@ -567,8 +1166,7 @@ export function autoPickChoice(
   withNoise: boolean,
 ): { pokemonId: number; slot: number } {
   const team = state.teams.find((t) => t.id === teamId) ?? fail('no_team', 'Dieses Team gibt es nicht');
-  const taken = draftedIds(state);
-  const pool = poolOf(state.settings, list).filter((p) => !taken.has(p.id));
+  const pool = rulesFor(state, teamId, list).allowed;
   if (!pool.length) fail('pool_empty', 'Keine Pokémon mehr im Pool');
   const rng = withNoise ? leagueRng(state.seed, 'cpu', state.pickIndex) : null;
   const defs = FORMATIONS[team.formation].slots;
@@ -585,7 +1183,8 @@ export function autoPickChoice(
       }
     }
   }
-  return { pokemonId: best!.pokemonId, slot: best!.slot };
+  if (!best) return fail('no_slot', 'Kein Platz mehr frei');
+  return { pokemonId: best.pokemonId, slot: best.slot };
 }
 
 // ---------------------------------------------------------------- Saison & Ausgabe
@@ -617,30 +1216,42 @@ export function draftSeason(
   return simulateLeague(leagueTeams(state, byId, scale), createRng(state.season.seed));
 }
 
-const byIdCache = new WeakMap<Pokemon[], Map<number, Pokemon>>();
-
 /**
  * Am Ende des Drafts: Saison einmal berechnen und kompakt speichern (Teams ohne Kader –
  * Tabelle, Spiele und Torschützen bleiben). So ändert ein späterer Deploy das Ergebnis nicht.
  */
 export function withLeague(state: DraftState, list: Pokemon[], scale: Scale): DraftState {
   if (state.phase !== 'done' || !state.season || state.league) return state;
-  let byId = byIdCache.get(list);
-  if (!byId) {
-    byId = new Map(list.map((p) => [p.id, p]));
-    byIdCache.set(list, byId);
-  }
-  const full = draftSeason(state, byId, scale);
+  const full = draftSeason(state, byIdOf(list), scale);
   if (!full) return state;
   return { ...state, league: { ...full, teams: full.teams.map((t) => ({ name: t.name, rating: t.rating })) } };
 }
 
-/** Schnappschuss für einen Client – ohne Geräte-IDs (und ohne Sperrliste). */
+/**
+ * Nur lesbare Spiegel der älteren Schlüssel für Clients von vor dem Update (offene Tabs mit
+ * altem Bundle verbinden sich nach einem Deploy neu und lesen region/legends): region 0 bei
+ * allen bzw. mehreren Generationen (eine Obermenge – falsche Picks lehnt der Server ab), sonst
+ * die eine Generation; legends = Legendäre oder Mysteriöse im Pool (ebenfalls Obermenge).
+ * Für Ligen von vor dem Update (ein region, legends für beide) ist das genau der alte Pool.
+ */
+export function legacySettingsMirror(settings: DraftSettings): Required<LegacySettingsPatch> {
+  const region = lobbyRegionOf(settings);
+  return { region: region === LOBBY_REGION_MANY ? 0 : region, legends: poolHasLegends(settings) };
+}
+
+/**
+ * Schnappschuss für einen Client – ohne Geräte-IDs, Sperrliste und Seed. Einstellungen immer
+ * in der aktuellen Form (plus die gespiegelten älteren region/legends – legacySettingsMirror);
+ * roll (null außerhalb des Drafts bzw. ohne Zufallsmodus) und rerollsUsed immer, roundRoll nur
+ * im Runden-Modus.
+ */
 export function snapshotOf(state: DraftState, you: string | null, now: number): DraftSnapshot {
+  const settings = upgradeSettings(state.settings);
+  const drafting = state.phase === 'drafting';
   return {
     code: state.code,
     phase: state.phase,
-    settings: state.settings,
+    settings: { ...withoutLegacy(settings), ...legacySettingsMirror(settings) },
     teams: state.teams,
     hostTeamId: state.hostTeamId,
     pickIndex: state.pickIndex,
@@ -651,7 +1262,10 @@ export function snapshotOf(state: DraftState, you: string | null, now: number): 
     createdAt: state.createdAt,
     serverNow: now,
     you,
-    ...(state.phase === 'drafting' ? { turnStartedAt: state.turnStartedAt ?? null } : {}),
+    ...(drafting ? { turnStartedAt: state.turnStartedAt ?? null } : {}),
     ...(state.league ? { league: state.league, ratings: state.league.teams.map((t) => t.rating) } : {}),
+    roll: drafting && settings.roll !== 'off' ? (state.roll ?? null) : null,
+    ...(settings.roll === 'round' ? { roundRoll: drafting ? (state.roundRoll ?? null) : null } : {}),
+    rerollsUsed: state.rerollsUsed ?? {},
   };
 }

@@ -131,7 +131,11 @@ export function DraftRoom() {
             {t.online.onlineLeague} · <span className="draft-room__code">{code}</span>
           </span>
           <h1 className="page-title">{leagueName || t.online.title}</h1>
-          {s && <p className="page-lead">{t.online.phaseLead[s.phase]}</p>}
+          {s && (
+            <p className="page-lead">
+              {s.phase === 'drafting' && s.settings.snake === false ? t.online.phaseLeadFixed : t.online.phaseLead[s.phase]}
+            </p>
+          )}
         </div>
         <div className="draft-room__tools">
           <SoundToggle />

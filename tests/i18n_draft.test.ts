@@ -335,8 +335,8 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
         h(
           'div',
           null,
-          h(DraftSettingsForm, { value: { ...s.settings, region: 5 }, onChange: () => {}, list: ALL, teamsJoined: 3 }),
-          h(DraftSettingsSummary, { settings: { ...s.settings, region: 5, pickSeconds: 60, visibility: 'public' } }),
+          h(DraftSettingsForm, { value: { ...s.settings, gens: [5] }, onChange: () => {}, list: ALL, teamsJoined: 3 }),
+          h(DraftSettingsSummary, { settings: { ...s.settings, gens: [5], pickSeconds: 60, visibility: 'public' } }),
           h(DraftTeamFields, { name: '', formation: '4-3-3', onName: () => {}, onFormation: () => {} }),
         ),
       ),

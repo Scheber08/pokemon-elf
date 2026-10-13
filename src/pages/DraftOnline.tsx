@@ -7,7 +7,9 @@ import { createDraft, fetchPublicLobbies, isDraftCode, normalizeDraftCode } from
 import {
   DEFAULT_DRAFT_SETTINGS,
   DRAFT_LIMITS,
+  LOBBY_REGION_MANY,
   type DraftSettings,
+  type DraftSettingsPatch,
   type PublicLobby,
 } from '../lib/api/draftContract';
 import { normalizeSettings } from '../lib/draftEngine';
@@ -29,9 +31,12 @@ const SETTINGS_KEY = 'draft-online:settings';
 /** Öffentliche Lobbys neu laden, solange die Seite offen ist */
 const LOBBY_REFRESH_MS = 20_000;
 
-/** Zuletzt benutzte Einstellungen (Liganame nicht) – ungültige Reste fallen auf die Standardwerte zurück. */
+/**
+ * Zuletzt benutzte Einstellungen (Liganame nicht) – ungültige Reste fallen auf die Standardwerte
+ * zurück. Ältere Stände (region/legends) schreibt normalizeSettings um.
+ */
 function initialSettings(list: Pokemon[]): DraftSettings {
-  const stored = load<Partial<DraftSettings> | null>(SETTINGS_KEY, null);
+  const stored = load<DraftSettingsPatch | null>(SETTINGS_KEY, null);
   try {
     return { ...normalizeSettings({ ...stored, name: '' }, DEFAULT_DRAFT_SETTINGS, list) };
   } catch {
@@ -186,6 +191,13 @@ function phaseLabel(phase: RecentLeague['phase'], t: Messages): string {
   return Object.hasOwn(t.online.phase, phase) ? t.online.phase[phase] : '';
 }
 
+/** Pool einer Lobby-Zeile: alle Generationen, genau eine oder mehrere (LOBBY_REGION_MANY). */
+function lobbyPoolLabel(region: PublicLobby['region'], t: Messages): string {
+  if (region === 0) return t.game.allRegions;
+  if (region === LOBBY_REGION_MANY) return t.online.manyGens;
+  return t.game.region[region] ?? '?';
+}
+
 function timerLabel(seconds: number, t: Messages): string {
   return seconds ? t.online.timerSeconds(seconds) : t.online.noTimer;
 }
@@ -249,7 +261,7 @@ function PublicLobbies() {
                   <span className="draft-lobbies__facts">
                     <span>{t.online.teamsOf(l.teams, l.maxTeams)}</span>
                     <span>
-                      {l.region === 0 ? t.game.allRegions : (t.game.region[l.region] ?? '?')}
+                      {lobbyPoolLabel(l.region, t)}
                       {l.legends ? t.online.plusLegends : ''}
                     </span>
                     <span>{timerLabel(l.pickSeconds, t)}</span>

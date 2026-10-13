@@ -21,7 +21,7 @@ import {
   STALE_CONNECT_MS,
   type DraftSocketStatus,
 } from '../src/lib/api/draftClient';
-import { DRAFT_LIMITS, type DraftSnapshot } from '../src/lib/api/draftContract';
+import { DEFAULT_DRAFT_SETTINGS, DRAFT_ALL_GENS, DRAFT_LIMITS, type DraftSnapshot } from '../src/lib/api/draftContract';
 import { getDevice } from '../src/lib/device';
 import {
   addCpuTeam,
@@ -276,16 +276,7 @@ function snapshot(over: Partial<DraftSnapshot> = {}): DraftSnapshot {
   return {
     code: 'ABC234',
     phase: 'lobby',
-    settings: {
-      name: '',
-      region: 1,
-      legends: false,
-      setPiece: false,
-      maxTeams: 4,
-      pickSeconds: 60,
-      order: 'random',
-      visibility: 'private',
-    },
+    settings: { ...DEFAULT_DRAFT_SETTINGS },
     teams: [],
     hostTeamId: null,
     pickIndex: 0,
@@ -906,13 +897,13 @@ describe('Lobby-Helfer', () => {
   it('fitSettingsPatch senkt maxTeams, wenn der Pool kleiner wird', () => {
     const base = lobby(1).settings; // Kanto, 4 Teams
     const big = { ...base, maxTeams: 8 };
-    const kalos = Math.min(8, maxTeamsForPool({ ...big, region: 6 }, ALL));
+    const kalos = Math.min(8, maxTeamsForPool({ ...big, gens: [6] }, ALL));
     expect(kalos).toBeLessThan(8);
-    expect(fitSettingsPatch(big, { region: 6 }, ALL)).toEqual({ region: 6, maxTeams: kalos });
+    expect(fitSettingsPatch(big, { gens: [6] }, ALL)).toEqual({ gens: [6], maxTeams: kalos });
     // passt ohnehin → unverändert
-    expect(fitSettingsPatch(base, { region: 0 }, ALL)).toEqual({ region: 0 });
+    expect(fitSettingsPatch(base, { gens: [...DRAFT_ALL_GENS] }, ALL)).toEqual({ gens: [...DRAFT_ALL_GENS] });
     // schon mehr Teams beigetreten, als der neue Pool trägt → geht nicht
-    expect(fitSettingsPatch(big, { region: 6 }, ALL, kalos + 1)).toBeNull();
+    expect(fitSettingsPatch(big, { gens: [6] }, ALL, kalos + 1)).toBeNull();
     // weniger Plätze als Teams → geht nicht
     expect(fitSettingsPatch(big, { maxTeams: 2 }, ALL, 3)).toBeNull();
   });

@@ -8,7 +8,8 @@ import type { ApiErrorBody, DeviceAuth, HealthResponse } from '../src/lib/api/co
 import {
   DRAFT_LIMITS,
   type CreateDraftResponse,
-  type DraftSettings,
+  DRAFT_ALL_GENS,
+  type DraftSettingsPatch,
   type DraftSnapshot,
   type PublicLobbiesResponse,
 } from '../src/lib/api/draftContract';
@@ -84,11 +85,11 @@ async function call<T = unknown>(
   return { status: res.status, body: parsed as T, headers: res.headers, text };
 }
 
-function createBody(dev: DeviceAuth, settings: Partial<DraftSettings> = {}, extra: Record<string, unknown> = {}) {
+function createBody(dev: DeviceAuth, settings: DraftSettingsPatch = {}, extra: Record<string, unknown> = {}) {
   return { ...dev, settings, teamName: 'Host-Elf', formation: '4-3-3', ...extra };
 }
 
-async function createLeague(dev: DeviceAuth, settings: Partial<DraftSettings> = {}, extra: Record<string, unknown> = {}) {
+async function createLeague(dev: DeviceAuth, settings: DraftSettingsPatch = {}, extra: Record<string, unknown> = {}) {
   const res = await call<CreateDraftResponse>('POST', '/api/drafts', createBody(dev, settings, extra));
   expect(res.status, res.text).toBe(200);
   return { code: res.body.code, room: drafts.room(res.body.code) };
@@ -102,7 +103,7 @@ async function hello(room: FakeRoom, dev: DeviceAuth, ip: string | null = null):
 }
 
 /** Liga mit Host (verbunden) und einem beigetretenen Gast. */
-async function lobbyWithGuest(settings: Partial<DraftSettings> = {}) {
+async function lobbyWithGuest(settings: DraftSettingsPatch = {}) {
   const hostDev = newDevice();
   const guestDev = newDevice();
   const { code, room } = await createLeague(hostDev, settings);
@@ -501,7 +502,15 @@ describe('Draft-Raum: Lobby', () => {
       type: 'settings',
       settings: { name: ' Liga\u0000 der  Elf ', maxTeams: 6, visibility: 'public', region: 0, legends: true, pickSeconds: 90, junk: 1 },
     });
-    expect(host.state!.settings).toMatchObject({ name: 'Liga der Elf', maxTeams: 6, visibility: 'public', region: 0, legends: true, pickSeconds: 90 });
+    expect(host.state!.settings).toMatchObject({
+      name: 'Liga der Elf',
+      maxTeams: 6,
+      visibility: 'public',
+      gens: [...DRAFT_ALL_GENS],
+      legendary: true,
+      mythical: true,
+      pickSeconds: 90,
+    });
     expect(host.state!.settings).not.toHaveProperty('junk');
     // gebündelt: spätestens LOBBY_SYNC_MS nach dem letzten Schreiben (Beitritt des Gasts)
     await room.advance(LOBBY_SYNC_MS);
@@ -696,7 +705,7 @@ describe('Draft-Raum: Lobby', () => {
 
 describe('Draft-Raum: Draft', () => {
   /** Zwei Menschen, Reihenfolge Host → Gast, ohne Timer. */
-  async function started(settings: Partial<DraftSettings> = {}) {
+  async function started(settings: DraftSettingsPatch = {}) {
     const ctx = await lobbyWithGuest({ order: 'host', pickSeconds: 0, ...settings });
     await ctx.room.send(ctx.host, { type: 'start' });
     expect(ctx.host.state!.phase).toBe('drafting');
@@ -955,13 +964,30 @@ describe('Draft-Raum: Hilfsfunktionen', () => {
       { type: 'pick', pokemonId: 1, slot: 0 },
       { type: 'auto-pick' },
       { type: 'auto-pick', teamId: 'abc', pickIndex: 3 },
+      { type: 'reroll', kind: 'type' },
+      { type: 'reroll', kind: 'region' },
+      { type: 'reroll', kind: 'type', pickIndex: 4, roll: { gen: 2, type: 'fire' } },
       { type: 'ping' },
     ];
     for (const m of ok) {
       const parsed = parseClientMessage(JSON.stringify({ ...m, extra: 'egal' }));
       expect(parsed, m.type).toEqual({ ok: true, msg: m });
     }
-    for (const bad of [{ type: 'auto-pick', teamId: 5 }, { type: 'auto-pick', pickIndex: 1.5 }, { type: 'auto-pick', teamId: 'x'.repeat(65) }]) {
+    for (const bad of [
+      { type: 'auto-pick', teamId: 5 },
+      { type: 'auto-pick', pickIndex: 1.5 },
+      { type: 'auto-pick', teamId: 'x'.repeat(65) },
+      { type: 'reroll' },
+      { type: 'reroll', kind: 'gen' },
+      { type: 'reroll', kind: ['type'] },
+      { type: 'reroll', kind: 'type', pickIndex: 1.5 },
+      { type: 'reroll', kind: 'type', pickIndex: '3' },
+      { type: 'reroll', kind: 'type', roll: null },
+      { type: 'reroll', kind: 'type', roll: { gen: '2', type: 'fire' } },
+      { type: 'reroll', kind: 'type', roll: { gen: 2 } },
+      { type: 'reroll', kind: 'type', roll: { gen: 2, type: 'x'.repeat(17) } },
+      { type: 'reroll', kind: 'type', roll: [2, 'fire'] },
+    ]) {
       expect(parseClientMessage(JSON.stringify(bad)).ok, JSON.stringify(bad)).toBe(false);
     }
   });

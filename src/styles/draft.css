@@ -61,6 +61,78 @@
 .draft-teamfields .field:last-child {
   margin-bottom: 14px;
 }
+/* Gruppen der Einstellungen (Pool, Draft) */
+.draft-settings__group {
+  border: 0;
+  margin: 0 0 6px;
+  padding: 10px 0 0;
+  min-width: 0;
+  border-top: 1px solid var(--line);
+}
+.draft-settings__legend {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  padding: 0 8px 0 0;
+}
+.draft-settings__poolnote {
+  margin: -4px 0 12px;
+}
+/* Neue Typ-Auswahl nach „Keine": Stand und Übernehmen */
+.draft-settings__typedraft {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: -4px 0 12px;
+}
+.draft-settings__typedraft .draft-field-note {
+  margin: 0;
+}
+.draft-settings__typedraft .btn[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.draft-settings__rerollnote {
+  margin: -6px 0 12px;
+}
+/* Mehrfachauswahl (Generationen, Typen): Chips brechen um statt zu scrollen */
+.chips.draft-chips {
+  flex-wrap: wrap;
+  overflow: visible;
+  gap: 6px;
+}
+.draft-chips .chip {
+  min-height: 34px;
+}
+.draft-chips .chip:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.draft-chips .draft-chip--action {
+  border-style: dashed;
+}
+.draft-chips .draft-chip--action.is-active {
+  border-style: solid;
+}
+/* Nicht abwählbar (letzte Auswahl) bzw. Pool zu klein: bleibt fokussierbar, Grund im Tooltip */
+.draft-chips .draft-chip--blocked {
+  cursor: not-allowed;
+}
+.draft-chips .draft-chip--blocked:not(.is-active) {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+.draft-chips .chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.draft-chips[aria-busy='true'] .chip {
+  cursor: progress;
+}
 
 /* ---------- /draft Online: Erstellen, Code, Lobbys ---------- */
 .draft-online__grid {
@@ -465,6 +537,92 @@
 .draft-turnbar__last strong {
   color: var(--text);
 }
+/* Wurf des aktuellen Picks (Zufallsmodus) */
+.draft-roll {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin: 0;
+  min-width: 0;
+}
+.draft-roll__value {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 0;
+  padding: 4px 12px 4px 10px;
+  border: 2px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  animation: draft-pop 0.35s ease-out;
+}
+.draft-roll.is-mine .draft-roll__value {
+  border-color: var(--yellow);
+  box-shadow: 0 0 0 3px rgba(255, 203, 5, 0.18);
+}
+.draft-roll__label {
+  font-family: var(--font-head);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-dim);
+}
+.draft-roll__gen {
+  font-family: var(--font-head);
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+.draft-roll__value .type-badge {
+  font-size: 14px;
+  padding: 3px 10px;
+}
+.draft-roll__own {
+  font-family: var(--font-head);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border: 1px solid var(--yellow);
+  border-radius: 4px;
+  padding: 0 5px;
+  color: var(--text);
+  background: rgba(255, 203, 5, 0.16);
+  cursor: help;
+}
+.draft-roll__round {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.draft-roll__actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+/* Reroll mit sichtbarem Grund, wenn er nicht geht (statt Tooltip auf einem gesperrten Knopf) */
+.draft-roll__option {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+.draft-roll__why {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.draft-roll__reroll[aria-disabled='true']:not([aria-busy='true']) {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.draft-roll--free {
+  font-size: 14px;
+  color: var(--text-dim);
+}
 .draft-myturn {
   font-family: var(--font-head);
   font-size: clamp(22px, 5vw, 30px);
@@ -595,6 +753,12 @@
   border-radius: 5px;
   padding: 1px 2px;
 }
+.draft-board__legends {
+  white-space: nowrap;
+}
+.draft-board__legends.is-full {
+  color: var(--text);
+}
 .draft-board__col li.is-empty span:last-child {
   color: var(--text-dim);
 }
@@ -646,6 +810,16 @@
 .draft-feed__auto {
   color: var(--text-dim);
 }
+/* Wurf, unter dem gewählt wurde */
+.draft-feed__roll {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  font-size: 12px;
+  color: var(--text-dim);
+}
 
 .draft-season {
   display: grid;
@@ -691,8 +865,30 @@
     padding: 3px 8px;
   }
   /* Klebende Leiste kompakt halten – der Verlauf steht weiter unten */
-  .draft-turnbar__last {
+  .draft-turnbar__last,
+  .draft-roll__round {
     display: none;
+  }
+  .draft-roll {
+    gap: 6px 8px;
+  }
+  .draft-roll__value {
+    padding: 3px 10px 3px 8px;
+  }
+  .draft-roll__gen {
+    font-size: 17px;
+  }
+  .draft-roll__actions {
+    width: 100%;
+  }
+  .draft-roll__actions .draft-roll__option {
+    flex: 1 1 0;
+  }
+  .draft-roll__option .btn {
+    width: 100%;
+  }
+  .draft-feed li {
+    flex-wrap: wrap;
   }
   .draft-timer__time {
     font-size: 17px;

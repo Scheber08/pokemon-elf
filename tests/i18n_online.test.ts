@@ -6,7 +6,7 @@
  */
 import type { ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DraftSnapshot, PublicLobby } from '../src/lib/api/draftContract';
+import type { DraftSettingsPatch, DraftSnapshot, PublicLobby } from '../src/lib/api/draftContract';
 import type { DraftRoom } from '../src/state/useDraftRoom';
 import type { DraftState } from '../src/lib/draftEngine';
 import { ALL, byName } from './helpers';
@@ -104,7 +104,7 @@ const app = (child: ReactElement, path = '/') =>
     h(SettingsProvider, null, h(ToastProvider, null, h(PokemonDataProvider, null, child))),
   );
 
-function lobby(teams = 2, settings: Partial<DraftState['settings']> = { region: 1, maxTeams: 4 }): DraftState {
+function lobby(teams = 2, settings: DraftSettingsPatch = { region: 1, maxTeams: 4 }): DraftState {
   let s = engine.createDraft({
     code: 'ABC234',
     seed: 42,
@@ -141,7 +141,7 @@ function fakeRoom(s: DraftSnapshot, over: Partial<DraftRoom> = {}): DraftRoom {
     authError: null,
     clockOffset: 0,
     pending: false,
-    busy: { pick: false, 'auto-pick': false, start: false, join: false, 'add-cpu': false, settings: false },
+    busy: { pick: false, 'auto-pick': false, start: false, join: false, 'add-cpu': false, settings: false, reroll: false },
     drafted: engine.draftedIds(s),
     join: vi.fn(() => true),
     leave: vi.fn(() => true),
@@ -153,6 +153,7 @@ function fakeRoom(s: DraftSnapshot, over: Partial<DraftRoom> = {}): DraftRoom {
     start: vi.fn(() => true),
     pick: vi.fn(() => true),
     autoPick: vi.fn(() => true),
+    reroll: vi.fn(() => true),
     reconnect: vi.fn(),
     ...over,
   };
@@ -500,6 +501,18 @@ describe('Seiten (en)', () => {
         pickSeconds: 60,
         createdAt: Date.now() - 3 * 3_600_000,
       },
+      // Mehrere (nicht alle) Generationen: region 10
+      {
+        code: 'QWE789',
+        name: 'Mixed',
+        hostName: 'Mix FC',
+        teams: 1,
+        maxTeams: 2,
+        region: 10,
+        legends: false,
+        pickSeconds: 0,
+        createdAt: Date.now() - 4 * 3_600_000,
+      },
     ]);
     const { container } = await render(
       app(h(DraftOnline, { modeSwitch: null, supported: true, onRetry: vi.fn(), onLocal: vi.fn() })),
@@ -511,8 +524,11 @@ describe('Seiten (en)', () => {
     expect(lobbies[0].textContent).toContain('2 min ago');
     expect(lobbies[1].textContent).toContain('by Host FC · 3 h ago');
     expect(lobbies[1].textContent).toContain('2/4 teams');
-    expect(lobbies[1].textContent).toContain('Unova + legendaries');
+    // Die Spalte legends heißt „Legendäre oder Mysteriöse" – das Etikett nennt beide
+    expect(lobbies[1].textContent).toContain('Unova + legendaries/mythicals');
     expect(lobbies[1].textContent).toContain('60 s');
+    expect(lobbies[1].textContent).toContain('Several generations');
+    expect(lobbies[1].textContent).not.toContain('?');
     expectEnglishIn(
       container,
       '.page-head, [id="draft-create-title"], .draft-create .draft-subtitle, .draft-create button.btn--big, .draft-create p.muted, .draft-joincode, .draft-lobbies, .draft-online__side p.muted',

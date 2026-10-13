@@ -1,12 +1,35 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { FORMATIONS } from '../config/formations';
 import { useT } from '../i18n';
-import type { DraftSnapshot, DraftTeam } from '../lib/api/draftContract';
-import { autoPickChoice, autoPickOpensAt, DRAFT_SS_SLOT, freeSlots, poolOf, type DraftState } from '../lib/draftEngine';
+import { DRAFT_REROLL_KINDS, type DraftRerollKind, type DraftSnapshot, type DraftTeam } from '../lib/api/draftContract';
+import {
+  allowedPicks,
+  autoPickChoice,
+  autoPickOpensAt,
+  canReroll,
+  DRAFT_SS_SLOT,
+  effectiveRoll,
+  freeSlots,
+  legendsOf,
+  pickAllowed,
+  poolHasLegends,
+  poolOf,
+  rerollsLeft,
+  rerollUsable,
+} from '../lib/draftEngine';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
-import { draftedKey, ownerOfPicks, pickAnnouncement, pickFeed, teamLabel, type DraftRoom } from '../state/useDraftRoom';
+import {
+  draftedKey,
+  ownerOfPicks,
+  pickAnnouncement,
+  pickFeed,
+  snapshotState,
+  teamLabel,
+  type DraftRoom,
+} from '../state/useDraftRoom';
 import type { Pokemon } from '../types';
+import { TypeBadge } from './Badges';
 import { DraftBoard, DraftPickFeed } from './DraftBoard';
 import { DraftCountdown } from './DraftCountdown';
 import { FilterBar, useFilteredPokemon, type PokemonFilters } from './FilterBar';
@@ -15,9 +38,88 @@ import { PokemonGrid } from './PokemonGrid';
 import { RunNotice } from './RunBoard';
 import '../styles/draft.css';
 
-/** Engine-Zustand aus einem Schnappschuss – nur für die Vorschlags-Berechnung (ohne Zufall). */
-function asState(s: DraftSnapshot): DraftState {
-  return { ...s, seed: 0, owners: {} };
+/** Schlüssel des aktuellen Wurfs (leer ohne Wurf) – ändert sich mit jedem neuen Wurf bzw. Reroll. */
+function rollKeyOf(s: Pick<DraftSnapshot, 'roll'>): string {
+  return s.roll ? `${s.roll.gen}|${s.roll.type}|${s.roll.own ? 1 : 0}` : '';
+}
+
+/**
+ * Wurf des aktuellen Picks (Zufallsmodus) in der Statusleiste: Generation + Typ, „eigener Wurf"
+ * und – nur für das Team am Zug – die Reroll-Knöpfe mit den übrigen Rerolls.
+ */
+function DraftRollBar({ room, readOnly }: { room: DraftRoom; readOnly: boolean }) {
+  const t = useT();
+  const { list } = usePokemonData();
+  const whyId = useId();
+  const s = room.state!;
+  const roll = s.roll ?? null;
+  const me = room.me;
+  if (!roll) {
+    return (
+      <p className="draft-roll draft-roll--free">
+        <span className="draft-roll__label">{t.online.roll}</span> {t.online.freeChoice}
+      </p>
+    );
+  }
+  const region = t.game.region[roll.gen] ?? '?';
+  const round = s.roundRoll && roll.own ? s.roundRoll : null;
+  // Reroll oder Pick unterwegs: kein Reroll (bei einem Snake-Doppelzug träfe er sonst schon den nächsten Wurf)
+  const busy = room.busy.reroll || room.pending;
+  const kinds = room.myTurn && me && !readOnly ? DRAFT_REROLL_KINDS.filter((k) => rerollUsable(s.settings, k)) : [];
+  const button = (kind: DraftRerollKind) => {
+    const left = rerollsLeft(s, me!.id, kind);
+    const possible = canReroll(s, me!.id, kind, list);
+    // Sichtbarer Grund statt Tooltip auf einem gesperrten Knopf (Tastatur, Touch)
+    const reason = left <= 0 ? t.online.noRerollLeft : !possible ? t.online.noOtherRoll : null;
+    const id = `${whyId}-${kind}`;
+    return (
+      <span key={kind} className="draft-roll__option">
+        <button
+          type="button"
+          className="btn btn--small draft-roll__reroll"
+          disabled={room.status !== 'open'}
+          // Gesperrt bzw. unterwegs nicht disabled, damit der Tastaturfokus bleibt – gesendet wird nur, was geht
+          aria-disabled={busy || !!reason || undefined}
+          aria-busy={room.busy.reroll}
+          aria-describedby={reason ? id : undefined}
+          onClick={() => !busy && !reason && room.reroll(kind)}
+        >
+          {kind === 'type' ? t.online.rerollType(left) : t.online.rerollRegion(left)}
+        </button>
+        {reason && (
+          <small id={id} className="draft-roll__why">
+            {reason}
+          </small>
+        )}
+      </span>
+    );
+  };
+  return (
+    <div className={`draft-roll ${room.myTurn ? 'is-mine' : ''}`}>
+      {/* key: neuer Wurf → kurze Animation */}
+      <p className="draft-roll__value" key={rollKeyOf(s)}>
+        <span className="sr-only">{t.online.rollAria(region, t.game.type[roll.type])}</span>
+        <span className="draft-roll__label" aria-hidden="true">
+          {t.online.roll}
+        </span>
+        <strong className="draft-roll__gen" aria-hidden="true">
+          {region}
+        </strong>
+        <span aria-hidden="true">
+          <TypeBadge type={roll.type} />
+        </span>
+        {roll.own && (
+          <span className="draft-roll__own" title={t.online.ownRollTitle}>
+            {t.online.ownRoll}
+          </span>
+        )}
+      </p>
+      {round && (
+        <span className="draft-roll__round">{t.online.roundRoll(t.game.region[round.gen] ?? '?', t.game.type[round.type])}</span>
+      )}
+      {kinds.length > 0 && <span className="draft-roll__actions">{kinds.map(button)}</span>}
+    </div>
+  );
 }
 
 /**
@@ -70,6 +172,8 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   const [selected, setSelected] = useState<number | null>(null);
   const [suggestSlot, setSuggestSlot] = useState<number | null>(null);
   const [showTaken, setShowTaken] = useState(false);
+  /** Nur Pokémon zeigen, die gerade erlaubt sind (Wurf, Legendären-Limit) */
+  const [onlyFit, setOnlyFit] = useState(true);
   const [filters, setFilters] = useState<PokemonFilters>({ query: '', type: null, region: 0 });
   const [info, setInfo] = useState<string | null>(null);
   const pitchRef = useRef<HTMLDivElement>(null);
@@ -87,17 +191,42 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   }, []);
 
   // Stabile Listen: Jeder Schnappschuss ist ein neues Objekt – neu gerechnet wird nur, wenn sich
-  // Pool bzw. vergebene Pokémon ändern (sonst springt das Raster bei jedem Online-Wechsel zurück).
-  const { region, legends } = s.settings;
-  const pool = useMemo(() => poolOf({ region, legends }, list), [region, legends, list]);
+  // Pool, vergebene Pokémon bzw. der Wurf ändern (sonst springt das Raster bei jedem Online-Wechsel zurück).
+  const { gens, types, legendary, mythical, maxLegends } = s.settings;
+  // poolOf hält den Pool je Einstellung fest (dasselbe Array, solange sich der Pool nicht ändert)
+  const pool = poolOf({ gens, types, legendary, mythical }, list);
+  const poolKey = `${gens.join(',')}|${types.join(',')}|${legendary ? 1 : 0}${mythical ? 1 : 0}`;
   const takenKey = draftedKey(s);
   const owners = useMemo(() => ownerOfPicks(s), [takenKey]);
-  const items = useMemo(() => (showTaken ? pool : pool.filter((p) => !owners.has(p.id))), [pool, owners, showTaken]);
-  const filtered = useFilteredPokemon(items, filters);
+  const rollKey = rollKeyOf(s);
+  // Was das eigene Team gerade wählen darf (Wurf nur am Zug, Legendären-Limit immer)
+  const allowed = useMemo(
+    () => (me ? new Set(allowedPicks(s, me.id, list).map((p) => p.id)) : null),
+    [takenKey, rollKey, s.pickIndex, s.phase, me?.id, poolKey, maxLegends, list],
+  );
+  const myRoll = useMemo(() => (me ? effectiveRoll(s, me.id, list) : null), [allowed]);
+  const freeCount = pool.length - owners.size;
+  /** Die Regeln sperren gerade etwas aus dem freien Pool → Umschalter „Nur passende" */
+  const restricted = !!allowed && allowed.size < freeCount;
+  const fitOnly = restricted && onlyFit;
+  const items = useMemo(
+    () => pool.filter((p) => (owners.has(p.id) ? showTaken : !fitOnly || allowed!.has(p.id))),
+    [pool, owners, showTaken, fitOnly, allowed],
+  );
+  // Regionsfilter nur, solange er zu sehen ist (mehrere Generationen, kein eigener Wurf mit „Nur
+  // passende") – ein vorher gewählter Wert bliebe sonst unsichtbar wirksam und leerte das Raster
+  const regionShown = gens.length > 1 && !(fitOnly && myRoll);
+  const effFilters = useMemo(
+    () => (regionShown && gens.includes(filters.region) ? filters : { ...filters, region: 0 as const }),
+    [filters, regionShown, gens.join(',')],
+  );
+  const filtered = useFilteredPokemon(items, effFilters);
   const feed = useMemo(() => pickFeed(s, byId, undefined, t), [s, byId, t]);
-  // Raster nur bei anderem Filter/Pool wieder von vorn – ein Pick nimmt nur eine Karte heraus
-  const gridKey = `${region}|${legends}|${showTaken}|${filters.region}|${filters.type ?? ''}|${filters.query}`;
-  const filtering = !!filters.query.trim() || !!filters.type || filters.region !== 0;
+  // Raster nur bei anderem Filter/Pool/Wurf wieder von vorn – ein Pick nimmt nur eine Karte heraus
+  const gridKey = `${poolKey}|${showTaken}|${fitOnly ? rollKey || 'fit' : ''}|${effFilters.region}|${effFilters.type ?? ''}|${effFilters.query}`;
+  const filtering = !!effFilters.query.trim() || !!effFilters.type || effFilters.region !== 0;
+  const randomMode = s.settings.roll === 'pick' || s.settings.roll === 'round';
+  const legendLimit = maxLegends != null && poolHasLegends(s.settings) ? maxLegends : null;
 
   // Vorgemerktes Pokémon ist vergeben → Auswahl aufheben (bei fremdem Pick mit Hinweis)
   useEffect(() => {
@@ -111,6 +240,15 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     setSelected(null);
     setSuggestSlot(null);
   }, [owners]);
+
+  // Neuer Wurf am eigenen Zug: ein vorgemerkter Favorit, der nicht passt, fliegt mit Hinweis heraus
+  useEffect(() => {
+    if (!me || !myTurn || selected == null || pickAllowed(s, me.id, selected, list) !== 'roll') return;
+    const mon = byId.get(selected);
+    setInfo(t.online.favouriteNoMatch(mon ? t.game.pokemon(mon) : t.online.favouriteFallback));
+    setSelected(null);
+    setSuggestSlot(null);
+  }, [myTurn, rollKey, selected]);
 
   // Hinweise verschwinden von selbst
   useEffect(() => {
@@ -138,7 +276,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   const suggest = () => {
     if (!me || !mySlots.length) return;
     try {
-      const choice = autoPickChoice(asState(s), me.id, list, scale('all'), false);
+      const choice = autoPickChoice(snapshotState(s), me.id, list, scale('all'), false);
       setSelected(choice.pokemonId);
       setSuggestSlot(choice.slot);
     } catch {
@@ -158,6 +296,8 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
       setInfo(t.online.notYourTurnYet);
       return;
     }
+    // Ein Reroll ist unterwegs – der Wurf ändert sich gleich (der Hook sendet dann ohnehin nichts)
+    if (room.busy.reroll) return;
     room.pick(selected, i);
   };
 
@@ -167,7 +307,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     if (filled) return 'locked';
     if (pitchTeam !== me) return undefined;
     if (selected != null && i === suggestSlot) return 'selected';
-    return myTurn && selected != null && !pending ? 'target' : undefined;
+    return myTurn && selected != null && !pending && !room.busy.reroll ? 'target' : undefined;
   };
 
   const suggestPos =
@@ -182,7 +322,10 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
         {t.online.hintClickSlot}
       </>
     ) : (
-      t.online.hintChoose
+      <>
+        {t.online.hintChoose}
+        {myRoll && t.online.hintRoll(t.game.region[myRoll.gen] ?? '?', t.game.type[myRoll.type])}
+      </>
     )
   ) : selectedMon ? (
     <>
@@ -194,7 +337,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   );
 
   // Abwesendes Team am Zug: jedes Mitglied darf nach der Frist für es wählen (Server prüft dasselbe)
-  const autoOpensAt = !readOnly && me && current && !current.cpu && current.id !== me.id ? autoPickOpensAt(asState(s)) : null;
+  const autoOpensAt = !readOnly && me && current && !current.cpu && current.id !== me.id ? autoPickOpensAt(snapshotState(s)) : null;
 
   return (
     <div className="draft-live" ref={rootRef}>
@@ -221,6 +364,14 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
             {current?.cpu && t.online.cpuTag}
             {current && !current.cpu && !current.online && t.online.offlineTag}
           </span>
+          {me && legendLimit != null && (
+            <span className="statusline__item draft-turnbar__legends">
+              {t.online.legendsCount}{' '}
+              <strong>
+                {legendsOf(me, list)}/{legendLimit}
+              </strong>
+            </span>
+          )}
         </div>
         <DraftCountdown
           deadline={s.deadline}
@@ -228,6 +379,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
           clockOffset={room.clockOffset}
           cpu={!!current?.cpu}
         />
+        {randomMode && current && <DraftRollBar room={room} readOnly={readOnly} />}
         {lastPick && lastMon && (
           <p className="draft-turnbar__last">
             {t.online.lastPick} <strong>{t.game.pokemon(lastMon)}</strong> → {lastTeam && teamLabel(lastTeam, t)}
@@ -258,6 +410,12 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                 <button type="button" className="btn btn--small" onClick={suggest} disabled={!mySlots.length}>
                   {t.online.suggest}
                 </button>
+                {restricted && (
+                  <label className="draft-check">
+                    <input type="checkbox" checked={onlyFit} onChange={(e) => setOnlyFit(e.target.checked)} />{' '}
+                    {t.online.onlyFitting}
+                  </label>
+                )}
                 <label className="draft-check">
                   <input type="checkbox" checked={showTaken} onChange={(e) => setShowTaken(e.target.checked)} />{' '}
                   {t.online.showTaken}
@@ -266,7 +424,10 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
               <FilterBar
                 filters={filters}
                 onChange={setFilters}
-                showRegion={s.settings.region === 0}
+                // Mehrere Generationen im Pool – außer der eigene Wurf legt sie ohnehin fest
+                showRegion={regionShown}
+                // Nur die Generationen des Pools (eine andere leerte das Raster)
+                regions={gens}
                 // Die Trefferzahl ist eine Live-Region – ohne Filter änderte sie sich bei jedem Pick
                 // (die freie Zahl steht ohnehin in der Überschrift)
                 resultCount={filtering ? filtered.length : undefined}
@@ -279,7 +440,11 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                 onPick={choose}
                 disabledReason={(p) => {
                   const owner = owners.get(p.id);
-                  return owner ? t.online.takenBy(teamLabel(owner, t)) : null;
+                  if (owner) return t.online.takenBy(teamLabel(owner, t));
+                  const block = me ? pickAllowed(s, me.id, p, list) : null;
+                  if (block === 'roll') return t.online.blockedRoll;
+                  if (block === 'legend_limit') return t.online.blockedLegends(maxLegends ?? 0);
+                  return null;
                 }}
                 className="pgrid-wrap--compact"
               />

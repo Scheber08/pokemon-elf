@@ -42,7 +42,10 @@ const online = {
   noPublic: 'Gerade wartet keine öffentliche Liga. Erstelle selbst eine – Lobby „Öffentlich".',
   byHost: (host: string, ago: string) => `von ${host} · ${ago}`,
   teamsOf: (n: number, max: number) => `${n}/${max} Teams`,
-  plusLegends: ' + Legendäre',
+  /** Lobby-Liste: Legendäre und/oder Mysteriöse im Pool (die D1-Spalte unterscheidet sie nicht) */
+  plusLegends: ' + Legendäre/Mysteriöse',
+  /** Pool einer öffentlichen Lobby mit mehreren (nicht allen) Generationen */
+  manyGens: 'Mehrere Generationen',
   watch: 'Zuschauen',
 
   // ------------------------------------------------ /draft/:code
@@ -51,6 +54,8 @@ const online = {
     drafting: 'Snake-Draft läuft – jeder sieht jeden Pick sofort.',
     done: 'Draft abgeschlossen – die Saison läuft für alle gleichzeitig.',
   },
+  /** Statt phaseLead.drafting, wenn jede Runde dieselbe Reihenfolge hat */
+  phaseLeadFixed: 'Draft läuft – jeder sieht jeden Pick sofort.',
   status: {
     connecting: 'Verbinde …',
     open: 'Verbunden',
@@ -112,6 +117,7 @@ const online = {
   removeConfirm: (team: string) => `${team} aus der Liga entfernen?`,
   orderRandom: 'Die Draft-Reihenfolge wird beim Start ausgelost.',
   orderHost: 'Draft-Reihenfolge wie in der Liste (Runde 2 rückwärts – Snake-Draft).',
+  orderHostFixed: 'Draft-Reihenfolge wie in der Liste – jede Runde gleich.',
   addCpu: 'CPU-Team hinzufügen',
   readOnlyLobby:
     'Nur Ansicht – die Live-Verbindung steht noch nicht. Beitreten (bzw. dein Team, falls du schon dabei bist) gibt es, sobald sie da ist.',
@@ -121,7 +127,8 @@ const online = {
   waitingHost: ' Warte auf den Host …',
   starting: 'Draft wird gestartet …',
   start: 'Draft starten',
-  startInfo: (teams: number, rounds: number) => `${teams} Teams · Snake-Draft über ${rounds} Runden.`,
+  startInfo: (teams: number, rounds: number, snake = true) =>
+    `${teams} Teams · ${snake ? 'Snake-Draft' : 'feste Reihenfolge'} über ${rounds} Runden.`,
   startTimer: (s: number) => `Läuft der ${s}-s-Timer ab, wählt der Server automatisch.`,
   startNoTimer: 'Ohne Timer kannst du für abwesende Teams automatisch wählen lassen.',
   draftRunning: 'Der Draft läuft schon',
@@ -169,6 +176,29 @@ const online = {
     `Pick ${no}: ${pokemon} an ${team}${auto ? ' (automatisch)' : ''}.`,
   announceYou: 'dich',
   announceNext: (team: string) => ` Am Zug: ${team}.`,
+
+  // ------------------------------------------------ Zufallsmodus (Wurf aus Generation + Typ)
+  /** Beschriftung des Wurfs in der Statusleiste */
+  roll: 'Wurf',
+  rollAria: (region: string, type: string) => `Wurf: ${region}, Typ ${type}`,
+  ownRoll: 'eigener Wurf',
+  ownRollTitle: 'Eigener Wurf dieses Teams – nach einem Reroll oder weil der Rundenwurf nichts Passendes mehr hatte.',
+  roundRoll: (region: string, type: string) => `Rundenwurf: ${region} + ${type}`,
+  freeChoice: 'Kein Wurf möglich – freie Wahl',
+  rerollType: (left: number) => `Typ neu würfeln (${left}×)`,
+  rerollRegion: (left: number) => `Region neu würfeln (${left}×)`,
+  rerolling: 'Wird gewürfelt …',
+  noRerollLeft: 'Keine Rerolls dieser Art mehr übrig',
+  noOtherRoll: 'Kein anderer Wurf möglich',
+  onlyFitting: 'Nur passende',
+  /** Grund auf ausgegrauten Karten */
+  blockedRoll: 'Passt nicht zum Wurf',
+  blockedLegends: (max: number) => (max === 1 ? 'Limit: ein Legendäres' : `Limit: ${max} Legendäre`),
+  favouriteNoMatch: (name: string) => `${name} passt nicht zu deinem Wurf – such dir ein passendes Pokémon.`,
+  /** Hinweis unter „Pool", wenn ein Wurf gilt (mit Leerzeichen vorn) */
+  hintRoll: (region: string, type: string) => ` Gesucht: ${region} + ${type}.`,
+  /** Statusleiste: Legendäre im eigenen Team bei einem Limit */
+  legendsCount: 'Legendäre',
 
   // ------------------------------------------------ Timer
   cpuPicking: ' CPU wählt …',
@@ -257,12 +287,29 @@ const online = {
       requestBadJson: 'Anfrage ist kein gültiges JSON',
       requestNotObject: 'Anfrage muss ein JSON-Objekt sein',
       wsOnly: 'Hier geht es nur per WebSocket weiter',
+      badGens: 'Ungültige Generationen',
+      minOneGen: 'Mindestens eine Generation',
+      badTypes: 'Ungültige Typen',
+      minOneType: 'Mindestens ein Typ',
+      badMaxLegends: 'Ungültiges Legendären-Limit',
+      badRollMode: 'Ungültiger Zufallsmodus',
+      badRerolls: 'Ungültige Rerolls',
+      noRoll: 'Gerade gibt es keinen Wurf',
+      noTypeReroll: 'Kein Typ-Reroll mehr übrig',
+      noRegionReroll: 'Kein Regions-Reroll mehr übrig',
+      noOtherRoll: 'Kein anderer Wurf möglich',
+      noSlot: 'Kein Platz mehr frei',
+      legendLimitOne: 'Höchstens ein Legendäres/Mysteriöses pro Team',
     },
     /** Meldungen mit Zahlen bzw. Namen (die Platzhalter werden beim Übersetzen herausgelesen) */
     fmt: {
       between: (min: number, max: number) => `Zwischen ${min} und ${max} Teams`,
       poolFits: (teams: number, rounds: number) => `Der Pool reicht nur für ${teams} Teams à ${rounds} Pokémon`,
+      poolFitsLegends: (teams: number, rounds: number) =>
+        `Der Pool reicht nur für ${teams} Teams à ${rounds} Pokémon (Legendären-Limit)`,
       poolHas: (pool: number, needed: number) => `Der Pool hat nur ${pool} Pokémon, gebraucht werden ${needed}`,
+      poolCapLegends: (capacity: number, needed: number) =>
+        `Mit dem Legendären-Limit reicht der Pool nur für ${capacity} Picks, gebraucht werden ${needed}`,
       tooManyTeams: (n: number) => `Es sind schon ${n} Teams dabei`,
       tooFewTeams: (min: number) => `Mindestens ${min} Teams – lade Leute ein oder füge CPU-Teams hinzu`,
       /** name: deutscher Pokémon-Name aus der Engine */
@@ -271,6 +318,9 @@ const online = {
         `Auto-Pick für „${team}" geht erst, wenn das Team ${seconds} s offline ist`,
       teamNameTooLong: (max: number) => `Teamname ist zu lang (max. ${max} Zeichen)`,
       leagueNameTooLong: (max: number) => `Liganame ist zu lang (max. ${max} Zeichen)`,
+      /** name: deutscher Pokémon-Name aus der Engine */
+      notRoll: (name: string) => `${name} passt nicht zum Wurf`,
+      legendLimit: (max: number) => `Höchstens ${max} Legendäre/Mysteriöse pro Team`,
     },
     /** Je Fehlercode – wenn die Meldung selbst unbekannt ist */
     code: {
@@ -308,6 +358,11 @@ const online = {
       room_full: 'Zu viele Zuschauer – bitte später erneut versuchen',
       closed: 'Die Liga wurde geschlossen',
       network: 'Server nicht erreichbar',
+      not_your_turn: 'Du bist nicht dran',
+      no_roll: 'Gerade gibt es keinen Wurf',
+      no_reroll: 'Keine Rerolls mehr übrig',
+      no_other_roll: 'Kein anderer Wurf möglich',
+      no_slot: 'Kein Platz mehr frei',
     },
     /** Unbekannter Code mit unbekannter Meldung */
     unknown: 'Unbekannter Fehler',

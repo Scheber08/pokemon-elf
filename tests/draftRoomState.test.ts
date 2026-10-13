@@ -9,10 +9,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { DraftPickFeed } from '../src/components/DraftBoard';
 import { DraftCountdown } from '../src/components/DraftCountdown';
-import type { DraftSnapshot } from '../src/lib/api/draftContract';
+import type { DraftSettingsPatch, DraftSnapshot } from '../src/lib/api/draftContract';
 import {
   addCpuTeam,
   applyPick,
+  applyReroll,
   autoPickChoice,
   createDraft,
   currentTeam,
@@ -30,6 +31,7 @@ import {
   DRAFT_ACTION_TIMEOUT_MS,
   draftedKey,
   draftRoomReady,
+  draftRoomView,
   expireInFlight,
   inFlightOf,
   pickAnnouncement,
@@ -43,11 +45,11 @@ import { ALL } from './helpers';
 const SCALE = buildScale(ALL, 'all');
 const byId = new Map(ALL.map((p) => [p.id, p]));
 
-function lobby(teams = 2): DraftState {
+function lobby(teams = 2, settings: DraftSettingsPatch = { region: 1, maxTeams: 4 }): DraftState {
   let s = createDraft({
     code: 'ABC234',
     seed: 42,
-    settings: { region: 1, maxTeams: 4 },
+    settings,
     host: { teamId: 'h', deviceId: 'dev-h', name: 'Host FC', formation: '4-3-3' },
     now: 0,
     list: ALL,
@@ -106,11 +108,38 @@ describe('laufende Aktionen', () => {
 
   it('Einstellungen: übernommen oder vom Server angepasst – nicht durch fremde Änderungen', () => {
     const s = snap(lobby(2));
-    const f = inFlightOf(s, 0, { region: 2 });
+    const f = inFlightOf(s, 0, { roll: 'pick' });
     expect(actionSettled('settings', f, { ...s, teams: s.teams.slice(0, 1) })).toBe(false);
     expect(actionSettled('settings', f, { ...s, settings: { ...s.settings, name: 'Liga' } })).toBe(false);
-    expect(actionSettled('settings', f, { ...s, settings: { ...s.settings, region: 2 } })).toBe(true);
-    expect(actionSettled('settings', f, { ...s, settings: { ...s.settings, region: 3 } })).toBe(true);
+    expect(actionSettled('settings', f, { ...s, settings: { ...s.settings, roll: 'pick' } })).toBe(true);
+    expect(actionSettled('settings', f, { ...s, settings: { ...s.settings, roll: 'round' } })).toBe(true);
+  });
+
+  it('Einstellungen mit Listen (Generationen, Typen, Rerolls): inhaltlich verglichen, nicht per Objekt', () => {
+    const s = snap(lobby(2));
+    const f = inFlightOf(s, 0, { gens: [1, 2], rerolls: { type: 2, region: 1 } });
+    // Neuer Schnappschuss mit neuen (aber gleichen) Listen des alten Stands → noch nicht bestätigt
+    expect(actionSettled('settings', f, { ...s, settings: { ...s.settings, gens: [...s.settings.gens], rerolls: { ...s.settings.rerolls } } })).toBe(false);
+    // Übernommen (neue Objekte mit gleichem Inhalt)
+    expect(actionSettled('settings', f, { ...s, settings: { ...s.settings, gens: [1, 2], rerolls: { type: 2, region: 1 } } })).toBe(true);
+    // Vom Server anders angepasst
+    expect(actionSettled('settings', f, { ...s, settings: { ...s.settings, gens: [3] } })).toBe(true);
+  });
+
+  it('Reroll: bestätigt durch einen neuen Wurf oder den nächsten Pick – nicht durch fremde Schnappschüsse', () => {
+    const s = startDraft(lobby(2, { region: 0, maxTeams: 4, order: 'host', roll: 'pick' }), 'dev-h', 0, ALL);
+    expect(s.roll).toBeTruthy();
+    const f = inFlightOf(snap(s), 0);
+    expect(f.roll).toEqual(s.roll);
+    const other = s.teams.find((t) => t.id !== 'h')!;
+    expect(actionSettled('reroll', f, snap(setOnline(s, other.id, true)))).toBe(false);
+    // Gleicher Wurf in einem neuen Objekt: noch nicht
+    expect(actionSettled('reroll', f, { ...snap(s), roll: { ...s.roll! } })).toBe(false);
+    expect(actionSettled('reroll', f, snap(applyReroll(s, 'h', 'type', ALL)))).toBe(true);
+    expect(actionSettled('reroll', f, snap(autoPick(s)))).toBe(true);
+    // Fehler zum Reroll löst nur dessen Sperre
+    const map: InFlightMap = { pick: inFlightOf(snap(s), 0), reroll: f };
+    expect(Object.keys(releaseInFlight(map, 'reroll'))).toEqual(['pick']);
   });
 
   it('settleInFlight trägt nur Bestätigtes aus und behält sonst das Objekt', () => {
@@ -140,6 +169,24 @@ describe('laufende Aktionen', () => {
     expect(releaseInFlight(map)).toEqual({});
     const none: InFlightMap = {};
     expect(releaseInFlight(none)).toBe(none);
+  });
+});
+
+// ---------------------------------------------------------------- Reihenfolge ohne Snake
+
+describe('draftRoomView ohne Snake', () => {
+  it('Runde 2 beginnt wieder beim ersten Team (Anzeige wie Engine)', () => {
+    let s = startDraft(lobby(3, { region: 0, maxTeams: 4, order: 'host', snake: false }), 'dev-h', 0, ALL);
+    for (let i = 0; i < 3; i++) s = autoPick(s, 1000 + i);
+    const v = draftRoomView(snap(s, 'h'));
+    expect(v.round).toBe(2);
+    expect(v.currentIndex).toBe(0);
+    expect(v.current?.id).toBe(s.teams[0].id);
+    expect(v.myTurn).toBe(true);
+    // Mit Snake wäre das letzte Team aus Runde 1 noch einmal dran
+    let snake = startDraft(lobby(3, { region: 0, maxTeams: 4, order: 'host' }), 'dev-h', 0, ALL);
+    for (let i = 0; i < 3; i++) snake = autoPick(snake, 1000 + i);
+    expect(draftRoomView(snap(snake, 'h')).currentIndex).toBe(2);
   });
 });
 

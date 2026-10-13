@@ -7,7 +7,7 @@
  */
 import type { ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DraftSnapshot } from '../src/lib/api/draftContract';
+import type { DraftSettingsPatch, DraftSnapshot } from '../src/lib/api/draftContract';
 import type { DraftRoom } from '../src/state/useDraftRoom';
 import type { DraftState } from '../src/lib/draftEngine';
 import { ALL } from './helpers';
@@ -118,7 +118,7 @@ async function render(el: ReactElement) {
   return { container, root, unmount };
 }
 
-function lobby(teams = 2, settings: Partial<DraftState['settings']> = { region: 1, maxTeams: 4 }): DraftState {
+function lobby(teams = 2, settings: DraftSettingsPatch = { region: 1, maxTeams: 4 }): DraftState {
   let s = engine.createDraft({
     code: 'ABC234',
     seed: 42,
@@ -466,7 +466,7 @@ function fakeRoom(s: DraftSnapshot, over: Partial<DraftRoom> = {}): DraftRoom {
     authError: null,
     clockOffset: 0,
     pending: false,
-    busy: { pick: false, 'auto-pick': false, start: false, join: false, 'add-cpu': false, settings: false },
+    busy: { pick: false, 'auto-pick': false, start: false, join: false, 'add-cpu': false, settings: false, reroll: false },
     drafted: engine.draftedIds(s),
     join: vi.fn(() => true),
     leave: vi.fn(() => true),
@@ -478,6 +478,7 @@ function fakeRoom(s: DraftSnapshot, over: Partial<DraftRoom> = {}): DraftRoom {
     start: vi.fn(() => true),
     pick: vi.fn(() => true),
     autoPick: vi.fn(() => true),
+    reroll: vi.fn(() => true),
     reconnect: vi.fn(),
     ...over,
   };
@@ -606,7 +607,7 @@ describe('DraftLobby', () => {
   // CLIENT-5
   it('Start, CPU und Einstellungen nehmen nichts an, solange die Aktion läuft', async () => {
     const room = fakeRoom(snap(lobby(2), 'h'), {
-      busy: { pick: false, 'auto-pick': false, start: true, join: false, 'add-cpu': true, settings: true },
+      busy: { pick: false, 'auto-pick': false, start: true, join: false, 'add-cpu': true, settings: true, reroll: false },
     });
     const { container } = await render(app(h(DraftLobby, { room })));
     await settle();
@@ -633,7 +634,9 @@ describe('DraftLobby', () => {
     await act(async () => cpu.click());
     expect(room.addCpu).toHaveBeenCalledTimes(1);
     const johto = container.querySelectorAll('.draft-settings button').find((b) => b.textContent === 'Johto')!;
+    expect(johto.getAttribute('aria-pressed')).toBe('false');
     await act(async () => johto.click());
-    expect(room.updateSettings).toHaveBeenCalledWith(expect.objectContaining({ region: 2 }));
+    // Generationen sind eine Mehrfachauswahl: Johto kommt zu Kanto dazu
+    expect(room.updateSettings).toHaveBeenCalledWith(expect.objectContaining({ gens: [1, 2] }));
   });
 });

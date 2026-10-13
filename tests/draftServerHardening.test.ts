@@ -11,7 +11,7 @@ import {
   DEFAULT_DRAFT_SETTINGS,
   DRAFT_LIMITS,
   type CreateDraftResponse,
-  type DraftSettings,
+  type DraftSettingsPatch,
   type DraftSnapshot,
   type PublicLobbiesResponse,
 } from '../src/lib/api/draftContract';
@@ -169,7 +169,7 @@ async function call<T = unknown>(method: string, path: string, body?: unknown, h
   return { status: res.status, body: (text ? JSON.parse(text) : null) as T, text };
 }
 
-async function createLeague(dev: DeviceAuth, settings: Partial<DraftSettings> = {}, headers: Record<string, string> = {}) {
+async function createLeague(dev: DeviceAuth, settings: DraftSettingsPatch = {}, headers: Record<string, string> = {}) {
   const res = await call<CreateDraftResponse>('POST', '/api/drafts', { ...dev, settings, teamName: 'Host-Elf', formation: '4-3-3' }, headers);
   expect(res.status, res.text).toBe(200);
   return { code: res.body.code, room: drafts.room(res.body.code) };
@@ -181,7 +181,7 @@ async function hello(room: FakeRoom, dev: DeviceAuth, ip: string | null = null):
   return sock;
 }
 
-async function lobbyWithGuest(settings: Partial<DraftSettings> = {}) {
+async function lobbyWithGuest(settings: DraftSettingsPatch = {}) {
   const hostDev = newDevice();
   const guestDev = newDevice();
   const { code, room } = await createLeague(hostDev, settings);
@@ -192,7 +192,7 @@ async function lobbyWithGuest(settings: Partial<DraftSettings> = {}) {
 }
 
 /** Draft läuft: Reihenfolge Host → Gast, ohne Timer (bzw. mit `settings`). */
-async function started(settings: Partial<DraftSettings> = {}) {
+async function started(settings: DraftSettingsPatch = {}) {
   const ctx = await lobbyWithGuest({ order: 'host', pickSeconds: 0, ...settings });
   await ctx.room.send(ctx.host, { type: 'start' });
   expect(currentTeam(ctx.host.state!)!.id).toBe(ctx.hostTeam);

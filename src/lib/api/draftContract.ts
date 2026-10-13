@@ -12,12 +12,14 @@
  * { type: 'error' } und ändern nichts am Zustand.
  *
  * Ablauf: lobby (beitreten, Host stellt ein, fügt CPU-Teams hinzu, startet)
- *       → drafting (Snake-Draft; Timer und CPU-Picks laufen auf dem Server)
+ *       → drafting (Snake- bzw. feste Reihenfolge; Timer, CPU-Picks und – im Zufallsmodus –
+ *         die Würfe aus Generation + Typ laufen auf dem Server)
  *       → done (Saison-Seed + Startzeit stehen fest; der Server berechnet das Ergebnis
  *         einmal und schickt es mit (league) – alle Clients spielen dieselbe Saison
  *         synchron als Ticker ab).
  */
-import type { FormationId, RegionFilter } from '../../types';
+import { TYPE_KEYS } from '../../config/pokemonTypes';
+import type { FormationId, RegionFilter, TypeKey } from '../../types';
 import type { LeagueResult } from '../season';
 import type { DeviceAuth } from './contract';
 
@@ -48,17 +50,65 @@ export const DRAFT_LIMITS = {
   hostGraceMs: 30_000,
   /** In der Lobby wandert die Host-Rolle erst nach dieser Abwesenheit (Einladen dauert) */
   lobbyHostGraceMs: 300_000,
+  /** Erlaubte Legendären-Limits pro Team (null = unbegrenzt) */
+  maxLegends: [1, 2, 3] as const,
+  /** Höchstens so viele Typ- bzw. Regions-Rerolls pro Team und Draft */
+  rerollsMax: 3,
 } as const;
 
 export type PickSeconds = (typeof DRAFT_LIMITS.pickSeconds)[number];
 
+/** Alle Generationen (1–9) – Pool-Auswahl „Alle" */
+export const DRAFT_ALL_GENS: readonly number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+/**
+ * Zufallsmodus (wie die 34–0-Challenge): 'off' = freie Wahl aus dem Pool, 'pick' = jeder Pick
+ * bekommt einen eigenen Wurf (Generation + Typ), 'round' = ein Wurf pro Runde für alle Teams –
+ * hat das Team am Zug darin nichts Wählbares mehr, bekommt es für diesen Pick einen eigenen Wurf.
+ */
+export type DraftRollMode = 'off' | 'pick' | 'round';
+export const DRAFT_ROLL_MODES: readonly DraftRollMode[] = ['off', 'pick', 'round'];
+
+/** Reroll-Arten: Typ bzw. Region (Generation) des aktuellen Wurfs neu würfeln */
+export type DraftRerollKind = 'type' | 'region';
+export const DRAFT_REROLL_KINDS: readonly DraftRerollKind[] = ['type', 'region'];
+
+/** Ein Wurf: Das Pokémon muss aus dieser Generation stammen und diesen Typ haben. */
+export interface DraftRoll {
+  gen: number;
+  type: TypeKey;
+}
+
+/**
+ * Wurf des aktuellen Picks. own: eigener Wurf des Teams – im Runden-Modus, weil der
+ * Rundenwurf für dieses Team nichts Wählbares mehr hat, und in jedem Modus nach einem Reroll.
+ */
+export interface DraftActiveRoll extends DraftRoll {
+  own: boolean;
+}
+
+/** Genutzte (bzw. erlaubte) Rerolls je Art */
+export interface DraftRerollCount {
+  type: number;
+  region: number;
+}
+
 export interface DraftSettings {
   /** Liganame (optional, für Lobby-Liste und Ergebnis) */
   name: string;
-  /** Pool: 0 = alle Regionen, sonst Generation 1–9 */
-  region: RegionFilter;
-  /** Legendäre und Mysteriöse im Pool */
-  legends: boolean;
+  /** Pool: Generationen 1–9 (aufsteigend, ohne Doppelte, mindestens eine) */
+  gens: number[];
+  /** Pool: erlaubte Typen (Reihenfolge wie TYPE_KEYS, mindestens einer) – ein Pokémon braucht mindestens einen davon */
+  types: TypeKey[];
+  /** Legendäre im Pool */
+  legendary: boolean;
+  /** Mysteriöse im Pool */
+  mythical: boolean;
+  /**
+   * Höchstens so viele Legendäre + Mysteriöse pro Team (Standardschütze zählt mit):
+   * null = unbegrenzt, sonst 1–3. Wirkt nur, wenn legendary oder mythical an ist.
+   */
+  maxLegends: number | null;
   /** Standardschütze → 12. Runde */
   setPiece: boolean;
   /** Maximale Teamzahl (2–8) */
@@ -67,18 +117,43 @@ export interface DraftSettings {
   pickSeconds: PickSeconds;
   /** Draft-Reihenfolge: zufällig oder vom Host festgelegt */
   order: 'random' | 'host';
+  /** Snake (jede zweite Runde rückwärts) – false: jede Runde dieselbe Reihenfolge */
+  snake: boolean;
+  /** Zufallsmodus (siehe DraftRollMode) */
+  roll: DraftRollMode;
+  /** Rerolls pro Team und Draft je Art (je 0–3; nur im Zufallsmodus) */
+  rerolls: DraftRerollCount;
   /** Öffentlich = in der Lobby-Liste sichtbar */
   visibility: 'private' | 'public';
 }
 
+/**
+ * Ältere Schlüssel, die zwischengespeicherte Clients noch schicken: region (0 = alle
+ * Generationen, sonst genau diese) und legends (Legendäre und Mysteriöse). Neue Schlüssel
+ * im selben Patch (gens bzw. legendary/mythical) haben Vorrang.
+ */
+export interface LegacySettingsPatch {
+  region?: RegionFilter;
+  legends?: boolean;
+}
+
+/** Änderung der Einstellungen (Erstellen, Lobby) – inkl. der älteren Schlüssel. */
+export type DraftSettingsPatch = Partial<DraftSettings> & LegacySettingsPatch;
+
 export const DEFAULT_DRAFT_SETTINGS: DraftSettings = {
   name: '',
-  region: 1,
-  legends: false,
+  gens: [1],
+  types: [...TYPE_KEYS],
+  legendary: false,
+  mythical: false,
+  maxLegends: null,
   setPiece: false,
   maxTeams: 4,
   pickSeconds: 60,
   order: 'random',
+  snake: true,
+  roll: 'off',
+  rerolls: { type: 1, region: 1 },
   visibility: 'private',
 };
 
@@ -110,6 +185,8 @@ export interface DraftPickLog {
   /** Vom Server gewählt (Timer abgelaufen, CPU oder Host-Auto-Pick) */
   auto: boolean;
   at: number;
+  /** Wurf, unter dem gewählt wurde (nur im Zufallsmodus und wenn es einen gab) */
+  roll?: DraftRoll;
 }
 
 export interface DraftSeason {
@@ -121,10 +198,18 @@ export interface DraftSeason {
   stepMs: number;
 }
 
+/**
+ * Einstellungen im Schnappschuss: die aktuelle Form plus – veraltet, nur lesbar – die älteren
+ * region/legends für Clients von vor dem Update (ein offener Tab mit altem Bundle verbindet sich
+ * nach einem Deploy neu). region: 0 bei allen bzw. mehreren Generationen, sonst die eine;
+ * legends: Legendäre oder Mysteriöse im Pool. Neue Clients lesen nur die aktuellen Schlüssel.
+ */
+export type DraftSnapshotSettings = DraftSettings & LegacySettingsPatch;
+
 export interface DraftSnapshot {
   code: string;
   phase: DraftPhase;
-  settings: DraftSettings;
+  settings: DraftSnapshotSettings;
   /** Teams; ab dem Start in Draft-Reihenfolge (Runde 1) */
   teams: DraftTeam[];
   /** Team-ID des Hosts (kann wechseln, wenn der Host die Lobby verlässt) */
@@ -150,10 +235,20 @@ export interface DraftSnapshot {
   league?: LeagueResult | null;
   /** Team-Score je Team (Reihenfolge wie teams) – zusammen mit league */
   ratings?: number[] | null;
+  /**
+   * Wurf des aktuellen Picks (Zufallsmodus, während des Drafts; sonst null): Gewählt werden
+   * darf nur ein Pokémon dieser Generation mit diesem Typ. null im Zufallsmodus = kein Wurf
+   * hat für das Team am Zug noch etwas Wählbares → freie Wahl aus dem Rest des Pools.
+   */
+  roll?: DraftActiveRoll | null;
+  /** Rundenwurf (nur bei settings.roll = 'round') */
+  roundRoll?: DraftRoll | null;
+  /** Genutzte Rerolls je Team-ID (fehlt ein Team: noch keine) */
+  rerollsUsed?: Record<string, DraftRerollCount>;
 }
 
 export interface CreateDraftRequest extends DeviceAuth {
-  settings: Partial<DraftSettings>;
+  settings: DraftSettingsPatch;
   teamName: string;
   formation: FormationId;
 }
@@ -162,13 +257,24 @@ export interface CreateDraftResponse {
   code: string;
 }
 
+/** region einer Lobby-Zeile, wenn der Pool mehrere (aber nicht alle) Generationen umfasst */
+export const LOBBY_REGION_MANY = 10;
+
+/** Pool-Kurzform der Lobby-Liste: 0 = alle Generationen, 1–9 = genau diese, 10 = mehrere */
+export type LobbyRegion = RegionFilter | typeof LOBBY_REGION_MANY;
+
 export interface PublicLobby {
   code: string;
   name: string;
   hostName: string;
   teams: number;
   maxTeams: number;
-  region: RegionFilter;
+  /**
+   * Pool-Generationen (D1-Spalte region): 0 = alle, 1–9 = genau diese Generation,
+   * 10 = mehrere (LOBBY_REGION_MANY) – Anzeige „Mehrere Generationen".
+   */
+  region: LobbyRegion;
+  /** Legendäre oder Mysteriöse im Pool */
   legends: boolean;
   pickSeconds: PickSeconds;
   createdAt: number;
@@ -183,7 +289,7 @@ export type DraftClientMessage =
   | { type: 'join'; teamName: string; formation: FormationId }
   | { type: 'leave' }
   | { type: 'update-team'; teamName?: string; formation?: FormationId }
-  | { type: 'settings'; settings: Partial<DraftSettings> }
+  | { type: 'settings'; settings: DraftSettingsPatch }
   | { type: 'add-cpu' }
   | { type: 'remove-team'; teamId: string }
   | { type: 'set-order'; order: string[] }
@@ -191,6 +297,13 @@ export type DraftClientMessage =
   | { type: 'pick'; pokemonId: number; slot: number }
   /** teamId/pickIndex (optional): nur, wenn das noch der aktuelle Zug ist – sonst Fehler „stale" */
   | { type: 'auto-pick'; teamId?: string; pickIndex?: number }
+  /**
+   * Wurf des aktuellen Picks neu würfeln – nur das Team am Zug, im Zufallsmodus, mit Rerolls übrig
+   * (keine Lobby-Änderung). pickIndex/roll (optional): Pick bzw. Wurf, den der Client gesehen hat –
+   * ist der Zug schon weiter oder der Wurf schon ein anderer, lehnt der Server mit „stale" ab
+   * (statt einen ungesehenen Wurf neu zu würfeln und einen Reroll zu verbrauchen).
+   */
+  | { type: 'reroll'; kind: DraftRerollKind; pickIndex?: number; roll?: DraftRoll }
   | { type: 'ping' };
 
 export type DraftServerMessage =

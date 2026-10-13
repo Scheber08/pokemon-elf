@@ -10,12 +10,13 @@ import {
   DRAFT_LIMITS,
   type CreateDraftResponse,
   type DraftSettings,
+  type LobbyRegion,
   type PickSeconds,
   type PublicLobbiesResponse,
 } from '../src/lib/api/draftContract';
 import { DraftError, normalizeSettings } from '../src/lib/draftEngine';
 import type { DeviceAuth } from '../src/lib/api/contract';
-import type { FormationId, RegionFilter } from '../src/types';
+import type { FormationId } from '../src/types';
 import { authenticate, HOUR_MS, ipHashOf, rateLimited } from './auth';
 import { randomHex } from './crypto';
 import {
@@ -26,6 +27,7 @@ import {
   DRAFT_CREATES_PER_IP,
   getLobby,
   insertLobby,
+  lobbyPoolFields,
   noteLobbyByIp,
   publicLobbies,
   purgeClosedLobbies,
@@ -133,8 +135,8 @@ export async function createDraftEndpoint(request: Request, env: Env): Promise<R
   const fields: LobbyFields = {
     name: s.name,
     hostName: input.teamName,
-    region: s.region,
-    legends: s.legends,
+    // region 0 / 1–9 / 10 (mehrere Generationen), legends = Legendäre oder Mysteriöse – wie im Raum
+    ...lobbyPoolFields(s),
     pickSeconds: s.pickSeconds,
     teams: 1,
     maxTeams: s.maxTeams,
@@ -203,7 +205,8 @@ export async function publicDraftsEndpoint(env: Env): Promise<Response> {
       hostName: r.host_name,
       teams: r.teams,
       maxTeams: r.max_teams,
-      region: r.region as RegionFilter,
+      // 0 = alle, 1–9 = eine Generation, 10 = mehrere (LOBBY_REGION_MANY)
+      region: r.region as LobbyRegion,
       legends: r.legends === 1,
       pickSeconds: r.pick_seconds as PickSeconds,
       createdAt: r.created_at,

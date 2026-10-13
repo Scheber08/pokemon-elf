@@ -46,9 +46,20 @@ interface Props {
   searchRef?: RefObject<HTMLInputElement | null>;
   onSearchKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
   resultCount?: number;
+  /** Nur diese Regionen (Generationen) als Filter anbieten – z. B. die des Draft-Pools; fehlt: alle */
+  regions?: readonly number[];
 }
 
-export function FilterBar({ filters, onChange, showType = true, showRegion = true, searchRef, onSearchKeyDown, resultCount }: Props) {
+export function FilterBar({
+  filters,
+  onChange,
+  showType = true,
+  showRegion = true,
+  searchRef,
+  onSearchKeyDown,
+  resultCount,
+  regions,
+}: Props) {
   const t = useT();
   return (
     <div className="filterbar">
@@ -107,7 +118,7 @@ export function FilterBar({ filters, onChange, showType = true, showRegion = tru
           >
             {t.common.allRegions}
           </button>
-          {REGIONS.map((r) => (
+          {REGIONS.filter((r) => !regions || regions.includes(r.gen)).map((r) => (
             <button
               key={r.gen}
               type="button"

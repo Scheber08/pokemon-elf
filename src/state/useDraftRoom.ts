@@ -14,25 +14,32 @@ import {
 } from '../lib/api/draftClient';
 import {
   DRAFT_LIMITS,
+  type DraftActiveRoll,
   type DraftClientMessage,
   type DraftPickLog,
+  type DraftRerollKind,
   type DraftSettings,
   type DraftSnapshot,
   type DraftTeam,
 } from '../lib/api/draftContract';
 import {
+  applyReroll,
   currentTeam,
+  DraftError,
   draftedIds,
   maxTeamsForPool,
   pickError,
   poolOf,
+  poolPickCapacity,
   rounds,
+  sameSettingValue,
   teamIndexForPick,
+  type DraftState,
 } from '../lib/draftEngine';
 import { DEFAULT_FORMATION, FORMATION_IDS } from '../config/formations';
 import { currentLang, LANGS, messages, type Lang, type Messages } from '../i18n';
 import { load, save } from '../lib/storage';
-import type { FormationId, Pokemon } from '../types';
+import type { FormationId, Pokemon, TypeKey } from '../types';
 import { usePokemonData } from './PokemonData';
 
 export type DraftRoomStatus = 'connecting' | 'open' | 'reconnecting' | 'closed' | 'not_found';
@@ -93,7 +100,7 @@ export function draftRoomView(s: DraftSnapshot | null): DraftRoomView {
     me,
     isHost: !!me && me.id === s.hostTeamId,
     current,
-    currentIndex: current && n ? teamIndexForPick(s.pickIndex, n) : -1,
+    currentIndex: current && n ? teamIndexForPick(s.pickIndex, n, s.settings.snake ?? true) : -1,
     myTurn: !!me && !!current && current.id === me.id,
     round: n ? Math.floor(pick / n) + 1 : 0,
     rounds: r,
@@ -111,6 +118,9 @@ export function startBlocker(s: DraftSnapshot, list: Pokemon[], t: Messages = me
   const needed = s.teams.length * rounds(s.settings);
   const pool = poolOf(s.settings, list).length;
   if (pool < needed) return t.online.server.fmt.poolHas(pool, needed);
+  // Wie startDraft: Legendäre zählen nur, soweit das Legendären-Limit sie aufnimmt
+  const capacity = poolPickCapacity(s.settings, s.teams.length, list);
+  if (capacity < needed) return t.online.server.fmt.poolCapLegends(capacity, needed);
   return null;
 }
 
@@ -139,7 +149,8 @@ function fmtPattern(key: FmtKey): RegExp {
  * Meldung von Server bzw. Draft-Engine in der aktiven Sprache. Sie kommen deutsch mit festem
  * Code: Auf Deutsch bleibt die Meldung unverändert. Sonst wird sie über die bekannten Meldungen,
  * die Muster mit Zahlen/Namen und zuletzt den Code übersetzt – Unbekanntes wird ein allgemeiner
- * Text. list: deutsche Pokémon-Namen in Meldungen („Glurak ist schon vergeben") mitübersetzen.
+ * Text. list: deutsche Pokémon-Namen in Meldungen („Glurak ist schon vergeben", „… passt nicht
+ * zum Wurf") mitübersetzen.
  * Ersatzmeldungen des Draft-Clients (in der Sprache beim Abruf erzeugt) folgen der aktiven Sprache.
  * Leere Meldung ohne Code → '' (die Aufrufer haben eigene Ersatztexte).
  */
@@ -164,7 +175,7 @@ export function draftErrorText(
     const m = message ? fmtPattern(key).exec(message) : null;
     if (!m) continue;
     const args: (string | number)[] = m.slice(1).map((a) => (/^\d+$/.test(a) ? Number(a) : a));
-    if (key === 'taken') {
+    if (key === 'taken' || key === 'notRoll') {
       const p = list?.find((x) => x.de === args[0]);
       if (p) args[0] = t.game.pokemon(p);
     }
@@ -223,6 +234,8 @@ export interface FeedItem {
   team: string;
   teamId: string;
   auto: boolean;
+  /** Wurf, unter dem gewählt wurde (Zufallsmodus) – Regionsname und Typ in der Sprache von t */
+  roll?: { region: string; type: TypeKey };
 }
 
 /**
@@ -241,7 +254,7 @@ export function pickFeed(s: DraftSnapshot, byId: Map<number, Pokemon>, limit = 8
     .reverse()
     .map((p) => {
       const mon = byId.get(p.pokemonId);
-      return {
+      const item: FeedItem = {
         key: `${p.pick}-${p.pokemonId}`,
         no: p.pick + 1,
         pokemon: mon ? t.game.pokemon(mon) : `#${p.pokemonId}`,
@@ -249,6 +262,8 @@ export function pickFeed(s: DraftSnapshot, byId: Map<number, Pokemon>, limit = 8
         teamId: p.teamId,
         auto: p.auto,
       };
+      if (p.roll) item.roll = { region: t.game.region[p.roll.gen] ?? '?', type: p.roll.type };
+      return item;
     });
 }
 
@@ -354,11 +369,14 @@ export function remainingMs(deadline: number | null, clockOffset: number, now = 
 /**
  * Eine kurze Ansage pro Pick für Screenreader (einzige Live-Region des Drafts):
  * „Pick 3: Glurak an FC Blitz (automatisch). Am Zug: FC Donner." – „Am Zug" entfällt, wenn
- * man selbst dran ist (das meldet „Du bist dran!").
+ * man selbst dran ist (das meldet „Du bist dran!"). Im Zufallsmodus folgt der Wurf des neuen
+ * Picks („Wurf: Kanto, Typ Feuer.") – so wird auch ein Reroll angesagt, und vor dem ersten Pick
+ * steht nur der Wurf.
  */
 export function pickAnnouncement(s: DraftSnapshot, byId: Map<number, Pokemon>, t: Messages = messages()): string {
   const last = s.picks.length ? s.picks[s.picks.length - 1] : null;
-  if (!last) return '';
+  const roll = s.phase === 'drafting' && s.roll ? `${t.online.rollAria(t.game.region[s.roll.gen] ?? '?', t.game.type[s.roll.type])}.` : '';
+  if (!last) return roll;
   const owner = s.teams.find((x) => x.id === last.teamId);
   const team = last.teamId === s.you ? t.online.announceYou : owner ? teamLabel(owner, t) : '?';
   const mon = byId.get(last.pokemonId);
@@ -366,7 +384,16 @@ export function pickAnnouncement(s: DraftSnapshot, byId: Map<number, Pokemon>, t
   let text = t.online.announcePick(last.pick + 1, name, team, last.auto);
   const cur = currentTeam(s);
   if (cur && cur.id !== s.you) text += t.online.announceNext(teamLabel(cur, t));
+  if (roll) text += ` ${roll}`;
   return text;
+}
+
+/**
+ * Engine-Zustand aus einem Schnappschuss – nur zum Anzeigen und Vorprüfen (Vorschlag, Reroll).
+ * Ohne Seed: Würfe und CPU-Zufall entscheidet allein der Server.
+ */
+export function snapshotState(s: DraftSnapshot): DraftState {
+  return { ...s, seed: 0, owners: {} };
 }
 
 // ---------------------------------------------------------------- laufende Aktionen
@@ -374,7 +401,7 @@ export function pickAnnouncement(s: DraftSnapshot, byId: Map<number, Pokemon>, t
 const NO_FLIGHT: InFlightMap = {};
 
 /** Aktionen mit eigener Sperre – frei erst, wenn der Server sie bestätigt oder ablehnt. */
-export type DraftAction = 'pick' | 'auto-pick' | 'start' | 'join' | 'add-cpu' | 'settings';
+export type DraftAction = 'pick' | 'auto-pick' | 'start' | 'join' | 'add-cpu' | 'settings' | 'reroll';
 
 /** Stand beim Senden einer Aktion – daran wird die Bestätigung erkannt. */
 export interface InFlight {
@@ -384,6 +411,8 @@ export interface InFlight {
   pickIndex: number;
   cpuTeams: number;
   settings: DraftSettings;
+  /** Wurf des aktuellen Picks beim Senden ('reroll': bestätigt, sobald er wechselt) */
+  roll: DraftActiveRoll | null;
   /** Nur 'settings': die gesendete Änderung (ohne Liganamen) */
   patch?: Partial<DraftSettings>;
 }
@@ -397,6 +426,7 @@ export function inFlightOf(s: DraftSnapshot, at: number, patch?: Partial<DraftSe
     pickIndex: s.pickIndex,
     cpuTeams: s.teams.filter((t) => t.cpu).length,
     settings: s.settings,
+    roll: s.roll ?? null,
     ...(patch ? { patch } : {}),
   };
 }
@@ -419,9 +449,15 @@ export function actionSettled(action: DraftAction, f: InFlight, s: DraftSnapshot
       return s.teams.filter((t) => t.cpu).length > f.cpuTeams;
     case 'settings': {
       const keys = Object.keys(f.patch ?? {}) as (keyof DraftSettings)[];
-      // Übernommen – oder vom Server anders angepasst
-      return keys.every((k) => s.settings[k] === f.patch![k]) || keys.some((k) => s.settings[k] !== f.settings[k]);
+      // Übernommen – oder vom Server anders angepasst (Listen und Rerolls tief verglichen)
+      return (
+        keys.every((k) => sameSettingValue(s.settings[k], f.patch![k])) ||
+        keys.some((k) => !sameSettingValue(s.settings[k], f.settings[k]))
+      );
     }
+    case 'reroll':
+      // Neuer Wurf – oder der Zug ist ohnehin vorbei
+      return s.pickIndex !== f.pickIndex || !sameSettingValue(s.roll ?? null, f.roll);
   }
 }
 
@@ -466,6 +502,7 @@ export function checkRetryDelay(failures: number): number {
 // ---------------------------------------------------------------- Hook
 
 type AutoPickMessage = Extract<DraftClientMessage, { type: 'auto-pick' }>;
+type RerollMessage = Extract<DraftClientMessage, { type: 'reroll' }>;
 
 export interface DraftRoom extends DraftRoomView {
   status: DraftRoomStatus;
@@ -499,6 +536,8 @@ export interface DraftRoom extends DraftRoomView {
   pick(pokemonId: number, slot: number): boolean;
   /** Automatisch wählen – teamId: das Team, das gerade dran sein soll (sonst das aktuelle) */
   autoPick(teamId?: string): boolean;
+  /** Wurf des eigenen Picks neu würfeln (Typ bzw. Region) – nur am Zug, im Zufallsmodus, mit Rerolls übrig */
+  reroll(kind: DraftRerollKind): boolean;
   reconnect(): void;
 }
 
@@ -711,6 +750,7 @@ export function useDraftRoom(code: string): DraftRoom {
       join: !!flight.join,
       'add-cpu': !!flight['add-cpu'],
       settings: !!flight.settings,
+      reroll: !!flight.reroll,
     }),
     [flight],
   );
@@ -769,7 +809,9 @@ export function useDraftRoom(code: string): DraftRoom {
       // Nur der Liganame: überschreibt einfach (getippt, entprellt) – ohne Sperre
       if (!keys.length) return send({ type: 'settings', settings: patch });
       const s = stateRef.current;
-      if (s && keys.every((k) => s.settings[k] === rest[k]) && (name === undefined || name === s.settings.name)) return true;
+      if (s && keys.every((k) => sameSettingValue(s.settings[k], rest[k])) && (name === undefined || name === s.settings.name)) {
+        return true;
+      }
       return sendOnce('settings', { type: 'settings', settings: patch }, rest);
     },
     [send, sendOnce],
@@ -778,7 +820,8 @@ export function useDraftRoom(code: string): DraftRoom {
   const pick = useCallback(
     (pokemonId: number, slot: number) => {
       const s = stateRef.current;
-      if (!s || !s.you || flightRef.current.pick) return false;
+      // Ein Reroll unterwegs: Der Wurf ändert sich gleich – der Pick passte dann womöglich nicht mehr
+      if (!s || !s.you || flightRef.current.pick || flightRef.current.reroll) return false;
       const err = pickError(s, s.you, pokemonId, slot, list);
       if (err) {
         setError({ message: err, code: 'bad_pick' });
@@ -800,6 +843,31 @@ export function useDraftRoom(code: string): DraftRoom {
       return sendOnce('auto-pick', msg);
     },
     [sendOnce],
+  );
+
+  const reroll = useCallback(
+    (kind: DraftRerollKind) => {
+      const s = stateRef.current;
+      // Ein Pick unterwegs: Bei einem Doppelzug (Snake) träfe der Reroll sonst schon den nächsten,
+      // noch ungesehenen Wurf
+      if (!s || !s.you || flightRef.current.reroll || flightRef.current.pick) return false;
+      // Vorprüfung mit der Engine (nicht dran, kein Wurf, keine Rerolls, nichts anderes möglich) –
+      // dieselben Meldungen wie vom Server, ohne Umweg. Der neue Wurf selbst kommt vom Server.
+      try {
+        applyReroll(snapshotState(s), s.you, kind, list);
+      } catch (e) {
+        if (e instanceof DraftError) {
+          setError({ message: e.message, code: e.code });
+          return false;
+        }
+        throw e;
+      }
+      // Gezielt: nur dieser Pick mit diesem Wurf – ist er schon weiter, lehnt der Server ab („stale")
+      const msg: RerollMessage = { type: 'reroll', kind, pickIndex: s.pickIndex };
+      if (s.roll) msg.roll = { gen: s.roll.gen, type: s.roll.type };
+      return sendOnce('reroll', msg);
+    },
+    [list, sendOnce],
   );
 
   return {
@@ -824,6 +892,7 @@ export function useDraftRoom(code: string): DraftRoom {
     start: useCallback(() => sendOnce('start', { type: 'start' }), [sendOnce]),
     pick,
     autoPick,
+    reroll,
     reconnect: useCallback(() => {
       if (!conn.current?.reconnectNow()) setGeneration((g) => g + 1);
     }, []),
