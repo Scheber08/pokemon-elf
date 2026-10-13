@@ -7,7 +7,7 @@ import type { FormationId, PosCode, Pokemon, Slots, SpriteStyle } from '../types
 import { PitchMarkings } from './PitchMarkings';
 import { PlayerToken } from './PlayerToken';
 import { Sprite } from './Sprite';
-import { StatTooltip } from './StatTooltip';
+import { PositionTooltip, StatTooltip } from './StatTooltip';
 
 /** Index des optionalen Standardschützen-Slots (neben dem Feld). */
 export const SS_INDEX = 11;
@@ -27,6 +27,11 @@ interface Props {
   /** Markierte Slots (z. B. Schwachstellen im Ergebnis) */
   highlight?: number[];
   tooltips?: boolean;
+  /**
+   * Positions-Hinweise (z. B. im Draft): Hover/Long-Press auf einen leeren Slot zeigt, welche
+   * Werte dort zählen; bei besetzten Slots markiert der Werte-Tooltip die wichtigen Werte.
+   */
+  positionTips?: boolean;
   ariaLabel?: string;
   className?: string;
 }
@@ -61,6 +66,7 @@ export function Pitch({
   slotState,
   highlight,
   tooltips = true,
+  positionTips = false,
   ariaLabel = 'Spielfeld',
   className = '',
 }: Props) {
@@ -70,7 +76,7 @@ export function Pitch({
   const suppressClick = useRef(false);
   const hoverTimer = useRef<number | undefined>(undefined);
   const [drag, setDrag] = useState<DragState | null>(null);
-  const [tip, setTip] = useState<{ pokemon: Pokemon; rect: DOMRect } | null>(null);
+  const [tip, setTip] = useState<{ pokemon: Pokemon | null; pos: PosCode; rect: DOMRect } | null>(null);
   const [pw, setPw] = useState(0);
 
   // Feldbreite als CSS-Variable – alle Größen auf dem Feld skalieren damit.
@@ -104,11 +110,15 @@ export function Pitch({
     };
   }, [tip]);
 
+  /** Gibt es für diesen Slot etwas anzuzeigen? (Pokémon-Werte bzw. Positions-Hinweis) */
+  const hasTip = (index: number) => tooltips && (idAt(index) != null || positionTips);
+
   const showTip = (index: number, el: HTMLElement) => {
+    if (!hasTip(index)) return;
     const id = idAt(index);
-    const p = id != null ? byId.get(id) : undefined;
-    if (!p || !tooltips) return;
-    setTip({ pokemon: p, rect: el.getBoundingClientRect() });
+    const p = id != null ? byId.get(id) ?? null : null;
+    if (!p && !positionTips) return;
+    setTip({ pokemon: p, pos: posAt(index), rect: el.getBoundingClientRect() });
   };
 
   const onPointerDown = (e: ReactPointerEvent<HTMLElement>, index: number) => {
@@ -125,7 +135,7 @@ export function Pitch({
       timer: undefined,
     };
     press.current = state;
-    if (e.pointerType !== 'mouse' && tooltips && idAt(index) != null) {
+    if (e.pointerType !== 'mouse' && hasTip(index)) {
       state.timer = window.setTimeout(() => {
         state.longPressed = true;
         suppressClick.current = true;
@@ -274,7 +284,12 @@ export function Pitch({
           <span className="bench__note">zählt nicht zum Team-Score</span>
         </div>
       )}
-      {tip && <StatTooltip pokemon={tip.pokemon} anchor={tip.rect} />}
+      {tip &&
+        (tip.pokemon ? (
+          <StatTooltip pokemon={tip.pokemon} anchor={tip.rect} pos={positionTips ? tip.pos : undefined} />
+        ) : (
+          <PositionTooltip pos={tip.pos} anchor={tip.rect} />
+        ))}
       {drag &&
         dragPokemon &&
         createPortal(

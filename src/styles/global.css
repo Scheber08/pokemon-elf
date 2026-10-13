@@ -2358,3 +2358,14 @@ button.sheet__row:hover {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* Kopfzeile: Sprache + Design nebeneinander */
+.site-header__tools {
+  display: flex;
+  gap: 8px;
+}
+.lang-toggle {
+  font-family: var(--font-head);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}

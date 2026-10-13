@@ -4,8 +4,9 @@
  * Der Server (Durable Object „DraftRoom") ist die einzige Instanz, die den Zustand
  * ändert; er ruft diese Funktionen auf und verschickt danach Schnappschüsse. Der
  * Browser nutzt dieselben Funktionen nur zum Anzeigen (wer ist dran, freie Slots,
- * Pool) und um die Saison aus dem Seed nachzusimulieren. Kein Math.random, keine
- * Uhr: Zeit und IDs kommen von außen, Zufall aus dem Liga-Seed (streamRng).
+ * Pool) und um ältere Saisons ohne gespeichertes Ergebnis nachzusimulieren. Kein
+ * Math.random, keine Uhr: Zeit und IDs kommen von außen, Zufall aus dem Liga-Seed
+ * (leagueRng – ein geheimer Text-Seed wird per SHA-256 je Zweck abgeleitet).
  */
 import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { POSITIONS } from '../config/positions';
@@ -32,8 +33,11 @@ export const DRAFT_SS_SLOT = 11;
 /** Interner Zustand (Server). Enthält die Geräte-Zuordnung, die nie verschickt wird. */
 export interface DraftState {
   code: string;
-  /** Liga-Seed: Reihenfolge, CPU-Zufall und Saison leiten sich davon ab */
-  seed: number;
+  /**
+   * Liga-Seed: Reihenfolge, CPU-Zufall und Saison leiten sich davon ab (leagueSeed).
+   * Der Server nimmt einen geheimen Text (32 Zufallsbytes hex), ältere Ligen eine Zahl.
+   */
+  seed: number | string;
   phase: DraftPhase;
   settings: DraftSettings;
   teams: DraftTeam[];
@@ -45,6 +49,12 @@ export interface DraftState {
   picks: DraftPickLog[];
   season: DraftSeason | null;
   createdAt: number;
+  /** Vom Host entfernte Geräte – dürfen dieser Liga nicht wieder beitreten */
+  banned?: string[];
+  /** Beginn des aktuellen Zugs (nur während des Drafts) */
+  turnStartedAt?: number | null;
+  /** Gespeichertes Saisonergebnis (ab „done", kompakt: Teams ohne Kader) */
+  league?: LeagueResult | null;
 }
 
 /** Lesende Sicht – passt auf den Server-Zustand und auf Client-Schnappschüsse. */
@@ -63,6 +73,72 @@ export class DraftError extends Error {
 const fail = (code: string, message: string): never => {
   throw new DraftError(code, message);
 };
+
+// ---------------------------------------------------------------- Zufall der Liga
+
+const K256 = [
+  0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01,
+  0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc,
+  0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147,
+  0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+  0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08,
+  0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
+  0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+];
+
+const ror = (x: number, n: number) => (x >>> n) | (x << (32 - n));
+
+/** SHA-256 (synchron, klein) – die acht 32-Bit-Wörter des Hashs. */
+export function sha256Words(text: string): Uint32Array {
+  const bytes = new TextEncoder().encode(text);
+  const blocks = (bytes.length + 9 + 63) >> 6;
+  const w = new Uint32Array(blocks * 16);
+  bytes.forEach((b, i) => (w[i >> 2] |= b << (24 - (i & 3) * 8)));
+  w[bytes.length >> 2] |= 0x80 << (24 - (bytes.length & 3) * 8);
+  w[blocks * 16 - 2] = Math.floor((bytes.length * 8) / 2 ** 32);
+  w[blocks * 16 - 1] = bytes.length * 8;
+  const h = new Uint32Array([0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19]);
+  const m = new Uint32Array(64);
+  for (let b = 0; b < blocks; b++) {
+    for (let i = 0; i < 64; i++) {
+      if (i < 16) {
+        m[i] = w[b * 16 + i];
+      } else {
+        const x = m[i - 15];
+        const y = m[i - 2];
+        m[i] = m[i - 16] + (ror(x, 7) ^ ror(x, 18) ^ (x >>> 3)) + m[i - 7] + (ror(y, 17) ^ ror(y, 19) ^ (y >>> 10));
+      }
+    }
+    let [a, b1, b2, b3, e, f, g, hh] = h;
+    for (let i = 0; i < 64; i++) {
+      const t1 = (hh + (ror(e, 6) ^ ror(e, 11) ^ ror(e, 25)) + ((e & f) ^ (~e & g)) + K256[i] + m[i]) | 0;
+      const t2 = ((ror(a, 2) ^ ror(a, 13) ^ ror(a, 22)) + ((a & b1) ^ (a & b2) ^ (b1 & b2))) | 0;
+      hh = g;
+      g = f;
+      f = e;
+      e = (b3 + t1) | 0;
+      b3 = b2;
+      b2 = b1;
+      b1 = a;
+      a = (t1 + t2) | 0;
+    }
+    [a, b1, b2, b3, e, f, g, hh].forEach((v, i) => (h[i] += v));
+  }
+  return h;
+}
+
+/**
+ * 31-Bit-Seed der Liga für einen Zweck. Zahl (ältere Ligen, Tests): wie hashSeed.
+ * Geheimer Text-Seed: SHA-256 – so verrät ein Zweck (sichtbare Reihenfolge, CPU-Picks)
+ * nichts über einen anderen (Saison), auch nicht per Durchprobieren.
+ */
+export function leagueSeed(seed: number | string, ...parts: (string | number)[]): number {
+  if (typeof seed === 'number') return hashSeed(seed, ...parts);
+  return sha256Words([seed, ...parts].join('|'))[0] & 0x7fffffff;
+}
+
+/** Zufallsstrom der Liga für einen Zweck (siehe leagueSeed). */
+export const leagueRng = (seed: number | string, ...parts: (string | number)[]) => createRng(leagueSeed(seed, ...parts));
 
 // ---------------------------------------------------------------- Einstellungen & Pool
 
@@ -100,7 +176,8 @@ export function normalizeSettings(patch: Partial<DraftSettings>, base: DraftSett
   const s: DraftSettings = { ...base };
   if (patch.name !== undefined) {
     if (typeof patch.name !== 'string') fail('bad_settings', 'Ungültiger Liganame');
-    s.name = patch.name.slice(0, DRAFT_LIMITS.leagueNameMax);
+    // Nach Codepoints kürzen – nie mitten in einem Ersatzpaar (Emoji)
+    s.name = Array.from(patch.name).slice(0, DRAFT_LIMITS.leagueNameMax).join('');
   }
   if (patch.region !== undefined) {
     if (!Number.isInteger(patch.region) || patch.region < 0 || patch.region > 9) fail('bad_settings', 'Ungültige Region');
@@ -156,7 +233,7 @@ function makeTeam(id: string, name: string, formation: FormationId, cpu: boolean
 
 export function createDraft(args: {
   code: string;
-  seed: number;
+  seed: number | string;
   settings: Partial<DraftSettings>;
   host: NewTeam;
   now: number;
@@ -164,12 +241,14 @@ export function createDraft(args: {
 }): DraftState {
   assertFormation(args.host.formation);
   const settings = normalizeSettings(args.settings, DEFAULT_DRAFT_SETTINGS, args.list);
+  // Der Host ist noch nicht verbunden – ab jetzt zählt seine Abwesenheit (Host-Wechsel, Lobby-Liste).
+  const host: DraftTeam = { ...makeTeam(args.host.teamId, args.host.name, args.host.formation, false), offlineSince: args.now };
   return {
     code: args.code,
     seed: args.seed,
     phase: 'lobby',
     settings,
-    teams: [makeTeam(args.host.teamId, args.host.name, args.host.formation, false)],
+    teams: [host],
     owners: { [args.host.teamId]: args.host.deviceId },
     hostTeamId: args.host.teamId,
     pickIndex: 0,
@@ -199,6 +278,7 @@ export function joinDraft(state: DraftState, t: NewTeam): DraftState {
   requireLobby(state);
   assertFormation(t.formation);
   if (teamOfDevice(state, t.deviceId)) fail('already_joined', 'Du bist schon in dieser Liga');
+  if (state.banned?.includes(t.deviceId)) fail('banned', 'Der Host hat dich aus dieser Liga entfernt');
   if (state.teams.length >= state.settings.maxTeams) fail('league_full', 'Die Liga ist voll');
   return {
     ...state,
@@ -255,26 +335,36 @@ export function updateSettings(
   return { ...state, settings };
 }
 
-/** Fügt ein CPU-Team hinzu (Name und Formation leiten sich aus dem Liga-Seed ab). */
+/**
+ * Fügt ein CPU-Team hinzu. Name und Formation leiten sich aus dem (öffentlichen) Liga-Code
+ * ab – nie aus dem geheimen Seed, sonst ließe er sich aus ihnen zurückrechnen.
+ */
 export function addCpuTeam(state: DraftState, deviceId: string, teamId: string): DraftState {
   requireLobby(state);
   requireHost(state, deviceId);
   if (state.teams.length >= state.settings.maxTeams) fail('league_full', 'Die Liga ist voll');
   const taken = new Set(state.teams.map((t) => t.name));
-  const name = shuffle(streamRng(state.seed, 'cpu-names'), CLUB_NAMES).find((n) => !taken.has(n)) ?? `CPU ${state.teams.length + 1}`;
+  const name = shuffle(streamRng(state.code, 'cpu-names'), CLUB_NAMES).find((n) => !taken.has(n)) ?? `CPU ${state.teams.length + 1}`;
   const cpuCount = state.teams.filter((t) => t.cpu).length;
-  const formation = FORMATION_IDS[(hashSeed(state.seed, 'cpu-formation', cpuCount) % FORMATION_IDS.length)];
+  const formation = FORMATION_IDS[hashSeed(state.code, 'cpu-formation', cpuCount) % FORMATION_IDS.length];
   return { ...state, teams: [...state.teams, makeTeam(teamId, name, formation, true)] };
 }
 
+/** Höchstens so viele gesperrte Geräte pro Liga (die ältesten fallen heraus) */
+const MAX_BANNED = 64;
+
+/** Entfernt ein Team; ein Mensch wird für diese Liga gesperrt (kein erneuter Beitritt). */
 export function removeTeam(state: DraftState, deviceId: string, teamId: string): DraftState {
   requireLobby(state);
   requireHost(state, deviceId);
   if (teamId === state.hostTeamId) fail('cannot_remove_host', 'Der Host kann sich nicht selbst entfernen');
   if (!state.teams.some((t) => t.id === teamId)) fail('no_team', 'Dieses Team gibt es nicht');
   const owners = { ...state.owners };
+  const kicked = owners[teamId];
   delete owners[teamId];
-  return { ...state, teams: state.teams.filter((t) => t.id !== teamId), owners };
+  const next: DraftState = { ...state, teams: state.teams.filter((t) => t.id !== teamId), owners };
+  if (kicked) next.banned = [...(state.banned ?? []).filter((d) => d !== kicked), kicked].slice(-MAX_BANNED);
+  return next;
 }
 
 export function setOrder(state: DraftState, deviceId: string, order: string[]): DraftState {
@@ -288,8 +378,71 @@ export function setOrder(state: DraftState, deviceId: string, order: string[]): 
   return { ...state, teams: order.map((id) => byId.get(id)!) };
 }
 
-export function setOnline(state: DraftState, teamId: string, online: boolean): DraftState {
-  return { ...state, teams: state.teams.map((t) => (t.id === teamId && !t.cpu ? { ...t, online } : t)) };
+/** Online-Flag eines Menschen; mit `now` wird auch offlineSince gepflegt (seit wann offline). */
+export function setOnline(state: DraftState, teamId: string, online: boolean, now?: number): DraftState {
+  return {
+    ...state,
+    teams: state.teams.map((t) => {
+      if (t.id !== teamId || t.cpu) return t;
+      if (now === undefined) return { ...t, online };
+      if (online) {
+        const { offlineSince: _gone, ...rest } = t;
+        return { ...rest, online };
+      }
+      return { ...t, online, offlineSince: t.online || t.offlineSince == null ? now : t.offlineSince };
+    }),
+  };
+}
+
+/** Seit wann ein Mensch offline ist (ältere Stände ohne Zeitpunkt: seit jeher); null = online bzw. CPU. */
+function offlineFrom(t: DraftTeam): number | null {
+  if (t.cpu || t.online) return null;
+  return t.offlineSince ?? -Infinity;
+}
+
+/**
+ * Host-Rolle weiterreichen: Ist der Host (Lobby oder Draft) seit DRAFT_LIMITS.hostGraceMs
+ * offline, wird der erste verbundene Mensch Host. Sonst unverändert.
+ */
+export function transferHost(state: DraftState, now: number): DraftState {
+  const at = hostTransferAt(state);
+  if (at == null || now < at) return state;
+  const next = state.teams.find((t) => !t.cpu && t.online && t.id !== state.hostTeamId && state.owners[t.id]);
+  return next ? { ...state, hostTeamId: next.id } : state;
+}
+
+/** Ab wann die Host-Rolle wandern darf (Host offline bzw. weg) – null, solange der Host da ist. */
+export function hostTransferAt(state: DraftState): number | null {
+  if (state.phase === 'done') return null;
+  const host = state.teams.find((t) => t.id === state.hostTeamId);
+  const away = host ? offlineFrom(host) : -Infinity;
+  const grace = state.phase === 'lobby' ? DRAFT_LIMITS.lobbyHostGraceMs : DRAFT_LIMITS.hostGraceMs;
+  return away == null ? null : away + grace;
+}
+
+/**
+ * Ab wann andere Mitglieder für das Team am Zug auto-picken dürfen: CPU sofort, ein
+ * Mensch nach DRAFT_LIMITS.offlineGraceMs offline – ohne Timer auch, wenn sein Zug
+ * DRAFT_LIMITS.afkMs alt ist. null = gerade nicht (online mit Timer, oder kein Draft).
+ */
+export function autoPickOpensAt(state: DraftState): number | null {
+  const cur = currentTeam(state);
+  if (!cur) return null;
+  if (cur.cpu) return -Infinity;
+  const away = offlineFrom(cur);
+  const times: number[] = [];
+  if (away != null) times.push(away + DRAFT_LIMITS.offlineGraceMs);
+  if (!state.settings.pickSeconds && state.turnStartedAt != null) times.push(state.turnStartedAt + DRAFT_LIMITS.afkMs);
+  return times.length ? Math.min(...times) : null;
+}
+
+/** Darf das Team `teamId` (ein Mitglied) jetzt für das Team am Zug auto-picken? */
+export function mayAutoPick(state: DraftState, teamId: string | null, now: number): boolean {
+  const cur = currentTeam(state);
+  if (!cur || !teamId || !state.owners[teamId]) return false;
+  if (cur.id === teamId) return true;
+  const at = autoPickOpensAt(state);
+  return at != null && now >= at;
 }
 
 // ---------------------------------------------------------------- Draft
@@ -339,13 +492,14 @@ export function startDraft(state: DraftState, deviceId: string, now: number, lis
   const needed = state.teams.length * rounds(state.settings);
   const pool = poolOf(state.settings, list).length;
   if (pool < needed) fail('pool_too_small', `Der Pool hat nur ${pool} Pokémon, gebraucht werden ${needed}`);
-  const teams = state.settings.order === 'random' ? shuffle(streamRng(state.seed, 'order'), state.teams) : state.teams;
+  const teams = state.settings.order === 'random' ? shuffle(leagueRng(state.seed, 'order'), state.teams) : state.teams;
   const next: DraftState = {
     ...state,
     phase: 'drafting',
     teams: teams.map((t) => ({ ...t, slots: FORMATIONS[t.formation].slots.map(() => null), ss: null })),
     pickIndex: 0,
     picks: [],
+    turnStartedAt: now,
   };
   return { ...next, deadline: deadlineFor(next, now) };
 }
@@ -383,14 +537,15 @@ export function applyPick(
   );
   const picks = [...state.picks, { pick: state.pickIndex, teamId, pokemonId, slot, auto, at: now }];
   const pickIndex = state.pickIndex + 1;
-  const next: DraftState = { ...state, teams, picks, pickIndex };
+  const next: DraftState = { ...state, teams, picks, pickIndex, turnStartedAt: now };
   if (pickIndex >= totalPicks(next)) {
     return {
       ...next,
       phase: 'done',
       deadline: null,
+      turnStartedAt: null,
       season: {
-        seed: hashSeed(state.seed, 'season'),
+        seed: leagueSeed(state.seed, 'season'),
         startsAt: now + DRAFT_LIMITS.seasonLeadMs,
         stepMs: DRAFT_LIMITS.seasonStepMs,
       },
@@ -415,7 +570,7 @@ export function autoPickChoice(
   const taken = draftedIds(state);
   const pool = poolOf(state.settings, list).filter((p) => !taken.has(p.id));
   if (!pool.length) fail('pool_empty', 'Keine Pokémon mehr im Pool');
-  const rng = streamRng(state.seed, 'cpu', state.pickIndex);
+  const rng = withNoise ? leagueRng(state.seed, 'cpu', state.pickIndex) : null;
   const defs = FORMATIONS[team.formation].slots;
   let best: { score: number; pokemonId: number; slot: number } | null = null;
   for (const slot of freeSlots(team, state.settings)) {
@@ -423,7 +578,7 @@ export function autoPickChoice(
     // Standardschütze zählt nicht zum Team-Score → erst ganz am Ende besetzen
     const weight = pos === 'SS' ? 0.5 : 0.92 + 0.08 * POSITIONS[pos].teamWeight;
     for (const p of pool) {
-      const noise = withNoise ? (rng() - 0.5) * 8 : 0;
+      const noise = rng ? (rng() - 0.5) * 8 : 0;
       const score = positionFit(p, pos, scale) * weight + noise;
       if (!best || score > best.score || (score === best.score && p.id < best.pokemonId)) {
         best = { score, pokemonId: p.id, slot };
@@ -462,7 +617,25 @@ export function draftSeason(
   return simulateLeague(leagueTeams(state, byId, scale), createRng(state.season.seed));
 }
 
-/** Schnappschuss für einen Client – ohne Geräte-IDs. */
+const byIdCache = new WeakMap<Pokemon[], Map<number, Pokemon>>();
+
+/**
+ * Am Ende des Drafts: Saison einmal berechnen und kompakt speichern (Teams ohne Kader –
+ * Tabelle, Spiele und Torschützen bleiben). So ändert ein späterer Deploy das Ergebnis nicht.
+ */
+export function withLeague(state: DraftState, list: Pokemon[], scale: Scale): DraftState {
+  if (state.phase !== 'done' || !state.season || state.league) return state;
+  let byId = byIdCache.get(list);
+  if (!byId) {
+    byId = new Map(list.map((p) => [p.id, p]));
+    byIdCache.set(list, byId);
+  }
+  const full = draftSeason(state, byId, scale);
+  if (!full) return state;
+  return { ...state, league: { ...full, teams: full.teams.map((t) => ({ name: t.name, rating: t.rating })) } };
+}
+
+/** Schnappschuss für einen Client – ohne Geräte-IDs (und ohne Sperrliste). */
 export function snapshotOf(state: DraftState, you: string | null, now: number): DraftSnapshot {
   return {
     code: state.code,
@@ -478,5 +651,7 @@ export function snapshotOf(state: DraftState, you: string | null, now: number): 
     createdAt: state.createdAt,
     serverNow: now,
     you,
+    ...(state.phase === 'drafting' ? { turnStartedAt: state.turnStartedAt ?? null } : {}),
+    ...(state.league ? { league: state.league, ratings: state.league.teams.map((t) => t.rating) } : {}),
   };
 }

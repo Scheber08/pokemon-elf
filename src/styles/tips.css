@@ -1,0 +1,97 @@
+/* Positions-Hinweise in Tooltips (Draft: Hover über eine Position) */
+
+.statbars dt {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.statbars--pos .statbars__row--muted {
+  opacity: 0.45;
+}
+.stat-tip__meta .lvl {
+  display: inline-flex;
+  vertical-align: -1px;
+  margin-right: 3px;
+}
+
+.pos-tip__as {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 0 6px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+.pos-tip__as .pos-badge {
+  font-size: 10.5px;
+}
+
+.pos-tip {
+  width: 250px;
+}
+.pos-tip__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pos-tip__role {
+  margin: 4px 0 8px;
+  color: var(--text-dim);
+  font-size: 12.5px;
+}
+.pos-tip__groups {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+.pos-tip__group {
+  display: grid;
+  grid-template-columns: 7.6em 1fr;
+  gap: 6px;
+  align-items: baseline;
+}
+.pos-tip__group dt {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+.pos-tip__group dd {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.pos-tip__factor {
+  font-family: var(--font-head);
+  font-size: 12.5px;
+  letter-spacing: 0.03em;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 0 6px;
+}
+.pos-tip__factor small {
+  font-family: var(--font-body);
+  color: var(--text-dim);
+  letter-spacing: 0;
+}
+.pos-tip__types {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 0;
+}
+.pos-tip__label {
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+.pos-tip__type--off {
+  opacity: 0.35;
+}
+.pos-tip__weight {
+  margin: 6px 0 0;
+}

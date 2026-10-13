@@ -37,6 +37,8 @@ export interface HealthResponse {
   version: number;
   /** Heutiger Tag (Europe/Berlin) laut Server */
   day: string;
+  /** Zusatzfunktionen dieses Servers (fehlt bei älteren Servern = keine) */
+  features?: { drafts: boolean };
 }
 
 export interface StartRunRequest extends DeviceAuth {

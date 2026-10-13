@@ -1,0 +1,742 @@
+/**
+ * Live-Verbindung zu einer Online-Liga (/draft/:code): Schnappschüsse vom Server,
+ * Verbindungsstatus, Uhren-Offset und Senden der Aktionen. Der Server ist maßgeblich;
+ * die Draft-Engine dient hier nur der Anzeige und einer Vorprüfung (Pick am falschen
+ * Platz, nicht dran …), damit Fehler sofort und ohne Umweg über den Server erscheinen.
+ */
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ApiRequestError } from '../lib/api/client';
+import {
+  connectDraft,
+  fetchDraftSnapshot,
+  isDraftCode,
+  type DraftConnection,
+} from '../lib/api/draftClient';
+import {
+  DRAFT_LIMITS,
+  type DraftClientMessage,
+  type DraftPickLog,
+  type DraftSettings,
+  type DraftSnapshot,
+  type DraftTeam,
+} from '../lib/api/draftContract';
+import {
+  currentTeam,
+  draftedIds,
+  maxTeamsForPool,
+  pickError,
+  poolOf,
+  rounds,
+  teamIndexForPick,
+} from '../lib/draftEngine';
+import { DEFAULT_FORMATION, FORMATION_IDS } from '../config/formations';
+import { load, save } from '../lib/storage';
+import type { FormationId, Pokemon } from '../types';
+import { usePokemonData } from './PokemonData';
+
+export type DraftRoomStatus = 'connecting' | 'open' | 'reconnecting' | 'closed' | 'not_found';
+
+/** So lange bleibt eine Fehlermeldung des Servers stehen */
+export const DRAFT_ERROR_MS = 6000;
+/** So lange wartet eine gesendete Aktion höchstens auf die Antwort, dann wird sie wieder frei */
+export const DRAFT_ACTION_TIMEOUT_MS = 10_000;
+/** Existenzprüfung per HTTP, solange keine angemeldete Verbindung steht: Pausen nach Fehlern … */
+export const CHECK_RETRY_BASE_MS = 2000;
+export const CHECK_RETRY_MAX_MS = 30_000;
+/** … und nach einer erfolgreichen Prüfung (Vorschau auffrischen, gelöschte Liga erkennen) */
+export const CHECK_REFRESH_MS = 30_000;
+
+// ---------------------------------------------------------------- reine Helfer (testbar)
+
+export interface DraftRoomView {
+  /** Eigenes Team (null = Zuschauer / noch nicht beigetreten) */
+  me: DraftTeam | null;
+  isHost: boolean;
+  /** Team am Zug (nur während des Drafts) */
+  current: DraftTeam | null;
+  currentIndex: number;
+  myTurn: boolean;
+  /** Laufende Runde und Pick (1-basiert, auf das Ende begrenzt) */
+  round: number;
+  rounds: number;
+  pickNo: number;
+  totalPicks: number;
+  lastPick: DraftPickLog | null;
+  /** Lobby voll */
+  full: boolean;
+}
+
+export function draftRoomView(s: DraftSnapshot | null): DraftRoomView {
+  if (!s) {
+    return {
+      me: null,
+      isHost: false,
+      current: null,
+      currentIndex: -1,
+      myTurn: false,
+      round: 0,
+      rounds: 0,
+      pickNo: 0,
+      totalPicks: 0,
+      lastPick: null,
+      full: false,
+    };
+  }
+  const me = s.you ? s.teams.find((t) => t.id === s.you) ?? null : null;
+  const current = currentTeam(s);
+  const n = s.teams.length;
+  const r = rounds(s.settings);
+  const total = s.totalPicks || n * r;
+  const pick = Math.min(s.pickIndex, Math.max(0, total - 1));
+  return {
+    me,
+    isHost: !!me && me.id === s.hostTeamId,
+    current,
+    currentIndex: current && n ? teamIndexForPick(s.pickIndex, n) : -1,
+    myTurn: !!me && !!current && current.id === me.id,
+    round: n ? Math.floor(pick / n) + 1 : 0,
+    rounds: r,
+    pickNo: total ? pick + 1 : 0,
+    totalPicks: total,
+    lastPick: s.picks.length ? s.picks[s.picks.length - 1] : null,
+    full: s.teams.length >= s.settings.maxTeams,
+  };
+}
+
+/** Warum der Host (noch) nicht starten kann – oder null. */
+export function startBlocker(s: DraftSnapshot, list: Pokemon[]): string | null {
+  if (s.phase !== 'lobby') return 'Der Draft läuft schon';
+  if (s.teams.length < DRAFT_LIMITS.minTeams) {
+    return `Mindestens ${DRAFT_LIMITS.minTeams} Teams – lade Leute ein oder füge CPU-Teams hinzu`;
+  }
+  const needed = s.teams.length * rounds(s.settings);
+  const pool = poolOf(s.settings, list).length;
+  if (pool < needed) return `Der Pool hat nur ${pool} Pokémon, gebraucht werden ${needed}`;
+  return null;
+}
+
+/** Wie viele Teams der Pool mit diesen Einstellungen trägt (höchstens maxTeams-Grenze). */
+export function poolCapacity(settings: DraftSettings, list: Pokemon[]): number {
+  return Math.min(DRAFT_LIMITS.maxTeams, maxTeamsForPool(settings, list));
+}
+
+/**
+ * Änderung der Einstellungen so ergänzen, dass sie passt: Reicht der Pool danach nicht mehr
+ * für maxTeams, wird maxTeams mitgesenkt (nie unter minTeams bzw. die Zahl beigetretener
+ * Teams). null = geht gar nicht (Pool zu klein für die Teams, die schon da sind).
+ */
+export function fitSettingsPatch(
+  base: DraftSettings,
+  patch: Partial<DraftSettings>,
+  list: Pokemon[],
+  teamsJoined = 0,
+): Partial<DraftSettings> | null {
+  const next = { ...base, ...patch };
+  const floor = Math.max(DRAFT_LIMITS.minTeams, teamsJoined);
+  const cap = poolCapacity(next, list);
+  if (cap < floor) return null;
+  if (next.maxTeams < floor) return null;
+  if (next.maxTeams > cap) return { ...patch, maxTeams: cap };
+  return patch;
+}
+
+export interface FeedItem {
+  key: string;
+  /** Pick-Nummer (1-basiert) */
+  no: number;
+  pokemon: string;
+  team: string;
+  teamId: string;
+  auto: boolean;
+}
+
+/** Die letzten Picks, neuester zuerst. */
+export function pickFeed(s: DraftSnapshot, byId: Map<number, Pokemon>, limit = 8): FeedItem[] {
+  const names = new Map(s.teams.map((t) => [t.id, t.name]));
+  return s.picks
+    .slice(-limit)
+    .reverse()
+    .map((p) => ({
+      key: `${p.pick}-${p.pokemonId}`,
+      no: p.pick + 1,
+      pokemon: byId.get(p.pokemonId)?.de ?? `#${p.pokemonId}`,
+      team: names.get(p.teamId) ?? '?',
+      teamId: p.teamId,
+      auto: p.auto,
+    }));
+}
+
+/** Pokémon-ID → Team, das es gedraftet hat. */
+export function ownerOfPicks(s: Pick<DraftSnapshot, 'teams'>): Map<number, DraftTeam> {
+  const out = new Map<number, DraftTeam>();
+  for (const t of s.teams) {
+    for (const id of t.slots) if (id != null) out.set(id, t);
+    if (t.ss != null) out.set(t.ss, t);
+  }
+  return out;
+}
+
+/**
+ * Schlüssel der vergebenen Pokémon samt Teamnamen – ändert sich nur bei Picks bzw. Umbenennung,
+ * nicht bei jedem Schnappschuss (z. B. Online-Wechsel eines Teams).
+ */
+export function draftedKey(s: Pick<DraftSnapshot, 'teams'>): string {
+  return s.teams.map((t) => `${t.id}:${t.name}:${t.slots.join(',')}:${t.ss ?? ''}`).join('|');
+}
+
+/** Teamname säubern: Leerraum zusammenfassen, auf die Höchstlänge kürzen. */
+export function cleanTeamName(raw: string): string {
+  return raw.replace(/\s+/g, ' ').trim().slice(0, DRAFT_LIMITS.teamNameMax);
+}
+
+export interface TeamPrefs {
+  name: string;
+  formation: FormationId;
+}
+
+const TEAM_PREFS_KEY = 'draft-online:team';
+
+/** Zuletzt benutzter Teamname und Formation (Vorbelegung beim Erstellen/Beitreten). */
+export function loadTeamPrefs(): TeamPrefs {
+  const stored = load<Partial<TeamPrefs> | null>(TEAM_PREFS_KEY, null) ?? {};
+  return {
+    name: typeof stored.name === 'string' ? stored.name.slice(0, DRAFT_LIMITS.teamNameMax) : '',
+    formation: FORMATION_IDS.includes(stored.formation as FormationId) ? (stored.formation as FormationId) : DEFAULT_FORMATION,
+  };
+}
+
+export function saveTeamPrefs(prefs: TeamPrefs): void {
+  save(TEAM_PREFS_KEY, { name: cleanTeamName(prefs.name), formation: prefs.formation });
+}
+
+export interface RecentLeague {
+  code: string;
+  /** Liganame (leer = ohne Namen) */
+  name: string;
+  /** Eigenes Team */
+  team: string;
+  phase: DraftSnapshot['phase'];
+  /** Zuletzt gesehen (ms) */
+  at: number;
+}
+
+const RECENT_KEY = 'draft-online:recent';
+const RECENT_MAX = 6;
+
+/** Ligen, in denen dieses Gerät mitspielt (nur lokal gemerkt, ältere als die Aufbewahrungszeit fallen weg). */
+export function loadRecentLeagues(now = Date.now()): RecentLeague[] {
+  const list = load<RecentLeague[] | null>(RECENT_KEY, null);
+  if (!Array.isArray(list)) return [];
+  const maxAge = DRAFT_LIMITS.retentionDays * 86_400_000;
+  return list.filter((l) => l && typeof l.code === 'string' && typeof l.at === 'number' && now - l.at < maxAge).slice(0, RECENT_MAX);
+}
+
+export function rememberLeague(snap: DraftSnapshot, now = Date.now()): void {
+  const me = snap.you ? snap.teams.find((t) => t.id === snap.you) : undefined;
+  if (!me) return;
+  const entry: RecentLeague = { code: snap.code, name: snap.settings.name, team: me.name, phase: snap.phase, at: now };
+  const prev = loadRecentLeagues(now);
+  const same = prev.find((l) => l.code === entry.code);
+  // Nur speichern, wenn sich etwas Sichtbares ändert (nicht bei jedem Pick)
+  if (same && same.name === entry.name && same.team === entry.team && same.phase === entry.phase && now - same.at < 3_600_000) return;
+  save(RECENT_KEY, [entry, ...prev.filter((l) => l.code !== entry.code)].slice(0, RECENT_MAX));
+}
+
+export function forgetLeague(code: string): void {
+  save(
+    RECENT_KEY,
+    loadRecentLeagues().filter((l) => l.code !== code),
+  );
+}
+
+/**
+ * Darf die Raum-Seite den Stand schon zeigen? Den eigenen Schnappschuss (WebSocket) immer; die
+ * öffentliche HTTP-Vorschau (ohne „du") erst, wenn der erste Aufbau nicht gleich klappt
+ * (Neuversuch, abgelehnte Anmeldung, getrennt) – vorher kurz warten statt Zuschauer-Ansicht.
+ */
+export function draftRoomReady(room: Pick<DraftRoom, 'state' | 'live' | 'status' | 'authError'>): boolean {
+  if (!room.state) return false;
+  return room.live || room.status !== 'connecting' || room.authError != null;
+}
+
+/** Restzeit (ms) bis zur Deadline nach Serveruhr – null ohne Timer. */
+export function remainingMs(deadline: number | null, clockOffset: number, now = Date.now()): number | null {
+  if (deadline == null) return null;
+  return Math.max(0, deadline - (now + clockOffset));
+}
+
+/**
+ * Eine kurze Ansage pro Pick für Screenreader (einzige Live-Region des Drafts):
+ * „Pick 3: Glurak an FC Blitz (automatisch). Am Zug: FC Donner." – „Am Zug" entfällt, wenn
+ * man selbst dran ist (das meldet „Du bist dran!").
+ */
+export function pickAnnouncement(s: DraftSnapshot, byId: Map<number, Pokemon>): string {
+  const last = s.picks.length ? s.picks[s.picks.length - 1] : null;
+  if (!last) return '';
+  const team = last.teamId === s.you ? 'dich' : (s.teams.find((t) => t.id === last.teamId)?.name ?? '?');
+  const name = byId.get(last.pokemonId)?.de ?? `#${last.pokemonId}`;
+  let text = `Pick ${last.pick + 1}: ${name} an ${team}${last.auto ? ' (automatisch)' : ''}.`;
+  const cur = currentTeam(s);
+  if (cur && cur.id !== s.you) text += ` Am Zug: ${cur.name}.`;
+  return text;
+}
+
+// ---------------------------------------------------------------- laufende Aktionen
+
+const NO_FLIGHT: InFlightMap = {};
+
+/** Aktionen mit eigener Sperre – frei erst, wenn der Server sie bestätigt oder ablehnt. */
+export type DraftAction = 'pick' | 'auto-pick' | 'start' | 'join' | 'add-cpu' | 'settings';
+
+/** Stand beim Senden einer Aktion – daran wird die Bestätigung erkannt. */
+export interface InFlight {
+  /** Gesendet (Date.now) */
+  at: number;
+  phase: DraftSnapshot['phase'];
+  pickIndex: number;
+  cpuTeams: number;
+  settings: DraftSettings;
+  /** Nur 'settings': die gesendete Änderung (ohne Liganamen) */
+  patch?: Partial<DraftSettings>;
+}
+
+export type InFlightMap = Partial<Record<DraftAction, InFlight>>;
+
+export function inFlightOf(s: DraftSnapshot, at: number, patch?: Partial<DraftSettings>): InFlight {
+  return {
+    at,
+    phase: s.phase,
+    pickIndex: s.pickIndex,
+    cpuTeams: s.teams.filter((t) => t.cpu).length,
+    settings: s.settings,
+    ...(patch ? { patch } : {}),
+  };
+}
+
+/**
+ * Bestätigt dieser Schnappschuss die Aktion? Fremde Schnappschüsse (Online-Status, andere
+ * Teams …) lösen die Sperre nicht – nur die passende Änderung (oder ein Phasenwechsel).
+ */
+export function actionSettled(action: DraftAction, f: InFlight, s: DraftSnapshot): boolean {
+  if (s.phase !== f.phase) return true;
+  switch (action) {
+    case 'pick':
+    case 'auto-pick':
+      return s.pickIndex > f.pickIndex;
+    case 'start':
+      return false;
+    case 'join':
+      return s.you != null;
+    case 'add-cpu':
+      return s.teams.filter((t) => t.cpu).length > f.cpuTeams;
+    case 'settings': {
+      const keys = Object.keys(f.patch ?? {}) as (keyof DraftSettings)[];
+      // Übernommen – oder vom Server anders angepasst
+      return keys.every((k) => s.settings[k] === f.patch![k]) || keys.some((k) => s.settings[k] !== f.settings[k]);
+    }
+  }
+}
+
+/** Bestätigte Aktionen austragen – dasselbe Objekt, wenn sich nichts ändert. */
+export function settleInFlight(map: InFlightMap, s: DraftSnapshot): InFlightMap {
+  let out = map;
+  for (const action of Object.keys(map) as DraftAction[]) {
+    const f = map[action];
+    if (!f || !actionSettled(action, f, s)) continue;
+    if (out === map) out = { ...map };
+    delete out[action];
+  }
+  return out;
+}
+
+/** Aktionen, die seit DRAFT_ACTION_TIMEOUT_MS ohne Antwort sind, austragen. */
+export function expireInFlight(map: InFlightMap, now: number): { map: InFlightMap; expired: DraftAction[] } {
+  const expired = (Object.keys(map) as DraftAction[]).filter((a) => now - map[a]!.at >= DRAFT_ACTION_TIMEOUT_MS);
+  if (!expired.length) return { map, expired };
+  const out = { ...map };
+  for (const a of expired) delete out[a];
+  return { map: out, expired };
+}
+
+/**
+ * Fehler vom Server: Sperre der abgelehnten Aktion lösen. Ohne Zuordnung (for fehlt, z. B. beim
+ * Nachrichtenlimit) alle – sonst nur die passende, damit ein fremder Fehler keinen laufenden Pick freigibt.
+ */
+export function releaseInFlight(map: InFlightMap, forType?: string): InFlightMap {
+  if (forType == null) return Object.keys(map).length ? NO_FLIGHT : map;
+  if (!Object.hasOwn(map, forType)) return map;
+  const out = { ...map };
+  delete out[forType as DraftAction];
+  return out;
+}
+
+/** Wartezeit vor der n-ten erneuten Existenzprüfung nach einem Fehler: 2 s, 4 s, 8 s … 30 s */
+export function checkRetryDelay(failures: number): number {
+  return Math.min(CHECK_RETRY_MAX_MS, CHECK_RETRY_BASE_MS * 2 ** Math.max(0, Math.floor(failures)));
+}
+
+// ---------------------------------------------------------------- Hook
+
+type AutoPickMessage = Extract<DraftClientMessage, { type: 'auto-pick' }>;
+
+export interface DraftRoom extends DraftRoomView {
+  status: DraftRoomStatus;
+  state: DraftSnapshot | null;
+  /** Schnappschuss kommt über den WebSocket (mit you) – nicht nur die HTTP-Vorschau */
+  live: boolean;
+  /** Letzte Fehlermeldung (verschwindet nach DRAFT_ERROR_MS) */
+  error: string | null;
+  clearError(): void;
+  /**
+   * Der Server hat die Anmeldung (hello) abgelehnt – seine Meldung. Bleibt stehen, bis eine
+   * Anmeldung klappt; bis dahin gibt es nur die öffentliche Ansicht.
+   */
+  authError: string | null;
+  /** Serverzeit − Date.now() */
+  clockOffset: number;
+  /** Ein eigener Pick ist unterwegs */
+  pending: boolean;
+  /** Gesendete Aktionen, auf deren Bestätigung noch gewartet wird (Knöpfe gesperrt) */
+  busy: Record<DraftAction, boolean>;
+  /** Bereits vergebene Pokémon */
+  drafted: Set<number>;
+  join(name: string, formation: FormationId): boolean;
+  leave(): boolean;
+  updateTeam(patch: { name?: string; formation?: FormationId }): boolean;
+  updateSettings(patch: Partial<DraftSettings>): boolean;
+  addCpu(): boolean;
+  removeTeam(teamId: string): boolean;
+  setOrder(teamIds: string[]): boolean;
+  start(): boolean;
+  pick(pokemonId: number, slot: number): boolean;
+  /** Automatisch wählen – teamId: das Team, das gerade dran sein soll (sonst das aktuelle) */
+  autoPick(teamId?: string): boolean;
+  reconnect(): void;
+}
+
+export function useDraftRoom(code: string): DraftRoom {
+  const { list } = usePokemonData();
+  const valid = isDraftCode(code);
+  const [status, setStatus] = useState<DraftRoomStatus>(valid ? 'connecting' : 'not_found');
+  const [state, setState] = useState<DraftSnapshot | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [clockOffset, setClockOffset] = useState(0);
+  const [live, setLive] = useState(false);
+  const [generation, setGeneration] = useState(0);
+  const [flight, setFlightState] = useState<InFlightMap>(NO_FLIGHT);
+  const conn = useRef<DraftConnection | null>(null);
+  /** Neuester Stand und laufende Aktionen – synchron lesbar (Doppelklick vor dem nächsten Rendern) */
+  const stateRef = useRef<DraftSnapshot | null>(null);
+  const flightRef = useRef<InFlightMap>(NO_FLIGHT);
+  /** Für diesen Code kam schon ein Schnappschuss über den WebSocket (mit eigener Rolle) */
+  const liveRef = useRef(false);
+  const codeRef = useRef<string | null>(null);
+
+  const setFlight = useCallback((next: InFlightMap) => {
+    if (next === flightRef.current) return;
+    flightRef.current = next;
+    setFlightState(next);
+  }, []);
+
+  useEffect(() => {
+    // Neuer Code → alles zurück. Ein neuer Anlauf für dieselbe Liga (generation) behält den
+    // letzten Stand samt eigener Rolle – sonst blitzt die Zuschauer-Vorschau auf.
+    if (codeRef.current !== code) {
+      codeRef.current = code;
+      stateRef.current = null;
+      liveRef.current = false;
+      setState(null);
+      setLive(false);
+      setAuthError(null);
+      setClockOffset(0);
+    }
+    setError(null);
+    setFlight(NO_FLIGHT);
+    if (!valid) {
+      setStatus('not_found');
+      return;
+    }
+    setStatus(liveRef.current ? 'reconnecting' : 'connecting');
+    let alive = true;
+    let gone = false;
+    let checking = false;
+    let checkFailures = 0;
+    let checkTimer: number | undefined;
+    let connection: DraftConnection | null = null;
+
+    const markGone = () => {
+      if (!alive || gone) return;
+      gone = true;
+      window.clearTimeout(checkTimer);
+      connection?.close();
+      forgetLeague(code);
+      setStatus('not_found');
+    };
+
+    /** Nächste Prüfung – nur, solange keine angemeldete Verbindung steht. */
+    const scheduleCheck = (ms: number) => {
+      window.clearTimeout(checkTimer);
+      checkTimer = undefined;
+      if (!alive || gone || connection?.status === 'open') return;
+      checkTimer = window.setTimeout(check, ms);
+    };
+
+    /**
+     * Gibt es die Liga noch? (Ein 404 beim WebSocket-Aufbau ist im Browser nicht lesbar.)
+     * Wiederholt sich mit Pause, bis eine eindeutige Antwort kommt, und danach in größerem
+     * Abstand, solange die Live-Verbindung fehlt – das frischt auch die öffentliche Vorschau auf.
+     */
+    function check() {
+      if (!alive || gone || checking) return;
+      window.clearTimeout(checkTimer);
+      checkTimer = undefined;
+      checking = true;
+      fetchDraftSnapshot(code)
+        .then((snap) => {
+          if (!alive || gone) return;
+          checkFailures = 0;
+          if (!liveRef.current) {
+            // Vorschau, bis der WebSocket den eigenen Schnappschuss (mit you) liefert
+            stateRef.current = snap;
+            setState(snap);
+            setClockOffset((o) => (o === 0 ? snap.serverNow - Date.now() : o));
+          }
+          scheduleCheck(CHECK_REFRESH_MS);
+        })
+        .catch((e: unknown) => {
+          if (!alive) return;
+          if (e instanceof ApiRequestError && e.status === 404) {
+            markGone();
+            return;
+          }
+          scheduleCheck(checkRetryDelay(checkFailures++));
+        })
+        .finally(() => {
+          checking = false;
+        });
+    }
+
+    connection = connectDraft(code, {
+      onState(snap) {
+        if (!alive) return;
+        liveRef.current = true;
+        stateRef.current = snap;
+        setState(snap);
+        setLive(true);
+        setAuthError(null);
+        rememberLeague(snap);
+        setFlight(settleInFlight(flightRef.current, snap));
+      },
+      onError(err) {
+        if (!alive) return;
+        if (err.code === 'not_found') {
+          markGone();
+          return;
+        }
+        // Antwort auf eine eigene Aktion → deren Sperre lösen
+        setFlight(releaseInFlight(flightRef.current, err.for));
+        if (err.hello) {
+          setAuthError(err.message || 'Anmeldung abgelehnt');
+          return;
+        }
+        setError(err.message || 'Unbekannter Fehler');
+      },
+      onStatus(next) {
+        if (!alive || gone) return;
+        setStatus(next);
+        if (next === 'open') {
+          window.clearTimeout(checkTimer);
+          checkTimer = undefined;
+        } else if (next === 'reconnecting' || next === 'closed') {
+          setFlight(NO_FLIGHT);
+          check();
+        }
+      },
+      onClockOffset(offset) {
+        if (alive) setClockOffset(offset);
+      },
+    });
+    conn.current = connection;
+    check();
+
+    // Zurück im Tab: Verbindung prüfen (tote bzw. hängende sofort ersetzen); wieder online:
+    // sofort neu verbinden – der alte Socket hängt meist noch am alten Netz.
+    const wake = () => {
+      if (document.visibilityState !== 'visible' || !connection) return;
+      connection.checkAlive();
+      if (connection.status !== 'open') check();
+    };
+    const online = () => {
+      if (!connection) return;
+      connection.reconnectNow();
+      check();
+    };
+    document.addEventListener('visibilitychange', wake);
+    window.addEventListener('online', online);
+    return () => {
+      alive = false;
+      window.clearTimeout(checkTimer);
+      document.removeEventListener('visibilitychange', wake);
+      window.removeEventListener('online', online);
+      connection?.close();
+      if (conn.current === connection) conn.current = null;
+    };
+  }, [code, valid, generation, setFlight]);
+
+  // Fehlermeldungen verschwinden von selbst
+  useEffect(() => {
+    if (!error) return;
+    const id = window.setTimeout(() => setError(null), DRAFT_ERROR_MS);
+    return () => window.clearTimeout(id);
+  }, [error]);
+
+  // Aktion ohne Antwort: wieder freigeben und die Verbindung prüfen (tote wird ersetzt)
+  const [rearm, setRearm] = useState(0);
+  useEffect(() => {
+    const started = Object.values(flight).map((f) => f!.at);
+    if (!started.length) return;
+    const wait = Math.max(0, Math.min(...started) + DRAFT_ACTION_TIMEOUT_MS - Date.now());
+    const id = window.setTimeout(() => {
+      const { map, expired } = expireInFlight(flightRef.current, Date.now());
+      // Zu früh (Uhr nachgestellt, ungenaue Timer): mit der Restzeit neu stellen
+      if (!expired.length) {
+        setRearm((n) => n + 1);
+        return;
+      }
+      setFlight(map);
+      // Einstellungen ohne Änderung bekommen evtl. keine eigene Bestätigung – dann still freigeben
+      if (expired.some((a) => a !== 'settings')) setError('Keine Antwort vom Server – bitte erneut versuchen');
+      conn.current?.checkAlive();
+    }, wait);
+    return () => window.clearTimeout(id);
+  }, [flight, setFlight, rearm]);
+
+  const view = useMemo(() => draftRoomView(state), [state]);
+  const drafted = useMemo(() => (state ? draftedIds(state) : new Set<number>()), [state]);
+  const busy = useMemo(
+    () => ({
+      pick: !!flight.pick,
+      'auto-pick': !!flight['auto-pick'],
+      start: !!flight.start,
+      join: !!flight.join,
+      'add-cpu': !!flight['add-cpu'],
+      settings: !!flight.settings,
+    }),
+    [flight],
+  );
+
+  const send = useCallback((msg: DraftClientMessage): boolean => {
+    const ok = conn.current?.send(msg) ?? false;
+    if (!ok) setError('Keine Verbindung zum Server – einen Moment, es wird neu verbunden …');
+    return ok;
+  }, []);
+
+  /** Aktion mit Sperre senden: Läuft dieselbe Aktion noch, passiert nichts (Doppelklick). */
+  const sendOnce = useCallback(
+    (action: DraftAction, msg: DraftClientMessage, patch?: Partial<DraftSettings>): boolean => {
+      const s = stateRef.current;
+      if (!s || flightRef.current[action]) return false;
+      if (!send(msg)) return false;
+      setFlight({ ...flightRef.current, [action]: inFlightOf(s, Date.now(), patch) });
+      return true;
+    },
+    [send, setFlight],
+  );
+
+  const join = useCallback(
+    (name: string, formation: FormationId) => {
+      const teamName = cleanTeamName(name);
+      if (!teamName) {
+        setError('Gib deinem Team einen Namen');
+        return false;
+      }
+      return sendOnce('join', { type: 'join', teamName, formation });
+    },
+    [sendOnce],
+  );
+
+  const updateTeam = useCallback(
+    (patch: { name?: string; formation?: FormationId }) => {
+      const msg: Extract<DraftClientMessage, { type: 'update-team' }> = { type: 'update-team' };
+      if (patch.name !== undefined) {
+        const teamName = cleanTeamName(patch.name);
+        if (!teamName) {
+          setError('Gib deinem Team einen Namen');
+          return false;
+        }
+        msg.teamName = teamName;
+      }
+      if (patch.formation) msg.formation = patch.formation;
+      return send(msg);
+    },
+    [send],
+  );
+
+  const updateSettings = useCallback(
+    (patch: Partial<DraftSettings>) => {
+      const { name, ...rest } = patch;
+      const keys = Object.keys(rest) as Exclude<keyof DraftSettings, 'name'>[];
+      // Nur der Liganame: überschreibt einfach (getippt, entprellt) – ohne Sperre
+      if (!keys.length) return send({ type: 'settings', settings: patch });
+      const s = stateRef.current;
+      if (s && keys.every((k) => s.settings[k] === rest[k]) && (name === undefined || name === s.settings.name)) return true;
+      return sendOnce('settings', { type: 'settings', settings: patch }, rest);
+    },
+    [send, sendOnce],
+  );
+
+  const pick = useCallback(
+    (pokemonId: number, slot: number) => {
+      const s = stateRef.current;
+      if (!s || !s.you || flightRef.current.pick) return false;
+      const err = pickError(s, s.you, pokemonId, slot, list);
+      if (err) {
+        setError(err);
+        return false;
+      }
+      return sendOnce('pick', { type: 'pick', pokemonId, slot });
+    },
+    [list, sendOnce],
+  );
+
+  const autoPick = useCallback(
+    (teamId?: string) => {
+      const s = stateRef.current;
+      const cur = s ? currentTeam(s) : null;
+      // Anzeige veraltet (der Zug ist schon weiter) → nichts senden
+      if (!cur || (teamId != null && teamId !== cur.id)) return false;
+      // Ziel ist genau dieser Zug: Ist er schon vorbei, lehnt der Server ab („stale") statt den nächsten zu nehmen
+      const msg: AutoPickMessage = { type: 'auto-pick', teamId: cur.id, pickIndex: s!.pickIndex };
+      return sendOnce('auto-pick', msg);
+    },
+    [sendOnce],
+  );
+
+  return {
+    ...view,
+    status,
+    state,
+    live,
+    error,
+    clearError: useCallback(() => setError(null), []),
+    authError,
+    clockOffset,
+    pending: busy.pick,
+    busy,
+    drafted,
+    join,
+    leave: useCallback(() => send({ type: 'leave' }), [send]),
+    updateTeam,
+    updateSettings,
+    addCpu: useCallback(() => sendOnce('add-cpu', { type: 'add-cpu' }), [sendOnce]),
+    removeTeam: useCallback((teamId: string) => send({ type: 'remove-team', teamId }), [send]),
+    setOrder: useCallback((order: string[]) => send({ type: 'set-order', order }), [send]),
+    start: useCallback(() => sendOnce('start', { type: 'start' }), [sendOnce]),
+    pick,
+    autoPick,
+    reconnect: useCallback(() => {
+      if (!conn.current?.reconnectNow()) setGeneration((g) => g + 1);
+    }, []),
+  };
+}

@@ -76,6 +76,9 @@ export function normalizeIp(raw: string): string {
     .join(':')}::/64`;
 }
 
+/** Was die Geräteprüfung vom Env braucht (auch im Draft-Raum vorhanden). */
+type DeviceEnv = Pick<Env, 'DB' | 'IP_SALT'>;
+
 const salts = new WeakMap<Env['DB'], Promise<string>>();
 
 /**
@@ -83,7 +86,7 @@ const salts = new WeakMap<Env['DB'], Promise<string>>();
  * Bedarf in der Datenbank angelegt wird. So sind die Hashes ohne Konfiguration nicht per
  * Durchprobieren aller IPv4-Adressen umkehrbar.
  */
-function ipSalt(env: Env): Promise<string> {
+function ipSalt(env: DeviceEnv): Promise<string> {
   if (env.IP_SALT) return Promise.resolve(env.IP_SALT);
   let salt = salts.get(env.DB);
   if (!salt) {
@@ -98,20 +101,38 @@ function ipSalt(env: Env): Promise<string> {
  * Hash der (normalisierten) Client-IP, gesalzen – die IP selbst wird nie gespeichert,
  * der Hash nach IP_HASH_TTL_MS gelöscht.
  */
-export async function ipHashOf(request: Request, env: Env): Promise<string | null> {
-  const ip = request.headers.get('CF-Connecting-IP')?.trim();
+export function ipHashOf(request: Request, env: Env): Promise<string | null> {
+  return ipHashFor(request.headers.get('CF-Connecting-IP'), env);
+}
+
+/** Wie ipHashOf, nur mit der rohen IP (z. B. aus dem WebSocket-Upgrade eines Draft-Raums). */
+export async function ipHashFor(rawIp: string | null | undefined, env: DeviceEnv): Promise<string | null> {
+  const ip = rawIp?.trim();
   return ip ? sha256Hex(`pokemon-elf|ip|${await ipSalt(env)}|${normalizeIp(ip)}`) : null;
 }
 
 /** Prüft (bzw. registriert) das Gerät; wirft 401 bei falschem Schlüssel, 429 bei zu vielen neuen Geräten. */
-export async function authenticate(request: Request, env: Env, auth: DeviceAuth, now: number): Promise<void> {
+export function authenticate(request: Request, env: Env, auth: DeviceAuth, now: number): Promise<void> {
+  return authenticateDevice(env, auth, now, request.headers.get('CF-Connecting-IP'));
+}
+
+/**
+ * Wie authenticate, nur mit der rohen Client-IP statt der Anfrage – für das hello im
+ * Draft-Raum (die IP stammt aus dem WebSocket-Upgrade). Ohne IP greift das Limit nicht.
+ */
+export async function authenticateDevice(
+  env: DeviceEnv,
+  auth: DeviceAuth,
+  now: number,
+  rawIp: string | null | undefined,
+): Promise<void> {
   const db = env.DB;
   const secretHash = await sha256Hex(auth.deviceSecret);
   // Bei jedem Zugriff mit Gerät: IP-Hashes außerhalb des Limit-Fensters löschen (Partial-Index, billig).
   await expireIpHashes(db, now - IP_HASH_TTL_MS);
   let device = await getDevice(db, auth.deviceId);
   if (!device) {
-    const ipHash = await ipHashOf(request, env);
+    const ipHash = await ipHashFor(rawIp, env);
     // Ohne CF-Connecting-IP (nur außerhalb von Cloudflare) greift das IP-Limit nicht.
     if (ipHash && (await countDevicesByIp(db, ipHash, now - HOUR_MS)) >= LIMITS.devicesPerIpPerHour) {
       throw rateLimited('Zu viele neue Geräte von dieser Verbindung – bitte in einer Stunde erneut versuchen');

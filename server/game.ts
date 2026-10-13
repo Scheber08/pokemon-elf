@@ -31,6 +31,11 @@ export function scaleFor(challenge: ChallengeKey): Scale {
   return SCALES[MODE_RULES[challenge].scale];
 }
 
+/** Normalisierung des Online-Drafts (CPU- und Timer-Picks) – alle 1.025 wie im lokalen Draft. */
+export function draftScale(): Scale {
+  return SCALES.all;
+}
+
 export interface VerifiedRun {
   state: RunState;
   computed: ComputedRun;

@@ -13,10 +13,12 @@
  *
  * Ablauf: lobby (beitreten, Host stellt ein, fügt CPU-Teams hinzu, startet)
  *       → drafting (Snake-Draft; Timer und CPU-Picks laufen auf dem Server)
- *       → done (Saison-Seed + Startzeit stehen fest; alle Clients simulieren
- *         dieselbe Saison und spielen sie synchron als Ticker ab).
+ *       → done (Saison-Seed + Startzeit stehen fest; der Server berechnet das Ergebnis
+ *         einmal und schickt es mit (league) – alle Clients spielen dieselbe Saison
+ *         synchron als Ticker ab).
  */
 import type { FormationId, RegionFilter } from '../../types';
+import type { LeagueResult } from '../season';
 import type { DeviceAuth } from './contract';
 
 export const DRAFT_LIMITS = {
@@ -38,6 +40,14 @@ export const DRAFT_LIMITS = {
   seasonStepMs: 2600,
   /** So lange bleibt eine Liga erhalten (danach wird sie gelöscht) */
   retentionDays: 14,
+  /** Andere Mitglieder dürfen für ein Team auto-picken, das so lange offline ist (ms) */
+  offlineGraceMs: 20_000,
+  /** Ohne Timer: andere Mitglieder dürfen auto-picken, wenn der Zug so alt ist (ms) */
+  afkMs: 180_000,
+  /** Die Host-Rolle wandert zu einem anderen Menschen, wenn der Host so lange offline ist (ms) */
+  hostGraceMs: 30_000,
+  /** In der Lobby wandert die Host-Rolle erst nach dieser Abwesenheit (Einladen dauert) */
+  lobbyHostGraceMs: 300_000,
 } as const;
 
 export type PickSeconds = (typeof DRAFT_LIMITS.pickSeconds)[number];
@@ -80,6 +90,8 @@ export interface DraftTeam {
   cpu: boolean;
   /** Gerade verbunden (CPU: immer true) */
   online: boolean;
+  /** Seit wann offline (ms, Serverzeit) – fehlt bei verbundenen Teams und älteren Ständen */
+  offlineSince?: number | null;
   /** 11 Feldslots in Reihenfolge der Formation */
   slots: (number | null)[];
   /** Standardschütze (nur mit settings.setPiece) */
@@ -129,6 +141,15 @@ export interface DraftSnapshot {
   serverNow: number;
   /** Team des anfragenden Geräts (null = Zuschauer / noch nicht beigetreten) */
   you: string | null;
+  /** Beginn des aktuellen Zugs (ms, Serverzeit) – nur während des Drafts */
+  turnStartedAt?: number | null;
+  /**
+   * Ergebnis der Saison, einmal auf dem Server berechnet und gespeichert (nur „done" –
+   * fehlt bei älteren Ligen; dann simuliert der Client aus season.seed). Teams ohne Kader.
+   */
+  league?: LeagueResult | null;
+  /** Team-Score je Team (Reihenfolge wie teams) – zusammen mit league */
+  ratings?: number[] | null;
 }
 
 export interface CreateDraftRequest extends DeviceAuth {
@@ -168,10 +189,12 @@ export type DraftClientMessage =
   | { type: 'set-order'; order: string[] }
   | { type: 'start' }
   | { type: 'pick'; pokemonId: number; slot: number }
-  | { type: 'auto-pick' }
+  /** teamId/pickIndex (optional): nur, wenn das noch der aktuelle Zug ist – sonst Fehler „stale" */
+  | { type: 'auto-pick'; teamId?: string; pickIndex?: number }
   | { type: 'ping' };
 
 export type DraftServerMessage =
   | { type: 'state'; state: DraftSnapshot }
-  | { type: 'error'; code: string; message: string }
+  /** for: Typ der Client-Nachricht, die abgelehnt wurde (fehlt, wenn unbekannt – z. B. beim Nachrichtenlimit) */
+  | { type: 'error'; code: string; message: string; for?: DraftClientMessage['type'] }
   | { type: 'pong'; serverNow: number };

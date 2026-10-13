@@ -1,0 +1,367 @@
+/**
+ * Spieltag-für-Spieltag-Verlauf einer Liga mit mehreren echten Teams (Online-Draft) –
+ * Grundlage für den gemeinsamen Ticker und die Ergebnisansicht. Rein und
+ * deterministisch: rechnet nur aus dem LeagueResult nach (keine Zufallszahlen), die
+ * Tabelle je Spieltag entsteht mit buildTable. Dazu die Uhr des synchronen Tickers
+ * (alle Clients rechnen aus Startzeit + Spieltagsdauer denselben Spieltag aus), die
+ * Torjägerliste, das vom Server gespeicherte Ergebnis, die Titelentscheidung bei
+ * Punktgleichheit und der Teilen-Text.
+ */
+import { buildTable, type Goal, type LeagueResult, type LeagueTeam, type Match, type TableRow } from './season';
+
+export interface Matchday {
+  /** Spieltag (1-basiert) */
+  round: number;
+  /** Alle Spiele dieses Spieltags (Reihenfolge des Spielplans) mit Ergebnis und Torschützen */
+  matches: Match[];
+  /** Spielfreie Teams (Index in league.teams) – nur bei ungerader Teamzahl */
+  byes: number[];
+  /** Tabelle nach diesem Spieltag (buildTable über alle Spiele bis einschließlich dieser Runde) */
+  table: TableRow[];
+  /** Tabellenführer nach diesem Spieltag */
+  leader: TableRow;
+  /** Platz je Team-Index nach diesem Spieltag (1-basiert) */
+  places: number[];
+  /** Veränderung je Team-Index gegenüber dem Vorspieltag – positiv = geklettert, am 1. Spieltag 0 */
+  delta: number[];
+}
+
+/** Wie lange der Abpfiff nach dem letzten Spieltag steht, bevor es zum Ergebnis geht */
+export const FINALE_MS = 2500;
+
+/** Anzahl der Spieltage: 2·(n−1) bei gerader, 2·n bei ungerader Teamzahl (spielfrei). */
+export function matchdayCount(league: LeagueResult): number {
+  let max = 0;
+  for (const m of league.matches) if (m.round > max) max = m.round;
+  return max;
+}
+
+/**
+ * Verlauf aller Spieltage (aufsteigend). Der letzte Spieltag zeigt league.table – so
+ * stimmt das Saisonende im Ticker immer mit dem (ggf. vom Server gespeicherten) Ergebnis überein.
+ */
+export function leagueTimeline(league: LeagueResult): Matchday[] {
+  const total = matchdayCount(league);
+  const n = league.teams.length;
+  const byRound: Match[][] = Array.from({ length: total }, () => []);
+  for (const m of league.matches) byRound[m.round - 1].push(m);
+  const finalTable = league.table.length === n ? league.table : null;
+
+  const played: Match[] = [];
+  const out: Matchday[] = [];
+  for (let i = 0; i < total; i++) {
+    const matches = byRound[i];
+    played.push(...matches);
+    const table = i === total - 1 && finalTable ? finalTable : buildTable(league.teams, played);
+    const places = new Array<number>(n).fill(0);
+    table.forEach((row, pos) => (places[row.team] = pos + 1));
+    const prev = out[i - 1]?.places;
+    const playing = new Set(matches.flatMap((m) => [m.home, m.away]));
+    out.push({
+      round: i + 1,
+      matches,
+      byes: places.flatMap((_, t) => (playing.has(t) ? [] : [t])),
+      table,
+      leader: table[0],
+      places,
+      delta: places.map((p, t) => (prev ? prev[t] - p : 0)),
+    });
+  }
+  return out;
+}
+
+/**
+ * Welcher Spieltag gerade läuft – auf jedem Client gleich, solange die Uhr stimmt
+ * (serverNow = Date.now() + Uhrenabgleich):
+ *   0            noch nicht angepfiffen (Countdown)
+ *   k            k-ter Spieltag, ab startsAt + (k − 1) · stepMs
+ *   total        letzter Spieltag erreicht = Saison durch
+ */
+export function currentMatchday(startsAt: number, stepMs: number, serverNow: number, total: number): number {
+  const last = Math.max(0, Math.floor(total) || 0);
+  // NaN-sicher: unbekannte Zeit gilt als „noch nicht angepfiffen"
+  if (!(serverNow >= startsAt) || last === 0) return 0;
+  if (!(stepMs > 0)) return last;
+  return Math.min(last, Math.floor((serverNow - startsAt) / stepMs) + 1);
+}
+
+/** Ganze Sekunden bis zum Anpfiff (aufgerundet, nie negativ) – für „Anpfiff in 3 …". */
+export function secondsToKickoff(startsAt: number, serverNow: number): number {
+  const ms = startsAt - serverNow;
+  return ms > 0 ? Math.ceil(ms / 1000) : 0;
+}
+
+/**
+ * Zeitpunkt, zu dem alle Clients vom Ticker zum Ergebnis wechseln: letzter Spieltag
+ * plus Abpfiff. Wer später kommt, kann direkt das Ergebnis zeigen.
+ */
+export function seasonFinishAt(startsAt: number, stepMs: number, total: number): number {
+  if (total <= 0) return startsAt;
+  return startsAt + (total - 1) * Math.max(0, stepMs) + FINALE_MS;
+}
+
+export interface TopScorer {
+  pokemonId: number;
+  /** Index in league.teams */
+  teamIndex: number;
+  goals: number;
+  /** Davon als Standardschütze (pos 'SS') */
+  setPieceGoals: number;
+}
+
+/**
+ * Torjägerliste der ganzen Liga (oder nur eines Teams, byTeam = Team-Index), absteigend
+ * nach Toren. Treffer des Standardschützen (pos 'SS') zählen mit und stehen zusätzlich
+ * in setPieceGoals.
+ */
+export function topScorers(league: LeagueResult, byTeam?: number | null): TopScorer[] {
+  const tally = new Map<string, TopScorer>();
+  const add = (teamIndex: number, goals: Goal[]) => {
+    if (byTeam != null && teamIndex !== byTeam) return;
+    for (const g of goals) {
+      const key = `${teamIndex}:${g.pokemonId}`;
+      let s = tally.get(key);
+      if (!s) {
+        s = { pokemonId: g.pokemonId, teamIndex, goals: 0, setPieceGoals: 0 };
+        tally.set(key, s);
+      }
+      s.goals++;
+      if (g.pos === 'SS') s.setPieceGoals++;
+    }
+  };
+  for (const m of league.matches) {
+    add(m.home, m.homeScorers);
+    add(m.away, m.awayScorers);
+  }
+  return [...tally.values()].sort((a, b) => b.goals - a.goals || a.teamIndex - b.teamIndex || a.pokemonId - b.pokemonId);
+}
+
+/** Ergebnis eines Spiels aus Sicht eines Teams – oder null, wenn es nicht beteiligt ist. */
+export function matchFor(
+  matches: Match[],
+  team: number,
+): { match: Match; isHome: boolean; gf: number; ga: number; opponent: number; outcome: 'S' | 'U' | 'N' } | null {
+  const match = matches.find((m) => m.home === team || m.away === team);
+  if (!match) return null;
+  const isHome = match.home === team;
+  const gf = isHome ? match.hg : match.ag;
+  const ga = isHome ? match.ag : match.hg;
+  return { match, isHome, gf, ga, opponent: isHome ? match.away : match.home, outcome: gf > ga ? 'S' : gf < ga ? 'N' : 'U' };
+}
+
+// ---------------------------------------------------------------- Gespeichertes Ergebnis
+
+const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+/** Ganzzahl ≥ min */
+const isInt = (v: unknown, min = 0): v is number => Number.isInteger(v) && (v as number) >= min;
+
+function goalsOf(v: unknown, goals: number): Goal[] | null {
+  if (!Array.isArray(v) || v.length > goals) return null;
+  const out: Goal[] = [];
+  for (const g of v) {
+    if (!isObj(g) || !isInt(g.pokemonId, 1) || typeof g.pos !== 'string') return null;
+    out.push({ pokemonId: g.pokemonId, pos: g.pos as Goal['pos'] });
+  }
+  return out;
+}
+
+/**
+ * Das vom Server gespeicherte Saisonergebnis (Schnappschuss) als LeagueResult – oder null,
+ * wenn es fehlt (ältere Ligen) oder nicht zur Liga passt. Dann rechnet der Client die
+ * Saison wie bisher selbst aus dem Seed nach. Übernimmt nur bekannte Felder.
+ */
+export function storedLeague(raw: unknown, teamCount: number): LeagueResult | null {
+  if (!isObj(raw) || !isInt(teamCount, 1)) return null;
+  const n = teamCount;
+  const { teams: rawTeams, matches: rawMatches, table: rawTable } = raw;
+  if (!Array.isArray(rawTeams) || rawTeams.length !== n) return null;
+  if (!Array.isArray(rawMatches) || !Array.isArray(rawTable) || rawTable.length !== n) return null;
+
+  const teams: LeagueTeam[] = [];
+  for (const t of rawTeams) {
+    if (!isObj(t) || typeof t.name !== 'string' || !isNum(t.rating)) return null;
+    teams.push(t.isUser === true ? { name: t.name, rating: t.rating, isUser: true } : { name: t.name, rating: t.rating });
+  }
+
+  // Doppelrunde: höchstens 2·n Spieltage (ungerade Teamzahl mit Spielfrei)
+  const maxRound = 2 * n;
+  const isTeam = (v: unknown): v is number => isInt(v) && v < n;
+  const matches: Match[] = [];
+  for (const m of rawMatches) {
+    if (!isObj(m)) return null;
+    const { round, home, away, hg, ag } = m;
+    if (!isInt(round, 1) || round > maxRound) return null;
+    if (!isTeam(home) || !isTeam(away) || home === away || !isInt(hg) || !isInt(ag)) return null;
+    const homeScorers = goalsOf(m.homeScorers ?? [], hg);
+    const awayScorers = goalsOf(m.awayScorers ?? [], ag);
+    if (!homeScorers || !awayScorers) return null;
+    matches.push({ round, home, away, hg, ag, homeScorers, awayScorers });
+  }
+
+  const seen = new Set<number>();
+  const table: TableRow[] = [];
+  for (const r of rawTable) {
+    if (!isObj(r)) return null;
+    const { team, played, w, d, l, gf, ga, gd, pts } = r;
+    if (!isTeam(team) || seen.has(team)) return null;
+    if (!isInt(played) || !isInt(w) || !isInt(d) || !isInt(l) || !isInt(gf) || !isInt(ga) || !isInt(pts)) return null;
+    if (!Number.isInteger(gd)) return null;
+    seen.add(team);
+    table.push({
+      team,
+      name: typeof r.name === 'string' ? r.name : teams[team].name,
+      rating: isNum(r.rating) ? r.rating : teams[team].rating,
+      isUser: r.isUser === true,
+      played,
+      w,
+      d,
+      l,
+      gf,
+      ga,
+      gd: gd as number,
+      pts,
+    });
+  }
+  return { teams, matches, table };
+}
+
+/**
+ * Saison für die Anzeige: das vom Server gespeicherte Ergebnis – nur ältere Ligen ohne
+ * (gültiges) gespeichertes Ergebnis werden nachgerechnet (recompute läuft nur dann).
+ */
+export function resolveLeague(
+  stored: unknown,
+  teamCount: number,
+  recompute: () => LeagueResult | null,
+): LeagueResult | null {
+  return storedLeague(stored, teamCount) ?? recompute();
+}
+
+/** Team-Score je Team: vom Server mitgeschickt (passende Länge), sonst aus dem Ergebnis. */
+export function leagueRatings(league: LeagueResult, raw: unknown): number[] {
+  if (Array.isArray(raw) && raw.length === league.teams.length && raw.every(isNum)) return raw;
+  return league.teams.map((t) => t.rating);
+}
+
+// ---------------------------------------------------------------- Titelentscheidung
+
+/**
+ * Wodurch der Meister vor dem Zweiten liegt:
+ *   'pts'      mehr Punkte (oder nur ein Team) – eindeutig
+ *   'gd'       punktgleich, bessere Tordifferenz
+ *   'gf'       punktgleich, gleiche Tordifferenz, mehr Tore
+ *   'tiebreak' gleichauf in Punkten, Tordifferenz und Toren – Platz 1 nur durch den
+ *              letzten Tiebreaker der Tabelle (TIEBREAK_LABEL)
+ *   'other'    punktgleich, aber die Tabelle ist anders sortiert (unbekanntes Kriterium)
+ */
+export type TitleDecider = 'pts' | 'gd' | 'gf' | 'rating' | 'tiebreak' | 'other';
+
+export interface TitleRace {
+  /** Platz 1 der Tabelle */
+  champion: TableRow;
+  /** Platz 2 oder null (nur ein Team) */
+  runnerUp: TableRow | null;
+  decidedBy: TitleDecider;
+  /**
+   * Teams (ohne den Meister), die bis zum entscheidenden Kriterium gleichauf sind –
+   * bei 'gd' und 'other' alle Punktgleichen, bei 'gf' zusätzlich mit gleicher
+   * Tordifferenz, bei 'rating' und 'tiebreak' die in Punkten, Tordifferenz und Toren Gleichen.
+   * Leer bei 'pts' (und bei einer nicht nach Punkten sortierten Tabelle).
+   */
+  level: TableRow[];
+}
+
+/** Wie buildTable bei völligem Gleichstand (Punkte, Tordifferenz, Tore und Team-Score) entscheidet */
+export const TIEBREAK_LABEL = 'dem Teamnamen (alphabetisch)';
+
+/**
+ * Titelentscheidung aus der Abschlusstabelle (Platz 1 gegen Platz 2). Ändert nichts an
+ * der Reihenfolge – beschreibt nur, warum Platz 1 vorn liegt.
+ */
+export function titleRace(table: readonly TableRow[]): TitleRace | null {
+  const champion = table[0];
+  if (!champion) return null;
+  const runnerUp = table[1] ?? null;
+  const samePts = table.slice(1).filter((r) => r.pts === champion.pts);
+  const sameGd = samePts.filter((r) => r.gd === champion.gd);
+  const sameGf = sameGd.filter((r) => r.gf === champion.gf);
+  if (!runnerUp || runnerUp.pts < champion.pts) return { champion, runnerUp, decidedBy: 'pts', level: [] };
+  // Nicht nach Punkten sortiert (kaputtes Ergebnis): nichts behaupten
+  if (runnerUp.pts > champion.pts) return { champion, runnerUp, decidedBy: 'other', level: [] };
+  // Anders sortierte Tabelle (z. B. älteres Ergebnis): nur die Punktgleichheit nennen, nichts Falsches behaupten
+  const other: TitleRace = { champion, runnerUp, decidedBy: 'other', level: samePts };
+  if (runnerUp.gd !== champion.gd) return runnerUp.gd < champion.gd ? { champion, runnerUp, decidedBy: 'gd', level: samePts } : other;
+  if (runnerUp.gf !== champion.gf) return runnerUp.gf < champion.gf ? { champion, runnerUp, decidedBy: 'gf', level: sameGd } : other;
+  if (runnerUp.rating < champion.rating) return { champion, runnerUp, decidedBy: 'rating', level: sameGf };
+  // Gleicher Team-Score: der Name – nur, wenn er wirklich vorn liegt (gleiche Namen: Reihenfolge der Teams)
+  if (runnerUp.rating === champion.rating && champion.name.localeCompare(runnerUp.name, 'de') < 0) {
+    return { champion, runnerUp, decidedBy: 'tiebreak', level: sameGf };
+  }
+  return other;
+}
+
+/** „A", „A und B", „A, B und C" */
+function joinNames(names: string[]): string {
+  if (names.length <= 1) return names.join('');
+  return `${names.slice(0, -1).join(', ')} und ${names[names.length - 1]}`;
+}
+
+/** „+3", „0", „-2" (wie in den Tabellen) */
+function formatGd(gd: number): string {
+  return gd > 0 ? `+${gd}` : String(gd);
+}
+
+/**
+ * Hinweis bei Punktgleichheit an der Spitze – oder null, wenn der Meister mehr Punkte hat:
+ *   „Punktgleich mit A – entschieden nach Tordifferenz (+5 zu +3)"
+ *   „Punktgleich mit A bei gleicher Tordifferenz – entschieden nach Toren (12 zu 10)"
+ *   „Punktgleich mit A, gleiche Tordifferenz und gleich viele Tore – entschieden nach …"
+ */
+export function titleTieNote(race: TitleRace | null, nameOf: (team: number) => string): string | null {
+  if (!race || race.decidedBy === 'pts' || !race.runnerUp || !race.level.length) return null;
+  const { champion: c, runnerUp: r, level } = race;
+  const names = joinNames(level.map((x) => nameOf(x.team)));
+  switch (race.decidedBy) {
+    case 'gd':
+      return `Punktgleich mit ${names} – entschieden nach Tordifferenz (${formatGd(c.gd)} zu ${formatGd(r.gd)})`;
+    case 'gf':
+      return `Punktgleich mit ${names} bei gleicher Tordifferenz – entschieden nach Toren (${c.gf} zu ${r.gf})`;
+    case 'rating':
+      return `Punktgleich mit ${names}, gleiche Tordifferenz und gleich viele Tore – entschieden nach Team-Score (${Math.round(c.rating)} zu ${Math.round(r.rating)})`;
+    case 'tiebreak':
+      return `Punktgleich mit ${names}, gleiche Tordifferenz und gleich viele Tore – entschieden nach ${TIEBREAK_LABEL}`;
+    default:
+      return `Punktgleich mit ${names}`;
+  }
+}
+
+// ---------------------------------------------------------------- Teilen
+
+export interface DraftShareInput {
+  /** Liga-Code */
+  code: string;
+  championName: string;
+  championPts: number;
+  /** Hinweis bei Punktgleichheit an der Spitze (titleTieNote) oder null */
+  tieNote: string | null;
+  /** Eigenes Team mit Platz – null für Zuschauer */
+  own: { name: string; place: number } | null;
+  /** Link zur Liga (draftLink) – Tabelle und Aufstellungen ohne Code-Eingabe */
+  url: string;
+}
+
+/**
+ * Teilen-Text des Online-Drafts – zwei Zeilen:
+ *   Pokémon Elf – Online-Draft K7MPQ2: Meister A (12 Pkt). Mein Team B: Platz 2.
+ *   Link zur Liga
+ * Bei Punktgleichheit an der Spitze folgt der Hinweis nach einem Gedankenstrich.
+ */
+export function draftShareText(i: DraftShareInput): string {
+  const tie = i.tieNote ? ` – ${i.tieNote.charAt(0).toLowerCase()}${i.tieNote.slice(1)}` : '';
+  return [
+    `Pokémon Elf – Online-Draft ${i.code}: Meister ${i.championName} (${i.championPts} Pkt)${tie}.` +
+      (i.own ? ` Mein Team ${i.own.name}: Platz ${i.own.place}.` : ''),
+    i.url,
+  ].join('\n');
+}

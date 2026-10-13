@@ -232,7 +232,10 @@ export function buildTable(teams: LeagueTeam[], matches: Match[]): TableRow[] {
     }
   }
   for (const r of rows) r.gd = r.gf - r.ga;
-  return rows.sort((x, y) => y.pts - x.pts || y.gd - x.gd || y.gf - x.gf || x.name.localeCompare(y.name, 'de'));
+  // Völliger Gleichstand: der stärkere Kader (Team-Score) vorn, erst danach der Name
+  return rows.sort(
+    (x, y) => y.pts - x.pts || y.gd - x.gd || y.gf - x.gf || y.rating - x.rating || x.name.localeCompare(y.name, 'de'),
+  );
 }
 
 export interface SeasonInput {

@@ -23,5 +23,13 @@
       "migrations_dir": "migrations"
     }
   ],
+  // Online-Draft: ein Durable Object pro Liga (server/draftRoom.ts, exportiert in worker/index.ts).
+  // SQLite-basierte Durable Objects laufen auch im Workers-Free-Plan.
+  "durable_objects": {
+    "bindings": [{ "name": "DRAFTS", "class_name": "DraftRoom" }]
+  },
+  // Migrationen wendet nur `wrangler deploy` (main) an – `wrangler versions upload` (Branch-Builds)
+  // scheitert, solange eine aussteht (README → Deploy auf Cloudflare → Hinweise).
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DraftRoom"] }],
   "observability": { "enabled": true }
 }

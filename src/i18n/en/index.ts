@@ -1,0 +1,16 @@
+/** English catalog – same shape as ../de (enforced by the Messages type). */
+import type { Messages } from '../de';
+import builder from './builder';
+import challenge from './challenge';
+import common from './common';
+import daily from './daily';
+import draft from './draft';
+import errors from './errors';
+import game from './game';
+import info from './info';
+import leaderboard from './leaderboard';
+import nav from './nav';
+import result from './result';
+import scouting from './scouting';
+
+export const en: Messages = { common, nav, game, builder, challenge, result, daily, leaderboard, draft, scouting, info, errors };

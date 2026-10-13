@@ -21,6 +21,7 @@
       try {
         var s = JSON.parse(localStorage.getItem('pokemon-elf:settings') || '{}');
         if (s.theme) document.documentElement.dataset.theme = s.theme;
+        if (s.lang) document.documentElement.lang = s.lang;
       } catch (e) {}
     </script>
   </head>

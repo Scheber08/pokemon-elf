@@ -41,6 +41,12 @@ interface Props {
   /** Fokus beim Mount auf das ausgewählte bzw. erste Element setzen */
   autoFocus?: boolean;
   className?: string;
+  /**
+   * Die inkrementelle Anzeige beginnt nur wieder bei pageSize, wenn sich dieser Schlüssel ändert
+   * (z. B. Filter). Ohne Schlüssel: bei jeder neuen items-Liste. So bleibt die Scrollposition
+   * erhalten, wenn nur einzelne Einträge wegfallen (Pick im Live-Draft).
+   */
+  resetKey?: string | number;
 }
 
 /** Raster aus Pokémon-Karten, per Pfeiltasten bedienbar, rendert inkrementell. */
@@ -56,6 +62,7 @@ export function PokemonGrid({
   pageSize = 84,
   autoFocus,
   className = '',
+  resetKey,
 }: Props) {
   const [limit, setLimit] = useState(pageSize);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -76,7 +83,8 @@ export function PokemonGrid({
   }, [tip]);
   useEffect(() => () => window.clearTimeout(hoverTimer.current), []);
 
-  useEffect(() => setLimit(pageSize), [items, pageSize]);
+  const resetOn: unknown = resetKey === undefined ? items : resetKey;
+  useEffect(() => setLimit(pageSize), [resetOn, pageSize]);
 
   useEffect(() => {
     const el = sentinel.current;

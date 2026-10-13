@@ -73,3 +73,27 @@ CREATE TABLE IF NOT EXISTS meta (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL
 );
+
+-- Online-Draft: eine Zeile pro Liga, gepflegt vom Durable Object „DraftRoom" (der Zustand
+-- selbst liegt dort). Gebraucht für die Liste öffentlicher Lobbys und das Limit neuer Ligen
+-- pro Gerät; phase = 'closed', wenn alle Teams eine Lobby verlassen haben (die Zeile zählt
+-- dann noch eine Stunde fürs Limit). Nach DRAFT_LIMITS.retentionDays wird sie gelöscht.
+CREATE TABLE IF NOT EXISTS draft_lobbies (
+  code TEXT PRIMARY KEY,
+  host_device TEXT NOT NULL,
+  name TEXT NOT NULL,
+  host_name TEXT NOT NULL,
+  region INTEGER NOT NULL,
+  legends INTEGER NOT NULL,
+  pick_seconds INTEGER NOT NULL,
+  teams INTEGER NOT NULL,
+  max_teams INTEGER NOT NULL,
+  visibility TEXT NOT NULL,
+  phase TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+-- Öffentliche Lobbys (visibility = 'public', phase = 'lobby'), zuletzt aktive zuerst.
+CREATE INDEX IF NOT EXISTS idx_draft_lobbies_public ON draft_lobbies (visibility, phase, updated_at);
+-- Limit neuer Ligen pro Gerät und Stunde.
+CREATE INDEX IF NOT EXISTS idx_draft_lobbies_host ON draft_lobbies (host_device, created_at);

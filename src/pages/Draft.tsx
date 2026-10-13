@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { DEFAULT_FORMATION, FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { POSITIONS } from '../config/positions';
 import { REGIONS, regionPhrase } from '../config/regions';
@@ -9,6 +9,7 @@ import { Pitch, type SlotState } from '../components/Pitch';
 import { PokemonGrid } from '../components/PokemonGrid';
 import { Segmented } from '../components/Segmented';
 import { Sprite } from '../components/Sprite';
+import { draftsSupported } from '../lib/api/draftClient';
 import { positionFit } from '../lib/fit';
 import { emptySlots } from '../lib/formation';
 import { createRng, gaussian, randomSeed, shuffle } from '../lib/rng';
@@ -18,6 +19,8 @@ import { evaluateTeam } from '../lib/teamScore';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import type { FormationId, Pokemon, RegionFilter, Slots } from '../types';
+import { DraftOnline } from './DraftOnline';
+import '../styles/draft.css';
 
 const ROUNDS = 11;
 
@@ -65,7 +68,8 @@ function teamForPick(pick: number, n: number): number {
   return round % 2 === 0 ? idx : n - 1 - idx;
 }
 
-export function Draft() {
+/** Hot-Seat-Draft an einem Gerät (Modus „An einem Gerät"). */
+function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   const { list, byId, scale } = usePokemonData();
   const { sprite } = useSettings();
   const [state, setState] = useState<DraftState>(() => ({ ...INITIAL, ...load<Partial<DraftState>>(STORAGE_KEYS.draft, {}) }));
@@ -206,6 +210,7 @@ export function Draft() {
   if (state.phase === 'setup') {
     return (
       <div className="page draft">
+        {modeSwitch}
         <header className="page-head">
           <h1 className="page-title">Fantasy-Draft</h1>
           <p className="page-lead">
@@ -303,6 +308,7 @@ export function Draft() {
   if (state.phase === 'league' && league) {
     return (
       <div className="page draft">
+        {modeSwitch}
         <header className="page-head">
           <h1 className="page-title">Draft-Liga</h1>
           <p className="page-lead">
@@ -420,6 +426,7 @@ export function Draft() {
 
   return (
     <div className="page draft">
+        {modeSwitch}
       <header className="page-head">
         <h1 className="page-title">Fantasy-Draft</h1>
         <div className="statusline" role="status">
@@ -502,6 +509,7 @@ export function Draft() {
                 slots={team.slots}
                 sprite={sprite}
                 slotState={slotState}
+                positionTips
                 onSlotClick={(i) => {
                   if (team.cpu || state.selected == null || team.slots[i] != null || !defs[i]) return;
                   lock(currentTeam, i, state.selected);
@@ -512,5 +520,65 @@ export function Draft() {
         </div>
       </div>
     </div>
+  );
+}
+
+type DraftMode = 'online' | 'local';
+
+/** Gewählter Modus in diesem Seitenaufruf (Tab-Wechsel innerhalb der App behält ihn). */
+let sessionMode: DraftMode | null = null;
+
+/** Läuft am Gerät schon ein Hot-Seat-Draft? Dann startet /draft dort. */
+function localDraftRunning(): boolean {
+  const phase = load<Partial<DraftState>>(STORAGE_KEYS.draft, {}).phase;
+  return phase === 'drafting' || phase === 'league';
+}
+
+/**
+ * /draft: Online-Liga (Standard, wenn der Server Ligen kann) oder Hot-Seat an einem Gerät.
+ * Ohne Server bzw. bei laufendem lokalem Draft startet der lokale Modus.
+ */
+export function Draft() {
+  const [supported, setSupported] = useState<boolean | null>(null);
+  const [mode, setMode] = useState<DraftMode | null>(() => sessionMode ?? (localDraftRunning() ? 'local' : null));
+  const [check, setCheck] = useState(0);
+
+  useEffect(() => {
+    let alive = true;
+    if (check > 0) setSupported(null);
+    draftsSupported(check > 0).then((ok) => alive && setSupported(ok));
+    return () => {
+      alive = false;
+    };
+  }, [check]);
+
+  const effective: DraftMode | null = mode ?? (supported == null ? null : supported ? 'online' : 'local');
+  const choose = (m: DraftMode) => {
+    sessionMode = m;
+    setMode(m);
+  };
+  const modeSwitch = (
+    <div className="draft-modes">
+      <Segmented
+        label="Spielmodus"
+        hideLabel
+        value={effective ?? 'online'}
+        onChange={choose}
+        options={[
+          { value: 'online' as DraftMode, label: 'Online-Liga' },
+          { value: 'local' as DraftMode, label: 'An einem Gerät' },
+        ]}
+      />
+    </div>
+  );
+
+  if (effective === 'local') return <LocalDraft modeSwitch={modeSwitch} />;
+  return (
+    <DraftOnline
+      modeSwitch={modeSwitch}
+      supported={supported}
+      onRetry={() => setCheck((c) => c + 1)}
+      onLocal={() => choose('local')}
+    />
   );
 }

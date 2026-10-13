@@ -1,0 +1,774 @@
+/* ============================================================
+   Online-Draft: gemeinsamer Saison-Ticker (LeagueTicker) und Ergebnis (DraftResults)
+   Bildsprache wie der Saison-Ticker (ticker.css): dunkle TV-Tafel, gelbe Akzente.
+   Selektoren, die globale Klassen (.card, .facts, .league-table, .scorers) überschreiben,
+   sind doppelt qualifiziert – so gewinnen sie unabhängig von der CSS-Reihenfolge.
+   ============================================================ */
+
+/* ---------------------------------------------------------------- Ticker */
+.league-ticker.card {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  background:
+    radial-gradient(ellipse at top left, rgba(227, 53, 13, 0.1), transparent 50%),
+    radial-gradient(ellipse at top right, rgba(255, 203, 5, 0.1), transparent 55%),
+    var(--surface);
+}
+
+.league-ticker__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+.league-ticker__heading {
+  min-width: 0;
+}
+.league-ticker__title {
+  font-family: var(--font-head);
+  font-size: clamp(24px, 4vw, 36px);
+  text-transform: uppercase;
+  line-height: 1.05;
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.league-ticker__live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 6px;
+  padding: 1px 8px 1px 7px;
+  border-radius: 5px;
+  background: var(--red);
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+.league-ticker__live::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
+  animation: league-pulse 1.1s ease-in-out infinite;
+}
+.league-ticker__live--gleich {
+  background: var(--yellow);
+  color: var(--yellow-ink);
+}
+.league-ticker__live--gleich::before {
+  background: currentColor;
+}
+.league-ticker__live--ende {
+  background: var(--surface-3);
+  color: var(--text);
+}
+.league-ticker__live--ende::before {
+  animation: none;
+  background: currentColor;
+}
+
+/* Spieltag + Fortschritt */
+.league-ticker__progress-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.league-ticker__round {
+  flex: none;
+  font-family: var(--font-head);
+  font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.league-ticker__round strong {
+  color: var(--text);
+  font-size: 26px;
+  font-weight: 700;
+  margin-left: 2px;
+}
+.league-ticker__progress {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.league-ticker__progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--yellow), #ffd84a);
+  transition: width 0.3s ease-out;
+}
+
+.facts.league-ticker__facts {
+  margin: 0;
+}
+.facts.league-ticker__facts dd {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Raster: links Spieltag, rechts Tabelle */
+.league-ticker__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.league-ticker__main {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.league-ticker__side {
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 12px;
+  min-width: 0;
+}
+.league-ticker__side .section-title {
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+.league-ticker__note {
+  margin: -4px 0 0;
+}
+
+/* Spieltags-Tafel – TV-Grafik, in beiden Themes dunkel */
+.league-board {
+  --fx-text: #eef3f8;
+  --fx-dim: #9fb3c8;
+  --fx-line: rgba(255, 255, 255, 0.1);
+  --fx-score-bg: rgba(0, 0, 0, 0.35);
+  --fx-you: var(--yellow);
+  --fx-own-bg: rgba(255, 203, 5, 0.12);
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #13263a, #0d1b2a);
+  color: var(--fx-text);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: var(--shadow);
+  animation: league-board-in 0.32s ease-out;
+}
+.league-board::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 5px;
+  background: var(--yellow);
+}
+.league-board--upcoming {
+  animation: none;
+}
+.league-board__bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px 4px;
+  font-family: var(--font-head);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--fx-dim);
+}
+.league-board__byes {
+  margin: 0;
+  padding: 2px 14px 12px;
+  font-size: 13px;
+  color: var(--fx-dim);
+}
+
+/* Countdown vor dem Anpfiff */
+.league-countdown {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px 12px;
+  padding: 22px 14px 8px;
+  text-align: center;
+}
+.league-countdown__label {
+  font-family: var(--font-head);
+  font-size: clamp(22px, 4vw, 30px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--fx-dim);
+}
+.league-countdown__num {
+  font-family: var(--font-head);
+  font-size: clamp(48px, 10vw, 76px);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--yellow);
+  font-variant-numeric: tabular-nums;
+  animation: league-pop 0.4s ease-out;
+}
+
+/* Spiele eines Spieltags (Tafel und Ergebnis) */
+.league-fixtures {
+  --fx-text: var(--text);
+  --fx-dim: var(--text-dim);
+  --fx-line: var(--line);
+  --fx-score-bg: var(--surface-3);
+  --fx-you: var(--yellow);
+  --fx-own-bg: rgba(255, 203, 5, 0.14);
+  list-style: none;
+  margin: 0;
+  padding: 4px 8px 8px;
+  display: grid;
+  gap: 2px;
+}
+.league-board .league-fixtures {
+  --fx-text: #eef3f8;
+  --fx-dim: #9fb3c8;
+  --fx-line: rgba(255, 255, 255, 0.1);
+  --fx-score-bg: rgba(0, 0, 0, 0.35);
+  --fx-you: var(--yellow);
+  --fx-own-bg: rgba(255, 203, 5, 0.12);
+}
+:root[data-theme='light'] .league-fixtures--plain {
+  --fx-you: #b45309;
+  --fx-own-bg: rgba(255, 203, 5, 0.22);
+}
+.league-fixture {
+  display: grid;
+  gap: 2px;
+  padding: 7px 6px;
+  border-radius: 8px;
+  border-bottom: 1px solid var(--fx-line);
+  color: var(--fx-text);
+}
+.league-fixture:last-child {
+  border-bottom: 0;
+}
+.league-fixture.is-own {
+  background: var(--fx-own-bg);
+  box-shadow: inset 4px 0 0 var(--fx-you);
+  border-bottom-color: transparent;
+}
+.league-fixture__row,
+.league-fixture__foot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+.league-fixture__team {
+  min-width: 0;
+  font-family: var(--font-head);
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.league-fixture__team--home {
+  text-align: right;
+}
+.league-fixture__team--away {
+  text-align: left;
+}
+.league-fixture__team.is-you {
+  color: var(--fx-you);
+}
+.league-fixture__score {
+  min-width: 3.4em;
+  padding: 2px 10px;
+  border-radius: 8px;
+  background: var(--fx-score-bg);
+  font-family: var(--font-head);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.league-fixture__foot {
+  align-items: start;
+}
+.league-fixture__mid {
+  min-width: 3.4em;
+  display: flex;
+  justify-content: center;
+}
+.league-fixture__scorers {
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--fx-dim);
+  overflow-wrap: anywhere;
+}
+.league-fixture__scorers--home {
+  text-align: right;
+}
+.league-fixture__outcome {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 1px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+.league-fixture__outcome.is-S {
+  background: var(--green);
+  color: #fff;
+}
+.league-fixture__outcome.is-U {
+  background: #8a99a8;
+  color: #0d1b2a;
+}
+.league-fixture__outcome.is-N {
+  background: var(--red);
+  color: #fff;
+}
+
+/* Abpfiff */
+.league-finale {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 14px 18px;
+  border-radius: var(--radius);
+  text-align: center;
+  background:
+    radial-gradient(ellipse at top, rgba(255, 203, 5, 0.22), transparent 65%),
+    linear-gradient(180deg, #13263a, #0d1b2a);
+  color: #eef3f8;
+  border: 1px solid rgba(255, 203, 5, 0.4);
+  box-shadow: var(--shadow);
+  animation: league-board-in 0.4s ease-out;
+}
+.league-finale__kicker {
+  font-family: var(--font-head);
+  font-size: clamp(26px, 5vw, 36px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--yellow);
+  line-height: 1.1;
+}
+.league-finale__line {
+  margin: 0;
+  font-weight: 600;
+  color: #9fb3c8;
+}
+.league-finale__line strong {
+  color: #eef3f8;
+}
+/* Punktgleich an der Spitze: wie der Titel entschieden wurde */
+.league-finale__tie {
+  margin: 0;
+  max-width: 40em;
+  font-size: 13px;
+  color: #9fb3c8;
+}
+.league-finale__you {
+  margin: 0;
+  font-family: var(--font-head);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--yellow);
+}
+.league-finale__timer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.league-finale__timer > span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--yellow);
+  transform-origin: left center;
+  animation: league-countdown linear forwards;
+}
+
+/* Platz-Trend */
+.league-trend {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1;
+}
+.league-trend--up {
+  color: var(--green);
+}
+.league-trend--down {
+  color: var(--red);
+}
+.league-trend--same {
+  color: var(--text-dim);
+}
+:root[data-theme='light'] .league-trend--up {
+  color: #1e7a33;
+}
+.facts dd .league-trend {
+  font-size: 14px;
+}
+
+/* Live-Tabelle */
+.league-table.league-live {
+  font-size: 13px;
+}
+.league-table.league-live th,
+.league-table.league-live td {
+  padding: 6px 4px;
+}
+.league-live__place {
+  white-space: nowrap;
+}
+.league-live__place .league-trend {
+  display: inline-block;
+  min-width: 2.2ch;
+  margin-left: 4px;
+  text-align: left;
+}
+.league-live__name {
+  max-width: 0;
+  width: 100%;
+  min-width: 6.5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------------------------------------------------------------- Ergebnis */
+.draft-results {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.draft-results__hero.card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 20px;
+  background:
+    radial-gradient(ellipse at top right, rgba(255, 203, 5, 0.22), transparent 60%),
+    radial-gradient(ellipse at bottom left, rgba(227, 53, 13, 0.1), transparent 55%),
+    var(--surface);
+  border-color: rgba(255, 203, 5, 0.45);
+}
+.draft-results__champion {
+  margin: 0;
+  font-family: var(--font-head);
+  font-size: clamp(28px, 5.5vw, 52px);
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 1.02;
+  overflow-wrap: anywhere;
+}
+.draft-results__trophy {
+  margin-right: 0.3em;
+  color: var(--yellow);
+  font-size: 0.85em;
+}
+:root[data-theme='light'] .draft-results__trophy {
+  color: #d39e00;
+}
+.draft-results__line {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+/* Punktgleich an der Spitze: wie der Titel entschieden wurde */
+.draft-results__tie {
+  margin: 0;
+  padding: 4px 10px;
+  border-left: 3px solid var(--yellow);
+  border-radius: 4px;
+  background: rgba(255, 203, 5, 0.08);
+  font-size: 14px;
+  color: var(--text-dim);
+}
+:root[data-theme='light'] .draft-results__tie {
+  border-left-color: #d39e00;
+}
+.draft-results__you {
+  margin: 4px 0 0;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: rgba(255, 203, 5, 0.14);
+  border: 1px solid rgba(255, 203, 5, 0.45);
+  font-family: var(--font-head);
+  font-size: 17px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.draft-results__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.league-table.draft-results__table th,
+.league-table.draft-results__table td {
+  padding: 7px 5px;
+}
+.draft-results__name {
+  max-width: 0;
+  width: 100%;
+  min-width: 7em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Torjäger: Platz, Sprite, Name + Team, Tore (Raster aus .scorers) */
+.draft-results__rank {
+  min-width: 2.2ch;
+  font-family: var(--font-head);
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.scorers.draft-results__scorers li.is-you {
+  background: rgba(255, 203, 5, 0.12);
+  box-shadow: inset 3px 0 0 var(--yellow);
+  border-radius: 4px;
+  padding-left: 6px;
+}
+.draft-results__setpiece {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 11px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-dim);
+}
+
+/* Aufstellungen */
+.draft-results__rosters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.draft-results__roster.card {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  min-width: 0;
+}
+.draft-results__roster.card.is-you {
+  border-color: var(--yellow);
+  box-shadow: 0 0 0 1px var(--yellow);
+}
+.draft-results__roster-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+.draft-results__place {
+  font-family: var(--font-head);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.draft-results__roster-name {
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-head);
+  font-size: 18px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.draft-results__you-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--yellow);
+  color: var(--yellow-ink);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  vertical-align: middle;
+}
+.draft-results__score {
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: var(--surface-3);
+  font-family: var(--font-head);
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.draft-results__roster-meta {
+  margin: 0;
+}
+
+/* Alle Spieltage */
+.draft-results__daylist {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 12px 18px;
+}
+.draft-results__day {
+  min-width: 0;
+}
+.draft-results__day-title {
+  margin: 0 0 2px;
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+}
+.draft-results__day .league-fixtures {
+  padding: 0;
+}
+.draft-results__day .league-fixture__team {
+  font-size: 14px;
+}
+.draft-results__day .league-fixture__score {
+  font-size: 17px;
+}
+.draft-results__byes {
+  margin: 2px 0 0;
+}
+
+/* ---------------------------------------------------------------- Animationen */
+@keyframes league-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+@keyframes league-board-in {
+  from {
+    opacity: 0.4;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes league-pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.4;
+  }
+  60% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes league-countdown {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (max-width: 899px) {
+  .league-ticker__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .league-ticker__head {
+    align-items: stretch;
+  }
+  .league-ticker__head .btn {
+    flex: 1 1 auto;
+  }
+  .league-ticker__round {
+    font-size: 15px;
+  }
+  .league-ticker__round strong {
+    font-size: 22px;
+  }
+  .league-fixtures {
+    padding: 2px 4px 6px;
+  }
+  .league-fixture__row,
+  .league-fixture__foot {
+    gap: 6px;
+  }
+  .league-fixture__team {
+    font-size: 14px;
+  }
+  .league-fixture__score {
+    font-size: 19px;
+    padding: 2px 6px;
+    min-width: 3em;
+  }
+  .league-fixture__mid {
+    min-width: 3em;
+  }
+  .league-ticker__side {
+    padding: 10px 8px;
+  }
+  .league-table.league-live,
+  .league-table.draft-results__table {
+    font-size: 12px;
+  }
+  .league-table.league-live th,
+  .league-table.league-live td,
+  .league-table.draft-results__table th,
+  .league-table.draft-results__table td {
+    padding: 6px 3px;
+  }
+  .draft-results__hero.card {
+    padding: 16px;
+  }
+}
+
+/* Reduzierte Bewegung: keine Animationen – der Ticker läuft trotzdem (und lässt sich überspringen) */
+@media (prefers-reduced-motion: reduce) {
+  .league-ticker__live::before,
+  .league-board,
+  .league-countdown__num,
+  .league-finale {
+    animation: none;
+  }
+  .league-ticker__progress > span {
+    transition: none;
+  }
+  .league-finale__timer {
+    display: none;
+  }
+}

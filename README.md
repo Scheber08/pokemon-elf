@@ -71,7 +71,7 @@ src/
   pages/                   Builder, 34–0, 151/Retro, Draft, Rangliste, Scouting-Guide, Info
   state/                   Daten-, Einstellungs- und Toast-Kontext, useChallengeRun (Run-Lebenszyklus)
 server/                    Backend: Routing, Endpunkte, D1-Abfragen, Validierung, Geräte-Auth
-worker/index.ts            Cloudflare Worker: /api/* → server/handler.ts, sonst statische Dateien
+worker/index.ts            Cloudflare Worker: /api/* → server/handler.ts, sonst statische Dateien; exportiert DraftRoom
 wrangler.jsonc             Worker-Konfiguration (Assets aus dist/, SPA-Fallback, D1-Binding „DB")
 functions/api/[[route]].ts Alternative für Cloudflare Pages → server/handler.ts
 migrations/0001_init.sql   D1-Schema (der Server legt es auch selbst an)
@@ -79,7 +79,8 @@ tests/                     Unit-Tests: Fit, Team-Score, Saison, Engine, Server/A
 ```
 
 Routen: `/` Builder · `/challenge` 34–0 · `/taeglich` Tägliche Elf · `/151` 151 Challenge & Retro 34–0 ·
-`/draft` Fantasy-Draft · `/rangliste` (Deep-Link `?c=daily&p=today`) · `/scouting` · `/ueber` · `/datenschutz`
+`/draft` Fantasy-Draft (lokal + online) · `/draft/:code` Online-Liga · `/rangliste` (Deep-Link
+`?c=daily&p=today`) · `/scouting` · `/ueber` · `/datenschutz`
 
 ## Bewertung in Kürze
 
@@ -109,6 +110,11 @@ Alle Zahlen sind in `src/config/` änderbar – die Tests prüfen Eigenschaften,
 - **Retro 34–0** – Modus der 151-Seite: Typ-Würfel wie bei 34–0, aber nur Kanto, Retro-Sprites,
   Gen-1-Skalierung, eigene Rangliste.
 - **Fantasy-Draft** – 2–8 Teams (Hot-Seat oder CPU), Snake-Draft über 11 Runden, danach Liga.
+- **Online-Draft** – Liga anlegen, Code/Link teilen, gemeinsam live draften (siehe unten).
+
+Im Draft zeigt ein Hover über eine Position, welche Werte dort zählen (Schlüssel/Hilft/Kleiner Anteil,
+Typ-Bonus, Gewicht im Team-Score). Die Oberfläche gibt es auf Deutsch und Englisch (Umschalter im Kopf,
+`src/i18n/`; Texte je Bereich in `de/*.ts`, `en/*.ts` ist dagegen typgeprüft).
 
 Nach jedem Challenge-Run läuft die Saison im **Live-Ticker** ab (Spieltag für Spieltag, Pause, 1×/2×/4×,
 Überspringen), danach folgt die Saisonbilanz.
@@ -137,6 +143,19 @@ kann man erneut senden oder offline auswerten.
 
 Endpunkte: `GET /api/health` · `POST /api/runs/start` · `POST /api/runs/finish` ·
 `GET /api/leaderboard?challenge=…&period=today|all` · `POST /api/player` (Spielername).
+
+## Online-Draft (Cloudflare Durable Object)
+
+Jede Liga ist ein Durable Object `DraftRoom` (`server/draftRoom.ts`, Logik in `server/draftCore.ts` und der
+reinen Engine `src/lib/draftEngine.ts`). Ablauf: `POST /api/drafts` legt die Liga an (6-stelliger Code),
+alle verbinden sich per WebSocket (`/api/drafts/:code/ws`, Hibernation API) und bekommen bei jeder
+Änderung den vollen Stand. Lobby: Host stellt Pool, Timer (aus/30/60/90 s), Reihenfolge und
+Sichtbarkeit ein, fügt CPU-Teams hinzu und startet. Timer, CPU-Picks und Auto-Picks laufen auf dem
+Server (Alarme). Ist das Team am Zug 20 s offline (ohne Timer: 3 min am Zug), darf jedes Mitglied für
+es auto-picken; ein abwesender Host gibt die Rolle nach 30 s (Lobby: 5 min) ab. Nach dem letzten Pick
+rechnet der Server die Saison einmal und alle sehen sie gleichzeitig im Ticker.
+Öffentliche Lobbys: `GET /api/drafts/public`. Ligen werden nach 14 Tagen gelöscht. Vertrag und Limits:
+`src/lib/api/draftContract.ts`.
 
 ## Deploy auf Cloudflare
 
@@ -175,6 +194,9 @@ nimmt `wrangler.example.toml` als Vorlage.
 - **Schema-Änderungen** an einer schon genutzten D1-Datenbank brauchen eine echte Migration
   (`migrations/`, `npx wrangler d1 migrations apply pokemon-elf --remote`) – `CREATE … IF NOT EXISTS`
   ändert bestehende Tabellen nicht.
+- **Online-Draft (Durable Object):** Die Migration `v1` der Klasse `DraftRoom` (`wrangler.jsonc`) wendet nur
+  `wrangler deploy` an, also der Deploy von `main`. Branch- bzw. PR-Builds (`wrangler versions upload`) scheitern,
+  solange sie noch aussteht – Änderungen am Durable Object daher zuerst auf `main` deployen.
 - **Andere Hosts (Vercel/Netlify/statisch):** `vercel.json` bzw. `netlify.toml` liegen bei. Dort gibt es
   kein Backend – Challenges laufen dann lokal und ungewertet.
 - **Unterpfad** (z. B. GitHub Pages unter `/pokemon-elf/`): `vite build --base=/pokemon-elf/` – Router,
