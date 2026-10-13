@@ -549,12 +549,12 @@ select {
   padding: 1px 6px;
 }
 .legend-chip--ub,
-.pcard__legend--ub {
+.pcard__legend.pcard__legend--ub {
   background: #4b3a8f;
   color: #fff;
 }
 .legend-chip--mega,
-.pcard__legend--mega {
+.pcard__legend.pcard__legend--mega {
   background: linear-gradient(135deg, #e0457b, #7b5cff);
   color: #fff;
 }
