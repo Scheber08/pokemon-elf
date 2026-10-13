@@ -51,7 +51,7 @@ function errorText(e: unknown, t: Messages): string {
 /** Neue Liga erstellen → /draft/CODE */
 function CreateLeague() {
   const t = useT();
-  const { list } = usePokemonData();
+  const { all: list } = usePokemonData();
   const navigate = useNavigate();
   const [settings, setSettings] = useState<DraftSettings>(() => initialSettings(list));
   const [team, setTeam] = useState<TeamPrefs>(loadTeamPrefs);

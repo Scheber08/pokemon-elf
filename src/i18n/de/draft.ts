@@ -130,6 +130,12 @@ const draft = {
     maxUltraBeasts: 'Ultrabestien pro Team',
     maxUltraBeastsNote: 'Eigene Kategorie, unabhängig von den Legendären – der Standardschütze zählt mit.',
     maxUltraBeastsOff: 'Nur mit Ultrabestien im Pool.',
+    forms: 'Formen',
+    formsNote: 'Regionalformen (Alola, Galar, Hisui, Paldea) und Sonderformen wie Rotom oder Tiergeist-Formen – jede ist ein eigenes Pokémon im Pool.',
+    megas: 'Megas',
+    maxMegas: 'Megas pro Team',
+    maxMegasNote: 'Inklusive Proto-Kyogre und -Groudon. Legendäre Megas gibt es nur mit Legendären und zählen für beide Limits.',
+    maxMegasOff: 'Nur mit Megas im Pool.',
     /** Zufallsmodus (wie die 34–0-Challenge) */
     roll: 'Zufallsmodus',
     rollPick: 'Pro Pick',
@@ -179,6 +185,9 @@ const draft = {
     withoutLegends: 'ohne Legendäre und Mysteriöse',
     maxLegends: (n: number) => (n === 1 ? 'höchstens ein Legendäres pro Team' : `höchstens ${n} Legendäre pro Team`),
     withoutUltraBeasts: 'ohne Ultrabestien',
+    withForms: 'mit Formen',
+    withMegas: 'mit Megas',
+    maxMegas: (n: number) => (n === 1 ? 'höchstens ein Mega pro Team' : `höchstens ${n} Megas pro Team`),
     maxUltraBeasts: (n: number) => (n === 1 ? 'höchstens eine Ultrabestie pro Team' : `höchstens ${n} Ultrabestien pro Team`),
     rollPick: 'Zufallsmodus: pro Pick',
     rollRound: 'Zufallsmodus: pro Runde',
@@ -213,6 +222,8 @@ const draft = {
       `${n} von höchstens ${max === 1 ? 'einem Legendären/Mysteriösen' : `${max} Legendären/Mysteriösen`}`,
     /** Ultrabestien im Team bei einem Limit („UB 1/2") – Tooltip */
     ultraBeastsTitle: (n: number, max: number) => `${n} von höchstens ${max === 1 ? 'einer Ultrabestie' : `${max} Ultrabestien`}`,
+    /** Megas im Team bei einem Limit („M 1/2") – Tooltip */
+    megasTitle: (n: number, max: number) => `${n} von höchstens ${max === 1 ? 'einem Mega' : `${max} Megas`}`,
     /** Wurf, unter dem ein Pick fiel (Verlauf) */
     rollTitle: (region: string, type: string) => `Wurf: ${region} + ${type}`,
   },

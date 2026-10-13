@@ -22,7 +22,7 @@
 import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { TYPE_KEYS } from '../config/pokemonTypes';
 import { POSITIONS } from '../config/positions';
-import { isUltraBeast } from '../config/categories';
+import { byDex, isMega, isUltraBeast } from '../config/categories';
 import { CLUB_NAMES } from '../config/season';
 import type { FormationId, Pokemon, RegionFilter, TypeKey } from '../types';
 import {
@@ -221,6 +221,8 @@ const isMaxLegends = (v: unknown): v is number | null =>
 const isMaxUltraBeasts = (v: unknown): v is number | null =>
   v === null || (DRAFT_LIMITS.maxUltraBeasts as readonly unknown[]).includes(v);
 
+const isMaxMegas = (v: unknown): v is number | null => v === null || (DRAFT_LIMITS.maxMegas as readonly unknown[]).includes(v);
+
 const isRerollCount = (v: unknown): v is number =>
   typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= DRAFT_LIMITS.rerollsMax;
 
@@ -273,6 +275,9 @@ export function upgradeSettings(raw: unknown): DraftSettings {
     maxLegends: isMaxLegends(r.maxLegends) ? r.maxLegends : d.maxLegends,
     ultraBeasts: isBool(r.ultraBeasts) ? r.ultraBeasts : d.ultraBeasts,
     maxUltraBeasts: isMaxUltraBeasts(r.maxUltraBeasts) ? r.maxUltraBeasts : d.maxUltraBeasts,
+    forms: isBool(r.forms) ? r.forms : d.forms,
+    megas: isBool(r.megas) ? r.megas : d.megas,
+    maxMegas: isMaxMegas(r.maxMegas) ? r.maxMegas : d.maxMegas,
     setPiece: isBool(r.setPiece) ? r.setPiece : d.setPiece,
     maxTeams:
       typeof r.maxTeams === 'number' && Number.isInteger(r.maxTeams) && r.maxTeams >= DRAFT_LIMITS.minTeams && r.maxTeams <= DRAFT_LIMITS.maxTeams
@@ -308,30 +313,50 @@ export function upgradeState(state: DraftState): DraftState {
 
 /** Pool-relevanter Teil der Einstellungen */
 export type DraftPoolSettings = Pick<DraftSettings, 'gens' | 'types' | 'legendary' | 'mythical'> &
-  Partial<Pick<DraftSettings, 'ultraBeasts'>>;
+  Partial<Pick<DraftSettings, 'ultraBeasts' | 'forms' | 'megas'>>;
 
 /** Legendär oder mysteriös? (zählt fürs Legendären-Limit) */
 export const isLegend = (p: Pick<Pokemon, 'leg' | 'myth'>): boolean => !!(p.leg || p.myth);
 
 /**
  * Begrenzte Kategorien – je Team höchstens settings[LIMIT_SETTING[kind]] davon (null = unbegrenzt):
- * 'legend' (Legendäre + Mysteriöse), 'ub' (Ultrabestien). Jedes Pokémon gehört zu höchstens einer.
+ * 'legend' (Legendäre + Mysteriöse), 'ub' (Ultrabestien), 'mega' (Megas inkl. Proto-Formen).
+ * Ein legendäres Mega (Mega-Mewtu X) gehört zu zwei Kategorien und zählt für beide Limits.
  */
-export type LimitKind = 'legend' | 'ub';
-export const LIMIT_KINDS: readonly LimitKind[] = ['legend', 'ub'];
+export type LimitKind = 'legend' | 'ub' | 'mega';
+export const LIMIT_KINDS: readonly LimitKind[] = ['legend', 'ub', 'mega'];
 
 /** Einstellung mit dem Limit der Kategorie */
-export const LIMIT_SETTING = { legend: 'maxLegends', ub: 'maxUltraBeasts' } as const satisfies Record<LimitKind, keyof DraftSettings>;
+export const LIMIT_SETTING = { legend: 'maxLegends', ub: 'maxUltraBeasts', mega: 'maxMegas' } as const satisfies Record<
+  LimitKind,
+  keyof DraftSettings
+>;
 
 /** Limits der Einstellungen (fehlen sie – ältere Stände –, gilt: unbegrenzt) */
-export type DraftLimitSettings = Partial<Pick<DraftSettings, 'maxLegends' | 'maxUltraBeasts'>>;
+export type DraftLimitSettings = Partial<Pick<DraftSettings, 'maxLegends' | 'maxUltraBeasts' | 'maxMegas'>>;
 
-/** Begrenzte Kategorie des Pokémon (oder null). */
-export function limitKindOf(p: Pick<Pokemon, 'id' | 'leg' | 'myth'>): LimitKind | null {
-  if (isLegend(p)) return 'legend';
-  if (isUltraBeast(p)) return 'ub';
-  return null;
+const NO_KINDS: readonly LimitKind[] = [];
+const kindsCache = new WeakMap<Pick<Pokemon, 'id'>, readonly LimitKind[]>();
+
+/** Begrenzte Kategorien des Pokémon (meist keine oder eine). */
+export function limitKindsOf(p: Pick<Pokemon, 'id' | 'leg' | 'myth' | 'form'>): readonly LimitKind[] {
+  let kinds = kindsCache.get(p);
+  if (!kinds) {
+    const k: LimitKind[] = [];
+    if (isLegend(p)) k.push('legend');
+    if (isUltraBeast(p)) k.push('ub');
+    if (isMega(p)) k.push('mega');
+    kinds = k.length ? k : NO_KINDS;
+    kindsCache.set(p, kinds);
+  }
+  return kinds;
 }
+
+/** Erste begrenzte Kategorie des Pokémon (oder null) – Anzeige. */
+export const limitKindOf = (p: Pick<Pokemon, 'id' | 'leg' | 'myth' | 'form'>): LimitKind | null => limitKindsOf(p)[0] ?? null;
+
+/** Gehört das Pokémon zur Kategorie? */
+export const hasKind = (p: Pick<Pokemon, 'id' | 'leg' | 'myth' | 'form'>, kind: LimitKind): boolean => limitKindsOf(p).includes(kind);
 
 /** Limit der Kategorie pro Team – null = unbegrenzt. */
 export const limitOf = (settings: DraftLimitSettings, kind: LimitKind): number | null => settings[LIMIT_SETTING[kind]] ?? null;
@@ -351,7 +376,9 @@ export function poolOf(settings: DraftPoolSettings, list: Pokemon[]): Pokemon[] 
     poolCache.set(list, byKey);
   }
   const ultra = s.ultraBeasts ?? true;
-  const key = `${s.gens.join(',')}|${s.types.join(',')}|${s.legendary ? 1 : 0}${s.mythical ? 1 : 0}${ultra ? 1 : 0}`;
+  const forms = !!s.forms;
+  const megas = !!s.megas;
+  const key = `${s.gens.join(',')}|${s.types.join(',')}|${s.legendary ? 1 : 0}${s.mythical ? 1 : 0}${ultra ? 1 : 0}${forms ? 1 : 0}${megas ? 1 : 0}`;
   let pool = byKey.get(key);
   if (!pool) {
     const gens = new Set(s.gens);
@@ -363,9 +390,11 @@ export function poolOf(settings: DraftPoolSettings, list: Pokemon[]): Pokemon[] 
           p.types.some((t) => types.has(t)) &&
           (!p.leg || s.legendary) &&
           (!p.myth || s.mythical) &&
-          (ultra || !isUltraBeast(p)),
+          (ultra || !isUltraBeast(p)) &&
+          (!p.form || (isMega(p) ? megas : forms)),
       )
-      .sort((a, b) => a.id - b.id);
+      // Nach Pokédex-Nummer, Formen hinter ihrer Art (ohne Formen: nach Nummer wie bisher)
+      .sort(byDex);
     byKey.set(key, pool);
   }
   return pool;
@@ -377,11 +406,8 @@ const kindCountCache = new WeakMap<Pokemon[], Record<LimitKind, number>>();
 function kindCounts(pool: Pokemon[]): Record<LimitKind, number> {
   let n = kindCountCache.get(pool);
   if (!n) {
-    n = { legend: 0, ub: 0 };
-    for (const p of pool) {
-      const kind = limitKindOf(p);
-      if (kind) n[kind]++;
-    }
+    n = { legend: 0, ub: 0, mega: 0 };
+    for (const p of pool) for (const kind of limitKindsOf(p)) n[kind]++;
     kindCountCache.set(pool, n);
   }
   return n;
@@ -392,8 +418,9 @@ export type DraftCapacitySettings = DraftPoolSettings & DraftLimitSettings;
 
 /**
  * Wie viele Picks der Pool für `teams` Teams hergibt: alle unbegrenzten Pokémon, von jeder
- * begrenzten Kategorie (Legendäre, Ultrabestien) aber nur so viele, wie ihr Limit aufnimmt
- * (teams × Limit).
+ * begrenzten Kategorie (Legendäre, Ultrabestien, Megas) aber nur so viele, wie ihr Limit aufnimmt
+ * (teams × Limit). Gehört ein Pokémon zu zwei Kategorien, zählt es bei beiden – die Zahl ist dann
+ * eher zu klein als zu groß (der Draft bleibt so nie hängen).
  */
 export function poolPickCapacity(settings: DraftCapacitySettings, teams: number, list: Pokemon[]): number {
   const pool = poolOf(settings, list);
@@ -436,9 +463,14 @@ export const poolHasLegends = (settings: Pick<DraftSettings, 'legendary' | 'myth
 /** Ultrabestien im Pool? (das Ultrabestien-Limit wirkt nur dann; ältere Stände ohne das Feld: ja) */
 export const poolHasUltraBeasts = (settings: Partial<Pick<DraftSettings, 'ultraBeasts'>>): boolean => settings.ultraBeasts ?? true;
 
+/** Megas im Pool? (das Mega-Limit wirkt nur dann) */
+export const poolHasMegas = (settings: Partial<Pick<DraftSettings, 'megas'>>): boolean => !!settings.megas;
+
 /** Ist die Kategorie im Pool (und ihr Limit damit wirksam)? */
-export const poolHasKind = (settings: Pick<DraftSettings, 'legendary' | 'mythical'> & Partial<Pick<DraftSettings, 'ultraBeasts'>>, kind: LimitKind) =>
-  kind === 'legend' ? poolHasLegends(settings) : poolHasUltraBeasts(settings);
+export const poolHasKind = (
+  settings: Pick<DraftSettings, 'legendary' | 'mythical'> & Partial<Pick<DraftSettings, 'ultraBeasts' | 'megas'>>,
+  kind: LimitKind,
+) => (kind === 'legend' ? poolHasLegends(settings) : kind === 'ub' ? poolHasUltraBeasts(settings) : poolHasMegas(settings));
 
 /**
  * Prüft und vervollständigt Einstellungen (wirft DraftError bei Unsinn). Nimmt auch die
@@ -470,7 +502,7 @@ export function normalizeSettings(patch: DraftSettingsPatch, base: DraftSettings
     if (!types.length) fail('bad_settings', 'Mindestens ein Typ');
     s.types = types;
   }
-  for (const key of ['legendary', 'mythical', 'ultraBeasts', 'setPiece', 'snake'] as const) {
+  for (const key of ['legendary', 'mythical', 'ultraBeasts', 'forms', 'megas', 'setPiece', 'snake'] as const) {
     if (p[key] !== undefined) {
       if (!isBool(p[key])) fail('bad_settings', 'Ungültige Einstellung');
       s[key] = p[key] as boolean;
@@ -483,6 +515,10 @@ export function normalizeSettings(patch: DraftSettingsPatch, base: DraftSettings
   if (p.maxUltraBeasts !== undefined) {
     if (!isMaxUltraBeasts(p.maxUltraBeasts)) fail('bad_settings', 'Ungültiges Ultrabestien-Limit');
     s.maxUltraBeasts = p.maxUltraBeasts;
+  }
+  if (p.maxMegas !== undefined) {
+    if (!isMaxMegas(p.maxMegas)) fail('bad_settings', 'Ungültiges Mega-Limit');
+    s.maxMegas = p.maxMegas;
   }
   if (p.maxTeams !== undefined) {
     if (!Number.isInteger(p.maxTeams) || p.maxTeams < DRAFT_LIMITS.minTeams || p.maxTeams > DRAFT_LIMITS.maxTeams) {
@@ -820,7 +856,7 @@ export function kindOf(team: Pick<DraftTeam, 'slots' | 'ss'>, kind: LimitKind, l
   let n = 0;
   for (const id of [...team.slots, team.ss]) {
     const p = id != null ? byId.get(id) : undefined;
-    if (p && limitKindOf(p) === kind) n++;
+    if (p && hasKind(p, kind)) n++;
   }
   return n;
 }
@@ -840,8 +876,8 @@ function limitsHit(settings: DraftLimitSettings, team: DraftTeam, list: Pokemon[
 
 /** Sperrt eines der erreichten Limits das Pokémon? */
 const blockedBy = (hit: Set<LimitKind>, p: Pokemon): LimitKind | null => {
-  const kind = hit.size ? limitKindOf(p) : null;
-  return kind && hit.has(kind) ? kind : null;
+  if (!hit.size) return null;
+  return limitKindsOf(p).find((kind) => hit.has(kind)) ?? null;
 };
 
 /** Passt das Pokémon zum Wurf (diese Generation und einer seiner Typen)? */
@@ -851,11 +887,11 @@ export const matchesRoll = (p: Pick<Pokemon, 'gen' | 'types'>, roll: DraftRoll):
 /**
  * Warum ein Pokémon gerade nicht wählbar ist: 'pool' (nicht im Pool), 'taken' (schon
  * vergeben), 'roll' (passt nicht zum Wurf), 'legend_limit' (Legendären-Limit erreicht),
- * 'ub_limit' (Ultrabestien-Limit erreicht).
+ * 'ub_limit' (Ultrabestien-Limit erreicht), 'mega_limit' (Mega-Limit erreicht).
  */
-export type PickBlock = 'pool' | 'taken' | 'roll' | 'legend_limit' | 'ub_limit';
+export type PickBlock = 'pool' | 'taken' | 'roll' | 'legend_limit' | 'ub_limit' | 'mega_limit';
 
-const LIMIT_BLOCK = { legend: 'legend_limit', ub: 'ub_limit' } as const satisfies Record<LimitKind, PickBlock>;
+const LIMIT_BLOCK = { legend: 'legend_limit', ub: 'ub_limit', mega: 'mega_limit' } as const satisfies Record<LimitKind, PickBlock>;
 
 /** Noch freie Pool-Pokémon (nach Nummer sortiert). */
 function remainingPool(state: Pick<DraftState, 'teams' | 'settings'>, list: Pokemon[]): Pokemon[] {
@@ -1180,6 +1216,10 @@ export function pickError(state: DraftView, teamId: string, pokemonId: number, s
   if (block === 'ub_limit') {
     const max = state.settings.maxUltraBeasts;
     return max === 1 ? 'Höchstens eine Ultrabestie pro Team' : `Höchstens ${max} Ultrabestien pro Team`;
+  }
+  if (block === 'mega_limit') {
+    const max = state.settings.maxMegas;
+    return max === 1 ? 'Höchstens ein Mega pro Team' : `Höchstens ${max} Megas pro Team`;
   }
   if (!freeSlots(team, state.settings).includes(slot)) return 'Dieser Platz ist nicht frei';
   return null;

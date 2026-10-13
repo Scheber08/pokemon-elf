@@ -9,7 +9,7 @@ import type { DraftSnapshot } from '../src/lib/api/draftContract';
 import { positionFit } from '../src/lib/fit';
 import { DraftRoomCore, type ConnAttachment, type DraftConn, type StoredRoom } from './draftCore';
 import type { CreateRoomInput, CreateRoomResult, Env } from './env';
-import { draftScale, ENGINE_DATA } from './game';
+import { DRAFT_LIST, draftScale } from './game';
 import { ApiError, errorResponse } from './http';
 
 /** Schlüssel des Raums im Storage (Zustand bzw. Grabstein einer geschlossenen Lobby) */
@@ -20,7 +20,7 @@ const WS_OPEN = 1;
 const SCALE = draftScale();
 // Fit-Cache schon beim Start des Isolates füllen (alle Profile je Pokémon, ~7 ms) – sonst kostet
 // der erste CPU- bzw. Timer-Pick diese Zeit zusätzlich auf das CPU-Limit eines Aufrufs.
-for (const p of ENGINE_DATA.list) positionFit(p, 'TW', SCALE);
+for (const p of DRAFT_LIST) positionFit(p, 'TW', SCALE);
 
 export class DraftRoom extends DurableObject<Env> {
   private readonly core: DraftRoomCore;
@@ -43,7 +43,7 @@ export class DraftRoom extends DurableObject<Env> {
       },
       sockets: () => ctx.getWebSockets().map((ws) => this.wrap(ws)),
       env,
-      list: ENGINE_DATA.list,
+      list: DRAFT_LIST,
       scale: SCALE,
     });
   }

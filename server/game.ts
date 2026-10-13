@@ -2,6 +2,7 @@
  * Spieldaten und -logik des Servers: dieselbe Engine und Auswertung wie im
  * Browser (challengeEngine, runCompute), nur mit den gebündelten Pokémon-Daten.
  */
+import formsJson from '../public/data/forms.json';
 import pokemonJson from '../public/data/pokemon.json';
 import { createEngineData, MODE_RULES, replayRun, type PickLog, type RunState } from '../src/lib/challengeEngine';
 import { buildScale, type Scale } from '../src/lib/fit';
@@ -12,6 +13,12 @@ const LIST = pokemonJson as Pokemon[];
 
 /** Engine-Daten – einmal pro Isolate aufgebaut. */
 export const ENGINE_DATA = createEngineData(LIST);
+
+/**
+ * Pokémon des Online-Drafts: die 1.025 plus Formen (Megas, Regional- und Sonderformen). Welche
+ * davon im Pool sind, entscheiden die Liga-Einstellungen – ohne forms/megas genau die 1.025.
+ */
+export const DRAFT_LIST: Pokemon[] = [...LIST, ...(formsJson as Pokemon[])];
 
 /**
  * Normalisierungen (alle 1.025 bzw. nur Gen 1) – bewusst schon beim Start des

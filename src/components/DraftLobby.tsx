@@ -164,7 +164,7 @@ function MyTeamCard({ room }: { room: DraftRoom }) {
 
 /** Lobby: Code teilen, Teams, eigenes Team, Einstellungen (Host live), Start. readOnly: öffentliche Vorschau ohne Live-Verbindung. */
 export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOnly?: boolean }) {
-  const { list } = usePokemonData();
+  const { all: list } = usePokemonData();
   const t = useT();
   const s = room.state!;
   const { me } = room;

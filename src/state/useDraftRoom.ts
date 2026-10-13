@@ -542,7 +542,7 @@ export interface DraftRoom extends DraftRoomView {
 }
 
 export function useDraftRoom(code: string): DraftRoom {
-  const { list } = usePokemonData();
+  const { all: list } = usePokemonData();
   const valid = isDraftCode(code);
   const [status, setStatus] = useState<DraftRoomStatus>(valid ? 'connecting' : 'not_found');
   const [state, setState] = useState<DraftSnapshot | null>(null);

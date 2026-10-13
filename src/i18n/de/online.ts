@@ -195,6 +195,7 @@ const online = {
   blockedRoll: 'Passt nicht zum Wurf',
   blockedLegends: (max: number) => (max === 1 ? 'Limit: ein Legendäres' : `Limit: ${max} Legendäre`),
   blockedUltraBeasts: (max: number) => (max === 1 ? 'Limit: eine Ultrabestie' : `Limit: ${max} Ultrabestien`),
+  blockedMegas: (max: number) => (max === 1 ? 'Limit: ein Mega' : `Limit: ${max} Megas`),
   favouriteNoMatch: (name: string) => `${name} passt nicht zu deinem Wurf – such dir ein passendes Pokémon.`,
   /** Hinweis unter „Pool", wenn ein Wurf gilt (mit Leerzeichen vorn) */
   hintRoll: (region: string, type: string) => ` Gesucht: ${region} + ${type}.`,
@@ -202,6 +203,8 @@ const online = {
   legendsCount: 'Legendäre',
   /** Statusleiste: Ultrabestien im eigenen Team bei einem Limit */
   ultraBeastsCount: 'Ultrabestien',
+  /** Statusleiste: Megas im eigenen Team bei einem Limit */
+  megasCount: 'Megas',
 
   // ------------------------------------------------ Timer
   cpuPicking: ' CPU wählt …',
@@ -296,6 +299,7 @@ const online = {
       minOneType: 'Mindestens ein Typ',
       badMaxLegends: 'Ungültiges Legendären-Limit',
       badMaxUltraBeasts: 'Ungültiges Ultrabestien-Limit',
+      badMaxMegas: 'Ungültiges Mega-Limit',
       badRollMode: 'Ungültiger Zufallsmodus',
       badRerolls: 'Ungültige Rerolls',
       noRoll: 'Gerade gibt es keinen Wurf',
@@ -305,6 +309,7 @@ const online = {
       noSlot: 'Kein Platz mehr frei',
       legendLimitOne: 'Höchstens ein Legendäres/Mysteriöses pro Team',
       ubLimitOne: 'Höchstens eine Ultrabestie pro Team',
+      megaLimitOne: 'Höchstens ein Mega pro Team',
     },
     /** Meldungen mit Zahlen bzw. Namen (die Platzhalter werden beim Übersetzen herausgelesen) */
     fmt: {
@@ -327,6 +332,7 @@ const online = {
       notRoll: (name: string) => `${name} passt nicht zum Wurf`,
       legendLimit: (max: number) => `Höchstens ${max} Legendäre/Mysteriöse pro Team`,
       ubLimit: (max: number) => `Höchstens ${max} Ultrabestien pro Team`,
+      megaLimit: (max: number) => `Höchstens ${max} Megas pro Team`,
     },
     /** Je Fehlercode – wenn die Meldung selbst unbekannt ist */
     code: {

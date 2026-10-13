@@ -185,10 +185,12 @@ const online: Messages['online'] = {
   blockedRoll: 'Doesn’t match the roll',
   blockedLegends: (max) => `Limit: ${plural(max, 'legendary', 'legendaries')}`,
   blockedUltraBeasts: (max) => `Limit: ${plural(max, 'Ultra Beast', 'Ultra Beasts')}`,
+  blockedMegas: (max) => `Limit: ${plural(max, 'Mega', 'Megas')}`,
   favouriteNoMatch: (name) => `${name} doesn’t match your roll – pick one that does.`,
   hintRoll: (region, type) => ` Wanted: ${region} + ${type}.`,
   legendsCount: 'Legendaries',
   ultraBeastsCount: 'Ultra Beasts',
+  megasCount: 'Megas',
 
   // ------------------------------------------------ Timer
   cpuPicking: ' CPU picking …',
@@ -278,6 +280,7 @@ const online: Messages['online'] = {
       minOneType: 'At least one type',
       badMaxLegends: 'Invalid legendary limit',
       badMaxUltraBeasts: 'Invalid Ultra Beast limit',
+      badMaxMegas: 'Invalid Mega limit',
       badRollMode: 'Invalid random mode',
       badRerolls: 'Invalid rerolls',
       noRoll: 'There’s no roll right now',
@@ -287,6 +290,7 @@ const online: Messages['online'] = {
       noSlot: 'No free spot left',
       legendLimitOne: 'At most one legendary/mythical per team',
       ubLimitOne: 'At most one Ultra Beast per team',
+      megaLimitOne: 'At most one Mega per team',
     },
     fmt: {
       between: (min, max) => `Between ${min} and ${max} teams`,
@@ -307,6 +311,7 @@ const online: Messages['online'] = {
       notRoll: (name) => `${name} doesn’t match the roll`,
       legendLimit: (max) => `At most ${plural(max, 'legendary/mythical', 'legendaries/mythicals')} per team`,
       ubLimit: (max) => `At most ${plural(max, 'Ultra Beast', 'Ultra Beasts')} per team`,
+      megaLimit: (max) => `At most ${plural(max, 'Mega', 'Megas')} per team`,
     },
     code: {
       bad_settings: 'Invalid settings',

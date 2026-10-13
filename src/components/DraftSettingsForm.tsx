@@ -9,7 +9,7 @@ import {
   type DraftSettings,
   type PickSeconds,
 } from '../lib/api/draftContract';
-import { poolHasLegends, poolHasUltraBeasts, poolOf, rerollUsable } from '../lib/draftEngine';
+import { poolHasLegends, poolHasMegas, poolHasUltraBeasts, poolOf, rerollUsable } from '../lib/draftEngine';
 import { fitSettingsPatch, poolCapacity } from '../state/useDraftRoom';
 import type { FormationId, Pokemon, TypeKey } from '../types';
 import { Segmented } from './Segmented';
@@ -159,6 +159,8 @@ const REROLL_OPTIONS = Array.from({ length: DRAFT_LIMITS.rerollsMax + 1 }, (_, i
 const LEGEND_OPTIONS = [0, ...DRAFT_LIMITS.maxLegends];
 /** maxUltraBeasts in den Segmenten: 0 = unbegrenzt (null) */
 const ULTRA_BEAST_OPTIONS = [0, ...DRAFT_LIMITS.maxUltraBeasts];
+/** maxMegas in den Segmenten: 0 = unbegrenzt (null) */
+const MEGA_OPTIONS = [0, ...DRAFT_LIMITS.maxMegas];
 
 interface Props {
   value: DraftSettings;
@@ -190,6 +192,22 @@ export function DraftSettingsForm({ value, onChange, list, teamsJoined = 0, disa
   const floor = Math.max(DRAFT_LIMITS.minTeams, teamsJoined);
   const legendsInPool = poolHasLegends(value);
   const ultraBeastsInPool = poolHasUltraBeasts(value);
+  const megasInPool = poolHasMegas(value);
+  /** Limit-Segmente: 0 = unbegrenzt (∞) */
+  const limitOptions = (values: readonly number[], patch: (n: number | null) => Partial<DraftSettings>) =>
+    values.map((n) => ({
+      value: n,
+      disabled: blocked(patch(n || null)),
+      label: n ? (
+        String(n)
+      ) : (
+        <>
+          <span aria-hidden="true">∞</span>
+          <span className="sr-only">{tx.unlimited}</span>
+        </>
+      ),
+      title: blocked(patch(n || null)) ? tooSmall : n ? undefined : tx.unlimited,
+    }));
   const randomMode = value.roll !== 'off';
 
   /** Änderung anwenden (maxTeams sinkt ggf. mit) – unmögliche Änderungen sind gesperrt. */
@@ -416,22 +434,44 @@ export function DraftSettingsForm({ value, onChange, list, teamsJoined = 0, disa
             disabled={disabled || !ultraBeastsInPool}
             busy={busy}
             onChange={(n) => change({ maxUltraBeasts: n === 0 ? null : n })}
-            options={ULTRA_BEAST_OPTIONS.map((n) => ({
-              value: n,
-              disabled: blocked({ maxUltraBeasts: n || null }),
-              label: n ? (
-                String(n)
-              ) : (
-                <>
-                  <span aria-hidden="true">∞</span>
-                  <span className="sr-only">{tx.unlimited}</span>
-                </>
-              ),
-              title: blocked({ maxUltraBeasts: n || null }) ? tooSmall : n ? undefined : tx.unlimited,
-            }))}
+            options={limitOptions(ULTRA_BEAST_OPTIONS, (maxUltraBeasts) => ({ maxUltraBeasts }))}
           />
         </div>
         <p className="draft-field-note">{ultraBeastsInPool ? tx.maxUltraBeastsNote : tx.maxUltraBeastsOff}</p>
+        <DraftChoice
+          label={tx.forms}
+          value={!!value.forms}
+          disabled={disabled}
+          busy={busy}
+          onChange={(forms) => change({ forms })}
+          options={[
+            { value: false, label: t.draft.off, disabled: blocked({ forms: false }), title: offTitle({ forms: false }) },
+            { value: true, label: t.draft.on },
+          ]}
+          note={tx.formsNote}
+        />
+        <div className="draft-settings__pair">
+          <DraftChoice
+            label={tx.megas}
+            value={megasInPool}
+            disabled={disabled}
+            busy={busy}
+            onChange={(megas) => change({ megas })}
+            options={[
+              { value: false, label: t.draft.off, disabled: blocked({ megas: false }), title: offTitle({ megas: false }) },
+              { value: true, label: t.draft.on },
+            ]}
+          />
+          <DraftChoice
+            label={tx.maxMegas}
+            value={value.maxMegas ?? 0}
+            disabled={disabled || !megasInPool}
+            busy={busy}
+            onChange={(n) => change({ maxMegas: n === 0 ? null : n })}
+            options={limitOptions(MEGA_OPTIONS, (maxMegas) => ({ maxMegas }))}
+          />
+        </div>
+        <p className="draft-field-note">{megasInPool ? tx.maxMegasNote : tx.maxMegasOff}</p>
         <p className="draft-field-note draft-settings__poolnote" aria-live="polite">
           {tx.poolNote(poolSize, capacity)}
         </p>
@@ -596,6 +636,8 @@ export function DraftSettingsSummary({ settings }: { settings: DraftSettings }) 
       : settings.maxUltraBeasts != null
         ? tx.maxUltraBeasts(settings.maxUltraBeasts)
         : null,
+    settings.forms ? tx.withForms : null,
+    poolHasMegas(settings) ? (settings.maxMegas != null ? tx.maxMegas(settings.maxMegas) : tx.withMegas) : null,
     settings.setPiece ? tx.withSetPiece : tx.withoutSetPiece,
     tx.maxTeams(settings.maxTeams),
     settings.order === 'random' ? tx.orderRandom : tx.orderHost,

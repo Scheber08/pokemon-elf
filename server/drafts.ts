@@ -35,7 +35,7 @@ import {
   type LobbyFields,
 } from './draftCore';
 import type { CreateRoomResult, Db, DraftNamespace, DraftRoomStub, Env } from './env';
-import { ENGINE_DATA } from './game';
+import { DRAFT_LIST } from './game';
 import { ApiError, badRequest, json } from './http';
 import { parseDeviceAuth, readJsonBody } from './validate';
 
@@ -93,7 +93,7 @@ export function parseCreateDraft(body: Record<string, unknown>): CreateInput {
   }
   try {
     const teamName = cleanTeamName(body.teamName);
-    const settings = normalizeSettings(cleanSettingsPatch(body.settings ?? {}), DEFAULT_DRAFT_SETTINGS, ENGINE_DATA.list);
+    const settings = normalizeSettings(cleanSettingsPatch(body.settings ?? {}), DEFAULT_DRAFT_SETTINGS, DRAFT_LIST);
     return { auth, settings, teamName, formation: formation as FormationId };
   } catch (err) {
     if (err instanceof DraftError) throw badRequest(err.message);

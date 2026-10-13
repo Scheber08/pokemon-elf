@@ -54,6 +54,8 @@ export const DRAFT_LIMITS = {
   maxLegends: [1, 2, 3] as const,
   /** Erlaubte Ultrabestien-Limits pro Team (null = unbegrenzt) */
   maxUltraBeasts: [1, 2, 3] as const,
+  /** Erlaubte Mega-Limits pro Team (null = unbegrenzt) */
+  maxMegas: [1, 2, 3] as const,
   /** Höchstens so viele Typ- bzw. Regions-Rerolls pro Team und Draft */
   rerollsMax: 3,
 } as const;
@@ -118,6 +120,15 @@ export interface DraftSettings {
    * sonst 1–3. Wirkt nur, wenn ultraBeasts an ist.
    */
   maxUltraBeasts: number | null;
+  /** Regional- und Sonderformen im Pool (public/data/forms.json) */
+  forms: boolean;
+  /** Megas (inkl. Proto-Formen) im Pool – legendäre Megas nur zusammen mit legendary */
+  megas: boolean;
+  /**
+   * Höchstens so viele Megas pro Team (Standardschütze zählt mit): null = unbegrenzt, sonst 1–3.
+   * Wirkt nur, wenn megas an ist. Legendäre Megas zählen für beide Limits.
+   */
+  maxMegas: number | null;
   /** Standardschütze → 12. Runde */
   setPiece: boolean;
   /** Maximale Teamzahl (2–8) */
@@ -158,6 +169,9 @@ export const DEFAULT_DRAFT_SETTINGS: DraftSettings = {
   maxLegends: null,
   ultraBeasts: true,
   maxUltraBeasts: null,
+  forms: false,
+  megas: false,
+  maxMegas: 1,
   setPiece: false,
   maxTeams: 4,
   pickSeconds: 60,

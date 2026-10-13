@@ -14,6 +14,7 @@ import {
   pickAllowed,
   kindOf,
   poolHasLegends,
+  poolHasMegas,
   poolHasUltraBeasts,
   poolOf,
   rerollsLeft,
@@ -51,7 +52,7 @@ function rollKeyOf(s: Pick<DraftSnapshot, 'roll'>): string {
  */
 function DraftRollBar({ room, readOnly }: { room: DraftRoom; readOnly: boolean }) {
   const t = useT();
-  const { list } = usePokemonData();
+  const { all: list } = usePokemonData();
   const whyId = useId();
   const s = room.state!;
   const roll = s.roll ?? null;
@@ -166,7 +167,7 @@ function AutoPickNotice({ room, team, opensAt }: { room: DraftRoom; team: DraftT
 
 /** Live-Draft: Wer ist dran, Timer, Pool, eigenes Feld, Board und Verlauf. readOnly: öffentliche Vorschau ohne Live-Verbindung. */
 export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnly?: boolean }) {
-  const { list, byId, scale } = usePokemonData();
+  const { all: list, byId, scale } = usePokemonData();
   const { sprite } = useSettings();
   const t = useT();
   const s = room.state!;
@@ -194,18 +195,20 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
 
   // Stabile Listen: Jeder Schnappschuss ist ein neues Objekt – neu gerechnet wird nur, wenn sich
   // Pool, vergebene Pokémon bzw. der Wurf ändern (sonst springt das Raster bei jedem Online-Wechsel zurück).
-  const { gens, types, legendary, mythical, maxLegends, maxUltraBeasts } = s.settings;
+  const { gens, types, legendary, mythical, maxLegends, maxUltraBeasts, maxMegas } = s.settings;
   const ultraBeasts = poolHasUltraBeasts(s.settings);
+  const forms = !!s.settings.forms;
+  const megas = poolHasMegas(s.settings);
   // poolOf hält den Pool je Einstellung fest (dasselbe Array, solange sich der Pool nicht ändert)
-  const pool = poolOf({ gens, types, legendary, mythical, ultraBeasts }, list);
-  const poolKey = `${gens.join(',')}|${types.join(',')}|${legendary ? 1 : 0}${mythical ? 1 : 0}${ultraBeasts ? 1 : 0}`;
+  const pool = poolOf({ gens, types, legendary, mythical, ultraBeasts, forms, megas }, list);
+  const poolKey = `${gens.join(',')}|${types.join(',')}|${[legendary, mythical, ultraBeasts, forms, megas].map(Number).join('')}`;
   const takenKey = draftedKey(s);
   const owners = useMemo(() => ownerOfPicks(s), [takenKey]);
   const rollKey = rollKeyOf(s);
   // Was das eigene Team gerade wählen darf (Wurf nur am Zug, Legendären-Limit immer)
   const allowed = useMemo(
     () => (me ? new Set(allowedPicks(s, me.id, list).map((p) => p.id)) : null),
-    [takenKey, rollKey, s.pickIndex, s.phase, me?.id, poolKey, maxLegends, maxUltraBeasts, list],
+    [takenKey, rollKey, s.pickIndex, s.phase, me?.id, poolKey, maxLegends, maxUltraBeasts, maxMegas, list],
   );
   const myRoll = useMemo(() => (me ? effectiveRoll(s, me.id, list) : null), [allowed]);
   const freeCount = pool.length - owners.size;
@@ -231,6 +234,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   const randomMode = s.settings.roll === 'pick' || s.settings.roll === 'round';
   const legendLimit = maxLegends != null && poolHasLegends(s.settings) ? maxLegends : null;
   const ultraBeastLimit = maxUltraBeasts != null && ultraBeasts ? maxUltraBeasts : null;
+  const megaLimit = maxMegas != null && megas ? maxMegas : null;
 
   // Vorgemerktes Pokémon ist vergeben → Auswahl aufheben (bei fremdem Pick mit Hinweis)
   useEffect(() => {
@@ -384,6 +388,14 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
               </strong>
             </span>
           )}
+          {me && megaLimit != null && (
+            <span className="statusline__item draft-turnbar__legends">
+              {t.online.megasCount}{' '}
+              <strong>
+                {kindOf(me, 'mega', list)}/{megaLimit}
+              </strong>
+            </span>
+          )}
         </div>
         <DraftCountdown
           deadline={s.deadline}
@@ -457,6 +469,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                   if (block === 'roll') return t.online.blockedRoll;
                   if (block === 'legend_limit') return t.online.blockedLegends(maxLegends ?? 0);
                   if (block === 'ub_limit') return t.online.blockedUltraBeasts(maxUltraBeasts ?? 0);
+                  if (block === 'mega_limit') return t.online.blockedMegas(maxMegas ?? 0);
                   return null;
                 }}
                 className="pgrid-wrap--compact"
