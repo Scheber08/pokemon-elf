@@ -9,6 +9,12 @@
  *                                            → LeaderboardResponse
  *   POST /api/player        RenameRequest    → { ok: true }
  *
+ * Spielername: Ein neues Gerät heißt auf dem Server „Trainer" (DEFAULT_PLAYER_NAME). Mit
+ * diesem Standardnamen (oder leerem Namen, siehe isDefaultPlayerName) startet kein
+ * gewerteter Run (400 name_required) und das Gerät erscheint in keiner Rangliste; POST
+ * /api/player lehnt ihn ab (400 bad_name). Ein Teamname ist beim Abschluss Pflicht
+ * (400 team_name_required).
+ *
  * Ablauf eines gewerteten Runs:
  *  1. start: Der Server vergibt Seed + Token (Tages-Challenge: Seed des Tages).
  *  2. Der Client spielt mit challengeEngine und protokolliert jeden Zug (PickLog).
@@ -59,11 +65,12 @@ export interface FinishRunRequest extends DeviceAuth {
   formation: FormationId;
   ssEnabled: boolean;
   picks: PickLog[];
-  /** 0–32 Zeichen */
+  /** 1–32 Zeichen mit Buchstabe, Ziffer oder Emoji – leer: 400 team_name_required */
   teamName: string;
   /**
    * 1–24 Zeichen; wird als aktueller Name des Geräts gespeichert. Ohne Buchstabe,
-   * Ziffer oder Emoji (nach dem Säubern) bleibt der gespeicherte Name unverändert.
+   * Ziffer oder Emoji (nach dem Säubern) oder als Standardname („Trainer") bleibt der
+   * gespeicherte Name unverändert.
    */
   player: string;
 }
@@ -113,7 +120,10 @@ export interface LeaderboardResponse {
 }
 
 export interface RenameRequest extends DeviceAuth {
-  /** 1–24 Zeichen, mindestens ein Buchstabe, eine Ziffer oder ein Emoji (sonst 400) */
+  /**
+   * 1–24 Zeichen, mindestens ein Buchstabe, eine Ziffer oder ein Emoji (sonst 400 bad_request);
+   * leer oder der Standardname „Trainer" → 400 bad_name
+   */
   player: string;
 }
 
@@ -127,7 +137,13 @@ export type ApiErrorCode =
   | 'token_used'
   | 'token_expired'
   | 'rate_limited'
-  | 'server_error';
+  | 'server_error'
+  /** POST /api/player: leerer Name oder Standardname („Trainer") */
+  | 'bad_name'
+  /** POST /api/runs/start: Das Gerät hat noch keinen eigenen Namen (erst POST /api/player) */
+  | 'name_required'
+  /** POST /api/runs/finish: Teamname fehlt (leer oder nichts Sichtbares) */
+  | 'team_name_required';
 
 export interface ApiErrorBody {
   error: ApiErrorCode;
@@ -147,3 +163,39 @@ export const LIMITS = {
   /** Neue Geräte pro IP und Stunde */
   devicesPerIpPerHour: 20,
 } as const;
+
+/** Höchstlänge eines Spielernamens (Zeichen) */
+export const PLAYER_NAME_MAX = LIMITS.playerMax;
+
+/** Name eines Geräts, das noch keinen eigenen Namen gewählt hat */
+export const DEFAULT_PLAYER_NAME = 'Trainer';
+
+/** Leerraum zusammenfassen und an den Rändern entfernen. */
+const squash = (s: string) => s.replace(/\s+/g, ' ').trim();
+
+/** Leer aussehende Füllzeichen (Hangul-Filler, leere Braille-Zelle) – zählen wie Leerzeichen (wie server/validate.ts). */
+const BLANK_LIKE_RE = /[\u115F\u1160\u3164\uFFA0\u2800]/gu;
+/**
+ * Unsichtbares, das einen Namen nur scheinbar ändert: Steuer- und Formatzeichen (ZWSP, Bidi …),
+ * Kombinationszeichen (auch Variantenwähler, Grapheme Joiner, Khmer-Vokale) und alle übrigen
+ * „Default Ignorable" Codepoints.
+ */
+const INVISIBLE_RE = /[\p{Cc}\p{Cs}\p{Cf}\p{M}\p{Default_Ignorable_Code_Point}]/gu;
+
+/**
+ * Standardname statt eines eigenen Namens? true für leer und für „Trainer" – in beliebiger
+ * Groß-/Kleinschreibung, mit Leerraum drumherum und auch mit unsichtbaren Zusätzen: verglichen
+ * wird nach NFKC (Vollbreite, mathematische Buchstaben …) ohne Steuer-, Format- und
+ * Kombinationszeichen. Damit startet kein gewerteter Run und das Gerät steht in keiner Rangliste.
+ */
+export function isDefaultPlayerName(name: string | null | undefined): boolean {
+  if (name == null) return true;
+  const plain = String(name).normalize('NFKC').toLowerCase().replace(BLANK_LIKE_RE, ' ').replace(INVISIBLE_RE, '');
+  const clean = squash(plain);
+  return clean === '' || clean === DEFAULT_PLAYER_NAME.toLowerCase();
+}
+
+/** Spielername für die Eingabe: Leerraum zusammengefasst, getrimmt, höchstens PLAYER_NAME_MAX Zeichen. */
+export function cleanPlayerName(raw: string): string {
+  return squash([...squash(raw)].slice(0, PLAYER_NAME_MAX).join(''));
+}

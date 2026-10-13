@@ -99,3 +99,31 @@
 .btn[aria-busy='true'] {
   cursor: progress;
 }
+
+/* Pflichtfelder (Spielername, Teamname): Meldung direkt unter dem Feld */
+.field__error {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #ff9b85;
+}
+:root[data-theme='light'] .field__error {
+  color: #b42318;
+}
+.field--invalid .input,
+.input[aria-invalid='true'] {
+  border-color: var(--red);
+  box-shadow: 0 0 0 1px var(--red);
+}
+
+/* Während des Runs: fehlende Namen nachtragen (Runs von vor der Namenspflicht) */
+.run-names {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px 2px;
+  border-color: rgba(255, 203, 5, 0.45);
+}
+.run-names__text {
+  margin: 0 0 8px;
+  font-size: 14px;
+}

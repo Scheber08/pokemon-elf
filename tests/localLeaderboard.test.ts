@@ -87,4 +87,33 @@ describe('lokale Rangliste – Zeitraum „Heute"', () => {
     const all = await localLeaderboard.top('daily', 'all');
     expect(all.map((e) => e.id)).toEqual(['a', 'b', 'c']);
   });
+
+  it('Einträge ohne eigenen Namen („Trainer", leer) werden gelöscht – nicht umbenannt, nicht gezeigt', async () => {
+    vi.stubGlobal('localStorage', fakeStorage);
+    const key = `pokemon-elf:${STORAGE_KEYS.leaderboard}`;
+    store.set(
+      key,
+      JSON.stringify([
+        entry('a', 'Trainer', 99, '2026-10-12T20:00:00Z'),
+        entry('b', '  trainer ', 98, '2026-10-12T20:00:00Z'),
+        entry('c', '', 97, '2026-10-12T20:00:00Z'),
+        entry('d', 'Misty', 60, '2026-10-12T20:00:00Z'),
+        entry('e', 'Trainer Rot', 50, '2026-10-12T20:00:00Z'),
+        entry('f', 'Trainer\uFE0F', 45, '2026-10-12T20:00:00Z'),
+      ]),
+    );
+    const all = await localLeaderboard.top('daily', 'all');
+    expect(all.map((e) => [e.id, e.player])).toEqual([
+      ['d', 'Misty'],
+      ['e', 'Trainer Rot'],
+    ]);
+    // Endgültig aus der Historie entfernt (wie online) – beim ersten Lesen
+    const stored = () => (JSON.parse(store.get(key) ?? '[]') as LeaderboardEntry[]).map((e) => e.id);
+    expect(stored()).toEqual(['d', 'e']);
+
+    // Ein neuer Run mit Namen ändert die alten Einträge nicht.
+    const fresh = await localLeaderboard.submit({ ...entry('x', 'Ash', 70, ''), id: undefined } as never);
+    expect(stored()).toEqual(['d', 'e', fresh.id]);
+    expect((await localLeaderboard.top('daily', 'all')).map((e) => e.player)).toEqual(['Ash', 'Misty', 'Trainer Rot']);
+  });
 });

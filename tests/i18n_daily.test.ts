@@ -85,6 +85,12 @@ function storeLang(lang: 'de' | 'en') {
   localStorage.setItem('pokemon-elf:settings', JSON.stringify({ lang }));
 }
 
+/** Spieler- und Teamname vorgeben (beides Pflicht für den Start) */
+function storeNames(player = 'Ash', teamName = 'Pallet Power') {
+  localStorage.setItem('pokemon-elf:player-name', JSON.stringify(player));
+  localStorage.setItem('pokemon-elf:run:daily', JSON.stringify({ v: 2, phase: 'setup', setup: { teamName } }));
+}
+
 const mounted: (() => Promise<void>)[] = [];
 
 async function render(el: ReactElement) {
@@ -340,6 +346,7 @@ describe('Tägliche Elf auf Englisch – ganze Seite', () => {
 
   it('Setup ohne Server → Startfehler → offline spielen', async () => {
     storeLang('en');
+    storeNames();
     stubOffline();
     const c = await render(app(h(Daily)));
     await settle();
@@ -364,6 +371,7 @@ describe('Tägliche Elf auf Englisch – ganze Seite', () => {
 
   it('fertige Elf → Saisonbilanz mit Kopfzeile und Teil-Text', async () => {
     storeLang('en');
+    localStorage.setItem('pokemon-elf:player-name', JSON.stringify('Ash'));
     stubOffline();
     const data = engine.createEngineData(ALL);
     const today = dayKey();
@@ -377,7 +385,7 @@ describe('Tägliche Elf auf Englisch – ganze Seite', () => {
       JSON.stringify({
         v: 2,
         phase: 'play',
-        setup: { challenge: 'daily', formation: '4-3-3', ssEnabled: false, teamName: '' },
+        setup: { challenge: 'daily', formation: '4-3-3', ssEnabled: false, teamName: 'Pallet Power' },
         engine: s,
         token: null,
         day: today,

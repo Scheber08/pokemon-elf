@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FORMATION_IDS } from '../src/config/formations';
 import {
   API_VERSION,
+  isDefaultPlayerName,
   LIMITS,
   type ApiErrorBody,
   type DeviceAuth,
@@ -131,7 +132,28 @@ interface RunSpec extends PlayOptions {
   player?: string;
 }
 
+/** Name, den startOnline unbenannten Geräten gibt (wie der Standard-Spieler in finishBody). */
+const TEST_PLAYER = 'Ash';
+
+/**
+ * Gewertete Runs brauchen einen eigenen Namen: Ein noch unbekanntes oder unbenanntes Gerät
+ * bekommt vorher per POST /api/player den Namen TEST_PLAYER – mit denselben Headern, damit
+ * es (wie bisher beim Start) mit seiner IP registriert wird.
+ */
+async function ensureNamed(dev: DeviceAuth, headers?: Record<string, string>) {
+  const [row] = db.query<{ name: string }>('SELECT name FROM devices WHERE id = ?', dev.deviceId.toLowerCase());
+  if (row && !isDefaultPlayerName(row.name)) return;
+  await post('/api/player', { ...dev, player: TEST_PLAYER }, headers);
+}
+
+/** Start eines gewerteten Runs (benennt das Gerät vorher, falls nötig). */
 async function startOnline(dev: DeviceAuth, challenge: ChallengeKey = 'c340', headers?: Record<string, string>) {
+  await ensureNamed(dev, headers);
+  return startUnnamed(dev, challenge, headers);
+}
+
+/** Start ohne vorheriges Benennen – für Tests mit Standardnamen. */
+function startUnnamed(dev: DeviceAuth, challenge: ChallengeKey = 'c340', headers?: Record<string, string>) {
   return post<StartRunResponse>('/api/runs/start', { ...dev, challenge }, headers);
 }
 
@@ -328,7 +350,7 @@ describe('Runs: start → finish', () => {
     expect(Number.isInteger(res.body.seed) && res.body.seed >= 0 && res.body.seed < 2 ** 31).toBe(true);
     expect(res.body.day).toBe(dayKey());
     const [row] = db.query<{ secret_hash: string; name: string }>('SELECT * FROM devices WHERE id = ?', dev.deviceId);
-    expect(row.name).toBe('Trainer');
+    expect(row.name).toBe(TEST_PLAYER);
     expect(row.secret_hash).toMatch(/^[0-9a-f]{64}$/);
     expect(row.secret_hash).not.toBe(dev.deviceSecret);
   });
@@ -594,7 +616,7 @@ describe('Runs: start → finish', () => {
     expect(b.status).toBe(401);
     const c = await post<ApiErrorBody>('/api/player', { ...thief, player: 'Dieb' });
     expect(c.status).toBe(401);
-    expect(db.query<{ name: string }>('SELECT name FROM devices WHERE id = ?', dev.deviceId)[0].name).toBe('Trainer');
+    expect(db.query<{ name: string }>('SELECT name FROM devices WHERE id = ?', dev.deviceId)[0].name).toBe(TEST_PLAYER);
   });
 
   it('Geräte-ID ist unabhängig von Groß-/Kleinschreibung', async () => {
@@ -973,6 +995,8 @@ describe('Rangliste', () => {
       }
     }
     const dev = newDevice();
+    // Schema und einmalige Bereinigung (darf als Einmal-Aufgabe alles lesen) vor der Messung.
+    await get('/api/health');
     db.executed.length = 0;
     const { finish } = await playOnline(dev);
     expect(finish.status).toBe(200);
@@ -1068,7 +1092,8 @@ describe('POST /api/player', () => {
     for (const player of invisible) {
       const res = await post<ApiErrorBody>('/api/player', { ...dev, player });
       expect(res.status, JSON.stringify(player)).toBe(400);
-      expect(res.body.error).toBe('bad_request');
+      // Was gesäubert leer ist, gilt als fehlender (Standard-)Name; der Rest hat nichts Sichtbares.
+      expect(res.body.error, JSON.stringify(player)).toBe(cleanText(player) ? 'bad_request' : 'bad_name');
     }
     expect(db.query('SELECT * FROM devices')).toHaveLength(0);
     const res = await post<ApiErrorBody>('/api/player', { ...dev, player: '-_-' });
@@ -1120,10 +1145,10 @@ describe('Namen säubern', () => {
   it('beim Abschluss: unsichtbarer Spielername lässt den Namen stehen, der Run zählt', async () => {
     const dev = newDevice();
     expect((await post('/api/player', { ...dev, player: 'Misty' })).status).toBe(200);
-    const { finish } = await playOnline(dev, { player: '\u200B\u3164', teamName: '\u2800' });
+    const { finish } = await playOnline(dev, { player: '\u200B\u3164', teamName: ' Elf\u200B 11 ' });
     expect(finish.status, JSON.stringify(finish.body)).toBe(200);
     expect(db.query<{ name: string }>('SELECT name FROM devices WHERE id = ?', dev.deviceId)[0].name).toBe('Misty');
-    expect(db.query<{ team_name: string }>('SELECT team_name FROM entries')[0].team_name).toBe('');
+    expect(db.query<{ team_name: string }>('SELECT team_name FROM entries')[0].team_name).toBe('Elf 11');
   });
 });
 
@@ -1192,10 +1217,24 @@ describe('ungültige Eingaben → 400', () => {
     expect(entry.team_name).toBe('Kontrollname');
   });
 
-  it('leerer Teamname ist erlaubt', async () => {
-    const { state, finish } = await playOnline(newDevice(), { teamName: '' });
-    expect(finish.status).toBe(200);
-    expectMatches(finish.body, state, '');
+  it('leerer Teamname → 400 team_name_required, der Token bleibt nutzbar', async () => {
+    const dev = newDevice();
+    const start = await startOnline(dev);
+    const state = autoPlay({ challenge: 'c340', formation: '4-3-3', ssEnabled: false, seed: start.body.seed });
+    for (const teamName of ['', '   ', '​ㅤ', '⠀', '---', null]) {
+      const res = await post<ApiErrorBody>('/api/runs/finish', { ...finishBody(dev, start.body.token, state), teamName });
+      expect([res.status, res.body.error], JSON.stringify(teamName)).toEqual([400, 'team_name_required']);
+      expect(res.body.message).toMatch(/Teamnamen/);
+    }
+    expect(db.query('SELECT * FROM entries')).toHaveLength(0);
+    expect(db.query('SELECT finished_at FROM run_tokens WHERE token = ?', start.body.token)).toEqual([{ finished_at: null }]);
+    const ok = await post<FinishRunResponse>(
+      '/api/runs/finish',
+      finishBody(dev, start.body.token, state, { teamName: '  Team​  Rakete ' }),
+    );
+    expect(ok.status).toBe(200);
+    expectMatches(ok.body, state, 'Team Rakete');
+    expect(db.query<{ team_name: string }>('SELECT team_name FROM entries')[0].team_name).toBe('Team Rakete');
   });
 });
 

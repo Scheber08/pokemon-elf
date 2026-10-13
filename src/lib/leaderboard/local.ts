@@ -1,10 +1,20 @@
+import { isDefaultPlayerName } from '../api/contract';
 import { load, save, STORAGE_KEYS } from '../storage';
 import { bestPerPlayer, isToday, type LeaderboardEntry, type LeaderboardService, type NewEntry } from './types';
 
 const MAX_ENTRIES = 500;
 
+/**
+ * Alle Runs dieses Browsers. Runs ohne eigenen Namen („Trainer" bzw. leer – von vor der
+ * Namenspflicht) werden dabei endgültig gelöscht, wie online (cleanupDefaultNames): beim ersten
+ * Lesen danach, weil neue Runs immer einen Namen haben.
+ */
 function readAll(): LeaderboardEntry[] {
-  return load<LeaderboardEntry[]>(STORAGE_KEYS.leaderboard, []);
+  const stored = load<LeaderboardEntry[]>(STORAGE_KEYS.leaderboard, []);
+  const all = Array.isArray(stored) ? stored : [];
+  const named = all.filter((e) => !isDefaultPlayerName(e?.player));
+  if (named.length !== all.length) writeAll(named);
+  return named;
 }
 
 function writeAll(entries: LeaderboardEntry[]) {
@@ -34,7 +44,8 @@ export const localLeaderboard: LeaderboardService = {
   },
 
   async top(challenge, period, limit = 50) {
-    // „Heute" = Berliner Kalendertag – wie das Label und die Online-Tageswertung
+    // „Heute" = Berliner Kalendertag – wie das Label und die Online-Tageswertung.
+    // Runs ohne eigenen Namen („Trainer") gibt es nicht mehr (readAll) – wie online.
     const now = new Date();
     const entries = readAll().filter(
       (e) => e.challenge === challenge && (period === 'all' || isToday(e.createdAt, now)),

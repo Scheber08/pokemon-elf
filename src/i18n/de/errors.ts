@@ -28,9 +28,14 @@ const errors = {
     token_expired: 'Dieser Run ist abgelaufen',
     rate_limited: 'Zu viele Anfragen in kurzer Zeit – bitte später erneut versuchen',
     server_error: 'Interner Serverfehler – bitte später erneut versuchen',
+    bad_name: 'Bitte wähle einen eigenen Namen',
+    name_required: 'Bitte wähle zuerst deinen Namen für die Rangliste',
+    team_name_required: 'Bitte gib deinem Team einen Namen',
   } as Record<ApiErrorCode, string>,
   /** Genauere Meldungen (aus der Server-Meldung erkannt) */
   runNotFound: 'Run nicht gefunden',
+  /** Server lehnt einen Spielernamen ab (leer, zu lang, nichts Sichtbares) */
+  invalidPlayerName: 'Dieser Name geht leider nicht – bitte wähle einen anderen',
   alreadyPlayedOn: (day: string) => `Die Tägliche Elf vom ${day} hast du schon gespielt – morgen gibt's eine neue!`,
   invalidRunInRound: (round: number) => `Ungültiger Run (Runde ${round})`,
   tokenExpired: (hours: number) => `Dieser Run ist abgelaufen (älter als ${hours} Stunden)`,

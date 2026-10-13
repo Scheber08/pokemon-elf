@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { HowItWorks, RunSetup, StatCards } from '../components/ChallengeParts';
+import { HowItWorks, RunNamesPrompt, RunSetup, StatCards } from '../components/ChallengeParts';
 import { OnlineNote, RunBoard, RunModeBadge, RunNotice } from '../components/RunBoard';
 import { SeasonResultView } from '../components/SeasonResultView';
 import { useT } from '../i18n';
@@ -61,6 +61,16 @@ export function Challenge340() {
           statusExtra={<RunModeBadge online={run.online} />}
           notice={
             <>
+              {run.namesNeeded && (
+                <RunNamesPrompt
+                  playerName={run.player}
+                  teamName={run.setup.teamName}
+                  onPlayerNameChange={run.setPlayer}
+                  onTeamNameChange={run.setTeamName}
+                  issues={run.issues}
+                  disabled={run.finishing}
+                />
+              )}
               {run.notice && <RunNotice onClose={run.clearNotice}>{run.notice}</RunNotice>}
               {run.error && (
                 <RunNotice error onClose={run.clearError}>
@@ -81,6 +91,9 @@ export function Challenge340() {
             ssEnabled={run.setup.ssEnabled}
             teamName={run.setup.teamName}
             onChange={run.setSetup}
+            playerName={run.player}
+            onPlayerNameChange={run.setPlayer}
+            issues={run.issues}
             onStart={() => void run.start()}
             starting={run.starting}
             note={

@@ -4,7 +4,14 @@
  * (useChallengeRun.startFailure) und ein Ende-zu-Ende-Lauf mit blockiertem localStorage.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ApiRequestError, apiEverOnline, apiHealth, fetchLeaderboard, startRun as apiStartRun } from '../src/lib/api/client';
+import {
+  ApiRequestError,
+  apiEverOnline,
+  apiHealth,
+  fetchLeaderboard,
+  renamePlayer,
+  startRun as apiStartRun,
+} from '../src/lib/api/client';
 import type { ApiErrorBody, FinishRunResponse } from '../src/lib/api/contract';
 import {
   candidates,
@@ -209,6 +216,9 @@ describe('Ende zu Ende mit blockiertem localStorage', () => {
     const client = await import('../src/lib/api/client');
     const rf = await import('../src/lib/runFinish');
 
+    // Ohne eigenen Namen startet kein gewerteter Run
+    await expect(client.startRun('c340')).rejects.toMatchObject({ status: 400, code: 'name_required' });
+    await client.renamePlayer('Ash');
     const start = await client.startRun('c340');
     const state = autoPlay({ challenge: 'c340', formation: '4-3-3', ssEnabled: false, seed: start.seed });
     const out = await rf.finishRun(opts({ state, token: start.token, day: start.day }));
@@ -227,6 +237,7 @@ describe('Ende zu Ende mit blockiertem localStorage', () => {
       }
       return res;
     });
+    await renamePlayer('Ash');
     const start = await apiStartRun('c340');
     const state = autoPlay({ challenge: 'c340', formation: '4-3-3', ssEnabled: false, seed: start.seed });
     const o = opts({ state, token: start.token, day: start.day });

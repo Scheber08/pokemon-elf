@@ -96,6 +96,12 @@ function storeLang(lang: 'de' | 'en') {
   localStorage.setItem('pokemon-elf:settings', JSON.stringify({ lang }));
 }
 
+/** Spieler- und Teamname vorgeben (beides Pflicht für den Start), so wie Hook und runFinish sie lesen */
+function storeNames(storageId: string, player = 'Ash', teamName = 'Pallet Power') {
+  localStorage.setItem('pokemon-elf:player-name', JSON.stringify(player));
+  localStorage.setItem(`pokemon-elf:run:${storageId}`, JSON.stringify({ v: 2, phase: 'setup', setup: { teamName } }));
+}
+
 const mounted: (() => Promise<void>)[] = [];
 
 async function render(el: ReactElement) {
@@ -256,6 +262,7 @@ describe('Texte außerhalb von React (Englisch)', () => {
 describe('34–0 Challenge auf Englisch', () => {
   it('Setup, Spielfeld, Ergebnis per Ticker und Saisonbilanz ohne Deutsch', async () => {
     storeLang('en');
+    storeNames('c340');
     stubFetch();
     const el = await render(app(h(Challenge340)));
     await settle();
@@ -268,6 +275,8 @@ describe('34–0 Challenge auf Englisch', () => {
     expect(text).toContain('How it works');
     expect(text).toContain('Set-piece taker');
     expect(text).toContain('e.g. Dynamo Mahogany');
+    expect(text).toContain('Your name on the leaderboard');
+    expect(text).toContain('Team name');
     expect(text).toContain('Offline – runs are only saved on this device');
 
     // Start (Backend weg → lokaler Run)
@@ -291,6 +300,7 @@ describe('34–0 Challenge auf Englisch', () => {
 
   it('fertige Elf → Ticker → Saisonbilanz', async () => {
     storeLang('en');
+    storeNames('c340');
     stubFetch();
     const engineState = autoPlay({ challenge: 'c340', formation: '4-3-3', ssEnabled: true, seed: 99 });
     localStorage.setItem(
@@ -298,7 +308,7 @@ describe('34–0 Challenge auf Englisch', () => {
       JSON.stringify({
         v: 2,
         phase: 'play',
-        setup: { challenge: 'c340', formation: '4-3-3', ssEnabled: true, teamName: '' },
+        setup: { challenge: 'c340', formation: '4-3-3', ssEnabled: true, teamName: 'Pallet Power' },
         engine: engineState,
         token: null,
         day: null,
@@ -318,7 +328,7 @@ describe('34–0 Challenge auf Englisch', () => {
     text = allText(el);
     expectEnglish(text);
     expect(text).toContain('Season ticker');
-    expect(text).toContain('My XI');
+    expect(text).toContain('Pallet Power');
     expect(text).toContain('Kick-off');
 
     await click(button(el, 'Skip'));
@@ -336,6 +346,7 @@ describe('34–0 Challenge auf Englisch', () => {
 describe('34–0 Challenge auf Deutsch (unverändert)', () => {
   it('Setup und Spielfeld', async () => {
     storeLang('de');
+    storeNames('c340');
     stubFetch();
     const el = await render(app(h(Challenge340)));
     await settle();
@@ -345,7 +356,9 @@ describe('34–0 Challenge auf Deutsch (unverändert)', () => {
       "So funktioniert's",
       'Jede Runde würfelt eine Region und einen Typ. Setze ein passendes Pokémon auf einen freien Platz, mit höchstens 2 Legendären.',
       'Standardschütze',
-      'Teamname (optional)',
+      'Dein Name auf der Rangliste',
+      'Teamname',
+      'z. B. Ash',
       'z. B. Dynamo Mahagonia',
       'Offline – Runs werden nur lokal gespeichert',
     ]) {
@@ -366,6 +379,7 @@ describe('34–0 Challenge auf Deutsch (unverändert)', () => {
 describe('151 Challenge auf Englisch', () => {
   it('Setup und gewürfeltes Pokémon', async () => {
     storeLang('en');
+    storeNames('c151');
     stubFetch();
     const el = await render(app(h(Challenge151)));
     await settle();

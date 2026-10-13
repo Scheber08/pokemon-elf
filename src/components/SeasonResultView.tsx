@@ -6,9 +6,11 @@ import { fmtNumber, LANGS, messages, useT, type Messages } from '../i18n';
 import type { ChallengeStats } from '../lib/challengeStats';
 import { downloadBlob, shareImage } from '../lib/exportImage';
 import { lineupImage, slugify } from '../lib/lineupImage';
+import { LIMITS } from '../lib/api/contract';
 import {
   computeRun,
   playerName,
+  PlayerNameError,
   savePlayerName,
   type ComputedRun,
   type FinishedRunInput,
@@ -18,6 +20,7 @@ import { formatRecord, type SeasonResult } from '../lib/season';
 import { scorerSummary } from '../lib/seasonTimeline';
 import { usePokemonData, type ScaleKind } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
+import { useFieldError } from '../state/useFieldError';
 import type { ChallengeKey, SpriteStyle } from '../types';
 import { PosBadge } from './Badges';
 import { StatCards } from './ChallengeParts';
@@ -126,6 +129,8 @@ export function SeasonResultView({
   const [name, setName] = useState(playerName);
   const [busy, setBusy] = useState(false);
   const [savingName, setSavingName] = useState(false);
+  /** Name abgelehnt (leer, „Trainer", vom Server) – Meldung direkt am Feld */
+  const nameError = useFieldError();
   /** Ticker fertig/übersprungen – bleibt auch, wenn der Parent reveal später auf false setzt */
   const [tickerDone, setTickerDone] = useState(false);
   const showTicker = reveal && !tickerDone;
@@ -203,12 +208,17 @@ export function SeasonResultView({
 
   const onSaveName = async () => {
     setSavingName(true);
+    nameError.clear();
     try {
       const { online } = await savePlayerName(name, entryId);
       setName(playerName());
       toast(online ? tr.nameSavedOnline : tr.nameSaved);
-    } catch {
-      toast(tr.nameFailed);
+    } catch (e) {
+      if (e instanceof PlayerNameError) {
+        nameError.fail(e.message);
+      } else {
+        toast(tr.nameFailed);
+      }
     } finally {
       setSavingName(false);
     }
@@ -311,11 +321,30 @@ export function SeasonResultView({
                 {tr.nameLabel}
               </label>
               <div className="namefield__row">
-                <input id="player-name" className="input" maxLength={24} value={name} onChange={(e) => setName(e.target.value)} />
+                <input
+                  id="player-name"
+                  ref={nameError.ref}
+                  className="input"
+                  maxLength={LIMITS.playerMax}
+                  value={name}
+                  autoComplete="nickname"
+                  aria-required="true"
+                  aria-invalid={nameError.error ? true : undefined}
+                  aria-describedby={nameError.error ? 'player-name-error' : undefined}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    nameError.clear();
+                  }}
+                />
                 <button type="submit" className="btn" disabled={savingName}>
                   {tr.save}
                 </button>
               </div>
+              {nameError.error && (
+                <p id="player-name-error" key={nameError.error.attempt} className="field__error" role="alert">
+                  {nameError.error.message}
+                </p>
+              )}
             </form>
           </div>
         </section>

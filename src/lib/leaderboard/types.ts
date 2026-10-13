@@ -29,7 +29,7 @@ export interface LeaderboardService {
   isLoggedIn(): boolean;
   submit(entry: NewEntry): Promise<LeaderboardEntry>;
   rename(id: string, player: string): Promise<void>;
-  /** Bester Eintrag je Spieler, sortiert. */
+  /** Bester Eintrag je Spieler, sortiert – Einträge ohne eigenen Namen („Trainer") sind gelöscht. */
   top(challenge: ChallengeKey, period: Period, limit?: number): Promise<LeaderboardEntry[]>;
 }
 

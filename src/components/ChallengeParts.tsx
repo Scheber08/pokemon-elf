@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { FORMATION_IDS } from '../config/formations';
 import { useT } from '../i18n';
+import { LIMITS } from '../lib/api/contract';
 import type { ChallengeStats } from '../lib/challengeStats';
+import type { NameField, NameIssues } from '../lib/runFinish';
 import { formatRecord } from '../lib/season';
 import type { FormationId } from '../types';
 import { Segmented } from './Segmented';
@@ -40,11 +42,114 @@ export function HowItWorks({ children }: { children: ReactNode }) {
   );
 }
 
+/** Ids der Pflichtfelder – Setup und Nachfrage während des Runs sind nie gleichzeitig zu sehen. */
+const FIELD_ID: Record<NameField, string> = { player: 'run-player-name', teamName: 'run-team-name' };
+
+interface NameFieldsProps {
+  playerName: string;
+  teamName: string;
+  onPlayerNameChange: (name: string) => void;
+  onTeamNameChange: (name: string) => void;
+  /** Fehlende/abgelehnte Felder – ein neuer Versuch (attempt) fokussiert das erste davon */
+  issues?: NameIssues | null;
+  disabled?: boolean;
+}
+
+/** Pflichtfelder eines Runs: Name auf der Rangliste und Teamname, mit Meldung direkt am Feld. */
+export function NameFields({ playerName, teamName, onPlayerNameChange, onTeamNameChange, issues, disabled }: NameFieldsProps) {
+  const t = useT();
+  const playerRef = useRef<HTMLInputElement>(null);
+  const teamRef = useRef<HTMLInputElement>(null);
+  const refs: Record<NameField, RefObject<HTMLInputElement | null>> = { player: playerRef, teamName: teamRef };
+  const focusRef = useRef(issues?.focus);
+  focusRef.current = issues?.focus;
+  const attempt = issues?.attempt;
+
+  // Jeder gescheiterte Versuch fokussiert das erste fehlerhafte Feld – Tippen ändert attempt nicht.
+  useEffect(() => {
+    const focus = focusRef.current;
+    if (attempt != null && focus) refs[focus].current?.focus();
+  }, [attempt]);
+
+  const field = (
+    key: NameField,
+    label: string,
+    value: string,
+    max: number,
+    placeholder: string,
+    onChange: (v: string) => void,
+  ) => {
+    const id = FIELD_ID[key];
+    const error = issues?.[key];
+    return (
+      <div className={`field ${error ? 'field--invalid' : ''}`}>
+        <label className="field__label" htmlFor={id}>
+          {label}
+        </label>
+        <input
+          id={id}
+          ref={refs[key]}
+          className="input"
+          maxLength={max}
+          value={value}
+          placeholder={placeholder}
+          autoComplete={key === 'player' ? 'nickname' : 'off'}
+          aria-required="true"
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-error` : undefined}
+          disabled={disabled}
+          onChange={(e) => onChange(e.target.value)}
+        />
+        {error && (
+          // Neu angesagt bei jedem Fehlversuch (key) – auch wenn der Fokus schon im Feld steht.
+          <p id={`${id}-error`} key={attempt} className="field__error" role="alert">
+            {error}
+          </p>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <>
+      {field('player', t.challenge.playerName, playerName, LIMITS.playerMax, t.challenge.playerNamePlaceholder, onPlayerNameChange)}
+      {field(
+        'teamName',
+        t.challenge.teamName,
+        teamName,
+        LIMITS.teamNameMax,
+        t.challenge.teamNamePlaceholder(t.game.club(EXAMPLE_CLUB)),
+        onTeamNameChange,
+      )}
+    </>
+  );
+}
+
+/**
+ * Während des Runs: Name/Teamname fehlen noch (Run von vor der Namenspflicht) oder der Server
+ * hat sie abgelehnt – hier nachtragen, dann erneut auswerten.
+ */
+export function RunNamesPrompt(props: NameFieldsProps) {
+  const t = useT();
+  return (
+    <section className="card run-names" aria-label={t.challenge.namesAria}>
+      <p className="run-names__text">{t.challenge.namesNeeded}</p>
+      <NameFields {...props} />
+    </section>
+  );
+}
+
 interface SetupProps {
   formation: FormationId;
   ssEnabled: boolean;
   teamName: string;
   onChange: (v: { formation: FormationId; ssEnabled: boolean; teamName: string }) => void;
+  /** Spielername (Pflicht) – so erscheint man in der Rangliste */
+  playerName: string;
+  onPlayerNameChange: (name: string) => void;
+  /** Fehlende/abgelehnte Pflichtfelder nach einem Startversuch */
+  issues?: NameIssues | null;
+  /** Startet den Run – der Button bleibt klickbar, fehlende Pflichtfelder meldet issues */
   onStart: () => void;
   extra?: ReactNode;
   /** Start läuft (z. B. Anfrage an den Server) – Button gesperrt */
@@ -53,7 +158,19 @@ interface SetupProps {
   note?: ReactNode;
 }
 
-export function RunSetup({ formation, ssEnabled, teamName, onChange, onStart, extra, starting, note }: SetupProps) {
+export function RunSetup({
+  formation,
+  ssEnabled,
+  teamName,
+  onChange,
+  playerName,
+  onPlayerNameChange,
+  issues,
+  onStart,
+  extra,
+  starting,
+  note,
+}: SetupProps) {
   const t = useT();
   return (
     <section className="card setup" aria-label={t.challenge.setupAria}>
@@ -74,19 +191,13 @@ export function RunSetup({ formation, ssEnabled, teamName, onChange, onStart, ex
           { value: true, label: t.challenge.on },
         ]}
       />
-      <div className="field">
-        <label className="field__label" htmlFor="run-team-name">
-          {t.challenge.teamName} <small>{t.challenge.optional}</small>
-        </label>
-        <input
-          id="run-team-name"
-          className="input"
-          maxLength={32}
-          value={teamName}
-          placeholder={t.challenge.teamNamePlaceholder(t.game.club(EXAMPLE_CLUB))}
-          onChange={(e) => onChange({ formation, ssEnabled, teamName: e.target.value })}
-        />
-      </div>
+      <NameFields
+        playerName={playerName}
+        teamName={teamName}
+        onPlayerNameChange={onPlayerNameChange}
+        onTeamNameChange={(name) => onChange({ formation, ssEnabled, teamName: name })}
+        issues={issues}
+      />
       <button type="button" className="btn btn--primary btn--big" onClick={onStart} disabled={starting} aria-busy={starting}>
         {starting ? t.challenge.starting : t.challenge.start}
       </button>

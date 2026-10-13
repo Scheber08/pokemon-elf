@@ -11,26 +11,40 @@
  *   setup                  { challenge, formation, ssEnabled, teamName } – Werte des Setup-Formulars
  *   setSetup(patch)        Setup ändern (nur in Phase 'setup', nicht während start() läuft;
  *                          challenge nur innerhalb von `allowed`)
+ *   player, setPlayer()    Spielername fürs Formular – vorbelegt mit dem gespeicherten Namen
+ *                          (leer, solange keiner gewählt ist), nach reset() neu gelesen (z. B.
+ *                          nach dem Umbenennen auf der Bilanz); gespeichert wird er beim Start
+ *   setTeamName(name)      Teamname ändern – im Setup und (falls er fehlt) während des Runs
+ *   issues                 Fehlende/ungültige Pflichtfelder nach einem Start- oder
+ *                          Auswertungsversuch: { player?, teamName?, focus, attempt } | null.
+ *                          Ändern eines Felds nimmt dessen Meldung zurück.
+ *   namesNeeded            Run läuft, aber Name/Teamname fehlen (z. B. vor der Namenspflicht
+ *                          gestartet oder vom Server abgelehnt) → Felder über dem Spielfeld zeigen
  *   challenge              Challenge des laufenden/letzten Runs (in 'setup': setup.challenge)
  *   engine                 RunState der Engine in 'play' und 'result' (bis reset()), sonst null
  *   data                   EngineData (für RunBoard), einmal pro Pokémon-Liste gebaut
  *   online                 Run wurde online gestartet (hat Token) → wird beim Abschluss gewertet
  *   day                    Tag des Runs: Server-Tag (online) bzw. dayKey() (offline)
  *   apiOnline              Backend erreichbar? null = wird noch geprüft
- *   start(opts?)           Online, wenn das Backend da ist: Seed + Token vom Server
+ *   start(opts?)           Prüft zuerst Spieler- und Teamname (Pflicht, auch offline) – fehlt
+ *                          etwas, nur `issues` setzen. Online, wenn das Backend da ist: Name
+ *                          ggf. per POST /api/player sichern, dann Seed + Token vom Server
  *                          (Tages-Challenge: Seed des Tages). Sonst lokal: Seed =
  *                          dailyRunSeed(dayKey()) bzw. randomSeed(). `{ offline: true }`
  *                          erzwingt einen lokalen, ungewerteten Run (z. B. Üben nach
  *                          „already_played"). Gilt das Backend als offline, wird vorher
  *                          erneut geprüft. Fehler (siehe startFailure):
  *                            already_played → `error`, bleibt in 'setup'
+ *                            name_required/bad_name → `issues.player`, bleibt in 'setup'
  *                            Backend weg, Netzwerk, 5xx, 429, sonstige 4xx → lokaler Run +
  *                            `notice` (mit Server-Meldung)
  *                            (offlineFallback 'ask': `error` + canStartOffline, bleibt in 'setup')
  *   reroll(kind)           challengeEngine.applyReroll – Fehler landen in `error`
  *   place(pokemonId, slot) challengeEngine.place – Fehler landen in `error`
  *   finish(opts?)          runFinish.finishRun (online einreichen oder lokal) → 'result'.
- *                          Liefert true bei Erfolg. Ist der Server nicht erreichbar oder
+ *                          Liefert true bei Erfolg. Fehlen Name/Teamname oder lehnt der Server
+ *                          sie ab (team_name_required …), bleibt der Run in 'play' mit `issues`
+ *                          und `namesNeeded`; danach erneut finish(). Ist der Server nicht erreichbar oder
  *                          bremst er (429), bleibt der Run in 'play' (`error` + canFinishOffline):
  *                          erneut finish() oder finish({ offline: true }) wertet lokal ohne
  *                          Wertung aus. Meldet der Server „bereits gewertet" (token_used),
@@ -41,7 +55,7 @@
  *                          stabil, auch nach markRevealed().
  *   markRevealed()         Merkt sich, dass der Ticker gezeigt wurde – nach Reload/Remount
  *                          kommt direkt die Bilanz. Darf sofort beim Anzeigen aufgerufen werden.
- *   reset()                Zurück zu 'setup', Setup-Werte bleiben.
+ *   reset()                Zurück zu 'setup', Setup-Werte bleiben; der Spielername kommt neu aus dem Speicher.
  *   starting, finishing    laufende Anfragen (Buttons sperren)
  *   error, clearError()    anzeigbarer Fehler (in der Sprache beim Auftreten)
  *   notice, clearNotice()  Hinweis, z. B. „Server nicht erreichbar – Run läuft offline"
@@ -59,7 +73,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DEFAULT_FORMATION, FORMATION_IDS } from '../config/formations';
 import { messages } from '../i18n';
 import { ApiRequestError, apiAvailable, apiEverOnline, onApiHealth, startRun as apiStartRun } from '../lib/api/client';
-import { LIMITS } from '../lib/api/contract';
+import { cleanPlayerName, LIMITS, type StartRunResponse } from '../lib/api/contract';
 import {
   applyReroll,
   createEngineData,
@@ -78,11 +92,20 @@ import { loadStats, type ChallengeStats } from '../lib/challengeStats';
 import { dailyRunSeed, dayKey, isDayKey } from '../lib/daily';
 import { randomSeed } from '../lib/rng';
 import {
+  checkNames,
+  cleanTeamName,
   finishErrorMessage,
   finishRun,
   isAlreadyRanked,
   isRetryable,
+  playerName,
+  rejectedNameField,
+  rememberPlayerName,
+  syncPlayerName,
   type FinishedRunInput,
+  type NameErrors,
+  type NameField,
+  type NameIssues,
   type RunRanking,
 } from '../lib/runFinish';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
@@ -136,6 +159,15 @@ export interface ChallengeRun {
   phase: RunPhase;
   setup: RunSetupValues;
   setSetup(patch: Partial<RunSetupValues>): void;
+  /** Spielername im Formular (Pflicht) */
+  player: string;
+  setPlayer(name: string): void;
+  /** Teamname ändern – im Setup und während des Runs (falls er beim Auswerten fehlt) */
+  setTeamName(name: string): void;
+  /** Fehlende/abgelehnte Pflichtfelder nach einem Versuch – null, wenn alles passt */
+  issues: NameIssues | null;
+  /** Run läuft, aber Name/Teamname müssen vor der Auswertung noch gesetzt werden */
+  namesNeeded: boolean;
   challenge: ChallengeKey;
   engine: RunState | null;
   data: EngineData;
@@ -227,6 +259,8 @@ export function engineErrorText(e: unknown, byId: Map<number, Pokemon>): string 
 
 /** Reaktion von start() auf einen gescheiterten Online-Start. */
 export type StartFailure =
+  /** Name abgelehnt (name_required, bad_name): im Setup bleiben, Feld markieren – nie offline */
+  | { kind: 'name'; field: NameField; error: string }
   /** already_played: im Setup bleiben, kein Offline-Angebot (Üben nur ausdrücklich) */
   | { kind: 'stop'; error: string }
   /** offlineFallback 'ask': im Setup bleiben, `error` + canStartOffline */
@@ -241,6 +275,8 @@ export type StartFailure =
  */
 export function startFailure(e: unknown, offlineFallback: 'auto' | 'ask'): StartFailure {
   const t = messages().challenge;
+  const field = rejectedNameField(e);
+  if (field) return { kind: 'name', field, error: (e as Error).message };
   if (e instanceof ApiRequestError && e.code === 'already_played') return { kind: 'stop', error: e.message };
   // 4xx inkl. 429: Meldung des Servers zeigen; Netzwerk/5xx: „nicht erreichbar"
   const serverMsg = e instanceof ApiRequestError && e.status >= 400 && e.status < 500 ? e.message : null;
@@ -250,6 +286,25 @@ export function startFailure(e: unknown, offlineFallback: 'auto' | 'ask'): Start
   if (!serverMsg) return { kind: 'offline', notice: apiEverOnline() ? t.offlineFallback : null };
   const sentence = /[.!?…]$/.test(serverMsg) ? serverMsg : `${serverMsg}.`;
   return { kind: 'offline', notice: t.offlineWithReason(sentence) };
+}
+
+/**
+ * Online-Start eines gewerteten Runs: erst den Spielernamen beim Server sichern (nur wenn er
+ * sich seit dem letzten Senden geändert hat) und – sobald der Server ihn kennt – auch lokal,
+ * dann /api/runs/start. So steht der Name auch dann überall im Formular, wenn der Start danach
+ * scheitert (z. B. „schon gespielt"). Meldet der Server trotzdem name_required (z. B. Gerät neu
+ * angelegt), wird der Name einmal erneut gesendet und der Start wiederholt.
+ */
+export async function startRankedRun(challenge: ChallengeKey, player: string): Promise<StartRunResponse> {
+  await syncPlayerName(player);
+  rememberPlayerName(player);
+  try {
+    return await apiStartRun(challenge);
+  } catch (e) {
+    if (!(e instanceof ApiRequestError && e.code === 'name_required')) throw e;
+    await syncPlayerName(player, true);
+    return apiStartRun(challenge);
+  }
 }
 
 type Obj = Record<string, unknown>;
@@ -421,6 +476,15 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
   const [statsVersion, setStatsVersion] = useState(0);
   const [canStartOffline, setCanStartOffline] = useState(false);
   const [canFinishOffline, setCanFinishOffline] = useState(false);
+  const [player, setPlayerState] = useState(playerName);
+  /** Aktueller Spielername für async-Abläufe */
+  const playerRef = useRef(player);
+  const [issues, setIssues] = useState<NameIssues | null>(null);
+  const attemptRef = useRef(0);
+  // Ein Run von vor der Namenspflicht (ohne Teamnamen/Namen) fragt gleich danach.
+  const [namesNeeded, setNamesNeeded] = useState(
+    () => state.phase === 'play' && checkNames(player, state.setup.teamName) != null,
+  );
   /** Token, den der Server als „bereits gewertet" gemeldet hat – dafür nie offline auswerten. */
   const rankedTokenRef = useRef<string | null>(null);
   const startingRef = useRef(false);
@@ -440,20 +504,66 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
     [key],
   );
 
+  /** Pflichtfelder markieren; das erste fehlerhafte bekommt den Fokus (siehe NameIssues.attempt). */
+  const failNames = useCallback((errors: NameErrors) => {
+    setIssues({ ...errors, focus: errors.player ? 'player' : 'teamName', attempt: ++attemptRef.current });
+  }, []);
+
+  /** Meldung eines Felds zurücknehmen, sobald es geändert wird. */
+  const clearIssue = useCallback((field: NameField) => {
+    setIssues((cur) => {
+      if (!cur?.[field]) return cur;
+      const next = { ...cur };
+      delete next[field];
+      return next.player || next.teamName ? next : null;
+    });
+  }, []);
+
   const setSetup = useCallback(
     (patch: Partial<RunSetupValues>) => {
       const cur = stateRef.current;
       if (cur.phase !== 'setup' || startingRef.current) return;
       const next = { ...cur.setup, ...patch };
       if (!allowedRef.current.includes(next.challenge) || !isFormation(next.formation)) return;
+      next.teamName = next.teamName.slice(0, LIMITS.teamNameMax);
       commit({ ...cur, setup: next });
+      if (next.teamName !== cur.setup.teamName) clearIssue('teamName');
     },
-    [commit],
+    [clearIssue, commit],
+  );
+
+  const setPlayer = useCallback(
+    (name: string) => {
+      if (stateRef.current.phase === 'result' || startingRef.current || finishingRef.current) return;
+      playerRef.current = name;
+      setPlayerState(name);
+      clearIssue('player');
+    },
+    [clearIssue],
+  );
+
+  const setTeamName = useCallback(
+    (teamName: string) => {
+      const cur = stateRef.current;
+      if (cur.phase === 'setup') return setSetup({ teamName });
+      // Während des Runs: der Teamname gehört nicht zur Engine – nur fürs Auswerten nachtragen.
+      if (cur.phase !== 'play' || finishingRef.current) return;
+      commit({ ...cur, setup: { ...cur.setup, teamName: teamName.slice(0, LIMITS.teamNameMax) } });
+      clearIssue('teamName');
+    },
+    [clearIssue, commit, setSetup],
   );
 
   const start = useCallback(
     async (opts: StartOptions = {}) => {
       if (startingRef.current || stateRef.current.phase !== 'setup') return;
+      // Spieler- und Teamname sind Pflicht – auch offline. Fehlt etwas, gibt es keine Anfrage.
+      const missing = checkNames(playerRef.current, stateRef.current.setup.teamName);
+      if (missing) {
+        failNames(missing);
+        return;
+      }
+      setIssues(null);
       startingRef.current = true;
       const gen = ++generation.current;
       setStarting(true);
@@ -462,6 +572,7 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
       setCanStartOffline(false);
       const setup = stateRef.current.setup;
       const { challenge } = setup;
+      const name = cleanPlayerName(playerRef.current);
       try {
         let seed: number | null = null;
         let token: string | null = null;
@@ -471,12 +582,16 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
           try {
             // Ein zwischengespeicherter Fehlschlag wird vor dem Start neu geprüft.
             if (!(await apiAvailable(true))) throw unreachable();
-            const res = await apiStartRun(challenge);
+            const res = await startRankedRun(challenge, name);
             seed = res.seed;
             token = res.token;
             day = res.day;
           } catch (e) {
             const failure = startFailure(e, offlineFallback);
+            if (failure.kind === 'name') {
+              if (gen === generation.current) failNames({ [failure.field]: failure.error });
+              return;
+            }
             if (failure.kind !== 'offline') {
               if (gen === generation.current) {
                 setError(failure.error);
@@ -497,6 +612,10 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
           data,
         );
         commit({ ...freshState(setup), phase: 'play', engine, token, day, online: token != null });
+        rememberPlayerName(name);
+        playerRef.current = name;
+        setPlayerState(name);
+        setNamesNeeded(false);
         setRevealFor(null);
         setNotice(info);
       } catch (e) {
@@ -506,7 +625,7 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
         setStarting(false);
       }
     },
-    [byId, commit, data, offlineFallback],
+    [byId, commit, data, failNames, offlineFallback],
   );
 
   const reroll = useCallback(
@@ -540,15 +659,25 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
   const finish = useCallback(async (opts: FinishOptions = {}): Promise<boolean> => {
     const cur = stateRef.current;
     if (finishingRef.current || cur.phase !== 'play' || !cur.engine || !isComplete(cur.engine)) return false;
+    // Ohne Spieler- und Teamnamen keine Auswertung (Runs von vor der Namenspflicht): erst nachtragen.
+    const missing = checkNames(playerRef.current, cur.setup.teamName);
+    if (missing) {
+      setNamesNeeded(true);
+      failNames(missing);
+      return false;
+    }
     finishingRef.current = true;
     const gen = generation.current;
     setFinishing(true);
     setError(null);
+    setIssues(null);
+    const name = cleanPlayerName(playerRef.current);
     try {
       const challenge = cur.engine.config.challenge;
       const outcome = await finishRun({
         state: cur.engine,
-        teamName: cur.setup.teamName.trim().slice(0, LIMITS.teamNameMax),
+        teamName: cleanTeamName(cur.setup.teamName),
+        player: name,
         token: opts.offline ? null : cur.token,
         day: cur.day,
         byId,
@@ -556,6 +685,7 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
         // Online-Runs nicht still offline auswerten – erst erneut senden lassen.
         networkFallback: false,
       });
+      rememberPlayerName(name);
       if (gen !== generation.current) return false;
       const result: RunResult = {
         challenge,
@@ -568,9 +698,19 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
       setRevealFor(outcome.input);
       setStatsVersion((v) => v + 1);
       setCanFinishOffline(false);
+      setNamesNeeded(false);
       return true;
     } catch (e) {
       // Token und Phase 'play' bleiben – erneut senden ist möglich.
+      const field = rejectedNameField(e);
+      if (field) {
+        // Server lehnt Name/Teamname ab: Feld über dem Spielfeld zeigen, korrigieren, erneut senden.
+        if (gen === generation.current) {
+          setNamesNeeded(true);
+          failNames({ [field]: (e as Error).message });
+        }
+        return false;
+      }
       if (gen === generation.current) {
         setError(finishErrorMessage(e));
         // Bereits gewertet: nie (auch nicht nach einem späteren Netzwerkfehler) offline auswerten –
@@ -585,7 +725,7 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
       finishingRef.current = false;
       setFinishing(false);
     }
-  }, [byId, commit, scale]);
+  }, [byId, commit, failNames, scale]);
 
   const markRevealed = useCallback(() => {
     const cur = stateRef.current;
@@ -595,11 +735,20 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
   const reset = useCallback(() => {
     generation.current++;
     commit(freshState(stateRef.current.setup));
+    // Zurück ins Setup: Der Name kann sich inzwischen geändert haben (Umbenennen auf der Bilanz) –
+    // den gespeicherten übernehmen, sonst würde der nächste Start den alten wieder senden.
+    const saved = playerName();
+    if (saved) {
+      playerRef.current = saved;
+      setPlayerState(saved);
+    }
     setRevealFor(null);
     setError(null);
     setNotice(null);
     setCanStartOffline(false);
     setCanFinishOffline(false);
+    setIssues(null);
+    setNamesNeeded(false);
   }, [commit]);
 
   const clearError = useCallback(() => setError(null), []);
@@ -622,6 +771,11 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
     phase: state.phase,
     setup: state.setup,
     setSetup,
+    player,
+    setPlayer,
+    setTeamName,
+    issues,
+    namesNeeded: namesNeeded && state.phase === 'play',
     challenge,
     engine: state.engine,
     data,

@@ -3,7 +3,9 @@
  * Zugriff pro Isolate selbst an (CREATE … IF NOT EXISTS) – nach dem Verknüpfen
  * der D1-Datenbank ist also keine Migration nötig. migrations/0001_init.sql
  * enthält dasselbe Schema für `wrangler d1 migrations`; ein Test hält beide gleich.
+ * Danach laufen einmalige Daten-Bereinigungen (je einmal pro Datenbank, über meta abgesichert).
  */
+import { cleanupDefaultNames, DEFAULT_NAMES_CLEANUP_KEY } from './db';
 import type { Db } from './env';
 
 export const SCHEMA_STATEMENTS: readonly string[] = [
@@ -25,15 +27,52 @@ export const SCHEMA_STATEMENTS: readonly string[] = [
 ];
 
 const ready = new WeakMap<Db, Promise<void>>();
+const cleaned = new WeakMap<Db, Promise<void>>();
 
-/** Legt das Schema einmal pro Datenbank-Binding und Isolate an. */
-export function ensureSchema(db: Db): Promise<void> {
+/**
+ * Legt das Schema einmal pro Datenbank-Binding und Isolate an und führt danach die
+ * einmaligen Daten-Bereinigungen aus (siehe runCleanups).
+ */
+export async function ensureSchema(db: Db): Promise<void> {
+  await createSchema(db);
+  await runCleanups(db);
+}
+
+function createSchema(db: Db): Promise<void> {
   let p = ready.get(db);
   if (!p) {
     p = db.batch(SCHEMA_STATEMENTS.map((s) => db.prepare(s))).then(() => undefined);
     // Bei einem Fehler beim nächsten Aufruf erneut versuchen.
     p.catch(() => ready.delete(db));
     ready.set(db, p);
+  }
+  return p;
+}
+
+/**
+ * Einmalige Bereinigungen nach einem Deploy – einmal pro Datenbank, abgesichert über einen
+ * meta-Schlüssel (cleanupDefaultNames); pro Isolate wird nur bis zum ersten Erfolg nachgesehen.
+ * Ein Fehler hält die API nicht auf (die Ranglisten blenden Standardnamen ohnehin aus): Er
+ * wird protokolliert, und der nächste Aufruf versucht es erneut.
+ */
+function runCleanups(db: Db): Promise<void> {
+  let p = cleaned.get(db);
+  if (!p) {
+    p = cleanupDefaultNames(db, Date.now()).then(
+      (res) => {
+        if (res && (res.entries || res.bestEntries || res.tokens)) {
+          console.log(
+            `Bereinigung ${DEFAULT_NAMES_CLEANUP_KEY}: ${res.entries} Einträge, ${res.bestEntries} Bestwerte und ` +
+              `${res.tokens} Run-Tokens von Geräten ohne eigenen Namen gelöscht`,
+          );
+        }
+      },
+      (err: unknown) => {
+        cleaned.delete(db);
+        console.error(`Bereinigung ${DEFAULT_NAMES_CLEANUP_KEY} gescheitert – neuer Versuch beim nächsten Aufruf`, err);
+      },
+    );
+    cleaned.set(db, p);
   }
   return p;
 }

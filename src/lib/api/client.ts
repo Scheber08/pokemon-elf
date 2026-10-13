@@ -44,6 +44,9 @@ export function apiErrorMessage(code: string, serverMessage: string): string {
 function translateServerError(code: string, msg: string): string | null {
   const t = messages().errors;
   switch (code) {
+    case 'bad_request':
+      // POST /api/player: „Spielername ist zu lang …", „Spielername braucht mindestens …"
+      return /^Spielername/.test(msg) ? t.invalidPlayerName : t.code.bad_request;
     case 'not_found':
       return msg === 'Run nicht gefunden' ? t.runNotFound : t.code.not_found;
     case 'already_played': {

@@ -3,11 +3,11 @@
  * einer deutschen Meldung abgewiesen – die Spiellogik prüft danach nur noch
  * die Legalität der Züge (422).
  */
-import { LIMITS, type DeviceAuth, type Period } from '../src/lib/api/contract';
+import { isDefaultPlayerName, LIMITS, type DeviceAuth, type Period } from '../src/lib/api/contract';
 import type { PickLog, RerollKind } from '../src/lib/challengeEngine';
 import { FORMATION_IDS } from '../src/config/formations';
 import type { ChallengeKey, FormationId } from '../src/types';
-import { badRequest } from './http';
+import { ApiError, badRequest } from './http';
 
 export const CHALLENGE_KEYS: ChallengeKey[] = ['c340', 'daily', 'retro340', 'c151'];
 
@@ -150,7 +150,11 @@ export const hasVisible = (s: string) => VISIBLE_RE.test(s);
 /** Länge in Zeichen (Codepoints, ein Emoji = 1). */
 const charCount = (s: string) => [...s].length;
 
-/** Teamname (darf leer sein); ohne sichtbaren Inhalt wird er leer. */
+/**
+ * Teamname; ohne sichtbaren Inhalt wird er leer. Leer ist er hier noch erlaubt – finishRun
+ * lehnt ihn erst nach dem Wiederholungsfall ab (400 team_name_required), damit ein schon
+ * gewerteter Run weiter sein gespeichertes Ergebnis bekommt.
+ */
 export function parseTeamName(v: unknown): string {
   if (v == null) return '';
   if (typeof v !== 'string') throw badRequest('Teamname muss ein Text sein');
@@ -159,27 +163,40 @@ export function parseTeamName(v: unknown): string {
   return hasVisible(name) ? name : '';
 }
 
+/** Leerer Name oder Standardname („Trainer") bei POST /api/player. */
+const badName = (message: string) => new ApiError(400, 'bad_name', message);
+
+/** Teamname fehlt beim Abschluss eines gewerteten Runs. */
+export const teamNameRequired = () =>
+  new ApiError(400, 'team_name_required', 'Bitte gib deinem Team einen Namen – ohne Teamnamen wird der Run nicht gewertet');
+
+/**
+ * Neuer Spielername (POST /api/player): gesäubert, 1–24 Zeichen, mit sichtbarem Inhalt
+ * (sonst 400 bad_request) – leer oder der Standardname „Trainer" → 400 bad_name.
+ */
 export function parsePlayerName(v: unknown): string {
   if (typeof v !== 'string') throw badRequest('Spielername fehlt');
   const name = cleanText(v);
-  if (!name) throw badRequest('Spielername darf nicht leer sein');
+  if (!name) throw badName('Spielername darf nicht leer sein – bitte wähle einen eigenen Namen');
   if (charCount(name) > LIMITS.playerMax) throw badRequest(`Spielername ist zu lang (max. ${LIMITS.playerMax} Zeichen)`);
   if (!hasVisible(name)) {
     throw badRequest('Spielername braucht mindestens einen Buchstaben, eine Ziffer oder ein Emoji');
   }
+  if (isDefaultPlayerName(name)) throw badName(`„${name}" ist der Standardname – bitte wähle einen eigenen Namen`);
   return name;
 }
 
 /**
- * Spielername beim Abschluss: wie parsePlayerName, nur ein leerer oder unsichtbarer
- * Name lässt den gespeicherten Namen unverändert (null) – der gewertete Run soll daran
- * nicht scheitern.
+ * Spielername beim Abschluss: wie parsePlayerName, nur ein leerer, unsichtbarer oder
+ * Standardname („Trainer") lässt den gespeicherten Namen unverändert (null) – der
+ * gewertete Run soll daran nicht scheitern, und ein eigener Name wird so nie zurück auf
+ * den Standardnamen gesetzt.
  */
 function parseFinishPlayer(v: unknown): string | null {
   if (typeof v !== 'string') throw badRequest('Spielername fehlt');
   const name = cleanText(v);
   if (charCount(name) > LIMITS.playerMax) throw badRequest(`Spielername ist zu lang (max. ${LIMITS.playerMax} Zeichen)`);
-  return hasVisible(name) ? name : null;
+  return hasVisible(name) && !isDefaultPlayerName(name) ? name : null;
 }
 
 function parsePicks(v: unknown): PickLog[] {
@@ -209,8 +226,9 @@ export interface FinishInput {
   formation: FormationId;
   ssEnabled: boolean;
   picks: PickLog[];
+  /** Gesäubert; '' = kein Teamname (finishRun lehnt das ab, außer im Wiederholungsfall) */
   teamName: string;
-  /** null: kein gültiger Name mitgeschickt – der gespeicherte bleibt */
+  /** null: kein gültiger (eigener) Name mitgeschickt – der gespeicherte bleibt */
   player: string | null;
 }
 

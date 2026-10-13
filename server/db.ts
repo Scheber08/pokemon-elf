@@ -2,6 +2,7 @@
  * Alle Datenbank-Abfragen (D1 = SQLite). Schema: migrations/0001_init.sql.
  * Zeitstempel sind Millisekunden (INTEGER).
  */
+import { DEFAULT_PLAYER_NAME, isDefaultPlayerName } from '../src/lib/api/contract';
 import type { ChallengeKey, FormationId } from '../src/types';
 import type { Db, DbStatement } from './env';
 
@@ -75,6 +76,19 @@ export interface RankedRow {
 
 /** Wertung: Allzeit oder ein Tag ('YYYY-MM-DD'). */
 export const ALL_TIME_SCOPE = 'all';
+
+/**
+ * SQL: Der Name in `col` ist ein Standardname – leer oder „Trainer" (ohne Groß-/Kleinschreibung).
+ * Gespeicherte Namen sind schon gesäubert (Leerraum zusammengefasst und getrimmt, siehe
+ * cleanText) bzw. genau DEFAULT_PLAYER_NAME; trim() ist nur Absicherung. Varianten mit
+ * unsichtbaren Zusätzen erkennt nur isDefaultPlayerName – sie lassen sich nicht mehr speichern
+ * (POST /api/player) und starten keinen Run; Altbestand räumt cleanupDefaultNames ab.
+ */
+export const defaultNameSql = (col: string) =>
+  `lower(trim(${col})) IN ('', '${DEFAULT_PLAYER_NAME.toLowerCase().replace(/'/g, "''")}')`;
+
+/** SQL: Das Gerät `alias` hat einen eigenen Namen und darf in Ranglisten stehen. */
+const visibleDeviceSql = (alias: string) => `NOT ${defaultNameSql(`${alias}.name`)}`;
 
 // ---------------------------------------------------------------- Geräte
 
@@ -232,10 +246,18 @@ function upsertBest(db: Db, e: NewEntry, scope: string): DbStatement {
 }
 
 /**
- * Speichert den Eintrag, den aktuellen Spielernamen (null = unverändert) und die
- * Bestwerte (Allzeit + Tag des Eintrags) in einer Transaktion.
+ * Speichert den Eintrag, den aktuellen Spielernamen (null = unverändert) und – nur bei
+ * `ranked` – die Bestwerte (Allzeit + Tag des Eintrags) in einer Transaktion.
+ *
+ * `ranked` = das Gerät trägt danach einen eigenen Namen (kein Standardname). So enthält
+ * best_entries nur Geräte, die in der Rangliste stehen dürfen, und Plätze und Spielerzahl
+ * bleiben reine Index-Zählungen (siehe RANK_EXPR). Das gilt dauerhaft, weil kein Weg einen
+ * eigenen Namen zurück auf einen Standardnamen setzt (POST /api/player und finish lehnen ihn
+ * ab); Altbestand räumt cleanupDefaultNames einmalig ab. Folge: Ein unbenanntes Gerät, das
+ * (mit einem Token von vor der Namenspflicht) einen Run abschließt und sich erst danach
+ * benennt, erscheint erst mit seinem nächsten Run in der Rangliste.
  */
-export async function insertEntry(db: Db, e: NewEntry, player: string | null): Promise<void> {
+export async function insertEntry(db: Db, e: NewEntry, player: string | null, ranked: boolean): Promise<void> {
   const statements: DbStatement[] = [
     db
       .prepare(
@@ -261,9 +283,8 @@ export async function insertEntry(db: Db, e: NewEntry, player: string | null): P
         e.seasonSeed,
         e.createdAt,
       ),
-    upsertBest(db, e, ALL_TIME_SCOPE),
-    upsertBest(db, e, e.day),
   ];
+  if (ranked) statements.push(upsertBest(db, e, ALL_TIME_SCOPE), upsertBest(db, e, e.day));
   if (player != null) statements.push(db.prepare(setNameSql).bind(player, e.deviceId));
   await db.batch(statements);
 }
@@ -278,7 +299,10 @@ export function isUniqueViolation(err: unknown): boolean {
 /**
  * Platz der Bestwert-Zeile `b`: 1 + Anzahl besserer Zeilen derselben Wertung, in
  * derselben Reihenfolge wie die Liste (Punkte ↓, Score ↓, Zeitpunkt ↑, ID ↑). Jede
- * Teilsumme ist ein Bereich in idx_best_entries_rank – gelesen werden nur bessere Zeilen.
+ * Teilsumme ist ein Bereich in idx_best_entries_rank – gelesen werden nur bessere Zeilen,
+ * und zwar nur im Index (ohne Tabellen- oder Geräte-Zugriff). Geräte mit Standardnamen
+ * stehen gar nicht erst in best_entries (insertEntry, cleanupDefaultNames) – deshalb passen
+ * diese Zählungen zur gefilterten Liste.
  */
 const RANK_EXPR = `(1
   + (SELECT COUNT(*) FROM best_entries o WHERE o.challenge = b.challenge AND o.scope = b.scope
@@ -296,16 +320,24 @@ const ROW_COLUMNS = `b.entry_id AS id, d.name AS player, e.team_name, e.wins, e.
 
 const ROW_JOINS = `best_entries b JOIN entries e ON e.id = b.entry_id JOIN devices d ON d.id = b.device_id`;
 
+/** Nur Geräte mit eigenem Namen (d = devices) – Standardnamen („Trainer") stehen in keiner Liste. */
+const ROW_VISIBLE = visibleDeviceSql('d');
+
 export interface LeaderboardPage {
-  /** Anzahl Geräte in dieser Wertung */
+  /** Anzahl Geräte (mit eigenem Namen) in dieser Wertung */
   players: number;
   /** Die ersten `limit` Plätze */
   rows: RankedRow[];
-  /** Zeile von `me` (auch außerhalb von `limit`) – null ohne Eintrag */
+  /** Zeile von `me` (auch außerhalb von `limit`) – null ohne Eintrag oder mit Standardnamen */
   mine: RankedRow | null;
 }
 
-/** Eine Wertung: die ersten `limit` Plätze, die Spielerzahl und – falls angefragt – die eigene Zeile. */
+/**
+ * Eine Wertung: die ersten `limit` Plätze, die Spielerzahl und – falls angefragt – die eigene
+ * Zeile. Geräte mit Standardnamen haben keine Bestwerte (insertEntry, cleanupDefaultNames),
+ * fehlen also überall; Liste und eigene Zeile prüfen den Namen zusätzlich (billig: ein
+ * Geräte-Zugriff je gelieferter Zeile), Plätze und Spielerzahl bleiben reine Index-Zählungen.
+ */
 export async function leaderboardPage(
   db: Db,
   q: { challenge: ChallengeKey; scope: string; limit: number; me: string | null },
@@ -314,17 +346,21 @@ export async function leaderboardPage(
     db
       .prepare(
         `SELECT ${ROW_COLUMNS} FROM ${ROW_JOINS}
-         WHERE b.challenge = ? AND b.scope = ?
+         WHERE b.challenge = ? AND b.scope = ? AND ${ROW_VISIBLE}
          ORDER BY b.points DESC, b.score DESC, b.created_at ASC, b.entry_id ASC
          LIMIT ?`,
       )
       .bind(q.me, q.challenge, q.scope, q.limit),
+    // Reine Index-Zählung: best_entries enthält nur Geräte mit eigenem Namen (siehe insertEntry).
     db.prepare('SELECT COUNT(*) AS n FROM best_entries WHERE challenge = ? AND scope = ?').bind(q.challenge, q.scope),
   ];
   if (q.me != null) {
     statements.push(
       db
-        .prepare(`SELECT ${RANK_EXPR} AS pos, ${ROW_COLUMNS} FROM ${ROW_JOINS} WHERE b.challenge = ? AND b.scope = ? AND b.device_id = ?`)
+        .prepare(
+          `SELECT ${RANK_EXPR} AS pos, ${ROW_COLUMNS} FROM ${ROW_JOINS}
+           WHERE b.challenge = ? AND b.scope = ? AND b.device_id = ? AND ${ROW_VISIBLE}`,
+        )
         .bind(q.me, q.challenge, q.scope, q.me),
     );
   }
@@ -339,14 +375,93 @@ export async function leaderboardPage(
   };
 }
 
-/** Plätze eines Geräts in mehreren Wertungen (eine Runde) – null, wo es keinen Eintrag hat. */
+/**
+ * Plätze eines Geräts in mehreren Wertungen (eine Runde) – null, wo es keinen Eintrag hat
+ * oder (mit Standardnamen) nicht in der Liste steht.
+ */
 export async function deviceRanks(
   db: Db,
   deviceId: string,
   challenge: ChallengeKey,
   scopes: string[],
 ): Promise<(number | null)[]> {
-  const sql = `SELECT ${RANK_EXPR} AS pos FROM best_entries b WHERE b.challenge = ? AND b.scope = ? AND b.device_id = ?`;
+  const sql = `SELECT ${RANK_EXPR} AS pos FROM best_entries b JOIN devices d ON d.id = b.device_id
+    WHERE b.challenge = ? AND b.scope = ? AND b.device_id = ? AND ${ROW_VISIBLE}`;
   const results = await db.batch<{ pos: number }>(scopes.map((s) => db.prepare(sql).bind(challenge, s, deviceId)));
   return results.map((r) => r.results[0]?.pos ?? null);
+}
+
+// ---------------------------------------------------------------- Einmalige Bereinigungen
+
+/** meta-Schlüssel der Bereinigung „Ranglisten-Daten von Geräten mit Standardnamen löschen" (gesetzt = erledigt). */
+export const DEFAULT_NAMES_CLEANUP_KEY = 'cleanup:default-names-v1';
+
+/**
+ * Geräte, die (noch) einen Standardnamen tragen: „Trainer"/leer erkennt SQL selbst. Dazu kommen
+ * Namen, die erst isDefaultPlayerName erkennt („Trainer" mit unsichtbaren Zusätzen, Vollbreite …):
+ * als JSON-Liste [[id, name], …] (Parameter) – gelöscht wird nur, solange der Name noch genau so lautet.
+ */
+const DEFAULT_NAME_DEVICES = `SELECT id FROM devices WHERE ${defaultNameSql('name')}
+  UNION SELECT d.id FROM json_each(?) j
+    JOIN devices d ON d.id = json_extract(j.value, '$[0]') AND d.name = json_extract(j.value, '$[1]')`;
+
+/**
+ * Kandidaten für Standardnamen, die SQL nicht erkennt: Solche Namen enthalten immer ein Zeichen
+ * außerhalb von druckbarem ASCII. Nur Geräte mit Einträgen – sonst gibt es nichts zu löschen.
+ */
+const NON_ASCII_RANKED_DEVICES = `SELECT id, name FROM devices WHERE name GLOB '*[^ -~]*'
+  AND id IN (SELECT device_id FROM entries)`;
+
+/** Nur solange die Bereinigung noch nicht vermerkt ist (Parameter: Schlüssel). */
+const CLEANUP_PENDING = 'NOT EXISTS (SELECT 1 FROM meta WHERE key = ?)';
+
+export interface DefaultNamesCleanup {
+  /** Gelöschte Einträge (entries) */
+  entries: number;
+  /** Gelöschte Bestwert-Zeilen (best_entries) */
+  bestEntries: number;
+  /** Gelöschte, schon gewertete Run-Tokens, die auf diese Einträge zeigten */
+  tokens: number;
+}
+
+/**
+ * Einmalig pro Datenbank: Löscht die Ranglisten-Daten aller Geräte mit Standardnamen
+ * (leer oder „Trainer", wie isDefaultPlayerName) – ihre Bestwerte, Einträge und die Tokens,
+ * die auf diese Einträge zeigen (ein erneut gesendeter Abschluss bekommt dann ein sauberes
+ * 404, statt den Run neu zu werten). Geräte, offene Tokens, Drafts und alles andere bleiben
+ * unangetastet.
+ *
+ * Erst ein billiger Blick in meta; nur wenn der Schlüssel fehlt, werden die Kandidaten mit
+ * Nicht-ASCII-Namen gelesen und läuft ein Batch (eine Transaktion) aus den Löschungen und dem
+ * Setzen des Schlüssels. Jede Löschung prüft den Schlüssel selbst noch einmal – laufen zwei
+ * Isolates gleichzeitig los, löscht nur der erste Batch, der zweite ändert nichts. Scheitert
+ * der Batch, bleibt alles beim Alten (Rollback) und der Schlüssel fehlt weiter, sodass ein
+ * späterer Aufruf es erneut versucht.
+ *
+ * @returns null, wenn die Bereinigung schon erledigt war – sonst die Anzahl gelöschter Zeilen
+ */
+export async function cleanupDefaultNames(db: Db, now: number): Promise<DefaultNamesCleanup | null> {
+  const key = DEFAULT_NAMES_CLEANUP_KEY;
+  if (await db.prepare('SELECT 1 AS x FROM meta WHERE key = ?').bind(key).first()) return null;
+  const candidates = await db.prepare(NON_ASCII_RANKED_DEVICES).all<{ id: string; name: string }>();
+  const lookalikes = JSON.stringify(
+    candidates.results.filter((d) => isDefaultPlayerName(d.name)).map((d) => [d.id, d.name]),
+  );
+  const [tokens, bestEntries, entries] = await db.batch([
+    // Vor den Einträgen: Die Tokens finden ihre Einträge über entry_id.
+    db
+      .prepare(
+        `DELETE FROM run_tokens WHERE entry_id IN (SELECT id FROM entries WHERE device_id IN (${DEFAULT_NAME_DEVICES}))
+         AND ${CLEANUP_PENDING}`,
+      )
+      .bind(lookalikes, key),
+    db
+      .prepare(`DELETE FROM best_entries WHERE device_id IN (${DEFAULT_NAME_DEVICES}) AND ${CLEANUP_PENDING}`)
+      .bind(lookalikes, key),
+    db
+      .prepare(`DELETE FROM entries WHERE device_id IN (${DEFAULT_NAME_DEVICES}) AND ${CLEANUP_PENDING}`)
+      .bind(lookalikes, key),
+    db.prepare('INSERT OR IGNORE INTO meta (key, value) VALUES (?, ?)').bind(key, new Date(now).toISOString()),
+  ]);
+  return { entries: entries.meta.changes, bestEntries: bestEntries.meta.changes, tokens: tokens.meta.changes };
 }

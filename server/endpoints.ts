@@ -3,6 +3,7 @@
  */
 import {
   API_VERSION,
+  isDefaultPlayerName,
   LIMITS,
   type FinishRunResponse,
   type HealthResponse,
@@ -37,7 +38,7 @@ import {
 import type { Db, Env } from './env';
 import { verifyRun } from './game';
 import { ApiError, json } from './http';
-import { parseFinish, parseLeaderboardQuery, parseRename, parseStart, readJsonBody } from './validate';
+import { parseFinish, parseLeaderboardQuery, parseRename, parseStart, readJsonBody, teamNameRequired } from './validate';
 
 /** Nie abgeschlossene Tokens werden nach dieser Zeit gelöscht … */
 export const STALE_TOKEN_MS = 7 * 24 * HOUR_MS;
@@ -48,6 +49,10 @@ const alreadyPlayed = (day: string) =>
   new ApiError(409, 'already_played', `Die Tägliche Elf vom ${formatDay(day)} hast du schon gespielt – morgen gibt's eine neue!`);
 
 const tokenUsed = () => new ApiError(409, 'token_used', 'Dieser Run wurde bereits gewertet');
+
+/** Gewertete Runs nur mit eigenem Namen – „Trainer" (Standardname neuer Geräte) steht in keiner Rangliste. */
+const nameRequired = () =>
+  new ApiError(400, 'name_required', 'Bitte wähle zuerst deinen Namen für die Rangliste');
 /** So lange gilt ein beanspruchter Token ohne Eintrag als „wird gerade gespeichert". */
 export const ORPHAN_GRACE_MS = 60_000;
 
@@ -59,7 +64,9 @@ export function health(): Response {
 export async function startRun(request: Request, env: Env): Promise<Response> {
   const { auth, challenge } = parseStart(await readJsonBody(request));
   const now = Date.now();
-  await authenticate(request, env, auth, now);
+  const device = await authenticate(request, env, auth, now);
+  // Vor allem anderen: Ohne eigenen Namen gibt es keinen Token (Client: erst POST /api/player).
+  if (isDefaultPlayerName(device.name)) throw nameRequired();
   const db = env.DB;
 
   if ((await countStarts(db, auth.deviceId, now - HOUR_MS)) >= LIMITS.startsPerHour) {
@@ -85,7 +92,7 @@ export async function finishRun(request: Request, env: Env): Promise<Response> {
   const input = parseFinish(await readJsonBody(request));
   const { auth } = input;
   const now = Date.now();
-  await authenticate(request, env, auth, now);
+  const device = await authenticate(request, env, auth, now);
   const db = env.DB;
   const ttlMs = LIMITS.tokenTtlHours * HOUR_MS;
 
@@ -103,6 +110,9 @@ export async function finishRun(request: Request, env: Env): Promise<Response> {
     await releaseToken(db, token.token, token.entry_id);
     token = { ...token, finished_at: null, entry_id: null };
   }
+  // Erst nach dem Wiederholungsfall: Ein schon gewerteter Run bekommt sein Ergebnis unabhängig vom
+  // Body (auch von älteren Clients ohne Teamnamen). Der Token bleibt offen – mit Namen erneut senden.
+  if (!input.teamName) throw teamNameRequired();
 
   if ((await countFinishes(db, auth.deviceId, now - HOUR_MS, now - ttlMs - HOUR_MS)) >= LIMITS.finishesPerHour) {
     throw rateLimited('Zu viele gewertete Runs in kurzer Zeit – bitte später erneut versuchen');
@@ -162,6 +172,9 @@ export async function finishRun(request: Request, env: Env): Promise<Response> {
         createdAt: now,
       },
       input.player,
+      // In die Rangliste (Bestwerte) nur mit eigenem Namen – nach diesem Abschluss. Ohne ihn (alter
+      // Token eines unbenannten Geräts) wird der Run gespeichert, steht aber in keiner Wertung.
+      !isDefaultPlayerName(input.player ?? device.name),
     );
   } catch (err) {
     await releaseToken(db, token.token, entryId).catch(() => undefined);

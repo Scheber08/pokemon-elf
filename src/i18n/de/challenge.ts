@@ -20,10 +20,21 @@ const challenge = {
   formation: 'Formation',
   off: 'Aus',
   on: 'An',
+  /** Pflichtfeld: Name des Spielers (Gerät) in der Online-Rangliste */
+  playerName: 'Dein Name auf der Rangliste',
+  playerNamePlaceholder: 'z. B. Ash',
   teamName: 'Teamname',
-  optional: '(optional)',
   /** Platzhalter im Teamnamen-Feld mit einem Beispielverein */
   teamNamePlaceholder: (club: string) => `z. B. ${club}`,
+  /** Prüfung der Pflichtfelder (vor dem Start und vor der Auswertung) */
+  playerNameEmpty: 'Bitte gib deinen Namen für die Rangliste ein.',
+  playerNameDefault: '„Trainer" heißen hier alle – bitte wähle einen eigenen Namen.',
+  playerNameInvisible: 'Dein Name braucht mindestens einen Buchstaben, eine Ziffer oder ein Emoji.',
+  teamNameEmpty: 'Bitte gib deinem Team einen Namen.',
+  teamNameInvisible: 'Der Teamname braucht mindestens einen Buchstaben, eine Ziffer oder ein Emoji.',
+  /** Run läuft schon, aber Name/Teamname fehlen noch (z. B. Run von vor der Pflicht) */
+  namesNeeded: 'Bevor die Saison startet: Gib dir und deinem Team noch einen Namen.',
+  namesAria: 'Namen für die Wertung',
   starting: 'Starte …',
   start: 'Run starten',
   /** Würfelkarte während der Animation */

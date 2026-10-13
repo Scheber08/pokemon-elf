@@ -3,12 +3,13 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Segmented } from '../components/Segmented';
 import { useT, type Messages } from '../i18n';
 import { ApiRequestError, fetchLeaderboard } from '../lib/api/client';
-import type { LeaderboardResponse } from '../lib/api/contract';
+import { LIMITS, type LeaderboardResponse } from '../lib/api/contract';
 import { dayKey } from '../lib/daily';
 import { leaderboard, type LeaderboardEntry, type Period } from '../lib/leaderboard';
-import { playerName, savePlayerName } from '../lib/runFinish';
+import { playerName, PlayerNameError, savePlayerName } from '../lib/runFinish';
 import { formatRecord } from '../lib/season';
 import { useToast } from '../state/Toast';
+import { useFieldError } from '../state/useFieldError';
 import { isChallengeKey, useApiOnline } from '../state/useChallengeRun';
 import type { ChallengeKey, Record3 } from '../types';
 import '../styles/run.css';
@@ -251,6 +252,8 @@ export function Leaderboard() {
   const [name, setName] = useState(playerName);
   const [savedName, setSavedName] = useState(playerName);
   const [saving, setSaving] = useState(false);
+  /** Name abgelehnt (leer, „Trainer", vom Server) – Meldung direkt am Feld */
+  const nameError = useFieldError();
   const online = apiOnline === true && source === 'online';
 
   const select = (c: ChallengeKey, p: Period) => {
@@ -267,6 +270,7 @@ export function Leaderboard() {
 
   const onSaveName = async () => {
     setSaving(true);
+    nameError.clear();
     try {
       const res = await savePlayerName(name, null);
       const clean = playerName();
@@ -278,8 +282,12 @@ export function Leaderboard() {
       } else {
         toast(apiOnline ? t.leaderboard.nameSavedNotOnline : t.leaderboard.nameSaved);
       }
-    } catch {
-      toast(t.leaderboard.nameSaveFailed);
+    } catch (e) {
+      if (e instanceof PlayerNameError) {
+        nameError.fail(e.message);
+      } else {
+        toast(t.leaderboard.nameSaveFailed);
+      }
     } finally {
       setSaving(false);
     }
@@ -377,11 +385,30 @@ export function Leaderboard() {
           {t.leaderboard.nameLabel}
         </label>
         <div className="namefield__row">
-          <input id="lb-name" className="input" maxLength={24} value={name} onChange={(e) => setName(e.target.value)} />
+          <input
+            id="lb-name"
+            ref={nameError.ref}
+            className="input"
+            maxLength={LIMITS.playerMax}
+            value={name}
+            autoComplete="nickname"
+            aria-required="true"
+            aria-invalid={nameError.error ? true : undefined}
+            aria-describedby={nameError.error ? 'lb-name-error' : undefined}
+            onChange={(e) => {
+              setName(e.target.value);
+              nameError.clear();
+            }}
+          />
           <button type="submit" className="btn" disabled={saving} aria-busy={saving}>
             {t.leaderboard.save}
           </button>
         </div>
+        {nameError.error && (
+          <p id="lb-name-error" key={nameError.error.attempt} className="field__error" role="alert">
+            {nameError.error.message}
+          </p>
+        )}
         <p className="muted small lb-namehint">{apiOnline ? t.leaderboard.nameHintOnline : t.leaderboard.nameHintLocal}</p>
       </form>
     </div>

@@ -3,13 +3,14 @@
  * Geräte-ID registriert sie (gespeichert wird nur der SHA-256 des Schlüssels),
  * danach muss der Schlüssel immer passen.
  */
-import { LIMITS, type DeviceAuth } from '../src/lib/api/contract';
+import { DEFAULT_PLAYER_NAME, LIMITS, type DeviceAuth } from '../src/lib/api/contract';
 import { randomHex, sha256Hex, timingSafeEqual } from './crypto';
 import { countDevicesByIp, expireIpHashes, getDevice, insertDevice, metaValue } from './db';
 import type { Env } from './env';
 import { ApiError } from './http';
 
-export const DEFAULT_PLAYER = 'Trainer';
+/** Name neuer Geräte – ein Standardname: Damit startet kein gewerteter Run (isDefaultPlayerName). */
+export const DEFAULT_PLAYER = DEFAULT_PLAYER_NAME;
 export const HOUR_MS = 3_600_000;
 /** So lange wird der IP-Hash eines neuen Geräts gebraucht (Fenster des Limits) – danach gelöscht. */
 export const IP_HASH_TTL_MS = HOUR_MS;
@@ -111,8 +112,16 @@ export async function ipHashFor(rawIp: string | null | undefined, env: DeviceEnv
   return ip ? sha256Hex(`pokemon-elf|ip|${await ipSalt(env)}|${normalizeIp(ip)}`) : null;
 }
 
-/** Prüft (bzw. registriert) das Gerät; wirft 401 bei falschem Schlüssel, 429 bei zu vielen neuen Geräten. */
-export function authenticate(request: Request, env: Env, auth: DeviceAuth, now: number): Promise<void> {
+/** Das angemeldete Gerät: sein aktuell gespeicherter Name. */
+export interface AuthedDevice {
+  name: string;
+}
+
+/**
+ * Prüft (bzw. registriert) das Gerät; wirft 401 bei falschem Schlüssel, 429 bei zu vielen
+ * neuen Geräten. Liefert den gespeicherten Namen (neue Geräte: DEFAULT_PLAYER).
+ */
+export function authenticate(request: Request, env: Env, auth: DeviceAuth, now: number): Promise<AuthedDevice> {
   return authenticateDevice(env, auth, now, request.headers.get('CF-Connecting-IP'));
 }
 
@@ -125,7 +134,7 @@ export async function authenticateDevice(
   auth: DeviceAuth,
   now: number,
   rawIp: string | null | undefined,
-): Promise<void> {
+): Promise<AuthedDevice> {
   const db = env.DB;
   const secretHash = await sha256Hex(auth.deviceSecret);
   // Bei jedem Zugriff mit Gerät: IP-Hashes außerhalb des Limit-Fensters löschen (Partial-Index, billig).
@@ -137,10 +146,13 @@ export async function authenticateDevice(
     if (ipHash && (await countDevicesByIp(db, ipHash, now - HOUR_MS)) >= LIMITS.devicesPerIpPerHour) {
       throw rateLimited('Zu viele neue Geräte von dieser Verbindung – bitte in einer Stunde erneut versuchen');
     }
-    if (await insertDevice(db, { id: auth.deviceId, secretHash, name: DEFAULT_PLAYER, ipHash, now })) return;
+    if (await insertDevice(db, { id: auth.deviceId, secretHash, name: DEFAULT_PLAYER, ipHash, now })) {
+      return { name: DEFAULT_PLAYER };
+    }
     // Parallel registriert: wie ein bekanntes Gerät prüfen.
     device = await getDevice(db, auth.deviceId);
     if (!device) throw new Error('Gerät konnte nicht angelegt werden');
   }
   if (!timingSafeEqual(device.secret_hash, secretHash)) throw unauthorized();
+  return { name: device.name };
 }

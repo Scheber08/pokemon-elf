@@ -1,6 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { HowItWorks, RunSetup, StatCards } from '../components/ChallengeParts';
+import { HowItWorks, RunNamesPrompt, RunSetup, StatCards } from '../components/ChallengeParts';
 import { RunBoard, RunModeBadge, RunNotice } from '../components/RunBoard';
 import { SeasonResultView } from '../components/SeasonResultView';
 import { fetchLeaderboard } from '../lib/api/client';
@@ -365,6 +365,16 @@ export function Daily() {
           statusExtra={<RunModeBadge online={run.online} />}
           notice={
             <>
+              {run.namesNeeded && (
+                <RunNamesPrompt
+                  playerName={run.player}
+                  teamName={run.setup.teamName}
+                  onPlayerNameChange={run.setPlayer}
+                  onTeamNameChange={run.setTeamName}
+                  issues={run.issues}
+                  disabled={run.finishing}
+                />
+              )}
               {run.notice && <RunNotice onClose={run.clearNotice}>{run.notice}</RunNotice>}
               {run.error && (
                 <RunNotice error onClose={run.clearError}>
@@ -388,6 +398,9 @@ export function Daily() {
               ssEnabled={run.setup.ssEnabled}
               teamName={run.setup.teamName}
               onChange={run.setSetup}
+              playerName={run.player}
+              onPlayerNameChange={run.setPlayer}
+              issues={run.issues}
               onStart={() => void run.start()}
               starting={run.starting}
               note={
