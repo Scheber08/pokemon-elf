@@ -48,6 +48,7 @@ function stubFetch(snapshot?: () => DraftSnapshot) {
     'fetch',
     vi.fn(async (url: string) => {
       if (url.endsWith('data/pokemon.json')) return json(200, ALL);
+      if (url.endsWith('data/forms.json')) return json(200, []);
       if (snapshot) return json(200, snapshot());
       throw new TypeError('Failed to fetch');
     }),
@@ -480,6 +481,7 @@ describe('/draft (Online-Modus)', () => {
       'fetch',
       vi.fn(async (url: string) => {
         if (url.endsWith('data/pokemon.json')) return json(200, ALL);
+        if (url.endsWith('data/forms.json')) return json(200, []);
         if (url.endsWith('/drafts/public')) {
           return json(200, {
             lobbies: [

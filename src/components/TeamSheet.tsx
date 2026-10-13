@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { dexId } from '../config/categories';
 import { FORMATIONS } from '../config/formations';
 import { useT } from '../i18n';
 import { usePokemonData } from '../state/PokemonData';
@@ -83,7 +84,7 @@ export function TeamSheet({ formation, slots, ss, sprite, onRowClick, title }: P
                 {p ? (
                   <>
                     <strong>{t.game.pokemon(p)}</strong>
-                    <small>{t.game.dexNo(p.id)}</small>
+                    <small>{t.game.dexNo(dexId(p))}</small>
                   </>
                 ) : (
                   <em>{t.common.empty}</em>

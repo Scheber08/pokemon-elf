@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { isUltraBeast } from '../config/categories';
+import { dexId, isMega, isUltraBeast } from '../config/categories';
 import { useT } from '../i18n';
 import type { PosCode, Pokemon, SpriteStyle, StatKey } from '../types';
 import { TypeBadges } from './Badges';
@@ -168,11 +168,15 @@ export function PokemonGrid({
                 onPointerDown={() => window.clearTimeout(hoverTimer.current)}
               >
                 <Sprite pokemon={p} style={sprite} className="pcard__sprite" />
-                <span className="pcard__no">{t.game.dexNo(p.id)}</span>
+                <span className="pcard__no">{t.game.dexNo(dexId(p))}</span>
                 <span className="pcard__name">{t.game.pokemon(p)}</span>
                 <TypeBadges types={p.types} small />
                 <MiniStats pokemon={p} />
-                {p.leg || p.myth ? (
+                {isMega(p) ? (
+                  <span className="pcard__legend pcard__legend--mega" title={t.game.mega}>
+                    {t.builder.grid.megaShort}
+                  </span>
+                ) : p.leg || p.myth ? (
                   <span className="pcard__legend">{p.myth ? t.builder.grid.mythShort : t.builder.grid.legShort}</span>
                 ) : isUltraBeast(p) ? (
                   <span className="pcard__legend pcard__legend--ub" title={t.game.ultraBeast}>

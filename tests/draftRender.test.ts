@@ -45,6 +45,7 @@ function stubFetch(...snapshots: SnapshotAnswer[]) {
     'fetch',
     vi.fn(async (url: string) => {
       if (url.endsWith('data/pokemon.json')) return json(200, ALL);
+      if (url.endsWith('data/forms.json')) return json(200, []);
       calls.push(url);
       const next = snapshots.length > 1 ? snapshots.shift()! : snapshots[0];
       if (!next) throw new TypeError('Failed to fetch');

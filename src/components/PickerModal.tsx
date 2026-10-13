@@ -17,10 +17,12 @@ interface Props {
   onField: Map<number, PosCode>;
   onPick: (id: number | null) => void;
   onClose: () => void;
+  /** Grund, warum ein Pokémon gerade nicht wählbar ist (z. B. Mega-Limit) – null = wählbar */
+  disabledReason?: (p: Pokemon) => string | null;
 }
 
 /** „Wähle ein Pokémon" – Suche, Typ-/Regionsfilter, Raster, Tastatur (Pfeile, Enter, Esc). */
-export function PickerModal({ pos, pool, initialRegion, sprite, currentId, onField, onPick, onClose }: Props) {
+export function PickerModal({ pos, pool, initialRegion, sprite, currentId, onField, onPick, onClose, disabledReason }: Props) {
   const t = useT();
   const [filters, setFilters] = useState<PokemonFilters>({ query: '', type: null, region: initialRegion });
   const items = useFilteredPokemon(pool, filters);
@@ -34,9 +36,10 @@ export function PickerModal({ pos, pool, initialRegion, sprite, currentId, onFie
   }, []);
 
   const onSearchKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && items[0]) {
+    const first = items.find((p) => !disabledReason?.(p));
+    if (e.key === 'Enter' && first) {
       e.preventDefault();
-      onPick(items[0].id);
+      onPick(first.id);
     }
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -75,6 +78,7 @@ export function PickerModal({ pos, pool, initialRegion, sprite, currentId, onFie
             return at && p.id !== currentId ? t.builder.picker.onField(t.game.posShort[at]) : null;
           }}
           onPick={(p) => onPick(p.id)}
+          disabledReason={disabledReason}
           tipPos={pos}
         />
       </div>

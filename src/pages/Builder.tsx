@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { isMega } from '../config/categories';
 import { DEFAULT_FORMATION, FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { REGIONS, regionPhrase } from '../config/regions';
 import { Pitch, SS_INDEX } from '../components/Pitch';
@@ -17,7 +18,7 @@ import { decodeLineup, shareUrl, URL_PARAM } from '../lib/urlState';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import { useToast } from '../state/Toast';
-import type { FormationId, PosCode, RegionFilter, Slots, SpriteStyle } from '../types';
+import type { FormationId, PosCode, Pokemon, RegionFilter, Slots, SpriteStyle } from '../types';
 
 interface BuilderState {
   formation: FormationId;
@@ -25,9 +26,18 @@ interface BuilderState {
   ss: number | null;
   region: RegionFilter;
   legends: boolean;
+  /** Regional- und Sonderformen im Pool */
+  forms: boolean;
+  /** Höchstens so viele Megas in der Elf: 0 = keine, MEGAS_UNLIMITED = beliebig viele */
+  megas: number;
   ssEnabled: boolean;
   teamName: string;
 }
+
+/** Mega-Limit „unbegrenzt" */
+const MEGAS_UNLIMITED = 99;
+const MEGA_OPTIONS = [0, 1, 2, 3, MEGAS_UNLIMITED];
+const megaMax = (megas: number): number | null => (megas >= MEGAS_UNLIMITED ? null : megas);
 
 /** Standard-Elf (4-3-3, alles Kanto, keine Legendären). */
 const DEFAULT_ELF: Slots = [143, 9, 68, 76, 130, 65, 112, 3, 25, 6, 135];
@@ -38,6 +48,8 @@ const DEFAULT_STATE: BuilderState = {
   ss: 59,
   region: 1,
   legends: false,
+  forms: true,
+  megas: 1,
   ssEnabled: false,
   teamName: '',
 };
@@ -47,11 +59,22 @@ function normalize(s: Partial<BuilderState>): BuilderState {
   if (!FORMATIONS[merged.formation]) merged.formation = DEFAULT_FORMATION;
   const n = FORMATIONS[merged.formation].slots.length;
   merged.slots = Array.from({ length: n }, (_, i) => merged.slots?.[i] ?? null);
+  if (!MEGA_OPTIONS.includes(merged.megas)) merged.megas = DEFAULT_STATE.megas;
+  merged.forms = merged.forms !== false;
   return merged;
 }
 
+/** Megas auf dem Feld (Standardschütze nur, wenn er an ist), ohne den Platz `except`. */
+function megasOnField(s: BuilderState, byId: Map<number, Pokemon>, except?: number): number {
+  const ids = [...s.slots.map((id, i) => (i === except ? null : id)), s.ssEnabled && except !== SS_INDEX ? s.ss : null];
+  return ids.filter((id) => {
+    const p = id != null ? byId.get(id) : undefined;
+    return !!p && isMega(p);
+  }).length;
+}
+
 export function Builder() {
-  const { list, byId } = usePokemonData();
+  const { all, byId } = usePokemonData();
   const { sprite, setSprite } = useSettings();
   const t = useT();
   const toast = useToast();
@@ -65,21 +88,38 @@ export function Builder() {
   useEffect(() => {
     const code = params.get(URL_PARAM);
     if (!code) return;
-    const shared = decodeLineup(code, list.length);
+    const shared = decodeLineup(code, (id) => byId.has(id));
     if (shared) {
-      setState(normalize({ ...shared }));
+      const ids = [...shared.slots, shared.ssEnabled ? shared.ss : null];
+      const mons = ids.flatMap((id) => (id != null && byId.has(id) ? [byId.get(id)!] : []));
+      const megas = mons.filter(isMega).length;
+      // Formen und Megas aus dem Link sollen wählbar bleiben
+      setState((s) =>
+        normalize({
+          ...shared,
+          forms: s.forms || mons.some((p) => p.form && !isMega(p)),
+          megas: megas > (megaMax(s.megas) ?? Infinity) ? (megas <= 3 ? megas : MEGAS_UNLIMITED) : s.megas,
+        }),
+      );
       setSprite(shared.sprite);
       toast(t.builder.sharedLoaded);
     } else {
       toast(t.builder.linkUnreadable);
     }
     navigate('/', { replace: true });
-  }, [params, list.length, navigate, setSprite, toast, t]);
+  }, [params, byId, navigate, setSprite, toast, t]);
 
   useEffect(() => save(STORAGE_KEYS.lineup, state), [state]);
 
   const formationDef = FORMATIONS[state.formation];
-  const pool = useMemo(() => list.filter((p) => state.legends || (!p.leg && !p.myth)), [list, state.legends]);
+  const pool = useMemo(
+    () =>
+      all.filter(
+        (p) =>
+          (state.legends || (!p.leg && !p.myth)) && (!p.form || (isMega(p) ? state.megas > 0 : state.forms)),
+      ),
+    [all, state.legends, state.forms, state.megas],
+  );
   const regionPool = useMemo(
     () => pool.filter((p) => state.region === 0 || p.gen === state.region),
     [pool, state.region],
@@ -119,7 +159,10 @@ export function Builder() {
 
   const randomize = () => {
     const source = regionPool.length >= 12 ? regionPool : pool;
-    const shuffled = shuffle(Math.random, source);
+    // Mega-Limit: überzählige Megas fallen aus der Ziehung
+    const max = megaMax(state.megas) ?? Infinity;
+    let megas = 0;
+    const shuffled = shuffle(Math.random, source).filter((p) => !isMega(p) || ++megas <= max);
     setState((s) => ({
       ...s,
       slots: s.slots.map((_, i) => shuffled[i]?.id ?? null),
@@ -240,6 +283,29 @@ export function Builder() {
           />
           <p className="settings__desc">{description}</p>
           <Segmented
+            label={t.builder.forms}
+            value={state.forms}
+            onChange={(forms) => setState((s) => ({ ...s, forms }))}
+            options={[
+              { value: false, label: t.common.off },
+              { value: true, label: t.common.on },
+            ]}
+          />
+          <p className="settings__desc">{t.builder.formsNote}</p>
+          <Segmented
+            label={t.builder.megas}
+            value={state.megas}
+            onChange={(megas) => setState((s) => ({ ...s, megas }))}
+            options={MEGA_OPTIONS.map((n) =>
+              n === 0
+                ? { value: n, label: t.common.off }
+                : n === MEGAS_UNLIMITED
+                  ? { value: n, label: '∞', title: t.builder.megasUnlimited }
+                  : { value: n, label: String(n) },
+            )}
+          />
+          <p className="settings__desc">{t.builder.megasNote(megaMax(state.megas))}</p>
+          <Segmented
             label={t.builder.formation}
             wrap
             value={state.formation}
@@ -289,6 +355,12 @@ export function Builder() {
           onField={onField}
           onPick={(id) => pick(picking, id)}
           onClose={() => setPicking(null)}
+          disabledReason={(p) => {
+            const max = megaMax(state.megas);
+            // Wer schon auf dem Feld steht, tauscht nur den Platz – das ändert die Zahl nicht
+            if (max == null || !isMega(p) || onField.has(p.id)) return null;
+            return megasOnField(state, byId, picking) >= max ? t.builder.picker.megaLimit(max) : null;
+          }}
         />
       )}
     </div>

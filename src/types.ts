@@ -32,7 +32,14 @@ export interface Pokemon {
   myth: 0 | 1;
   /** Bitfeld verfügbarer Sprites (siehe lib/sprites.ts) */
   s: number;
+  /** Nur Formen (public/data/forms.json): Nummer der Art (Basis-Pokémon) */
+  base?: number;
+  /** Nur Formen: Mega (inkl. Proto-Formen), Regionalform oder sonstige Form */
+  form?: FormKind;
 }
+
+/** Art einer Form (siehe scripts/build-forms.mjs) */
+export type FormKind = 'mega' | 'regional' | 'other';
 
 /** Positionskürzel auf dem Feld (+ SS für den optionalen Standardschützen). */
 export type PosCode =

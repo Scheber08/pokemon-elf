@@ -1,4 +1,5 @@
 import { useMemo, type KeyboardEvent, type RefObject } from 'react';
+import { dexId } from '../config/categories';
 import { TYPE_KEYS, TYPES } from '../config/pokemonTypes';
 import { REGIONS } from '../config/regions';
 import { useT } from '../i18n';
@@ -21,7 +22,8 @@ const fold = (s: string) =>
 export function matchesQuery(p: Pokemon, query: string): boolean {
   const q = fold(query.trim()).replace(/^#|^nr\.?\s*|^no\.?\s*(?=\d)/, '');
   if (!q) return true;
-  if (/^\d+$/.test(q)) return String(p.id).startsWith(String(Number(q))) || String(p.id).padStart(4, '0').startsWith(q);
+  const no = dexId(p);
+  if (/^\d+$/.test(q)) return String(no).startsWith(String(Number(q))) || String(no).padStart(4, '0').startsWith(q);
   return fold(p.de).includes(q) || fold(p.en).includes(q);
 }
 

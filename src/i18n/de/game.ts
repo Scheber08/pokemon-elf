@@ -67,6 +67,7 @@ const game = {
   legendary: 'Legendär',
   mythical: 'Mysteriös',
   ultraBeast: 'Ultrabestie',
+  mega: 'Mega',
   /** Name eines Pokémon in dieser Sprache */
   pokemon: (p: Pick<Pokemon, 'de' | 'en'>) => p.de,
   /** Vereinsname (intern deutsch gespeichert) in dieser Sprache */

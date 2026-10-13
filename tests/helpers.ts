@@ -7,6 +7,11 @@ export const ALL: Pokemon[] = JSON.parse(
   readFileSync(fileURLToPath(new URL('../public/data/pokemon.json', import.meta.url)), 'utf8'),
 );
 
+/** Formen aus public/data/forms.json (per `npm run data:forms` erzeugt). */
+export const FORMS: Pokemon[] = JSON.parse(
+  readFileSync(fileURLToPath(new URL('../public/data/forms.json', import.meta.url)), 'utf8'),
+);
+
 export const byName = (de: string): Pokemon => {
   const p = ALL.find((x) => x.de === de);
   if (!p) throw new Error(`Pokémon ${de} nicht gefunden`);

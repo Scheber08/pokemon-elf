@@ -22,6 +22,12 @@ const builder = {
   /** „Aufstellung aus den ersten 151 Pokémon, ohne Legendäre." */
   description: (regionPhrase: string, legends: boolean) =>
     `Aufstellung ${regionPhrase}, ${legends ? 'mit Legendären und Mysteriösen' : 'ohne Legendäre'}.`,
+  forms: 'Formen',
+  formsNote: 'Regionalformen (Alola, Galar, Hisui, Paldea) und Sonderformen wie Rotom oder Tiergeist-Formen.',
+  megas: 'Megas',
+  megasUnlimited: 'Unbegrenzt',
+  megasNote: (max: number | null) =>
+    max === 0 ? 'Ohne Mega-Entwicklungen.' : max == null ? 'Beliebig viele Megas.' : max === 1 ? 'Höchstens ein Mega in der Elf.' : `Höchstens ${max} Megas in der Elf.`,
   formation: 'Formation',
   sprites: 'Sprites',
   teamName: 'Teamname',
@@ -47,6 +53,7 @@ const builder = {
     swapHint: 'Wählst du jemanden, der schon auf dem Feld steht, tauschen die beiden die Plätze.',
     emptySlot: 'Leerer Slot',
     onField: (pos: string) => `auf dem Feld: ${pos}`,
+    megaLimit: (max: number) => (max === 1 ? 'Limit: ein Mega' : `Limit: ${max} Megas`),
   },
   filter: {
     searchLabel: 'Pokémon suchen',
@@ -60,6 +67,7 @@ const builder = {
     legShort: 'Leg.',
     mythShort: 'Myst.',
     ubShort: 'UB',
+    megaShort: 'Mega',
     none: 'Keine Pokémon gefunden.',
     /** Kürzel der Mini-Balken auf den Karten */
     mini: { hp: 'KP', atk: 'ANG', def: 'VER', spa: 'SPA', spd: 'SPV', spe: 'INI' } as Record<StatKey, string>,

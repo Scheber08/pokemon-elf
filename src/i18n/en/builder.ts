@@ -26,6 +26,12 @@ const builder: Messages['builder'] = {
   poolLegends: 'Legendaries',
   description: (regionPhrase, legends) =>
     `Lineup ${regionPhrase}, ${legends ? 'including legendaries and mythicals' : 'no legendaries'}.`,
+  forms: 'Forms',
+  formsNote: 'Regional forms (Alola, Galar, Hisui, Paldea) and special forms such as Rotom or Therian Formes.',
+  megas: 'Megas',
+  megasUnlimited: 'Unlimited',
+  megasNote: (max) =>
+    max === 0 ? 'No Mega Evolutions.' : max == null ? 'As many Megas as you like.' : max === 1 ? 'At most one Mega in the lineup.' : `At most ${max} Megas in the lineup.`,
   formation: 'Formation',
   sprites: 'Sprites',
   teamName: 'Team name',
@@ -50,6 +56,7 @@ const builder: Messages['builder'] = {
     swapHint: 'Pick someone who’s already on the pitch and the two swap places.',
     emptySlot: 'Empty slot',
     onField: (pos) => `on the pitch: ${pos}`,
+    megaLimit: (max) => (max === 1 ? 'Limit: one Mega' : `Limit: ${max} Megas`),
   },
   filter: {
     searchLabel: 'Search Pokémon',
@@ -63,6 +70,7 @@ const builder: Messages['builder'] = {
     legShort: 'Leg.',
     mythShort: 'Myth.',
     ubShort: 'UB',
+    megaShort: 'Mega',
     none: 'No Pokémon found.',
     mini: { hp: 'HP', atk: 'ATK', def: 'DEF', spa: 'SPA', spd: 'SPD', spe: 'SPE' },
   },

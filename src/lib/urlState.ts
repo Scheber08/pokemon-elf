@@ -76,7 +76,12 @@ export function encodeLineup(state: SharedLineup, { maxNameBytes = MAX_NAME_BYTE
   return toBase64Url(bytes);
 }
 
-export function decodeLineup(str: string, maxId = 1025): SharedLineup | null {
+/**
+ * known: höchste gültige Nummer (Standard: die 1.025 Pokémon) oder eine Prüfung – z. B. alle
+ * Pokémon und Formen (Formen haben Nummern ab 10001). Unbekannte Nummern werden leere Plätze.
+ */
+export function decodeLineup(str: string, known: number | ((id: number) => boolean) = 1025): SharedLineup | null {
+  const ok = typeof known === 'number' ? (id: number) => id >= 1 && id <= known : (id: number) => id >= 1 && known(id);
   try {
     const bytes = fromBase64Url(str.trim());
     if (bytes.length < 27 || bytes[0] !== VERSION) return null;
@@ -88,7 +93,7 @@ export function decodeLineup(str: string, maxId = 1025): SharedLineup | null {
     const ids: (number | null)[] = [];
     for (let i = 0; i < 12; i++) {
       const id = (bytes[3 + i * 2] << 8) | bytes[4 + i * 2];
-      ids.push(id >= 1 && id <= maxId ? id : null);
+      ids.push(ok(id) ? id : null);
     }
     const teamName = new TextDecoder().decode(bytes.slice(27));
     return {

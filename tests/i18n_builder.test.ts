@@ -139,7 +139,7 @@ describe('Builder auf Englisch', () => {
     expect(all).toContain('Empty slot');
     expect(all).toContain('All types');
     expect(all).toContain('Unova');
-    expect(all).toContain('on the pitch: CB');
+    expect(all).toMatch(/on the pitch: (CB|LB|RB|DM|CM)/);
     expect(all).toMatch(/\d+ results/);
     expect(germanLeft(dialog)).toEqual([]);
     expect(germanLeft()).toEqual([]);

@@ -553,6 +553,11 @@ select {
   background: #4b3a8f;
   color: #fff;
 }
+.legend-chip--mega,
+.pcard__legend--mega {
+  background: linear-gradient(135deg, #e0457b, #7b5cff);
+  color: #fff;
+}
 
 /* Typ- & Positions-Badges */
 .type-badges {

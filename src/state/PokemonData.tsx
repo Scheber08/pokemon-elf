@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { byDex } from '../config/categories';
 import { useT } from '../i18n';
 import { buildScale, type Scale } from '../lib/fit';
 import type { Pokemon } from '../types';
@@ -6,7 +7,13 @@ import type { Pokemon } from '../types';
 export type ScaleKind = 'all' | 'gen1';
 
 export interface PokemonData {
+  /** Die 1.025 Pokémon (Basis aller Challenges und der Normalisierung) */
   list: Pokemon[];
+  /** Formen: Megas, Regional- und sonstige Formen (public/data/forms.json) */
+  forms: Pokemon[];
+  /** Pokémon und Formen, nach Pokédex-Nummer (Formen hinter ihrer Art) */
+  all: Pokemon[];
+  /** Pokémon und Formen */
   byId: Map<number, Pokemon>;
   /** Normalisierung über alle Pokémon oder nur Gen 1 (Retro / 151 Challenge). */
   scale(kind: ScaleKind): Scale;
@@ -15,7 +22,8 @@ export interface PokemonData {
 const Ctx = createContext<PokemonData | null>(null);
 
 export function PokemonDataProvider({ children }: { children: ReactNode }) {
-  const [list, setList] = useState<Pokemon[] | null>(null);
+  const [data, setData] = useState<{ list: Pokemon[]; forms: Pokemon[] } | null>(null);
+  const list = data?.list ?? null;
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
   const scales = useRef(new Map<ScaleKind, Scale>());
@@ -24,12 +32,17 @@ export function PokemonDataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     setError(null);
-    fetch(`${import.meta.env.BASE_URL}data/pokemon.json`)
-      .then((r) => {
+    const get = (file: string) =>
+      fetch(`${import.meta.env.BASE_URL}data/${file}`).then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json() as Promise<Pokemon[]>;
-      })
-      .then((data) => !cancelled && setList(data))
+      });
+    // Formen sind eine Zugabe: Fehlen sie (Netz, alter Cache), geht es ohne sie weiter
+    Promise.all([get('pokemon.json'), get('forms.json').then(
+      (f) => (Array.isArray(f) ? f : []),
+      (): Pokemon[] => [],
+    )])
+      .then(([list, forms]) => !cancelled && setData({ list, forms }))
       .catch((e: Error) => !cancelled && setError(e.message));
     return () => {
       cancelled = true;
@@ -48,10 +61,11 @@ export function PokemonDataProvider({ children }: { children: ReactNode }) {
     [list],
   );
 
-  const value = useMemo<PokemonData | null>(
-    () => (list ? { list, byId: new Map(list.map((p) => [p.id, p])), scale } : null),
-    [list, scale],
-  );
+  const value = useMemo<PokemonData | null>(() => {
+    if (!data) return null;
+    const all = [...data.list, ...data.forms].sort(byDex);
+    return { list: data.list, forms: data.forms, all, byId: new Map(all.map((p) => [p.id, p])), scale };
+  }, [data, scale]);
 
   if (error) {
     return (

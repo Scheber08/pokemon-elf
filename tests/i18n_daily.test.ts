@@ -71,6 +71,7 @@ function stubFetch(leaderboard: () => Response) {
     vi.fn(async (url: string) => {
       calls.push(url);
       if (url.endsWith('data/pokemon.json')) return json(200, ALL);
+      if (url.endsWith('data/forms.json')) return json(200, []);
       if (url.includes('/api/health')) return json(200, { ok: true, version: 1, day: dayKey() });
       if (url.includes('/api/leaderboard')) return leaderboard();
       throw new TypeError('Failed to fetch');
@@ -309,6 +310,7 @@ function stubOffline() {
     'fetch',
     vi.fn(async (url: string) => {
       if (url.endsWith('data/pokemon.json')) return json(200, ALL);
+      if (url.endsWith('data/forms.json')) return json(200, []);
       throw new TypeError('Failed to fetch');
     }),
   );
