@@ -80,7 +80,7 @@ export function EternalTable({ entries, youTeamId, title }: Props) {
                 <td>{r.d}</td>
                 <td>{r.l}</td>
                 <td>
-                  {r.gf}:{r.ga}
+                  {`${r.gf}:${r.ga}`}
                 </td>
                 <td>
                   <strong>{r.pts}</strong>

@@ -339,7 +339,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                     <td>{r.d}</td>
                     <td>{r.l}</td>
                     <td>
-                      {r.gf}:{r.ga}
+                      {`${r.gf}:${r.ga}`}
                     </td>
                     <td>{r.gd > 0 ? `+${r.gd}` : r.gd}</td>
                     <td>

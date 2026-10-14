@@ -392,7 +392,7 @@ export function SeasonResultView({
                       <td>{r.d}</td>
                       <td>{r.l}</td>
                       <td>
-                        {r.gf}:{r.ga}
+                        {`${r.gf}:${r.ga}`}
                       </td>
                       <td>{r.gd > 0 ? `+${r.gd}` : r.gd}</td>
                       <td>
