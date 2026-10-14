@@ -16,6 +16,8 @@ const builder: Messages['builder'] = {
   saveImage: 'Save image',
   savingImage: 'Creating image …',
   random: 'Random',
+  undo: 'Undo',
+  undoTitle: 'Undo the last change to the lineup (Ctrl/Cmd+Z)',
   reset: 'Reset',
   clearAll: 'Clear all',
   region: 'Region',

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { isMega } from '../config/categories';
 import { DEFAULT_FORMATION, FORMATION_IDS, FORMATIONS } from '../config/formations';
@@ -33,6 +33,9 @@ interface BuilderState {
   ssEnabled: boolean;
   teamName: string;
 }
+
+/** So viele Schritte lassen sich rückgängig machen */
+const UNDO_MAX = 30;
 
 /** Mega-Limit „unbegrenzt" */
 const MEGAS_UNLIMITED = 99;
@@ -125,19 +128,51 @@ export function Builder() {
     [pool, state.region],
   );
 
+  // Rückgängig: Änderungen an der Aufstellung (nicht an Einstellungen oder Teamnamen) merken
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const [history, setHistory] = useState<BuilderState[]>([]);
+  const change = (fn: (s: BuilderState) => BuilderState) => {
+    const prev = stateRef.current;
+    const next = fn(prev);
+    if (next === prev) return;
+    setHistory((h) => [...h.slice(-(UNDO_MAX - 1)), prev]);
+    stateRef.current = next;
+    setState(next);
+  };
+  const undo = () => {
+    const prev = history[history.length - 1];
+    if (!prev) return;
+    setHistory((h) => h.slice(0, -1));
+    stateRef.current = prev;
+    setState(prev);
+  };
+  // Strg/Cmd+Z – nicht in Eingabefeldern (dort gilt das Rückgängig des Browsers)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.key.toLowerCase() !== 'z') return;
+      const el = e.target as HTMLElement | null;
+      if (el?.closest('input, textarea, [contenteditable="true"]') || picking != null) return;
+      e.preventDefault();
+      undo();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
   const idAt = (s: BuilderState, i: number) => (i === SS_INDEX ? s.ss : s.slots[i] ?? null);
   const withSlot = (s: BuilderState, i: number, id: number | null): BuilderState =>
     i === SS_INDEX ? { ...s, ss: id } : { ...s, slots: s.slots.map((v, j) => (j === i ? id : v)) };
 
   const swap = (a: number, b: number) =>
-    setState((s) => {
+    change((s) => {
       const ida = idAt(s, a);
       const idb = idAt(s, b);
       return withSlot(withSlot(s, a, idb), b, ida);
     });
 
   const pick = (index: number, id: number | null) => {
-    setState((s) => {
+    change((s) => {
       if (id == null) return withSlot(s, index, null);
       const indices = [...s.slots.keys(), ...(s.ssEnabled ? [SS_INDEX] : [])];
       const other = indices.find((i) => i !== index && idAt(s, i) === id);
@@ -163,7 +198,7 @@ export function Builder() {
     const max = megaMax(state.megas) ?? Infinity;
     let megas = 0;
     const shuffled = shuffle(Math.random, source).filter((p) => !isMega(p) || ++megas <= max);
-    setState((s) => ({
+    change((s) => ({
       ...s,
       slots: s.slots.map((_, i) => shuffled[i]?.id ?? null),
       ss: s.ssEnabled ? shuffled[s.slots.length]?.id ?? null : s.ss,
@@ -228,17 +263,20 @@ export function Builder() {
           <button type="button" className="btn" onClick={randomize}>
             {t.builder.random}
           </button>
+          <button type="button" className="btn" onClick={undo} disabled={!history.length} title={t.builder.undoTitle}>
+            {t.builder.undo}
+          </button>
           <button
             type="button"
             className="btn"
-            onClick={() => setState((s) => ({ ...s, formation: DEFAULT_FORMATION, slots: DEFAULT_ELF, ss: DEFAULT_STATE.ss }))}
+            onClick={() => change((s) => ({ ...s, formation: DEFAULT_FORMATION, slots: DEFAULT_ELF, ss: DEFAULT_STATE.ss }))}
           >
             {t.builder.reset}
           </button>
           <button
             type="button"
             className="btn btn--ghost"
-            onClick={() => setState((s) => ({ ...s, slots: s.slots.map(() => null), ss: null }))}
+            onClick={() => change((s) => ({ ...s, slots: s.slots.map(() => null), ss: null }))}
           >
             {t.builder.clearAll}
           </button>
@@ -310,7 +348,7 @@ export function Builder() {
             wrap
             value={state.formation}
             onChange={(formation) =>
-              setState((s) => ({ ...s, formation, slots: remapFormation(s.formation, formation, s.slots) }))
+              change((s) => ({ ...s, formation, slots: remapFormation(s.formation, formation, s.slots) }))
             }
             options={FORMATION_IDS.map((f) => ({ value: f, label: f }))}
           />

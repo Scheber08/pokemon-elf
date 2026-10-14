@@ -11,6 +11,8 @@ const builder = {
   saveImage: 'Bild speichern',
   savingImage: 'Erstelle Bild …',
   random: 'Zufällig',
+  undo: 'Rückgängig',
+  undoTitle: 'Letzte Änderung an der Aufstellung zurücknehmen (Strg/Cmd+Z)',
   reset: 'Zurücksetzen',
   clearAll: 'Alles leeren',
   region: 'Region',
