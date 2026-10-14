@@ -36,7 +36,7 @@ import {
   rerollsUsedOf,
 } from '../src/lib/draftEngine';
 import { buildScale } from '../src/lib/fit';
-import { cleanSettingsPatch, LOBBY_SYNC_MS, lobbyFields, lobbyPoolFields, type LobbyRow } from '../server/draftCore';
+import { cleanSettingsPatch, LOBBY_SYNC_MS, SETTING_KEYS, lobbyFields, lobbyPoolFields, type LobbyRow } from '../server/draftCore';
 import { handleApi, type Env } from '../server/handler';
 import { D1Shim } from './d1shim';
 import { FakeNamespace, FakeRoom, type FakeSocket } from './fakeSocket';
@@ -788,6 +788,12 @@ describe('Einstellungen: neue Schlüssel streng geprüft, ältere angenommen', (
     expect(Object.getPrototypeOf(sneaky.rerolls)).toBe(Object.prototype);
     expect(() => cleanSettingsPatch([])).toThrow('Ungültige Einstellungen');
     expect(() => cleanSettingsPatch(null)).toThrow('Ungültige Einstellungen');
+  });
+
+  it('jede Einstellung kommt durch (sonst verwirft der Server sie still)', () => {
+    for (const key of Object.keys(DEFAULT_DRAFT_SETTINGS)) expect(SETTING_KEYS, key).toContain(key);
+    expect(cleanSettingsPatch({ shinies: false })).toEqual({ shinies: false });
+    expect(() => cleanSettingsPatch({ shinies: 'nein' })).toThrow('Ungültige Einstellung');
   });
 });
 
