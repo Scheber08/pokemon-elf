@@ -238,7 +238,7 @@ const online = {
   hintRoll: (region: string, type: string) => ` Gesucht: ${region} + ${type}.`,
   /** Schnellstart-Vorlagen beim Erstellen */
   presets: 'Schnellstart',
-  presetName: { classic: 'Klassisch', allRegions: 'Alle Regionen', megaChaos: 'Mega-Chaos', blitz: 'Blitz', cup: 'KO-Turnier' } as Record<
+  presetName: { classic: 'Klassisch', allRegions: 'Alle Regionen', megaChaos: 'Mega-Chaos', blitz: 'Blitz', cup: 'KO-Turnier', shinyParty: 'Shiny-Party' } as Record<
     DraftPresetId,
     string
   >,
@@ -248,6 +248,7 @@ const online = {
     megaChaos: 'Alle Generationen, Megas (2 pro Team) und Formen, jeder Pick gewürfelt',
     blitz: 'Kanto und Johto, ein Wurf pro Runde ohne Rerolls, 30 s pro Pick',
     cup: 'Gen. 1–3, ein Legendäres pro Team – danach KO-Turnier mit Gruppenphase',
+    shinyParty: 'Alle Generationen ohne Legendäre, 10 % Shiny-Chance je Pick – schwache Pokémon lohnen sich',
   } as Record<DraftPresetId, string>,
   /** Emoji-Reaktionen */
   reactLabel: 'Reaktion an alle',

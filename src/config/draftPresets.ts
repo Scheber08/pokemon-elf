@@ -6,7 +6,7 @@
 import { DRAFT_ALL_GENS, type DraftSettings } from '../lib/api/draftContract';
 import { TYPE_KEYS } from './pokemonTypes';
 
-export type DraftPresetId = 'classic' | 'allRegions' | 'megaChaos' | 'blitz' | 'cup';
+export type DraftPresetId = 'classic' | 'allRegions' | 'megaChaos' | 'blitz' | 'cup' | 'shinyParty';
 
 export const DRAFT_PRESETS: Record<DraftPresetId, Partial<DraftSettings>> = {
   classic: {
@@ -22,6 +22,8 @@ export const DRAFT_PRESETS: Record<DraftPresetId, Partial<DraftSettings>> = {
     roll: 'off',
     pickSeconds: 60,
     snake: true,
+    shinies: true,
+    shinyParty: false,
   },
   allRegions: {
     gens: [...DRAFT_ALL_GENS],
@@ -36,6 +38,8 @@ export const DRAFT_PRESETS: Record<DraftPresetId, Partial<DraftSettings>> = {
     roll: 'off',
     pickSeconds: 60,
     snake: true,
+    shinies: true,
+    shinyParty: false,
   },
   megaChaos: {
     gens: [...DRAFT_ALL_GENS],
@@ -52,6 +56,8 @@ export const DRAFT_PRESETS: Record<DraftPresetId, Partial<DraftSettings>> = {
     rerolls: { type: 1, region: 1 },
     pickSeconds: 60,
     snake: true,
+    shinies: true,
+    shinyParty: false,
   },
   blitz: {
     gens: [1, 2],
@@ -67,6 +73,8 @@ export const DRAFT_PRESETS: Record<DraftPresetId, Partial<DraftSettings>> = {
     rerolls: { type: 0, region: 0 },
     pickSeconds: 30,
     snake: true,
+    shinies: true,
+    shinyParty: false,
   },
   cup: {
     gens: [1, 2, 3],
@@ -81,8 +89,26 @@ export const DRAFT_PRESETS: Record<DraftPresetId, Partial<DraftSettings>> = {
     roll: 'off',
     pickSeconds: 60,
     snake: true,
+    shinies: true,
+    shinyParty: false,
     format: 'cup',
     cupGroups: true,
+  },
+  shinyParty: {
+    gens: [...DRAFT_ALL_GENS],
+    types: [...TYPE_KEYS],
+    legendary: false,
+    mythical: false,
+    maxLegends: null,
+    ultraBeasts: true,
+    maxUltraBeasts: 1,
+    forms: true,
+    megas: false,
+    roll: 'off',
+    pickSeconds: 60,
+    snake: true,
+    shinies: true,
+    shinyParty: true,
   },
 };
 
