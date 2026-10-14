@@ -367,6 +367,23 @@ const draft: Messages['draft'] = {
       `Level on points with ${names}, same goal difference and goals scored – decided on ${label}`,
     level: (names) => `Level on points with ${names}`,
   },
+  stats: {
+    title: 'Statistics',
+    tab: { goals: 'Goals', assists: 'Assists', points: 'Points', teams: 'Teams' },
+    shots: 'Shots',
+    shotsTitle: 'Shots per match',
+    onTarget: 'On target',
+    onTargetTitle: 'Shots on target per match',
+    xgTitle: 'Expected goals (actual goals in brackets)',
+    xgaTitle: 'Expected goals against (actual in brackets)',
+    possession: 'Possession',
+    possessionTitle: 'Average possession',
+    teamsNote: 'Sorted by xG difference. Only matches with stats (new leagues).',
+    split: (goals, assists) => `${goals} goals, ${assists} assists`,
+    short: (goals, assists) => `(${goals}+${assists})`,
+    empty: 'No entries yet.',
+  },
+
   report: {
     title: 'Match report',
     open: (home, away, score) => `Open match report ${home} vs ${away} (${score})`,

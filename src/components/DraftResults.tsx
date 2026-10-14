@@ -16,6 +16,7 @@ import { Confetti } from './Confetti';
 import { CupBracket, CupGroups, cupStatusText } from './CupBracket';
 import { FixtureList, FormDots } from './LeagueTicker';
 import { useMatchReport } from './MatchReport';
+import { SeasonStats } from './SeasonStats';
 import { Pitch } from './Pitch';
 import { PlaceChart } from './PlaceChart';
 import { SaveImageButton } from './SaveImageButton';
@@ -421,6 +422,8 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
             </ol>
           )}
         </section>
+
+        <SeasonStats league={league} you={you} nameOf={nameOf} tabs={['assists', 'points', 'teams']} />
 
         {!cup && table.length > 1 && (
           <section className="card" aria-labelledby="draft-results-records">

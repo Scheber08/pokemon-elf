@@ -142,6 +142,92 @@ export function topScorers(league: LeagueResult, byTeam?: number | null): TopSco
   return [...tally.values()].sort((a, b) => b.goals - a.goals || a.teamIndex - b.teamIndex || a.pokemonId - b.pokemonId);
 }
 
+/** Tore und Vorlagen eines Pokémon (je Team) */
+export interface PlayerTally {
+  pokemonId: number;
+  teamIndex: number;
+  goals: number;
+  assists: number;
+}
+
+/** Tore und Vorlagen aller Pokémon mit mindestens einem davon (unsortiert). */
+export function playerTallies(league: Pick<LeagueResult, 'matches'>): PlayerTally[] {
+  const tally = new Map<string, PlayerTally>();
+  const get = (teamIndex: number, pokemonId: number) => {
+    const key = `${teamIndex}:${pokemonId}`;
+    let s = tally.get(key);
+    if (!s) {
+      s = { pokemonId, teamIndex, goals: 0, assists: 0 };
+      tally.set(key, s);
+    }
+    return s;
+  };
+  for (const m of league.matches) {
+    for (const [team, goals] of [
+      [m.home, m.homeScorers],
+      [m.away, m.awayScorers],
+    ] as const) {
+      for (const g of goals) {
+        get(team, g.pokemonId).goals++;
+        if (g.assist != null) get(team, g.assist).assists++;
+      }
+    }
+  }
+  return [...tally.values()];
+}
+
+/** Statistik eines Teams über alle Spiele mit Details (Match.stats) */
+export interface TeamTally {
+  team: number;
+  games: number;
+  shots: number;
+  onTarget: number;
+  /** Erwartete Tore für bzw. gegen (Summe) */
+  xg: number;
+  xga: number;
+  goals: number;
+  against: number;
+  /** Ø Ballbesitz in Prozent */
+  possession: number;
+}
+
+/** Teamstatistik – nur Spiele mit Details zählen; Teams ohne solche Spiele fehlen. */
+export function teamTallies(league: Pick<LeagueResult, 'matches'>): TeamTally[] {
+  const rows = new Map<number, TeamTally & { poss: number }>();
+  const row = (team: number) => {
+    let r = rows.get(team);
+    if (!r) {
+      r = { team, games: 0, shots: 0, onTarget: 0, xg: 0, xga: 0, goals: 0, against: 0, possession: 0, poss: 0 };
+      rows.set(team, r);
+    }
+    return r;
+  };
+  for (const m of league.matches) {
+    const s = m.stats;
+    if (!s) continue;
+    for (const [team, i, gf, ga, poss] of [
+      [m.home, 0, m.hg, m.ag, s.possession],
+      [m.away, 1, m.ag, m.hg, 100 - s.possession],
+    ] as const) {
+      const r = row(team);
+      r.games++;
+      r.shots += s.shots[i];
+      r.onTarget += s.onTarget[i];
+      r.xg += s.xg[i];
+      r.xga += s.xg[1 - i];
+      r.goals += gf;
+      r.against += ga;
+      r.poss += poss;
+    }
+  }
+  return [...rows.values()].map(({ poss, ...r }) => ({
+    ...r,
+    xg: Math.round(r.xg * 10) / 10,
+    xga: Math.round(r.xga * 10) / 10,
+    possession: Math.round(poss / r.games),
+  }));
+}
+
 /** Ergebnis eines Spiels aus Sicht eines Teams – oder null, wenn es nicht beteiligt ist. */
 export function matchFor(
   matches: Match[],

@@ -15,6 +15,7 @@ import { PosBadge } from './Badges';
 import { BenchRow } from './BenchRow';
 import { FixtureList } from './LeagueTicker';
 import { useMatchReport } from './MatchReport';
+import { SeasonStats } from './SeasonStats';
 import { Pitch, SS_INDEX, type SlotState } from './Pitch';
 import '../styles/draft.css';
 
@@ -171,6 +172,8 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           <FixtureList matches={last} you={you} nameOf={nameOf} pokemonName={pokemonName} onOpen={report.open} />
         </section>
       )}
+
+      {m.played > 0 && <SeasonStats league={league} you={you} nameOf={nameOf} />}
 
       <section className="card" aria-labelledby="manager-table">
         <h2 id="manager-table" className="section-title">

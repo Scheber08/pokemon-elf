@@ -168,3 +168,29 @@ describe('Spieldetails (DRAFT_MODEL)', () => {
     expect(storedLeague(broken, 18)!.matches[0].stats).toBeUndefined();
   });
 });
+
+describe('Saison-Statistik', () => {
+  it('Tore und Vorlagen je Pokémon, Teamwerte nur aus Spielen mit Details', async () => {
+    const { playerTallies, teamTallies } = await import('../src/lib/leagueTimeline');
+    const m = (home: number, away: number, hg: number, ag: number, extra = {}) => ({
+      round: 1, home, away, hg, ag,
+      homeScorers: Array.from({ length: hg }, () => ({ pokemonId: 10, pos: 'ST' as const, assist: 11 })),
+      awayScorers: Array.from({ length: ag }, () => ({ pokemonId: 20, pos: 'ST' as const })),
+      ...extra,
+    });
+    const league = {
+      matches: [
+        m(0, 1, 2, 1, { stats: { shots: [10, 6], onTarget: [5, 2], possession: 60, xg: [1.8, 0.7] } }),
+        m(1, 0, 0, 1, { stats: { shots: [8, 12], onTarget: [3, 4], possession: 40, xg: [0.9, 1.5] } }),
+        m(0, 1, 1, 0),
+      ],
+    };
+    const players = playerTallies(league);
+    expect(players.find((p) => p.pokemonId === 10 && p.teamIndex === 0)).toMatchObject({ goals: 2 + 1, assists: 0 });
+    expect(players.find((p) => p.pokemonId === 11)).toMatchObject({ goals: 0, assists: 3 });
+    // Spiel 2: Team 0 ist Gast, Team 1 trifft nicht – die Gast-Tore (pokemonId 20) zählen für Team 0
+    expect(players.find((p) => p.pokemonId === 20 && p.teamIndex === 0)).toMatchObject({ goals: 1 });
+    const t0 = teamTallies(league).find((r) => r.team === 0)!;
+    expect(t0).toMatchObject({ games: 2, shots: 22, onTarget: 9, xg: 3.3, xga: 1.6, goals: 3, against: 1, possession: 60 });
+  });
+});

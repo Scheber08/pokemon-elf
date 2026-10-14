@@ -401,6 +401,24 @@ const draft = {
     level: (names: string) => `Punktgleich mit ${names}`,
   },
   /** KO-Turnier (Ticker und Ergebnis) */
+  // ---------------------------------------------------------------- Saison-Statistik
+  stats: {
+    title: 'Statistiken',
+    tab: { goals: 'Tore', assists: 'Vorlagen', points: 'Scorer', teams: 'Teams' },
+    shots: 'Schüsse',
+    shotsTitle: 'Schüsse pro Spiel',
+    onTarget: 'Aufs Tor',
+    onTargetTitle: 'Schüsse aufs Tor pro Spiel',
+    xgTitle: 'Erwartete Tore (in Klammern: echte Tore)',
+    xgaTitle: 'Erwartete Gegentore (in Klammern: echte Gegentore)',
+    possession: 'Ballbesitz',
+    possessionTitle: 'Durchschnittlicher Ballbesitz',
+    teamsNote: 'Sortiert nach xG-Differenz. Nur Spiele mit Statistik (neue Ligen).',
+    split: (goals: number, assists: number) => `${goals} Tore, ${assists} Vorlagen`,
+    short: (goals: number, assists: number) => `(${goals}+${assists})`,
+    empty: 'Noch keine Einträge.',
+  },
+
   // ---------------------------------------------------------------- Spielbericht
   report: {
     title: 'Spielbericht',
