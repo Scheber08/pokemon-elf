@@ -1618,6 +1618,8 @@ function managerView(m: ManagerState, season: DraftSeason | null, you: string | 
     // Transfer-Wünsche sind privat: nur der eigene
     ...(you ? { claim: m.claims?.[you] ?? null } : {}),
     transfers: m.transfers ?? [],
+    // Tausch-Angebote nur für die beiden beteiligten Teams
+    ...(you ? { offers: (m.offers ?? []).filter((o) => o.from === you || o.to === you) } : {}),
     ...(m.playedLineups ? { playedLineups: m.playedLineups } : {}),
   };
 }

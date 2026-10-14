@@ -13,7 +13,7 @@
 import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { POSITIONS } from '../config/positions';
 import type { FormationId, Pokemon, PosCode } from '../types';
-import { DRAFT_LIMITS, type DraftTeam, type ManagerClaim, type ManagerLineup, type ManagerTransfer } from './api/draftContract';
+import { DRAFT_LIMITS, type DraftTeam, type ManagerClaim, type ManagerLineup, type ManagerOffer, type ManagerTransfer } from './api/draftContract';
 import { bestEleven } from './bestEleven';
 import {
   centerFillRatings,
@@ -70,6 +70,10 @@ export interface ManagerState {
   transfers?: ManagerTransfer[];
   /** Gespielte Aufstellungen je Spieltag („1", „2", …) und Team-ID – für die 2D-Ansicht */
   playedLineups?: Record<string, Record<string, ManagerPlayedLineup>>;
+  /** Offene Tausch-Angebote zwischen gedrafteten Teams */
+  offers?: ManagerOffer[];
+  /** Nächste Angebots-ID */
+  offerSeq?: number;
 }
 
 /** Aufstellung, mit der ein Team an einem Spieltag gespielt hat */
@@ -299,7 +303,7 @@ function teamForm(seed: number | string, teams: number, matchday: number): numbe
 export function playMatchday(before: DraftState, list: Pokemon[], scale: Scale): DraftState {
   if (before.phase !== 'season' || !before.manager || !before.league || before.manager.played >= before.manager.total) return before;
   // Zuerst der Transfermarkt (Wünsche in Tabellen-Reihenfolge), dann wird gespielt
-  const state = processClaims(before, list, scale);
+  const state = pruneOffers(processClaims(before, list, scale), list);
   const m = state.manager!;
   if (!state.league) return state;
   const byId = new Map(list.map((p) => [p.id, p]));
@@ -483,3 +487,126 @@ export function processClaims(state: DraftState, list: Pokemon[], scale: Scale):
   const { claims: _done, ...rest } = next.manager!;
   return { ...next, manager: { ...rest, transfers: transfers.slice(-TRANSFERS_KEPT) } };
 }
+
+// ---------------------------------------------------------------- Tausch zwischen Teams
+
+/** So viele offene Angebote darf ein Team gleichzeitig haben */
+export const OFFERS_PER_TEAM = 3;
+/** CPU-Teams nehmen einen Tausch an, wenn sie damit so viele Fit-Punkte gewinnen */
+const CPU_TRADE_GAIN = 3;
+
+/** Grund, warum dieser Tausch (gerade) nicht geht – oder null. */
+export function tradeError(state: Pick<DraftState, 'settings' | 'teams'>, offer: Omit<ManagerOffer, 'id'>, list: Pokemon[]): string | null {
+  const from = state.teams.find((t) => t.id === offer.from);
+  const to = state.teams.find((t) => t.id === offer.to);
+  if (!from || !to || from.id === to.id) return 'Dieses Team gibt es nicht';
+  if (!rosterOf(from).includes(offer.give)) return 'Abgeben kannst du nur Pokémon aus deinem Kader';
+  if (!rosterOf(to).includes(offer.get)) return 'Dieses Pokémon ist nicht (mehr) in diesem Kader';
+  const settings = upgradeSettings(state.settings);
+  const byId = new Map(list.map((p) => [p.id, p]));
+  for (const after of [swapRoster(from, offer.give, offer.get), swapRoster(to, offer.get, offer.give)]) {
+    const roster = rosterOf(after).flatMap((id) => byId.get(id) ?? []);
+    for (const kind of LIMIT_KINDS) {
+      const max = limitOf(settings, kind);
+      if (max != null && roster.filter((x) => hasKind(x, kind)).length > max) return 'Damit wäre ein Limit pro Team überschritten';
+    }
+  }
+  return null;
+}
+
+/** Tausch vollziehen: Kader und Aufstellungen beider Teams, Transfer-Liste; Angebote mit den beiden Pokémon verfallen. */
+function executeTrade(state: DraftState, offer: Omit<ManagerOffer, 'id'>): DraftState {
+  const m = state.manager!;
+  const k = m.played + 1;
+  const swapLineup = (l: ManagerLineup | undefined, out: number, inn: number) =>
+    l && { ...l, slots: l.slots.map((id) => (id === out ? inn : id)), ss: l.ss === out ? inn : l.ss };
+  const lineups = { ...m.lineups };
+  const lf = swapLineup(lineups[offer.from], offer.give, offer.get);
+  const lt = swapLineup(lineups[offer.to], offer.get, offer.give);
+  if (lf) lineups[offer.from] = lf;
+  if (lt) lineups[offer.to] = lt;
+  const touched = new Set([offer.give, offer.get]);
+  const transfers = [
+    ...(m.transfers ?? []),
+    { matchday: k, teamId: offer.from, in: offer.get, out: offer.give, with: offer.to },
+    { matchday: k, teamId: offer.to, in: offer.give, out: offer.get, with: offer.from },
+  ];
+  return {
+    ...state,
+    teams: state.teams.map((t) =>
+      t.id === offer.from ? swapRoster(t, offer.give, offer.get) : t.id === offer.to ? swapRoster(t, offer.get, offer.give) : t,
+    ),
+    manager: {
+      ...m,
+      lineups,
+      offers: (m.offers ?? []).filter((o) => !touched.has(o.give) && !touched.has(o.get)),
+      transfers: transfers.slice(-TRANSFERS_KEPT),
+    },
+  };
+}
+
+/**
+ * Tausch anbieten (eigenes `give` gegen `get` von Team `to`). Ein CPU-Team antwortet sofort: Es
+ * nimmt an, wenn es damit klar gewinnt, sonst Fehler trade_declined. Fehler: not_joined, not_season,
+ * bad_trade, too_many_offers.
+ */
+export function makeOffer(
+  state: DraftState,
+  deviceId: string,
+  input: { to: string; give: number; get: number },
+  list: Pokemon[],
+  scale: Scale,
+): DraftState {
+  const teamId = teamOfDevice(state, deviceId) ?? fail('not_joined', 'Du bist in dieser Liga nicht dabei');
+  const m = state.manager;
+  if (state.phase !== 'season' || !m || m.played >= m.total) return fail('not_season', 'Gerade läuft keine Manager-Saison');
+  const offer = { from: teamId, to: input.to, give: input.give, get: input.get };
+  const err = tradeError(state, offer, list);
+  if (err) fail('bad_trade', err);
+  const offers = m.offers ?? [];
+  if (offers.some((o) => o.from === offer.from && o.to === offer.to && o.give === offer.give && o.get === offer.get)) return state;
+  const to = state.teams.find((t) => t.id === offer.to)!;
+  if (to.cpu) {
+    const byId = new Map(list.map((p) => [p.id, p]));
+    const gain = (id: number) => {
+      const p = byId.get(id);
+      return p ? bestFit(p, to.formation, scale) : 0;
+    };
+    if (gain(offer.give) < gain(offer.get) + CPU_TRADE_GAIN) fail('trade_declined', 'Das CPU-Team lehnt den Tausch ab');
+    return executeTrade(state, offer);
+  }
+  if (offers.filter((o) => o.from === teamId).length >= OFFERS_PER_TEAM) {
+    fail('too_many_offers', `Höchstens ${OFFERS_PER_TEAM} offene Angebote – ziehe erst eins zurück`);
+  }
+  const id = (m.offerSeq ?? 0) + 1;
+  return { ...state, manager: { ...m, offers: [...offers, { id, ...offer }], offerSeq: id } };
+}
+
+/**
+ * Auf ein Angebot antworten: das angefragte Team nimmt an oder lehnt ab, der Anbieter kann es
+ * zurückziehen (accept = false). Fehler: not_joined, not_season, no_offer, bad_trade.
+ */
+export function answerOffer(state: DraftState, deviceId: string, input: { id: number; accept: boolean }, list: Pokemon[]): DraftState {
+  const teamId = teamOfDevice(state, deviceId) ?? fail('not_joined', 'Du bist in dieser Liga nicht dabei');
+  const m = state.manager;
+  if (state.phase !== 'season' || !m) return fail('not_season', 'Gerade läuft keine Manager-Saison');
+  const offer = (m.offers ?? []).find((o) => o.id === input.id && (o.to === teamId || o.from === teamId));
+  if (!offer) return fail('no_offer', 'Dieses Angebot gibt es nicht mehr');
+  const rest = (m.offers ?? []).filter((o) => o.id !== offer.id);
+  if (!input.accept || offer.to !== teamId) return { ...state, manager: { ...m, offers: rest } };
+  const err = tradeError(state, offer, list);
+  if (err) {
+    // Hinfällig (z. B. ein Pokémon ist inzwischen weg): Angebot verfällt
+    fail('bad_trade', err);
+  }
+  return executeTrade({ ...state, manager: { ...m, offers: rest } }, offer);
+}
+
+/** Nach Transfers zum Anpfiff: hinfällige Angebote verfallen. */
+export function pruneOffers(state: DraftState, list: Pokemon[]): DraftState {
+  const m = state.manager;
+  if (!m?.offers?.length) return state;
+  const offers = m.offers.filter((o) => !tradeError(state, o, list));
+  return offers.length === m.offers.length ? state : { ...state, manager: { ...m, offers } };
+}
+

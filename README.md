@@ -184,7 +184,11 @@ beste Elf zur Tagesform). Jedes Pokémon hat je Spieltag eine Tagesform von −2
 Liga-Seed, vorher sichtbar), die seinen Fit um 5 Punkte je Stufe verschiebt. Löschung erst 14 Tage nach dem
 letzten Spieltag. **Transfermarkt**: Jedes Team kann pro Spieltag ein freies Pokémon (Pool ohne Gedraftete)
 gegen eins aus dem Kader wünschen (Nachricht `transfer`, privat); zum Anpfiff vergibt der Server in
-Tabellen-Reihenfolge (Letzter zuerst), CPU-Teams holen bei klarem Gewinn selbst jemanden. Die Manager-Saison hat
+Tabellen-Reihenfolge (Letzter zuerst), CPU-Teams holen bei klarem Gewinn selbst jemanden. **Tausch zwischen Teams**:
+Nachricht `offer` (eigenes Pokémon gegen eins aus einem anderen Kader, höchstens 3 offene Angebote); CPU-Teams
+antworten sofort (nur bei klarem Gewinn), Mitspieler mit `offer-reply` (annehmen/ablehnen, Anbieter zieht zurück).
+Ein Tausch gilt sofort (Kader, Aufstellungen, Protokoll mit `with`); Angebote sind nur für die beiden Teams sichtbar
+und verfallen, sobald eins der Pokémon weg ist. Die Manager-Saison hat
 einen eigenen Menüpunkt (`/manager`, `src/pages/Manager.tsx`: Liga anlegen, beitreten, eigene Manager-Ligen);
 mit Hinweisen meldet der Browser jeden gespielten Spieltag und erinnert 5 Minuten vor dem Anpfiff.
 Öffentliche Lobbys: `GET /api/drafts/public`. Ligen werden nach 14 Tagen gelöscht. Vertrag und Limits:

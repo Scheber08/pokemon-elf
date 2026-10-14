@@ -431,6 +431,13 @@ const online = {
       no_reroll: 'Keine Rerolls mehr übrig',
       no_other_roll: 'Kein anderer Wurf möglich',
       no_slot: 'Kein Platz mehr frei',
+      not_season: 'Gerade läuft keine Manager-Saison',
+      bad_lineup: 'Diese Aufstellung geht nicht',
+      bad_transfer: 'Dieser Transfer geht nicht',
+      bad_trade: 'Dieser Tausch geht nicht',
+      trade_declined: 'Das CPU-Team lehnt den Tausch ab',
+      too_many_offers: 'Zu viele offene Angebote – ziehe erst eins zurück',
+      no_offer: 'Dieses Angebot gibt es nicht mehr',
     },
     /** Unbekannter Code mit unbekannter Meldung */
     unknown: 'Unbekannter Fehler',

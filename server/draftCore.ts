@@ -69,7 +69,7 @@ import {
 } from '../src/lib/draftEngine';
 import type { Scale } from '../src/lib/fit';
 import { lookFromJson, type TrainerLook } from '../src/lib/trainer';
-import { nextKickoff, playDueMatchdays, seasonEndsAt, setClaim, setLineup, startManagerSeason } from '../src/lib/manager';
+import { answerOffer, makeOffer, nextKickoff, playDueMatchdays, seasonEndsAt, setClaim, setLineup, startManagerSeason } from '../src/lib/manager';
 import type { FormationId, Pokemon, TypeKey } from '../src/types';
 import { authenticateDevice, HOUR_MS, normalizeIp } from './auth';
 import { randomHex, sha256Hex, timingSafeEqual } from './crypto';
@@ -417,6 +417,10 @@ export function parseClientMessage(raw: unknown): ParsedMessage {
       if (!idOrNull(d.in) || !idOrNull(d.out)) return badMessage();
       return ok({ type: 'transfer', in: d.in as number | null, out: d.out as number | null });
     }
+    case 'offer':
+      return isTeamId(d.to) && isInt(d.give) && isInt(d.get) ? ok({ type: 'offer', to: d.to, give: d.give, get: d.get }) : badMessage();
+    case 'offer-reply':
+      return isInt(d.id) && isBool(d.accept) ? ok({ type: 'offer-reply', id: d.id, accept: d.accept }) : badMessage();
     case 'react':
       return (DRAFT_REACTIONS as readonly unknown[]).includes(d.emoji) ? ok({ type: 'react', emoji: d.emoji as DraftReaction }) : badMessage();
     case 'queue':
@@ -1556,6 +1560,11 @@ export class DraftRoomCore {
       case 'transfer':
         // Wie bei der Aufstellung: Überfälliges erst spielen – der Wunsch gilt zum nächsten Anpfiff
         return setClaim(playDueMatchdays(state, now, list, scale), deviceId, { in: msg.in, out: msg.out }, list);
+      case 'offer':
+        // Tausch sofort (CPU) bzw. als Angebot – Überfälliges erst spielen, wie beim Transfer
+        return makeOffer(playDueMatchdays(state, now, list, scale), deviceId, { to: msg.to, give: msg.give, get: msg.get }, list, scale);
+      case 'offer-reply':
+        return answerOffer(playDueMatchdays(state, now, list, scale), deviceId, { id: msg.id, accept: msg.accept }, list);
       case 'lineup':
         // Ein überfälliger Spieltag (Alarm noch nicht gelaufen) wird erst gespielt – die Aufstellung gilt für den nächsten
         return setLineup(playDueMatchdays(state, now, list, scale), deviceId, msg, list, scale);

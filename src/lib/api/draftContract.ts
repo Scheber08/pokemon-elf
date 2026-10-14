@@ -286,6 +286,17 @@ export interface ManagerTransfer {
   teamId: string;
   in: number;
   out: number;
+  /** Tausch mit diesem Team (fehlt: freies Pokémon vom Transfermarkt) */
+  with?: string;
+}
+
+/** Tausch-Angebot zwischen zwei gedrafteten Teams: `from` gibt `give` und bekommt `get` von `to` */
+export interface ManagerOffer {
+  id: number;
+  from: string;
+  to: string;
+  give: number;
+  get: number;
 }
 
 /** Manager-Saison im Schnappschuss */
@@ -304,6 +315,8 @@ export interface ManagerSnapshot {
   claim?: ManagerClaim | null;
   /** Vollzogene Transfers, älteste zuerst (fehlt bei älteren Ständen) */
   transfers?: ManagerTransfer[];
+  /** Offene Tausch-Angebote von bzw. an das eigene Team (nur im eigenen Schnappschuss) */
+  offers?: ManagerOffer[];
   /** Gespielte Aufstellungen je Spieltag („1", …) und Team-ID (fehlt bei älteren Ständen) */
   playedLineups?: Record<string, Record<string, Pick<ManagerLineup, 'formation' | 'slots'>>>;
 }
@@ -487,6 +500,8 @@ export type DraftClientMessage =
    * (Letzter zuerst); ist `in` dann weg, verfällt der Wunsch.
    */
   | { type: 'transfer'; in: number | null; out: number | null }
+  | { type: 'offer'; to: string; give: number; get: number }
+  | { type: 'offer-reply'; id: number; accept: boolean }
   /** Emoji-Reaktion an alle (nur Mitglieder; wird nicht gespeichert) */
   | { type: 'react'; emoji: DraftReaction }
   | { type: 'ping' };

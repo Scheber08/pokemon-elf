@@ -33,8 +33,12 @@ import {
   freeAgents,
   setClaim,
   processClaims,
+  makeOffer,
+  answerOffer,
+  tradeError,
+  OFFERS_PER_TEAM,
 } from '../src/lib/manager';
-import { expiresAt } from '../server/draftCore';
+import { expiresAt, parseClientMessage } from '../server/draftCore';
 import { handleApi, type Env } from '../server/handler';
 import { D1Shim } from './d1shim';
 import { FakeNamespace, FakeRoom, type FakeSocket } from './fakeSocket';
@@ -268,6 +272,93 @@ describe('Transfermarkt', () => {
     const place = (id: string) => s.league!.table.findIndex((r) => r.team === s.teams.findIndex((t) => t.id === id));
     const worse = place('h') > place('c1') ? 'h' : 'c1';
     expect(after.manager!.transfers!.filter((x) => x.in === inn)).toEqual([expect.objectContaining({ teamId: worse })]);
+  });
+});
+
+describe('Tausch zwischen Teams', () => {
+  /** Saison, in der c1 ein Mensch ist (Gerät dev-c) */
+  const humans = (): DraftState => {
+    const s = startManagerSeason(drafted(), ALL, SCALE);
+    return { ...s, teams: s.teams.map((t) => (t.id === 'c1' ? { ...t, cpu: false } : t)), owners: { ...s.owners, c1: 'dev-c' } };
+  };
+  const rosters = (s: DraftState) => ({ h: rosterOf(s.teams.find((t) => t.id === 'h')!), c: rosterOf(s.teams.find((t) => t.id === 'c1')!) });
+
+  it('Angebot prüfen, nur für Beteiligte sichtbar, annehmen tauscht Kader, Aufstellung und Protokoll', () => {
+    const s = humans();
+    const { h, c } = rosters(s);
+    const give = s.manager!.lineups.h.slots[0];
+    const get = s.manager!.lineups.c1.slots[0];
+    expect(() => makeOffer(s, 'dev-h', { to: 'c1', give: c[0], get }, ALL, SCALE)).toThrow(/Kader/);
+    expect(() => makeOffer(s, 'dev-h', { to: 'c1', give, get: h[1] }, ALL, SCALE)).toThrow(/nicht \(mehr\)/);
+    expect(() => makeOffer(s, 'dev-h', { to: 'h', give, get: h[1] }, ALL, SCALE)).toThrow();
+    const o = makeOffer(s, 'dev-h', { to: 'c1', give, get }, ALL, SCALE);
+    expect(o.manager!.offers).toEqual([{ id: 1, from: 'h', to: 'c1', give, get }]);
+    // gleiches Angebot nochmal: nichts passiert
+    expect(makeOffer(o, 'dev-h', { to: 'c1', give, get }, ALL, SCALE)).toBe(o);
+    expect(snapshotOf(o, 'h', 0).manager!.offers).toHaveLength(1);
+    expect(snapshotOf(o, 'c1', 0).manager!.offers).toHaveLength(1);
+    expect(snapshotOf(o, null, 0).manager).not.toHaveProperty('offers');
+    // Der Anbieter kann nicht selbst annehmen (nur zurückziehen)
+    expect(answerOffer(o, 'dev-h', { id: 1, accept: true }, ALL).manager!.offers).toEqual([]);
+    const done = answerOffer(o, 'dev-c', { id: 1, accept: true }, ALL);
+    const after = rosters(done);
+    expect(after.h).toContain(get);
+    expect(after.h).not.toContain(give);
+    expect(after.c).toContain(give);
+    expect(done.manager!.lineups.h.slots[0]).toBe(get);
+    expect(done.manager!.lineups.c1.slots[0]).toBe(give);
+    expect(done.manager!.transfers).toEqual([
+      { matchday: 1, teamId: 'h', in: get, out: give, with: 'c1' },
+      { matchday: 1, teamId: 'c1', in: give, out: get, with: 'h' },
+    ]);
+    expect(done.manager!.offers).toEqual([]);
+    expect(() => answerOffer(done, 'dev-c', { id: 1, accept: true }, ALL)).toThrow(/nicht mehr/);
+  });
+
+  it('ablehnen, Höchstzahl offener Angebote, hinfällige Angebote verfallen zum Anpfiff', () => {
+    const s = humans();
+    const { h, c } = rosters(s);
+    let st: DraftState = s;
+    for (let i = 0; i < OFFERS_PER_TEAM; i++) st = makeOffer(st, 'dev-h', { to: 'c1', give: h[i], get: c[i] }, ALL, SCALE);
+    expect(() => makeOffer(st, 'dev-h', { to: 'c1', give: h[5], get: c[5] }, ALL, SCALE)).toThrow(/Höchstens/);
+    st = answerOffer(st, 'dev-c', { id: 1, accept: false }, ALL);
+    expect(st.manager!.offers!.map((o) => o.id)).toEqual([2, 3]);
+    // Angebot 2 wird hinfällig, wenn h sein Pokémon über den Transfermarkt abgibt
+    st = setClaim(st, 'dev-h', { in: freeAgents(st, ALL)[0].id, out: h[1] }, ALL);
+    const played = playMatchday(st, ALL, SCALE);
+    expect(played.manager!.offers!.map((o) => o.id)).toEqual([3]);
+    expect(tradeError(played, played.manager!.offers![0], ALL)).toBeNull();
+  });
+
+  it('Nachrichten offer / offer-reply: nur gültige Form', () => {
+    expect(parseClientMessage(JSON.stringify({ type: 'offer', to: 'c1', give: 6, get: 25 }))).toMatchObject({ ok: true });
+    expect(parseClientMessage(JSON.stringify({ type: 'offer', to: 'c1', give: '6', get: 25 })).ok).toBe(false);
+    expect(parseClientMessage(JSON.stringify({ type: 'offer-reply', id: 2, accept: true }))).toMatchObject({ ok: true });
+    expect(parseClientMessage(JSON.stringify({ type: 'offer-reply', id: 2, accept: 'ja' })).ok).toBe(false);
+  });
+
+  it('CPU-Team antwortet sofort: klarer Gewinn → Tausch, sonst Absage', async () => {
+    const { positionFit } = await import('../src/lib/fit');
+    const { FORMATIONS } = await import('../src/config/formations');
+    const s = startManagerSeason(drafted(), ALL, SCALE);
+    const { h, c } = rosters(s);
+    const cpu = s.teams.find((t) => t.id === 'c1')!;
+    // Wert für das CPU-Team: bester Fit über die Positionen seiner Formation
+    const value = (id: number) => Math.max(...FORMATIONS[cpu.formation].slots.map((d) => positionFit(BY_ID.get(id)!, d.pos, SCALE)));
+    const byValue = (ids: number[]) => [...ids].sort((a, b) => value(a) - value(b));
+    const [weakOwn, strongOwn] = [byValue(h)[0], byValue(h).at(-1)!];
+    const [weakCpu, strongCpu] = [byValue(c)[0], byValue(c).at(-1)!];
+    // Schwächstes eigenes gegen das stärkste des CPU-Teams: Absage
+    expect(() => makeOffer(s, 'dev-h', { to: 'c1', give: weakOwn, get: strongCpu }, ALL, SCALE)).toThrow(/lehnt/);
+    // Stärkstes eigenes gegen das schwächste: Tausch sofort (wenn es klar besser ist)
+    if (value(strongOwn) >= value(weakCpu) + 3) {
+      const r = makeOffer(s, 'dev-h', { to: 'c1', give: strongOwn, get: weakCpu }, ALL, SCALE);
+      expect(rosters(r).c).toContain(strongOwn);
+      expect(rosters(r).h).toContain(weakCpu);
+      expect(r.manager!.offers ?? []).toEqual([]);
+    } else {
+      throw new Error('Testaufbau: kein klar besserer Spieler für das CPU-Team');
+    }
   });
 });
 

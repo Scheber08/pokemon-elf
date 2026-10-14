@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
-import type { DraftSnapshot, DraftTeam, ManagerClaim, ManagerLineup } from '../lib/api/draftContract';
+import type { DraftSnapshot, DraftTeam, ManagerClaim, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { rosterOf } from '../lib/draftEngine';
 import { matchFor, playerOfRound, recentForm, storedLeague } from '../lib/leagueTimeline';
 import { showNotify } from '../lib/notify';
@@ -115,6 +115,25 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
     );
   }, [msToKickoff != null && msToKickoff > 0 && msToKickoff <= KICKOFF_REMINDER_MS, playedNow]);
 
+  // Neues Tausch-Angebot an das eigene Team (Tab im Hintergrund): Hinweis
+  const myId = room.me?.id ?? null;
+  const incomingIds = (m?.offers ?? []).filter((o) => o.to === myId).map((o) => o.id);
+  const seenOffers = useRef<Set<number> | null>(null);
+  useEffect(() => {
+    const before = seenOffers.current;
+    seenOffers.current = new Set(incomingIds);
+    if (!before || !notify || readOnly) return;
+    const fresh = (m?.offers ?? []).find((o) => o.to === myId && !before.has(o.id));
+    if (!fresh) return;
+    const from = s.teams.find((tm) => tm.id === fresh.from);
+    const p = (id: number) => (byId.get(id) ? t.game.pokemon(byId.get(id)!) : `#${id}`);
+    showNotify(
+      t.draft.manager.notifyOfferHeading(s.settings.name || t.online.leagueFallback(s.code)),
+      t.draft.manager.offerIn(from ? teamLabel(from, t) : '?', p(fresh.give), p(fresh.get)),
+      `manager-offer-${s.code}`,
+    );
+  }, [incomingIds.join(',')]);
+
   const report = useMatchReport(nameOf, pokemonName, (x) => tx.next(x.round), undefined, (i, match) => {
     const team = s.teams[i];
     if (!team) return null;
@@ -204,20 +223,44 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
         />
       )}
 
+      {room.me && !readOnly && m.nextAt != null && meIndex >= 0 && (
+        <TradePanel
+          state={s}
+          team={s.teams[meIndex]}
+          offers={m.offers ?? []}
+          done={(m.transfers ?? []).filter((x) => x.with && x.teamId === s.teams[meIndex].id && x.matchday === nextNo)}
+          nameOf={(id) => {
+            const tm = s.teams.find((x) => x.id === id);
+            return tm ? teamLabel(tm, t) : '?';
+          }}
+          error={room.error}
+          onOffer={(to, give, get) => room.offerTrade(to, give, get)}
+          onAnswer={(id, accept) => room.answerOffer(id, accept)}
+        />
+      )}
+
       {lastTransfers.length > 0 && (
         <section className="card" aria-labelledby="manager-transfers">
           <h2 id="manager-transfers" className="section-title">
             {tx.transfersTitle(m.played)}
           </h2>
           <ul className="manager__transfers">
-            {lastTransfers.map((x) => {
-              const team = s.teams.find((tm) => tm.id === x.teamId);
-              return (
-                <li key={`${x.teamId}-${x.in}`}>
-                  {tx.transferLine(team ? teamLabel(team, t) : '?', pokemonName(x.in), pokemonName(x.out))}
-                </li>
-              );
-            })}
+            {lastTransfers
+              // Ein Tausch steht zweimal im Protokoll (je Team) – angezeigt wird er einmal
+              .filter((x) => !x.with || x.teamId < x.with)
+              .map((x) => {
+                const label = (id: string) => {
+                  const tm = s.teams.find((y) => y.id === id);
+                  return tm ? teamLabel(tm, t) : '?';
+                };
+                return (
+                  <li key={`${x.teamId}-${x.in}`}>
+                    {x.with
+                      ? tx.tradeLine(label(x.teamId), pokemonName(x.out), label(x.with), pokemonName(x.in))
+                      : tx.transferLine(label(x.teamId), pokemonName(x.in), pokemonName(x.out))}
+                  </li>
+                );
+              })}
           </ul>
         </section>
       )}
@@ -608,3 +651,173 @@ function ManagerTable({ rows, you, nameOf }: { rows: import('../lib/season').Tab
     </div>
   );
 }
+
+/**
+ * Tausch mit anderen gedrafteten Teams: eigenes Pokémon gegen eins aus einem anderen Kader anbieten;
+ * eingehende Angebote annehmen oder ablehnen, eigene zurückziehen. CPU-Teams antworten sofort.
+ */
+function TradePanel({
+  state,
+  team,
+  offers,
+  done,
+  error,
+  nameOf,
+  onOffer,
+  onAnswer,
+}: {
+  state: Pick<DraftSnapshot, 'teams'>;
+  team: DraftTeam;
+  offers: ManagerOffer[];
+  /** Eigene Tausche vor dem nächsten Spieltag (Bestätigung) */
+  done: ManagerTransfer[];
+  /** Letzter Fehler des Raums – nach eigenem Senden auch hier angezeigt (z. B. Absage des CPU-Teams) */
+  error: string | null;
+  nameOf: (teamId: string) => string;
+  onOffer: (to: string, give: number, get: number) => void;
+  onAnswer: (id: number, accept: boolean) => void;
+}) {
+  const t = useT();
+  const tx = t.draft.manager;
+  const { byId, scale } = usePokemonData();
+  const sc = scale('all');
+  const others = state.teams.filter((x) => x.id !== team.id);
+  const roster = rosterOf(team);
+  const [give, setGive] = useState<number>(roster[0]);
+  const [to, setTo] = useState<string>(others[0]?.id ?? '');
+  const partner = others.find((x) => x.id === to) ?? others[0];
+  const theirs = partner ? rosterOf(partner) : [];
+  const [get, setGet] = useState<number | null>(null);
+  /** Gerade gesendet: ein Fehler gehört dann zu diesem Tausch */
+  const [sent, setSent] = useState(false);
+  // Erfolgreicher Tausch: eine ältere Absage gehört nicht mehr dazu
+  useEffect(() => setSent(false), [done.length]);
+  const positions = [...new Set(FORMATIONS[team.formation].slots.map((d) => d.pos))];
+  const fitFor = (id: number) => {
+    const p = byId.get(id);
+    return p ? Math.round(Math.max(...positions.map((pos) => positionFit(p, pos, sc)))) : 0;
+  };
+  const name = (id: number) => {
+    const p = byId.get(id);
+    return p ? t.game.pokemon(p) : `#${id}`;
+  };
+  const validGive = roster.includes(give) ? give : roster[0];
+  const validGet = get != null && theirs.includes(get) ? get : theirs[0];
+  const incoming = offers.filter((o) => o.to === team.id);
+  const outgoing = offers.filter((o) => o.from === team.id);
+  if (!partner) return null;
+  return (
+    <section className="card manager__trade" aria-labelledby="manager-trade">
+      <h2 id="manager-trade" className="section-title">
+        {tx.tradeTitle}
+      </h2>
+      <p className="muted small">{tx.tradeNote}</p>
+      {done.map((x) => (
+        <p key={`${x.in}-${x.out}`} className="hint hint--active">
+          ✓ {tx.tradeDone(name(x.out), nameOf(x.with!), name(x.in))}
+        </p>
+      ))}
+      {incoming.length > 0 && (
+        <ul className="manager__offers">
+          {incoming.map((o) => (
+            <li key={o.id} className="hint hint--active">
+              <span>{tx.offerIn(nameOf(o.from), name(o.give), name(o.get))}</span>
+              <span className="manager__offer-actions">
+                <button type="button" className="btn btn--small" onClick={() => onAnswer(o.id, true)}>
+                  {tx.offerAccept}
+                </button>
+                <button type="button" className="btn btn--small btn--ghost" onClick={() => onAnswer(o.id, false)}>
+                  {tx.offerDecline}
+                </button>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {outgoing.length > 0 && (
+        <ul className="manager__offers">
+          {outgoing.map((o) => (
+            <li key={o.id}>
+              <span>{tx.offerOut(nameOf(o.to), name(o.give), name(o.get))}</span>
+              <button type="button" className="btn btn--small btn--ghost" onClick={() => onAnswer(o.id, false)}>
+                {tx.offerWithdraw}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="manager__controls">
+        <label className="field">
+          <span className="field__label">{tx.tradeGive}</span>
+          <select
+            className="input"
+            value={validGive}
+            onChange={(e) => {
+              setGive(Number(e.target.value));
+              setSent(false);
+            }}
+          >
+            {roster.map((id) => (
+              <option key={id} value={id}>
+                {name(id)} ({fitFor(id)})
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
+          <span className="field__label">{tx.tradeTeam}</span>
+          <select
+            className="input"
+            value={partner.id}
+            onChange={(e) => {
+              setTo(e.target.value);
+              setGet(null);
+              setSent(false);
+            }}
+          >
+            {others.map((x) => (
+              <option key={x.id} value={x.id}>
+                {nameOf(x.id)}
+                {x.cpu ? ` (${tx.tradeCpu})` : ''}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
+          <span className="field__label">{tx.tradeGet}</span>
+          <select
+            className="input"
+            value={validGet}
+            onChange={(e) => {
+              setGet(Number(e.target.value));
+              setSent(false);
+            }}
+          >
+            {theirs.map((id) => (
+              <option key={id} value={id}>
+                {name(id)} ({fitFor(id)})
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <button
+        type="button"
+        className="btn btn--small"
+        onClick={() => {
+          if (validGet == null) return;
+          setSent(true);
+          onOffer(partner.id, validGive, validGet);
+        }}
+      >
+        {partner.cpu ? tx.tradeAskCpu : tx.tradeSend}
+      </button>
+      {sent && error && (
+        <p className="notice notice--error manager__trade-error" role="alert">
+          {error}
+        </p>
+      )}
+    </section>
+  );
+}
+

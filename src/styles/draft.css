@@ -1284,3 +1284,29 @@ button.draft-bench__slot {
   align-items: center;
   gap: 10px;
 }
+
+/* Manager-Saison: Tausch-Angebote */
+.manager__offers {
+  list-style: none;
+  margin: 10px 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.manager__offers li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.manager__offer-actions {
+  display: inline-flex;
+  gap: 6px;
+}
+.manager__trade .manager__controls {
+  margin-bottom: 10px;
+}
+.manager__trade-error {
+  margin: 10px 0 0;
+}

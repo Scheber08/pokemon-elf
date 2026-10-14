@@ -157,6 +157,8 @@ function fakeRoom(s: DraftSnapshot, over: Partial<DraftRoom> = {}): DraftRoom {
     setQueue: vi.fn(() => true),
     setLineup: vi.fn(() => true),
     setTransfer: vi.fn(() => true),
+    offerTrade: vi.fn(() => true),
+    answerOffer: vi.fn(() => true),
     react: vi.fn(() => true),
     reactions: [],
     reconnect: vi.fn(),
