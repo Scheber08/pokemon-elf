@@ -50,7 +50,7 @@ import {
 } from './api/draftContract';
 import { positionFit, type Scale } from './fit';
 import { createRng, hashSeed, shuffle, streamRng, type Rng } from './rng';
-import { simulateLeague, type LeagueResult, type LeagueTeam } from './season';
+import { opponentRatings, simulateLeague, type LeagueResult, type LeagueTeam } from './season';
 import { evaluateTeam } from './teamScore';
 
 /** Slot-Index des Standardschützen */
@@ -1347,7 +1347,75 @@ export function leagueTeams(state: Pick<DraftState, 'teams' | 'settings'>, byId:
   });
 }
 
-/** Die gemeinsame Saison – auf jedem Client identisch (gleicher Seed, gleiche Daten). */
+/** Kandidat zum Auffüllen der Liga: Bestwert eines echten Spielers aus der Allzeit-Rangliste */
+export interface FillCandidate {
+  player: string;
+  teamName: string;
+  formation: FormationId;
+  /** Elf in der Reihenfolge der Formation */
+  slots: (number | null)[];
+  ss: number | null;
+}
+
+/**
+ * Auffüllteams bis DRAFT_LIMITS.leagueSize: zuerst Teams echter Spieler (zufällig aus den
+ * Kandidaten, Liga-Seed; nur vollständige, bekannte Elfen; Namen nicht doppelt), Rating = Team-Score
+ * ihrer Elf; reichen sie nicht, Vereine mit Ratings wie die Challenge-Gegner (ohne Kader).
+ */
+export function fillTeams(
+  state: Pick<DraftState, 'seed' | 'teams'>,
+  candidates: readonly FillCandidate[],
+  byId: Map<number, Pokemon>,
+  scale: Scale,
+  size: number = DRAFT_LIMITS.leagueSize,
+): LeagueTeam[] {
+  const need = Math.max(0, size - state.teams.length);
+  if (!need) return [];
+  const rng = leagueRng(state.seed, 'fill');
+  const taken = new Set(state.teams.map((t) => t.name.trim().toLowerCase()));
+  const out: LeagueTeam[] = [];
+  for (const c of shuffle(rng, candidates)) {
+    if (out.length >= need) break;
+    const name = (c.teamName.trim() || c.player.trim()).slice(0, DRAFT_LIMITS.teamNameMax);
+    const def = FORMATIONS[c.formation];
+    if (!name || !def || taken.has(name.toLowerCase()) || c.slots.length !== def.slots.length) continue;
+    const players = c.slots.map((id) => (id != null ? byId.get(id) ?? null : null));
+    if (players.some((p) => !p)) continue;
+    taken.add(name.toLowerCase());
+    const ev = evaluateTeam(c.formation, players, scale);
+    const ss = c.ss != null ? byId.get(c.ss) : undefined;
+    out.push({
+      name,
+      player: c.player.trim(),
+      rating: ev.score,
+      squad: players.map((p, i) => ({ pokemonId: p!.id, pos: def.slots[i].pos, atk: p!.atk, spa: p!.spa })),
+      setPieceTaker: ss ? { pokemonId: ss.id, pos: 'SS' as const, atk: ss.atk, spa: ss.spa } : null,
+      setPieceFit: ss ? positionFit(ss, 'SS', scale) : undefined,
+    });
+  }
+  const rest = need - out.length;
+  if (rest > 0) {
+    const clubs = shuffle(rng, CLUB_NAMES.filter((n) => !taken.has(n.toLowerCase()))).slice(0, rest);
+    const ratings = shuffle(rng, opponentRatings(clubs.length));
+    clubs.forEach((name, i) => out.push({ name, rating: ratings[i] }));
+  }
+  return out;
+}
+
+/** Alle Teams der Saison einer neuen Liga: gedraftete Teams, dahinter die Auffüllteams. */
+export function seasonTeams(
+  state: Pick<DraftState, 'seed' | 'teams' | 'settings'>,
+  byId: Map<number, Pokemon>,
+  scale: Scale,
+  candidates: readonly FillCandidate[] = [],
+): LeagueTeam[] {
+  return [...leagueTeams(state, byId, scale), ...fillTeams(state, candidates, byId, scale)];
+}
+
+/**
+ * Saison aus dem Seed nachrechnen – nur für ältere Ligen ohne gespeichertes Ergebnis (damals
+ * ohne Auffüllteams); neue Ligen speichert der Server (withLeague).
+ */
 export function draftSeason(
   state: Pick<DraftState, 'teams' | 'settings'> & { season: DraftSeason | null },
   byId: Map<number, Pokemon>,
@@ -1360,12 +1428,19 @@ export function draftSeason(
 /**
  * Am Ende des Drafts: Saison einmal berechnen und kompakt speichern (Teams ohne Kader –
  * Tabelle, Spiele und Torschützen bleiben). So ändert ein späterer Deploy das Ergebnis nicht.
+ * Die gedrafteten Teams behalten ihre Indizes; die Auffüllteams (fillTeams, Kandidaten vom Server
+ * aus der Rangliste) folgen dahinter.
  */
-export function withLeague(state: DraftState, list: Pokemon[], scale: Scale): DraftState {
+export function withLeague(state: DraftState, list: Pokemon[], scale: Scale, candidates: readonly FillCandidate[] = []): DraftState {
   if (state.phase !== 'done' || !state.season || state.league) return state;
-  const full = draftSeason(state, byIdOf(list), scale);
-  if (!full) return state;
-  return { ...state, league: { ...full, teams: full.teams.map((t) => ({ name: t.name, rating: t.rating })) } };
+  const full = simulateLeague(seasonTeams(state, byIdOf(list), scale, candidates), createRng(state.season.seed));
+  return {
+    ...state,
+    league: {
+      ...full,
+      teams: full.teams.map((t) => (t.player ? { name: t.name, rating: t.rating, player: t.player } : { name: t.name, rating: t.rating })),
+    },
+  };
 }
 
 /**

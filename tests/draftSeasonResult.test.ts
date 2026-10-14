@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { draftLinkFor } from '../src/lib/api/draftClient';
-import type { DraftSnapshot } from '../src/lib/api/draftContract';
+import { DRAFT_LIMITS, type DraftSnapshot } from '../src/lib/api/draftContract';
 import { FORMATIONS } from '../src/config/formations';
 import {
   addCpuTeam,
@@ -9,6 +9,7 @@ import {
   createDraft,
   currentTeam,
   draftSeason,
+  seasonTeams,
   snapshotOf,
   startDraft,
   withLeague,
@@ -101,7 +102,10 @@ describe('gespeichertes Saisonergebnis (SEASON-1)', () => {
     const recompute = vi.fn(() => null);
     const league = resolveLeague(snap.league, snap.teams.length, recompute)!;
     expect(recompute).not.toHaveBeenCalled();
-    const full = draftSeason(state, byId, scale)!;
+    // Neue Ligen: gedraftete Teams plus Auffüllteams bis DRAFT_LIMITS.leagueSize
+    const full = simulateLeague(seasonTeams(state, byId, scale), createRng(state.season!.seed));
+    expect(league.teams).toHaveLength(DRAFT_LIMITS.leagueSize);
+    expect(league.teams.slice(0, state.teams.length).map((t) => t.name)).toEqual(state.teams.map((t) => t.name));
     expect(league.matches).toEqual(full.matches);
     expect(league.table).toEqual(full.table);
     expect(leagueRatings(league, snap.ratings)).toEqual(full.teams.map((t) => t.rating));

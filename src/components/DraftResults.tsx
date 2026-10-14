@@ -80,7 +80,8 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
     [byId, t],
   );
   const ratingOf = (i: number) => ratings[i] ?? league.teams[i]?.rating ?? 0;
-  const grades = draftGrades(league.teams.map((_, i) => ratingOf(i)));
+  // Noten nur für gedraftete Teams (die Auffüllteams dahinter haben nicht gedraftet)
+  const grades = draftGrades(teams.map((_, i) => ratingOf(i)));
 
   const champion = table[0];
   const race = titleRace(table);
@@ -240,10 +241,15 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                     <td className="left draft-results__name">
                       {nameOf(r.team)}
                       {teams[r.team]?.cpu && <span className="rating">{t.draft.cpu}</span>}
+                      {!teams[r.team] && league.teams[r.team]?.player && (
+                        <small className="muted draft-results__player" title={tx.fillPlayerTitle}>
+                          {league.teams[r.team].player}
+                        </small>
+                      )}
                       {r.team === you && <span className="sr-only">{tx.yourTeamSr}</span>}
                     </td>
                     <td>{ratingOf(r.team)}</td>
-                    <td className="draft-results__grade">{grades[r.team]}</td>
+                    <td className="draft-results__grade">{grades[r.team] ?? '–'}</td>
                     <td>{r.played}</td>
                     <td>{r.w}</td>
                     <td>{r.d}</td>

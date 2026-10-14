@@ -232,6 +232,7 @@ const draft: Messages['draft'] = {
     duelsRecordTitle: 'Wins – draws – losses against this team',
     duelHome: 'Home',
     duelAway: 'Away',
+    fillPlayerTitle: 'Team of a player from the leaderboard (34–0 Challenge)',
     steal: (pokemon, pick, team, pos) => `Steal of the draft: ${pokemon} (pick ${pick}) for ${team} as ${pos}`,
     gradeTitle: 'Draft grade by team score – relative to the other teams in this league (A+ to D)',
     finalTable: 'Final table',

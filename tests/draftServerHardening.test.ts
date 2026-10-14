@@ -859,15 +859,16 @@ describe('Liga-Seed, Liganame und gespeichertes Saisonergebnis', () => {
     }
     expect(s.league).toBeUndefined();
     const done = withLeague(s, ALL, SCALE);
-    expect(done.league!.teams).toHaveLength(8);
-    expect(done.league!.matches).toHaveLength(56);
+    // 8 gedraftete Teams + 10 Vereine (ohne Ranglisten-Kandidaten) = 18 → 306 Spiele
+    expect(done.league!.teams).toHaveLength(DRAFT_LIMITS.leagueSize);
+    expect(done.league!.matches).toHaveLength(306);
     expect(done.league!.teams[0]).toEqual({ name: expect.any(String), rating: expect.any(Number) });
     // Gespeichert ist gespeichert: auch mit anderen Daten wird nichts neu berechnet
     expect(withLeague(done, ALL.slice(0, 10), SCALE)).toBe(done);
     const snap = snapshotOf(structuredClone(done), null, 1);
     expect(snap.league).toEqual(done.league);
     expect(snap.ratings).toEqual(done.league!.teams.map((t) => t.rating));
-    expect(JSON.stringify(snap).length).toBeLessThan(40_000);
+    expect(JSON.stringify(snap).length).toBeLessThan(120_000);
     expect(snapshotOf(s, null, 1)).not.toHaveProperty('league');
   });
 });

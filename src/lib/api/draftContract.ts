@@ -44,7 +44,12 @@ export const DRAFT_LIMITS = {
   /** Vorlauf bis zum ersten Spieltag der gemeinsamen Saison – Zeit, sich die fertigen Kader anzusehen */
   seasonLeadMs: 30_000,
   /** Dauer eines Spieltags im gemeinsamen Ticker */
-  seasonStepMs: 8000,
+  seasonStepMs: 5000,
+  /**
+   * Teams in der Saison einer Online-Liga: Die gedrafteten Teams werden mit Teams echter Spieler
+   * aus der Rangliste (sonst Vereinen) auf diese Zahl aufgefüllt – 34 Spieltage wie in den Challenges.
+   */
+  leagueSize: 18,
   /** So lange bleibt eine Liga erhalten (danach wird sie gelöscht) */
   retentionDays: 14,
   /** Andere Mitglieder dürfen für ein Team auto-picken, das so lange offline ist (ms) */

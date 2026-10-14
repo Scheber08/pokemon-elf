@@ -130,7 +130,7 @@ const clubEn = (name: string) => messages('en').game.club(name);
 
 // ---------------------------------------------------------------- Online-Liga (Engine)
 
-/** Drei Teams (ungerade → Spielfrei): Host + zwei CPU-Teams mit deutschen Vereinsnamen */
+/** Drei Teams: Host + zwei CPU-Teams mit deutschen Vereinsnamen – die Saison füllt mit Vereinen auf 18 auf */
 function finishedDraft(): DraftState {
   let s = engine.createDraft({
     code: 'K7MPQ2',
@@ -407,7 +407,8 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     expect(all).toContain('Line-ups');
     expect(all).toContain('All matchdays');
     expect(all).toContain('Matchday 1');
-    expect(all).toMatch(/Bye: /);
+    // Auf 18 Teams aufgefüllt (ohne Ranglisten-Teams: Vereine, übersetzt)
+    expect(container.querySelectorAll('.draft-results__table tbody tr')).toHaveLength(18);
     expect(all).toContain('Share result');
     expect(all).toMatch(/⚽ Top scorer: [^|]+ \(\d+ goals?\)/);
     // Duelle des eigenen Teams
@@ -415,11 +416,10 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     expect(all).toContain('New league');
     expect(all).toContain(clubEn(s.teams[1].name));
     // Platz der Aufstellungen als englische Ordnungszahl
-    expect(container.querySelectorAll('.draft-results__place').map((e) => e.textContent).slice(0, 3)).toEqual([
-      '1st',
-      '2nd',
-      '3rd',
-    ]);
+    // (Plätze der gedrafteten Teams in der aufgefüllten Tabelle)
+    const ordinal = (n: number) => `${n}${n % 10 === 1 && n % 100 !== 11 ? 'st' : n % 10 === 2 && n % 100 !== 12 ? 'nd' : n % 10 === 3 && n % 100 !== 13 ? 'rd' : 'th'}`;
+    const places = s.league!.table.flatMap((r, i) => (r.team < s.teams.length ? [i + 1] : []));
+    expect(container.querySelectorAll('.draft-results__place').map((e) => e.textContent)).toEqual(places.map(ordinal));
     expect(germanLeft(container)).toEqual([]);
   });
 
@@ -469,9 +469,10 @@ describe('Deutsch bleibt unverändert', () => {
     expect(all).toContain('Abschlusstabelle');
     expect(all).toContain('Alle Spieltage');
     expect(all).toContain('1. Spieltag');
-    expect(all).toMatch(/Spielfrei: /);
+    expect(container.querySelectorAll('.draft-results__table tbody tr')).toHaveLength(18);
     expect(all).toContain(s.teams[1].name);
-    expect(container.querySelectorAll('.draft-results__place').map((e) => e.textContent).slice(0, 2)).toEqual(['1.', '2.']);
+    const places = s.league!.table.flatMap((r, i) => (r.team < s.teams.length ? [`${i + 1}.`] : []));
+    expect(container.querySelectorAll('.draft-results__place').map((e) => e.textContent)).toEqual(places);
     // Gegenprobe: Die Deutsch-Erkennung schlägt hier an (Wörter, Vereins- und Pokémon-Namen)
     const flagged = germanLeft(container);
     expect(flagged.length).toBeGreaterThan(0);

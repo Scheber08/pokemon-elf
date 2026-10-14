@@ -72,6 +72,7 @@ import { authenticateDevice, HOUR_MS, normalizeIp } from './auth';
 import { randomHex, sha256Hex, timingSafeEqual } from './crypto';
 import type { CreateRoomInput, CreateRoomResult, Db, Env, RematchTemplateResult } from './env';
 import { ApiError } from './http';
+import { loadFillCandidates } from './fill';
 import { ensureSchema } from './schema';
 import { cleanText, hasVisible, parseDeviceAuth } from './validate';
 
@@ -1109,7 +1110,10 @@ export class DraftRoomCore {
    * speichern, verteilen, Lobby-Zeile abgleichen, Alarm stellen.
    */
   private async commit(prev: DraftState | null, input: DraftState, now: number): Promise<void> {
-    const next = withLeague(transferHost(input, now), this.ports.list, this.ports.scale);
+    const hosted = transferHost(input, now);
+    // Saisonende: Teams echter Spieler aus der Rangliste zum Auffüllen laden (nur einmal)
+    const candidates = hosted.phase === 'done' && hosted.season && !hosted.league ? await loadFillCandidates(this.ports.env.DB) : [];
+    const next = withLeague(hosted, this.ports.list, this.ports.scale, candidates);
     const cur = currentTeam(next);
     const moved = !prev || prev.phase !== next.phase || prev.pickIndex !== next.pickIndex;
     const cpuAt = cur?.cpu ? (moved || this.rec?.cpuAt == null ? now + DRAFT_LIMITS.cpuPickMs : this.rec.cpuAt) : null;

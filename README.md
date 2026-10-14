@@ -164,7 +164,10 @@ alle verbinden sich per WebSocket (`/api/drafts/:code/ws`, Hibernation API) und 
 Sichtbarkeit ein, fügt CPU-Teams hinzu und startet. Timer, CPU-Picks und Auto-Picks laufen auf dem
 Server (Alarme). Ist das Team am Zug 20 s offline (ohne Timer: 3 min am Zug), darf jedes Mitglied für
 es auto-picken; ein abwesender Host gibt die Rolle nach 30 s (Lobby: 5 min) ab. Nach dem letzten Pick
-rechnet der Server die Saison einmal und alle sehen sie gleichzeitig im Ticker.
+rechnet der Server die Saison einmal und alle sehen sie gleichzeitig im Ticker. Die Saison spielt immer mit
+18 Teams (`DRAFT_LIMITS.leagueSize`, 34 Spieltage): Freie Plätze füllen Teams echter Spieler aus der
+Allzeit-Rangliste der 34–0 Challenge (Teamname, Spielername, ihre Elf – `server/fill.ts`, Auswahl per
+Liga-Seed in `fillTeams`), fehlen welche, Vereine.
 Öffentliche Lobbys: `GET /api/drafts/public`. Ligen werden nach 14 Tagen gelöscht. Vertrag und Limits:
 `src/lib/api/draftContract.ts`.
 

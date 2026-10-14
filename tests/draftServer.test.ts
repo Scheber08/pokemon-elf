@@ -921,9 +921,14 @@ describe('Draft-Raum: Draft', () => {
     const b = draftSeason(guest.state!, BY_ID, SCALE)!;
     expect(a.table).toHaveLength(3);
     expect(a).toEqual(b);
-    // … und einmal auf dem Server berechnet und gespeichert (kompakt: Teams ohne Kader)
-    expect(final.league).toEqual({ ...a, teams: a.teams.map((t) => ({ name: t.name, rating: t.rating })) });
-    expect(final.ratings).toEqual(a.teams.map((t) => t.rating));
+    // … und einmal auf dem Server berechnet und gespeichert (kompakt: Teams ohne Kader) – aufgefüllt
+    // auf DRAFT_LIMITS.leagueSize (ohne Ranglisten-Teams in der Test-Datenbank: Vereine)
+    const league = final.league!;
+    expect(league.teams).toHaveLength(DRAFT_LIMITS.leagueSize);
+    expect(league.table).toHaveLength(DRAFT_LIMITS.leagueSize);
+    expect(league.teams.slice(0, 3).map((t) => t.name)).toEqual(final.teams.map((t) => t.name));
+    expect(league.teams.slice(0, 3).map((t) => t.rating)).toEqual(a.teams.map((t) => t.rating));
+    expect(final.ratings).toEqual(league.teams.map((t) => t.rating));
     expect(room.stored!.state.league).toEqual(final.league);
     expect(http.body.league).toEqual(final.league);
 

@@ -251,6 +251,8 @@ const draft = {
     duelsRecordTitle: 'Siege – Unentschieden – Niederlagen gegen dieses Team',
     duelHome: 'Heimspiel',
     duelAway: 'Auswärtsspiel',
+    /** Auffüllteam aus der Rangliste: Name des echten Spielers */
+    fillPlayerTitle: 'Team eines Spielers aus der Rangliste (34–0 Challenge)',
     steal: (pokemon: string, pick: number, team: string, pos: string) => `Schnäppchen des Drafts: ${pokemon} (Pick ${pick}) für ${team} als ${pos}`,
     gradeTitle: 'Draft-Note nach Team-Score – relativ zu den anderen Teams dieser Liga (A+ bis D)',
     finalTable: 'Abschlusstabelle',

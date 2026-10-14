@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
-import type { DraftSettings } from '../lib/api/draftContract';
+import { DRAFT_LIMITS, type DraftSettings } from '../lib/api/draftContract';
 import { copyText } from '../lib/exportImage';
 import { qrPath, type QrPath } from '../lib/qr';
 import { usePokemonData } from '../state/PokemonData';
@@ -315,6 +315,7 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
                 ? t.online.orderHostFixed
                 : t.online.orderHost}
           </p>
+          {s.teams.length < DRAFT_LIMITS.leagueSize && <p className="muted small">{t.online.fillNote(DRAFT_LIMITS.leagueSize)}</p>}
           {isHost && (
             <button
               type="button"

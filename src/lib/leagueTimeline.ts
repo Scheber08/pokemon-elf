@@ -171,6 +171,9 @@ function goalsOf(v: unknown, goals: number): Goal[] | null {
   return out;
 }
 
+/** Höchstens so viele Teams in einem gespeicherten Ergebnis (gedraftet + aufgefüllt) */
+const STORED_TEAMS_MAX = 64;
+
 /**
  * Das vom Server gespeicherte Saisonergebnis (Schnappschuss) als LeagueResult – oder null,
  * wenn es fehlt (ältere Ligen) oder nicht zur Liga passt. Dann rechnet der Client die
@@ -178,15 +181,19 @@ function goalsOf(v: unknown, goals: number): Goal[] | null {
  */
 export function storedLeague(raw: unknown, teamCount: number): LeagueResult | null {
   if (!isObj(raw) || !isInt(teamCount, 1)) return null;
-  const n = teamCount;
   const { teams: rawTeams, matches: rawMatches, table: rawTable } = raw;
-  if (!Array.isArray(rawTeams) || rawTeams.length !== n) return null;
+  // Gedraftete Teams zuerst, dahinter ggf. Auffüllteams (DRAFT_LIMITS.leagueSize)
+  if (!Array.isArray(rawTeams) || rawTeams.length < teamCount || rawTeams.length > STORED_TEAMS_MAX) return null;
+  const n = rawTeams.length;
   if (!Array.isArray(rawMatches) || !Array.isArray(rawTable) || rawTable.length !== n) return null;
 
   const teams: LeagueTeam[] = [];
   for (const t of rawTeams) {
     if (!isObj(t) || typeof t.name !== 'string' || !isNum(t.rating)) return null;
-    teams.push(t.isUser === true ? { name: t.name, rating: t.rating, isUser: true } : { name: t.name, rating: t.rating });
+    const team: LeagueTeam = { name: t.name, rating: t.rating };
+    if (t.isUser === true) team.isUser = true;
+    if (typeof t.player === 'string' && t.player) team.player = t.player;
+    teams.push(team);
   }
 
   // Doppelrunde: höchstens 2·n Spieltage (ungerade Teamzahl mit Spielfrei)

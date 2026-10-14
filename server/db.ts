@@ -496,6 +496,31 @@ export async function leaderboardPage(
   };
 }
 
+export interface FillCandidateRow {
+  player: string;
+  team_name: string;
+  formation: string;
+  lineup_json: string;
+  ss_enabled: number;
+}
+
+/**
+ * Online-Draft: Bestwerte der Allzeit-Rangliste einer Wertung (sichtbare Spieler, beste zuerst) –
+ * daraus füllt die Liga ihre Saison mit Teams echter Spieler auf (server/fill.ts).
+ */
+export async function fillCandidateRows(db: Db, challenge: ChallengeKey, limit: number): Promise<FillCandidateRow[]> {
+  const res = await db
+    .prepare(
+      `SELECT d.name AS player, e.team_name, e.formation, e.lineup_json, e.ss_enabled
+       FROM ${ROW_JOINS}
+       WHERE b.challenge = ? AND b.scope = ? AND ${ROW_VISIBLE}
+       ORDER BY b.points DESC, b.score DESC, b.created_at, b.entry_id LIMIT ?`,
+    )
+    .bind(challenge, ALL_TIME_SCOPE, limit)
+    .all<FillCandidateRow>();
+  return res.results;
+}
+
 /**
  * Plätze eines Geräts in mehreren Wertungen (eine Runde) – null, wo es keinen Eintrag hat
  * oder (mit Standardnamen) nicht in der Liste steht.

@@ -112,6 +112,9 @@ const online = {
   qrAria: 'QR-Code mit dem Link zur Liga',
   qrLoading: 'QR-Code wird erstellt …',
   qrFailed: 'QR-Code konnte nicht erstellt werden',
+  /** Lobby: Hinweis auf das Auffüllen der Saison */
+  fillNote: (teams: number) =>
+    `Die Saison spielt mit ${teams} Teams – die freien Plätze füllen Teams echter Spieler aus der Rangliste.`,
   codeCardHint: 'Freunde öffnen den Link oder geben den Code unter „Mit Code beitreten" ein.',
   playAlong: 'Mitspielen',
   leagueFull: (n: number, max: number) =>

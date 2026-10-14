@@ -18,6 +18,8 @@ export interface SquadPlayer {
 export interface LeagueTeam {
   name: string;
   rating: number;
+  /** Online-Draft: aufgefülltes Team eines echten Spielers aus der Rangliste (Spielername) */
+  player?: string;
   isUser?: boolean;
   /** Spieler für die Torschützenliste (optional) */
   squad?: SquadPlayer[];

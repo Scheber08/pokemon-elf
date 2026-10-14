@@ -109,6 +109,7 @@ const online: Messages['online'] = {
   qrAria: 'QR code with the link to the league',
   qrLoading: 'Creating QR code …',
   qrFailed: 'Could not create the QR code',
+  fillNote: (teams) => `The season is played with ${teams} teams – the free spots go to teams of real players from the leaderboard.`,
   codeCardHint: 'Friends open the link or enter the code under “Join with code”.',
   playAlong: 'Join in',
   leagueFull: (n, max) => `The league is full (${n}/${max}). You can watch – maybe a place will free up.`,

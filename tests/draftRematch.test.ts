@@ -183,7 +183,8 @@ describe('Revanche', () => {
       expect(row.pts).toBe(per[0].pts + per[1].pts);
       expect(row.played).toBe(per[0].played + per[1].played);
     }
-    expect(table.reduce((n, row) => n + row.titles, 0)).toBe(2);
+    // Titel nur für gedraftete Teams – ein Auffüllteam kann Meister werden
+    expect(table.reduce((n, row) => n + row.titles, 0)).toBe(entries.filter((e) => e.rows.some((r) => r.rank === 1)).length);
     // Revanche der Revanche: zwei Ligen im Verlauf
     const r3 = await call<CreateDraftResponse>('POST', `/api/drafts/${r.body.code}/rematch`, first.guestDev);
     expect(drafts.room(r3.body.code).stored!.state.history!.map((e) => e.code)).toEqual([first.code, r.body.code]);
