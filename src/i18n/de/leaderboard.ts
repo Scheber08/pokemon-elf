@@ -13,6 +13,9 @@ const leaderboard = {
   playNow: 'Jetzt spielen',
   today: 'Heute',
   allTime: 'Allzeit',
+  week: 'Diese Woche',
+  /** „Diese Woche · KW 42" */
+  weekOf: (n: number) => `Diese Woche · KW ${n}`,
   /** „Heute · 12.10.2026" */
   todayOn: (date: string) => `Heute · ${date}`,
   players: (n: number) => `${fmtNumber(n, 0, 'de')} Spieler`,
@@ -22,6 +25,7 @@ const leaderboard = {
   emptyOnline: 'Noch keine Einträge – sei der Erste!',
   localError: (message: string) => `Runs dieses Geräts nicht lesbar: ${message}`,
   emptyLocalToday: 'Heute noch keine Runs auf diesem Gerät.',
+  emptyLocalWeek: 'Diese Woche noch keine Runs auf diesem Gerät.',
   emptyLocal: 'Noch keine Runs auf diesem Gerät.',
   /** „Heute · 12.10.2026 · nur dieses Gerät …" bzw. „Allzeit · …" */
   localMeta: (period: string) => `${period} · nur dieses Gerät, auch ungewertete Runs`,

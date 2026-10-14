@@ -33,7 +33,7 @@ import {
   type RunConfig,
   type RunState,
 } from '../src/lib/challengeEngine';
-import { dailyRunSeed, dailySeasonSeed, dayKey } from '../src/lib/daily';
+import { dailyRunSeed, dailySeasonSeed, dayKey, weekKey } from '../src/lib/daily';
 import { buildScale, type Scale } from '../src/lib/fit';
 import { computeRun } from '../src/lib/runCompute';
 import type { ChallengeKey, FormationId } from '../src/types';
@@ -788,7 +788,8 @@ describe('Tägliche Elf', () => {
       { finished_at: null, entry_id: null },
     ]);
     expect(db.query('SELECT * FROM entries')).toHaveLength(1);
-    expect(db.query('SELECT * FROM best_entries')).toHaveLength(2);
+    // Allzeit, Tag und Woche
+    expect(db.query('SELECT * FROM best_entries')).toHaveLength(3);
   });
 
   it('gleiche Elf → gleiches Ergebnis für alle', async () => {
@@ -1023,7 +1024,7 @@ describe('Rangliste', () => {
     expect(db.plan(top.sql, ...top.params)[0]).toMatch(/^SEARCH b USING INDEX idx_best_entries_rank \(challenge=\? AND scope=\?\)/);
   });
 
-  it('nur der beste Run je Gerät steht in den Bestwerten (Allzeit und Tag)', async () => {
+  it('nur der beste Run je Gerät steht in den Bestwerten (Allzeit, Tag und Woche)', async () => {
     const dev = newDevice();
     for (let choice = 0; choice < 3; choice++) expect((await playOnline(dev, { choice })).finish.status).toBe(200);
     const [best] = db.query<{ id: string }>(
@@ -1036,6 +1037,7 @@ describe('Rangliste', () => {
     );
     expect(rows).toEqual([
       { scope: dayKey(), entry_id: best.id },
+      { scope: weekKey(dayKey()), entry_id: best.id },
       { scope: ALL_TIME_SCOPE, entry_id: best.id },
     ]);
     expect(db.query('SELECT * FROM entries')).toHaveLength(3);
@@ -1045,7 +1047,7 @@ describe('Rangliste', () => {
     for (const q of [
       '',
       'challenge=xyz',
-      'challenge=c340&period=week',
+      'challenge=c340&period=month',
       'challenge=c340&limit=0',
       'challenge=c340&limit=101',
       'challenge=c340&limit=abc',

@@ -1,6 +1,6 @@
 import { isDefaultPlayerName } from '../api/contract';
 import { load, save, STORAGE_KEYS } from '../storage';
-import { bestPerPlayer, isToday, type LeaderboardEntry, type LeaderboardService, type NewEntry } from './types';
+import { bestPerPlayer, isThisWeek, isToday, type LeaderboardEntry, type LeaderboardService, type NewEntry } from './types';
 
 const MAX_ENTRIES = 500;
 
@@ -48,7 +48,9 @@ export const localLeaderboard: LeaderboardService = {
     // Runs ohne eigenen Namen („Trainer") gibt es nicht mehr (readAll) – wie online.
     const now = new Date();
     const entries = readAll().filter(
-      (e) => e.challenge === challenge && (period === 'all' || isToday(e.createdAt, now)),
+      (e) =>
+        e.challenge === challenge &&
+        (period === 'all' || (period === 'week' ? isThisWeek(e.createdAt, now) : isToday(e.createdAt, now))),
     );
     return bestPerPlayer(entries).slice(0, limit);
   },

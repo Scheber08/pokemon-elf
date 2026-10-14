@@ -1,6 +1,6 @@
 import { messages } from '../../i18n';
 import type { ChallengeKey, FormationId, Record3 } from '../../types';
-import { dayKey } from '../daily';
+import { dayKey, weekKey } from '../daily';
 
 export interface LeaderboardEntry {
   id: string;
@@ -19,7 +19,7 @@ export interface LeaderboardEntry {
 
 export type NewEntry = Omit<LeaderboardEntry, 'id' | 'createdAt'>;
 
-export type Period = 'today' | 'all';
+export type Period = 'today' | 'week' | 'all';
 
 /** Lokale Run-Historie (localStorage). Die Online-Rangliste: src/lib/api/client.ts. */
 export interface LeaderboardService {
@@ -72,4 +72,11 @@ export function isToday(iso: string, now = new Date()): boolean {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime()) || Number.isNaN(now.getTime())) return false;
   return dayKey(d) === dayKey(now);
+}
+
+/** Liegt der Zeitpunkt in derselben Kalenderwoche (ISO, Berlin) wie `now`? */
+export function isThisWeek(iso: string, now = new Date()): boolean {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime()) || Number.isNaN(now.getTime())) return false;
+  return weekKey(dayKey(d)) === weekKey(dayKey(now));
 }

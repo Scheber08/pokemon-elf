@@ -5,7 +5,7 @@ import { Segmented } from '../components/Segmented';
 import { useT, type Messages } from '../i18n';
 import { ApiRequestError, fetchLeaderboard } from '../lib/api/client';
 import { LIMITS, type LeaderboardResponse } from '../lib/api/contract';
-import { dayKey } from '../lib/daily';
+import { dayKey, weekKey } from '../lib/daily';
 import { leaderboard, type LeaderboardEntry, type Period } from '../lib/leaderboard';
 import { localEntryDetail } from '../lib/leaderboard/entryDetail';
 import { playerName, PlayerNameError, savePlayerName } from '../lib/runFinish';
@@ -60,9 +60,13 @@ const loadError = (e: unknown): LoadError => ({
 /** Fehlertext in der aktiven Sprache (Deutsch: unverändert die Meldung). */
 const errorText = (t: Messages, e: LoadError) => t.leaderboard.apiError(e.code, e.message);
 
-/** „Heute · 12.10.2026" bzw. „Allzeit" */
+/** „Heute · 12.10.2026", „Diese Woche · KW 42" bzw. „Allzeit" */
 const periodText = (t: Messages, period: Period, day: string) =>
-  period === 'today' ? t.leaderboard.todayOn(t.game.day(day)) : t.leaderboard.allTime;
+  period === 'today'
+    ? t.leaderboard.todayOn(t.game.day(day))
+    : period === 'week'
+      ? t.leaderboard.weekOf(Number(weekKey(day).slice(-2)))
+      : t.leaderboard.allTime;
 
 interface BoardTableProps {
   rows: BoardRow[];
@@ -342,7 +346,7 @@ function LocalBoard({ challenge, period, me }: { challenge: ChallengeKey; period
   } else if (current.data.length === 0) {
     body = (
       <EmptyBoard challenge={challenge}>
-        {period === 'today' ? t.leaderboard.emptyLocalToday : t.leaderboard.emptyLocal}
+        {period === 'today' ? t.leaderboard.emptyLocalToday : period === 'week' ? t.leaderboard.emptyLocalWeek : t.leaderboard.emptyLocal}
       </EmptyBoard>
     );
   } else {
@@ -394,7 +398,7 @@ export function Leaderboard() {
   const rawC = params.get('c');
   const challenge: ChallengeKey = isChallengeKey(rawC) ? rawC : 'c340';
   const rawP = params.get('p');
-  const period: Period = rawP === 'today' || rawP === 'all' ? rawP : defaultPeriod(challenge);
+  const period: Period = rawP === 'today' || rawP === 'week' || rawP === 'all' ? rawP : defaultPeriod(challenge);
   const [source, setSource] = useState<Source>('online');
   const [reload, setReload] = useState(0);
   const [name, setName] = useState(playerName);
@@ -504,6 +508,7 @@ export function Leaderboard() {
           onChange={(p) => select(challenge, p)}
           options={[
             { value: 'today', label: t.leaderboard.today },
+            { value: 'week', label: t.leaderboard.week },
             { value: 'all', label: t.leaderboard.allTime },
           ]}
         />

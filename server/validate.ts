@@ -283,7 +283,9 @@ export interface LeaderboardQuery {
 export function parseLeaderboardQuery(params: URLSearchParams): LeaderboardQuery {
   const challenge = parseChallenge(params.get('challenge'));
   const rawPeriod = params.get('period') ?? 'all';
-  if (rawPeriod !== 'today' && rawPeriod !== 'all') throw badRequest('Zeitraum muss „today" oder „all" sein');
+  if (rawPeriod !== 'today' && rawPeriod !== 'week' && rawPeriod !== 'all') {
+    throw badRequest('Zeitraum muss „today", „week" oder „all" sein');
+  }
   const rawLimit = params.get('limit');
   let limit = 50;
   if (rawLimit != null && rawLimit !== '') {

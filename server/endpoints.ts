@@ -15,7 +15,7 @@ import {
   type StartRunResponse,
 } from '../src/lib/api/contract';
 import { FORMATIONS, FORMATION_IDS } from '../src/config/formations';
-import { dailyRunSeed, dailySeasonSeed, dayKey, formatDay } from '../src/lib/daily';
+import { dailyRunSeed, dailySeasonSeed, dayKey, formatDay, weekKey } from '../src/lib/daily';
 import type { ChallengeKey, FormationId } from '../src/types';
 import { authenticate, HOUR_MS, IP_HASH_TTL_MS, rateLimited } from './auth';
 import { newId, randomHex, randomSeed31 } from './crypto';
@@ -272,7 +272,7 @@ export async function leaderboard(url: URL, env: Env): Promise<Response> {
   const day = dayKey();
   const page = await leaderboardPage(env.DB, {
     challenge: q.challenge,
-    scope: q.period === 'today' ? day : ALL_TIME_SCOPE,
+    scope: q.period === 'today' ? day : q.period === 'week' ? weekKey(day) : ALL_TIME_SCOPE,
     limit: q.limit,
     me: q.me,
   });

@@ -65,3 +65,19 @@ export function msUntilNextDay(now: Date = new Date()): number {
   }
   return Math.max(0, hi - now.getTime());
 }
+
+/**
+ * Kalenderwoche eines Tages „YYYY-MM-DD" nach ISO 8601 (Montag bis Sonntag) als „W2026-42" –
+ * die Wertung „Diese Woche" der Rangliste. Reine Kalenderrechnung.
+ */
+export function weekKey(day: string): string {
+  const d = new Date(`${day}T12:00:00Z`);
+  const weekday = (d.getUTCDay() + 6) % 7; // Montag = 0
+  // Donnerstag derselben Woche bestimmt das Jahr
+  const thursday = new Date(d.getTime() + (3 - weekday) * 86_400_000);
+  const year = thursday.getUTCFullYear();
+  const jan4 = new Date(Date.UTC(year, 0, 4, 12));
+  const week1Monday = jan4.getTime() - ((jan4.getUTCDay() + 6) % 7) * 86_400_000;
+  const week = Math.round((thursday.getTime() - 3 * 86_400_000 - week1Monday) / (7 * 86_400_000)) + 1;
+  return `W${year}-${String(week).padStart(2, '0')}`;
+}

@@ -27,7 +27,7 @@ import {
   type RunConfig,
   type RunState,
 } from '../src/lib/challengeEngine';
-import { dayKey } from '../src/lib/daily';
+import { dayKey, weekKey } from '../src/lib/daily';
 import type { ChallengeKey, FormationId } from '../src/types';
 import {
   ALL_TIME_SCOPE,
@@ -443,10 +443,14 @@ describe('GET /api/entries/:id – nur, was in einer Rangliste steht', () => {
     const midnight = Date.UTC(2026, 6, 1, 22, 0, 0); // 2.7.2026 00:00 in Berlin (MESZ = UTC+2)
     expect(ENTRY_DAY_GRACE_MS).toBeGreaterThanOrEqual(60_000);
     expect(ENTRY_DAY_GRACE_MS).toBeLessThanOrEqual(30 * 60_000);
-    expect(entryScopes(midnight - 1)).toEqual([ALL_TIME_SCOPE, '2026-07-01', '2026-07-01']);
-    expect(entryScopes(midnight)).toEqual([ALL_TIME_SCOPE, '2026-07-02', '2026-07-01']);
-    expect(entryScopes(midnight + ENTRY_DAY_GRACE_MS - 1)).toEqual([ALL_TIME_SCOPE, '2026-07-02', '2026-07-01']);
-    expect(entryScopes(midnight + ENTRY_DAY_GRACE_MS)).toEqual([ALL_TIME_SCOPE, '2026-07-02', '2026-07-02']);
+    // Plus die Woche von heute bzw. vom Tag der Schonfrist (1./2.7.2026: KW 27)
+    expect(entryScopes(midnight - 1)).toEqual([ALL_TIME_SCOPE, '2026-07-01', '2026-07-01', 'W2026-27', 'W2026-27']);
+    expect(entryScopes(midnight)).toEqual([ALL_TIME_SCOPE, '2026-07-02', '2026-07-01', 'W2026-27', 'W2026-27']);
+    expect(entryScopes(midnight + ENTRY_DAY_GRACE_MS - 1)).toEqual([ALL_TIME_SCOPE, '2026-07-02', '2026-07-01', 'W2026-27', 'W2026-27']);
+    expect(entryScopes(midnight + ENTRY_DAY_GRACE_MS)).toEqual([ALL_TIME_SCOPE, '2026-07-02', '2026-07-02', 'W2026-27', 'W2026-27']);
+    // Montag 00:00 (6.7.2026): kurz noch die Vorwoche
+    const monday = Date.UTC(2026, 6, 5, 22, 0, 0);
+    expect(entryScopes(monday)).toEqual([ALL_TIME_SCOPE, '2026-07-06', '2026-07-05', 'W2026-28', 'W2026-27']);
   });
 
   it('echter Run, der nicht der beste des Geräts ist → 404', async () => {
@@ -646,7 +650,13 @@ describe('GET /api/entries/:id – eine Abfrage über Primärschlüssel', () => 
       expect(statements.map((s) => s.sql)).toEqual([ENTRY_DETAIL_SQL]);
       const { sql, params } = statements[0];
       expect(params[0]).toBe(id);
-      expect(params.slice(1)).toEqual([ALL_TIME_SCOPE, dayKey(), expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/)]);
+      expect(params.slice(1)).toEqual([
+        ALL_TIME_SCOPE,
+        dayKey(),
+        expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+        weekKey(dayKey()),
+        expect.stringMatching(/^W\d{4}-\d{2}$/),
+      ]);
       const plan = db.plan(sql, ...params);
       const bad = plan.filter((l) => /^SCAN /.test(l) || l.includes('TEMP B-TREE'));
       expect(bad, plan.join('\n')).toEqual([]);

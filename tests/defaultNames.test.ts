@@ -731,7 +731,7 @@ describe('einmalige Bereinigung der Standardnamen', () => {
     db.update('UPDATE devices SET name = ? WHERE id = ?', DEFAULT_PLAYER, dev.deviceId);
     db.update('DELETE FROM meta WHERE key = ?', DEFAULT_NAMES_CLEANUP_KEY);
     vi.spyOn(console, 'log').mockImplementation(() => undefined);
-    expect(await cleanupDefaultNames(db, Date.now())).toEqual({ entries: 1, bestEntries: 2, tokens: 1 });
+    expect(await cleanupDefaultNames(db, Date.now())).toEqual({ entries: 1, bestEntries: 3, tokens: 1 });
 
     for (const player of ['Trainer', 'Kurz']) {
       const res = await post<ApiErrorBody>('/api/runs/finish', finishBody(dev, token, state, { player }));

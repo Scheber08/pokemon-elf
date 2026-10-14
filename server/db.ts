@@ -3,7 +3,7 @@
  * Zeitstempel sind Millisekunden (INTEGER).
  */
 import { DEFAULT_PLAYER_NAME, isDefaultPlayerName } from '../src/lib/api/contract';
-import { dayKey } from '../src/lib/daily';
+import { dayKey, weekKey } from '../src/lib/daily';
 import type { ChallengeKey, FormationId } from '../src/types';
 import type { Db, DbStatement } from './env';
 
@@ -258,12 +258,14 @@ export interface EntryDetailRow {
 export const ENTRY_DAY_GRACE_MS = 10 * 60_000;
 
 /**
- * Die Wertungen, die GET /api/leaderboard gerade ausliefern kann (period=all|today) – plus der
- * Vortag während der Schonfrist. Bestwerte früherer Tage bleiben in best_entries stehen, sind
- * aber in keiner abrufbaren Rangliste mehr.
+ * Die Wertungen, die GET /api/leaderboard gerade ausliefern kann (period=all|today|week) – plus
+ * Vortag bzw. Vorwoche während der Schonfrist. Bestwerte früherer Tage und Wochen bleiben in
+ * best_entries stehen, sind aber in keiner abrufbaren Rangliste mehr.
  */
-export function entryScopes(now: number): [string, string, string] {
-  return [ALL_TIME_SCOPE, dayKey(new Date(now)), dayKey(new Date(now - ENTRY_DAY_GRACE_MS))];
+export function entryScopes(now: number): [string, string, string, string, string] {
+  const today = dayKey(new Date(now));
+  const before = dayKey(new Date(now - ENTRY_DAY_GRACE_MS));
+  return [ALL_TIME_SCOPE, today, before, weekKey(today), weekKey(before)];
 }
 
 /**
@@ -271,13 +273,13 @@ export function entryScopes(now: number): [string, string, string] {
  * Bestwert-Zeile einer der Wertungen aus entryScopes (Allzeit, heute, ggf. gestern) verweist
  * auf genau ihn, und das Gerät trägt einen eigenen Namen. Punktzugriffe: entries und devices
  * über den Primärschlüssel, best_entries über (challenge, scope, device_id) je Wertung.
- * Parameter: id, dann die drei Wertungen aus entryScopes.
+ * Parameter: id, dann die fünf Wertungen aus entryScopes.
  */
 export const ENTRY_DETAIL_SQL = `SELECT e.id, e.challenge, e.day, e.formation, e.ss_enabled, e.lineup_json, e.team_name,
     e.score, e.wins, e.draws, e.losses, e.points, e.created_at, d.name AS player
   FROM entries e JOIN devices d ON d.id = e.device_id
   WHERE e.id = ? AND ${visibleDeviceSql('d')}
-    AND EXISTS (SELECT 1 FROM best_entries b WHERE b.challenge = e.challenge AND b.scope IN (?, ?, ?)
+    AND EXISTS (SELECT 1 FROM best_entries b WHERE b.challenge = e.challenge AND b.scope IN (?, ?, ?, ?, ?)
       AND b.device_id = e.device_id AND b.entry_id = e.id)`;
 
 /** Gerät hinter einem Ranglisten-Eintrag (Sichtbarkeit wie ENTRY_DETAIL_SQL) – null sonst. */
@@ -286,7 +288,7 @@ export function rankedEntryDevice(db: Db, id: string, now: number): Promise<{ de
     .prepare(
       `SELECT e.device_id, d.name AS player FROM entries e JOIN devices d ON d.id = e.device_id
        WHERE e.id = ? AND ${visibleDeviceSql('d')}
-         AND EXISTS (SELECT 1 FROM best_entries b WHERE b.challenge = e.challenge AND b.scope IN (?, ?, ?)
+         AND EXISTS (SELECT 1 FROM best_entries b WHERE b.challenge = e.challenge AND b.scope IN (?, ?, ?, ?, ?)
            AND b.device_id = e.device_id AND b.entry_id = e.id)`,
     )
     .bind(id, ...entryScopes(now))
@@ -362,7 +364,7 @@ function upsertBest(db: Db, e: NewEntry, scope: string): DbStatement {
 
 /**
  * Speichert den Eintrag, den aktuellen Spielernamen (null = unverändert) und – nur bei
- * `ranked` – die Bestwerte (Allzeit + Tag des Eintrags) in einer Transaktion.
+ * `ranked` – die Bestwerte (Allzeit, Tag und Woche des Eintrags) in einer Transaktion.
  *
  * `ranked` = das Gerät trägt danach einen eigenen Namen (kein Standardname). So enthält
  * best_entries nur Geräte, die in der Rangliste stehen dürfen, und Plätze und Spielerzahl
@@ -399,7 +401,7 @@ export async function insertEntry(db: Db, e: NewEntry, player: string | null, ra
         e.createdAt,
       ),
   ];
-  if (ranked) statements.push(upsertBest(db, e, ALL_TIME_SCOPE), upsertBest(db, e, e.day));
+  if (ranked) statements.push(upsertBest(db, e, ALL_TIME_SCOPE), upsertBest(db, e, e.day), upsertBest(db, e, weekKey(e.day)));
   if (player != null) statements.push(db.prepare(setNameSql).bind(player, e.deviceId));
   await db.batch(statements);
 }

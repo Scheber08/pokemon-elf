@@ -263,3 +263,15 @@ describe('buildDailyShareText', () => {
     expect(outcomeEmojis([])).toBe('');
   });
 });
+
+describe('Kalenderwoche (ISO 8601)', () => {
+  it('Montag bis Sonntag, Jahreswechsel nach dem Donnerstag', async () => {
+    const { weekKey } = await import('../src/lib/daily');
+    expect(weekKey('2026-10-12')).toBe('W2026-42'); // Montag
+    expect(weekKey('2026-10-18')).toBe('W2026-42'); // Sonntag
+    expect(weekKey('2026-10-19')).toBe('W2026-43');
+    expect(weekKey('2026-01-01')).toBe('W2026-01'); // Donnerstag → KW 1
+    expect(weekKey('2027-01-01')).toBe('W2026-53'); // Freitag → letzte KW des Vorjahrs
+    expect(weekKey('2024-12-30')).toBe('W2025-01'); // Montag → KW 1 des Folgejahrs
+  });
+});

@@ -92,7 +92,8 @@ export interface FinishRunResponse {
   rankAllTime: number | null;
 }
 
-export type Period = 'today' | 'all';
+/** Wertung: heute (Tag in Berlin), diese Woche (ISO-Woche, Berlin) oder allzeit */
+export type Period = 'today' | 'week' | 'all';
 
 export interface LeaderboardRow {
   rank: number;
