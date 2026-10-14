@@ -559,6 +559,9 @@ const draft = {
     offerOut: (team: string, give: string, get: string) => `Dein Angebot an ${team}: ${give} für ${get}`,
     tradeDone: (out: string, team: string, inn: string) => `Getauscht: ${out} an ${team}, dafür ${inn}`,
     offerCpuExpires: 'gilt bis zum Anpfiff',
+    effect: (d: number) =>
+      `Deine beste Elf: ${d > 0.05 ? '+' : d < -0.05 ? '−' : '±'}${Math.abs(d).toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}`,
+    effectTitle: 'Veränderung der Stärke deiner besten Elf durch diesen Tausch (gewichtete Fit-Punkte, ohne Tagesform)',
     offerAccept: 'Annehmen',
     offerDecline: 'Ablehnen',
     offerWithdraw: 'Zurückziehen',

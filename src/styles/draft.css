@@ -1330,3 +1330,18 @@ button.draft-bench__slot {
   inset: 0 auto 0 0;
   background: var(--yellow);
 }
+
+/* Tausch: Wirkung auf die eigene beste Elf */
+.manager__effect {
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.manager__effect.is-up {
+  color: var(--green);
+}
+.manager__effect.is-down {
+  color: var(--red);
+}
+.manager__effect-preview {
+  margin: 0 0 8px;
+}

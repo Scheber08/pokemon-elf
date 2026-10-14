@@ -517,6 +517,9 @@ const draft: Messages['draft'] = {
     offerOut: (team, give, get) => `Your offer to ${team}: ${give} for ${get}`,
     tradeDone: (out, team, inn) => `Traded: ${out} to ${team} for ${inn}`,
     offerCpuExpires: 'valid until kick-off',
+    effect: (d) =>
+      `Your best eleven: ${d > 0.05 ? '+' : d < -0.05 ? '−' : '±'}${Math.abs(d).toLocaleString('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}`,
+    effectTitle: 'Change in strength of your best eleven from this trade (weighted fit points, without daily form)',
     offerAccept: 'Accept',
     offerDecline: 'Decline',
     offerWithdraw: 'Withdraw',
