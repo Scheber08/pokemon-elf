@@ -61,7 +61,8 @@ interface DraftTeam {
 }
 
 interface DraftState {
-  phase: 'setup' | 'drafting' | 'league';
+  /** captains: nach dem letzten Pick wählen die Menschen ihren Kapitän, dann startet die Saison */
+  phase: 'setup' | 'drafting' | 'captains' | 'league';
   teams: DraftTeam[];
   region: RegionFilter;
   legends: boolean;
@@ -179,7 +180,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
         pick,
         ...(shiny ? { shinies: [...(s.shinies ?? []), pokemonId] } : {}),
         selected: null,
-        phase: pick >= s.teams.length * ROUNDS ? 'league' : 'drafting',
+        phase: pick >= s.teams.length * ROUNDS ? (s.teams.some((x) => !x.cpu) ? 'captains' : 'league') : 'drafting',
         seed: pick >= s.teams.length * ROUNDS ? randomSeed() : s.seed,
         ...(pick >= s.teams.length * ROUNDS ? { model: 'draft' as const, cpuCaptains: true as const } : {}),
       };
@@ -401,6 +402,49 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               {tx.start}
             </button>
           </section>
+        </div>
+      </div>
+    );
+  }
+
+  if (state.phase === 'captains') {
+    return (
+      <div className="page draft">
+        {modeSwitch}
+        <section className="card" aria-labelledby="draft-captains-title">
+          <h1 id="draft-captains-title" className="section-title">
+            {t.captain.localTitle}
+          </h1>
+          <p className="muted small">{t.captain.localNote}</p>
+        </section>
+        <section className="draft__rosters" aria-label={tx.squads}>
+          {state.teams.map((tm, i) =>
+            tm.cpu ? null : (
+              <div key={i} className="card draft__roster">
+                <h3 className="section-title">{teamName(tm.name)}</h3>
+                <Pitch
+                  formation={tm.formation}
+                  slots={tm.slots}
+                  sprite={sprite}
+                  ariaLabel={tx.squadAria(teamName(tm.name))}
+                  jerseys={tm.jerseys}
+                  captain={tm.captain ?? null}
+                  shinies={state.shinies}
+                />
+                <CaptainPicker
+                  formation={tm.formation}
+                  slots={tm.slots}
+                  captain={tm.captain ?? null}
+                  onChange={(captain) => setState((s) => ({ ...s, teams: s.teams.map((x, j) => (j === i ? { ...x, captain } : x)) }))}
+                />
+              </div>
+            ),
+          )}
+        </section>
+        <div className="actionbar">
+          <button type="button" className="btn btn--primary btn--big" onClick={() => setState((s) => ({ ...s, phase: 'league' }))}>
+            {t.captain.kickoff}
+          </button>
         </div>
       </div>
     );
@@ -726,7 +770,7 @@ let sessionMode: DraftMode | null = null;
 /** Läuft am Gerät schon ein Hot-Seat-Draft? Dann startet /draft dort. */
 function localDraftRunning(): boolean {
   const phase = load<Partial<DraftState>>(STORAGE_KEYS.draft, {}).phase;
-  return phase === 'drafting' || phase === 'league';
+  return phase === 'drafting' || phase === 'captains' || phase === 'league';
 }
 
 /**

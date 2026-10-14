@@ -9,6 +9,9 @@ const captain = {
   draftNote: 'Die Passung des Kapitäns zählt doppelt. Wählen kannst du ihn nur im Draft – danach steht die Saison fest.',
   windowTitle: (s: number) => `Kapitän wählen – noch ${s} s bis zum Anpfiff`,
   windowNote: 'Seine Passung zählt doppelt. Wählst du jetzt, rechnet der Server die Saison mit deinem Kapitän.',
+  localTitle: 'Kapitäne wählen',
+  localNote: 'Der Draft ist durch. Jedes Team wählt jetzt seinen Kapitän – seine Passung zählt doppelt. Dann wird angepfiffen.',
+  kickoff: 'Saison anpfeifen',
   missing: 'Noch kein Kapitän gewählt – seine Passung würde doppelt zählen.',
 };
 

@@ -11,6 +11,9 @@ const captain: Messages['captain'] = {
   draftNote: 'The captain’s fit counts double. You can only choose them during the draft – after that the season is fixed.',
   windowTitle: (s) => `Choose your captain – ${s} s to kickoff`,
   windowNote: 'Their fit counts double. Choose now and the server plays the season with your captain.',
+  localTitle: 'Choose captains',
+  localNote: 'The draft is done. Every team now picks its captain – their fit counts double. Then it’s kickoff.',
+  kickoff: 'Kick off the season',
   missing: 'No captain chosen yet – their fit would count double.',
 };
 
