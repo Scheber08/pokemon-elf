@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useT } from '../i18n';
 import { ApiRequestError } from '../lib/api/client';
@@ -71,6 +71,12 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
     }
   };
 
+  // Liga fertig (Ticker vorbei, Manager-Saison, späterer Besuch): neue Erfolge des Mitglieds melden
+  const member = !!room.me;
+  useEffect(() => {
+    if (!ticker && member && league) requestAchievementCheck();
+  }, [ticker, member, !!league]);
+
   if (!league || !season) {
     return (
       <div className="boot" role="status">
@@ -95,8 +101,6 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           clockOffset={room.clockOffset}
           onDone={() => {
             setTicker(false);
-            // Liga fertig: neue Erfolge (Online-Draft) melden
-            if (highlight != null) requestAchievementCheck();
             // Tab im Hintergrund: Saisonende melden (wie „Du bist dran" – nur mit Erlaubnis)
             if (notify && highlight != null) {
               const place = league.table.findIndex((r) => r.team === highlight) + 1;
