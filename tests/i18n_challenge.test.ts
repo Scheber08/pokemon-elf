@@ -450,6 +450,7 @@ describe('Saisonbilanz und Ticker', () => {
       jumps++;
     }
     expect(goals).toBeGreaterThan(0);
+    expect(document.body.querySelectorAll('.match-pitch__mark')).toHaveLength(goals);
     expect(jumps).toBe(goals);
     // Tastatur: Leertaste schaltet Abspielen/Pause
     const play = () => document.body.querySelector('.match-pitch__controls .btn') as unknown as { textContent: string };

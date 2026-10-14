@@ -177,18 +177,43 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
         >
           {playing ? tx.pause : time >= replay.end ? tx.again : tx.play}
         </button>
-        <input
-          type="range"
-          className="match-pitch__slider"
-          min={0}
-          max={replay.end}
-          step={0.1}
-          value={time}
-          aria-label={tx.seek}
-          onChange={(e) => {
-            setTime(Number(e.target.value));
-          }}
-        />
+        <div className="match-pitch__track">
+          <input
+            type="range"
+            className="match-pitch__slider"
+            min={0}
+            max={replay.end}
+            step={0.1}
+            value={time}
+            aria-label={tx.seek}
+            onChange={(e) => {
+              setTime(Number(e.target.value));
+            }}
+          />
+          {/* Tore auf der Zeitleiste – Klick springt kurz davor */}
+          <div className="match-pitch__marks">
+            {replay.events
+              .filter((e) => e.kind === 'goal')
+              .map((e, i) => {
+                const team = nameOf(e.side === 0 ? match.home : match.away);
+                const label = tx.goalMark(formatMinute(Math.max(1, Math.min(Math.ceil(e.t), 95))), team);
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    className={`match-pitch__mark ${e.side === 0 ? 'is-home' : 'is-away'}`}
+                    style={{ left: `${(e.t / replay.end) * 100}%` }}
+                    aria-label={label}
+                    title={label}
+                    onClick={() => {
+                      setTime(Math.max(0, e.t - 1.5));
+                      setPlaying(true);
+                    }}
+                  />
+                );
+              })}
+          </div>
+        </div>
         <button
           type="button"
           className="btn btn--small btn--ghost match-pitch__skip"

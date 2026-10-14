@@ -227,8 +227,16 @@
     padding-inline: 8px;
   }
 }
+.match-pitch__track {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
 .match-pitch__slider {
   flex: 1;
+  min-width: 0;
   accent-color: var(--yellow);
 }
 
@@ -256,6 +264,33 @@
   box-shadow: inset 0 0 0 1.5px #7a5a00;
 }
 .match-pitch__kit.is-away {
+  background: #e9eef5;
+  box-shadow: inset 0 0 0 1.5px #2f62c9;
+}
+
+/* Tore auf der Zeitleiste (Daumenbreite links/rechts ausgespart) */
+.match-pitch__marks {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: calc(50% + 7px);
+  height: 8px;
+}
+.match-pitch__mark {
+  position: absolute;
+  top: 0;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  margin-left: -4px;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.match-pitch__mark.is-home {
+  background: #ffcb05;
+}
+.match-pitch__mark.is-away {
   background: #e9eef5;
   box-shadow: inset 0 0 0 1.5px #2f62c9;
 }
