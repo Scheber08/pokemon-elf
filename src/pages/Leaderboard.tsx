@@ -223,6 +223,9 @@ interface OnlineBoardProps {
   panelRef: RefObject<HTMLElement | null>;
 }
 
+/** Alle wie viel Millisekunden die sichtbare Online-Rangliste still neu lädt */
+const AUTO_REFRESH_MS = 60_000;
+
 /** Online-Rangliste (Cloudflare) – nur Runs, die online gestartet wurden. */
 function OnlineBoard({ challenge, period, reload, onRetry, panelRef }: OnlineBoardProps) {
   const t = useT();
@@ -239,6 +242,31 @@ function OnlineBoard({ challenge, period, reload, onRetry, panelRef }: OnlineBoa
     );
     return () => {
       alive = false;
+    };
+  }, [challenge, period, key]);
+
+  // Still aktualisieren: jede Minute, solange der Tab sichtbar ist, und beim Zurückkehren in den Tab.
+  // Die alte Tabelle bleibt stehen; Fehler dabei ändern nichts (der nächste Versuch kommt von selbst).
+  useEffect(() => {
+    let alive = true;
+    let last = Date.now();
+    const refresh = () => {
+      if (document.visibilityState !== 'visible') return;
+      last = Date.now();
+      fetchLeaderboard(challenge, period, LIMIT).then(
+        (data) => alive && setLoaded((prev) => (prev?.key === key ? { key, data } : prev)),
+        () => {},
+      );
+    };
+    const id = window.setInterval(refresh, AUTO_REFRESH_MS);
+    const onVisible = () => {
+      if (Date.now() - last >= AUTO_REFRESH_MS) refresh();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      alive = false;
+      window.clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisible);
     };
   }, [challenge, period, key]);
 

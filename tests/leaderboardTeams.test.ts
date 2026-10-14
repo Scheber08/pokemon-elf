@@ -1052,3 +1052,40 @@ describe('Rangliste: Team ansehen gegen den echten Server (D1-Shim)', () => {
     await expect(client.fetchEntry('44444444-4444-4444-8444-444444444444')).rejects.toMatchObject({ status: 404, code: 'not_found' });
   });
 });
+
+describe('Rangliste: stilles Aktualisieren', () => {
+  it('lädt jede Minute neu, solange der Tab sichtbar ist – ohne „Lade …“ dazwischen', async () => {
+    const ticks: (() => void)[] = [];
+    const realSetInterval = globalThis.setInterval;
+    vi.spyOn(globalThis, 'setInterval').mockImplementation(((fn: () => void, ms?: number) => {
+      if (ms === 60_000) {
+        ticks.push(fn);
+        return 4242 as unknown as ReturnType<typeof setInterval>;
+      }
+      return realSetInterval(fn, ms);
+    }) as typeof setInterval);
+    storeSettings('de');
+    const later: LeaderboardResponse = { ...BOARD, rows: [row({ player: 'Gary', teamName: 'Rivalen' }), ...BOARD.rows.slice(1)] };
+    const server = await stubServer(undefined, (n) => json(200, n === 1 ? BOARD : later));
+    const container = await render(app());
+    await settle();
+    expect(container.textContent).toContain('Ash');
+    const before = server.boardCalls();
+    expect(ticks.length).toBeGreaterThan(0);
+
+    // Verborgener Tab: kein Abruf
+    doc.visibilityState = 'hidden';
+    ticks.at(-1)!();
+    await settle();
+    expect(server.boardCalls()).toBe(before);
+
+    doc.visibilityState = 'visible';
+    ticks.at(-1)!();
+    expect(container.textContent).not.toContain('Lade …');
+    await settle();
+    expect(server.boardCalls()).toBe(before + 1);
+    expect(container.textContent).toContain('Gary');
+    expect(container.textContent).not.toContain('Ash');
+    vi.mocked(globalThis.setInterval).mockRestore();
+  });
+});
