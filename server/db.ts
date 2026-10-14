@@ -313,7 +313,11 @@ export interface PlayerRunRow {
 export async function playerRows(db: Db, deviceId: string, recent: number) {
   const [counts, bests, last] = await db.batch([
     db
-      .prepare('SELECT challenge, COUNT(*) AS runs, MIN(created_at) AS first FROM entries WHERE device_id = ? GROUP BY challenge')
+      .prepare(
+        `SELECT challenge, COUNT(*) AS runs, MIN(created_at) AS first,
+           SUM(CASE WHEN draws = 0 AND losses = 0 AND wins > 0 THEN 1 ELSE 0 END) AS perfect
+         FROM entries WHERE device_id = ? GROUP BY challenge`,
+      )
       .bind(deviceId),
     db
       .prepare(
@@ -330,7 +334,7 @@ export async function playerRows(db: Db, deviceId: string, recent: number) {
       .bind(deviceId, recent),
   ]);
   return {
-    counts: counts.results as { challenge: string; runs: number; first: number }[],
+    counts: counts.results as { challenge: string; runs: number; first: number; perfect: number }[],
     bests: bests.results as PlayerRunRow[],
     recent: last.results as PlayerRunRow[],
   };

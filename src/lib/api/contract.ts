@@ -168,6 +168,8 @@ export interface PlayerChallengeStats {
   challenge: ChallengeKey;
   /** Gewertete Runs */
   runs: number;
+  /** Davon perfekte Saisons (nur Siege, z. B. 34–0) */
+  perfect: number;
   best: PlayerBest | null;
 }
 

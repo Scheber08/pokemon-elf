@@ -108,6 +108,7 @@ const leaderboard: Messages['leaderboard'] = {
     runs: (n) => (n === 1 ? '1 ranked run' : `${n} ranked runs`),
     perChallenge: 'Best runs',
     runsCol: 'Runs',
+    perfectTitle: (n) => (n === 1 ? 'One perfect season (wins only)' : `${n} perfect seasons (wins only)`),
     best: 'Best run',
     showTeam: 'View team',
     recent: 'Recent runs',

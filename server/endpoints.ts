@@ -421,6 +421,7 @@ export async function playerProfile(rawId: string, env: Env): Promise<Response> 
       {
         challenge,
         runs: count.runs,
+        perfect: Number(count.perfect) || 0,
         best:
           best && run && formation && FORMATION_IDS.includes(formation)
             ? { entryId: best.id, teamName: run.teamName, formation, day: run.day, record: run.record, points: run.points, score: run.score }

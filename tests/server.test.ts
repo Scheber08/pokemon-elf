@@ -1538,6 +1538,12 @@ describe('Spielerprofil (GET /api/entries/:id/player)', () => {
     expect(JSON.stringify(res.body)).not.toContain(dev.deviceId.toLowerCase());
     // Der Bestwert ist selbst ein Ranglisten-Eintrag
     expect((await get(`/api/entries/${best340.entryId}`)).status).toBe(200);
+    // Perfekte Saisons je Wertung
+    expect(res.body.challenges.every((x) => Number.isInteger(x.perfect))).toBe(true);
+    db.update('UPDATE entries SET wins = 34, draws = 0, losses = 0 WHERE id = ?', a.finish.body.entryId);
+    const again = await get<PlayerProfile>(`/api/entries/${c.finish.body.entryId}/player`);
+    const before = res.body.challenges[0].perfect;
+    expect(again.body.challenges[0].perfect).toBe(before + (a.finish.body.record.d === 0 && a.finish.body.record.l === 0 ? 0 : 1));
   });
 
   it('unbekannt bzw. nicht in der Rangliste → 404, ungültige ID → 400', async () => {

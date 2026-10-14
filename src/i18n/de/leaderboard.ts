@@ -112,6 +112,7 @@ const leaderboard = {
     runs: (n: number) => (n === 1 ? '1 gewerteter Run' : `${n} gewertete Runs`),
     perChallenge: 'Bestwerte',
     runsCol: 'Runs',
+    perfectTitle: (n: number) => (n === 1 ? 'Eine perfekte Saison (nur Siege)' : `${n} perfekte Saisons (nur Siege)`),
     best: 'Bester Run',
     showTeam: 'Team ansehen',
     recent: 'Letzte Runs',

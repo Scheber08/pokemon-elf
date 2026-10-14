@@ -81,6 +81,12 @@ export function Profile() {
                   </th>
                   <td>
                     {c.runs} {tp.runsCol}
+                    {c.perfect > 0 && (
+                      <span className="profile__perfect" title={tp.perfectTitle(c.perfect)}>
+                        {' '}
+                        🏆 {c.perfect}
+                      </span>
+                    )}
                   </td>
                   {c.best ? (
                     <>
