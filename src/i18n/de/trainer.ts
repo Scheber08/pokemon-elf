@@ -31,6 +31,8 @@ const trainer = {
   saved: 'Trainer gespeichert',
   reset: 'Zurücksetzen',
   random: 'Zufällig',
+  cardImage: 'Trainerkarte als Bild',
+  cardImageAria: 'Trainerkarte als Bild speichern',
   randomTitle: 'Zufälliger Trainer aus allem, was du schon hast',
   unsaved: 'Ungespeicherte Änderungen',
   lockedNote: 'In deiner Vorschau ist noch etwas, das du nicht besitzt – kauf es oder wähle etwas anderes, dann kannst du speichern.',

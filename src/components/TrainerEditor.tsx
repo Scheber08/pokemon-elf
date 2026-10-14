@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useT, type Messages } from '../i18n';
 import { ApiRequestError, buyTrainerItem, saveTrainer } from '../lib/api/client';
 import type { MeResponse } from '../lib/api/contract';
@@ -7,6 +7,7 @@ import type { Pokemon } from '../types';
 import { usePokemonData } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
 import { useSettings } from '../state/Settings';
+import { SaveImageButton } from './SaveImageButton';
 import { Sprite } from './Sprite';
 import { TrainerAvatar } from './TrainerAvatar';
 
@@ -59,6 +60,7 @@ export function TrainerEditor({ me, onMe }: Props) {
   const { byId } = usePokemonData();
   const { sprite } = useSettings();
   const [look, setLook] = useState<TrainerLook>(me.trainer);
+  const cardRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState<'save' | string | null>(null);
   const owned = useMemo(() => new Set(me.owned), [me.owned]);
   const dirty = TRAINER_SLOTS.some((s) => look[s] !== me.trainer[s]);
@@ -106,9 +108,16 @@ export function TrainerEditor({ me, onMe }: Props) {
       <p className="muted small">{tx.editorNote}</p>
       <div className="trainer-editor__layout">
         <div className="trainer-editor__preview">
-          <TrainerAvatar look={look} size={180} label={tx.editorTitle} />
-          {me.player && <strong className="trainer-editor__name">{me.player}</strong>}
-          {look.title !== 'none' && <span className="trainer-editor__title">{tx.titles[look.title]}</span>}
+          {/* Trainerkarte – „Als Bild" speichert genau diesen Bereich */}
+          <div className="trainer-card" ref={cardRef}>
+            <TrainerAvatar look={look} size={180} label={tx.editorTitle} />
+            {me.player && <strong className="trainer-editor__name">{me.player}</strong>}
+            {look.title !== 'none' && <span className="trainer-editor__title">{tx.titles[look.title]}</span>}
+            <span className="muted small">
+              {tx.progress(me.achievements.filter((a) => a.done).length, me.achievements.length)}
+            </span>
+          </div>
+          <SaveImageButton target={cardRef} filename="pokemon-elf-trainer.png" label={tx.cardImage} aria={tx.cardImageAria} />
           {lockedNow.map((it) => {
             const name = trainerItemName(t, it, byId);
             const missing = it.price - me.coins.balance;

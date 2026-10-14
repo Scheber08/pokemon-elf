@@ -256,3 +256,12 @@
   object-fit: contain;
   image-rendering: pixelated;
 }
+
+/* Trainerkarte (Vorschau, als Bild speicherbar) */
+.trainer-card {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  border-radius: 14px;
+}
