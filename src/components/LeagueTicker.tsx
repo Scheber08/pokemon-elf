@@ -512,7 +512,7 @@ function isOwn(m: Match, team: number): boolean {
 }
 
 /** ▲/▼ – Platzveränderung gegenüber dem Vorspieltag. */
-function Trend({ delta }: { delta: number }) {
+export function Trend({ delta }: { delta: number }) {
   const t = useT();
   if (!delta) {
     return (

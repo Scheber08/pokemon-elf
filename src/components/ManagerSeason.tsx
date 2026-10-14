@@ -3,17 +3,17 @@ import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
 import type { DraftTeam, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { rosterOf } from '../lib/draftEngine';
-import { matchFor, playerOfRound, recentForm, storedLeague } from '../lib/leagueTimeline';
+import { leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague } from '../lib/leagueTimeline';
 import { showNotify } from '../lib/notify';
 import { bestLineup, FORM_FIT, formFit, lineupScore, managerSchedule, squadStrength } from '../lib/manager';
-import type { Match } from '../lib/season';
+import type { LeagueResult, Match } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import { teamLabel, type DraftRoom } from '../state/useDraftRoom';
 import type { FormationId, Pokemon, PosCode } from '../types';
 import { PosBadge } from './Badges';
 import { BenchRow } from './BenchRow';
-import { FixtureList, FormDots } from './LeagueTicker';
+import { FixtureList, FormDots, Trend } from './LeagueTicker';
 import { ReplayToggle, useMatchReport } from './MatchReport';
 import { SeasonStats } from './SeasonStats';
 import { Sprite } from './Sprite';
@@ -354,7 +354,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
         <h2 id="manager-table" className="section-title">
           {tx.tableTitle}
         </h2>
-        <ManagerTable rows={league.table} you={you} nameOf={nameOf} matches={league.matches} played={m.played} />
+        <ManagerTable rows={league.table} you={you} nameOf={nameOf} matches={league.matches} played={m.played} league={league} />
       </section>
     </div>
   );
@@ -561,16 +561,23 @@ function ManagerTable({
   nameOf,
   matches,
   played,
+  league,
 }: {
   rows: import('../lib/season').TableRow[];
   you: number | null;
   nameOf: (i: number) => string;
-  /** Gespielte Spiele und Spieltage – für die Formkurve */
+  /** Gespielte Spiele und Spieltage – für Formkurve und Platzveränderung */
   matches: Match[];
   played: number;
+  league: LeagueResult;
 }) {
   const t = useT();
   const c = t.draft.col;
+  // Platzveränderung gegenüber dem Vorspieltag (erst ab dem 2. Spieltag)
+  const delta = useMemo(() => {
+    if (played < 2) return null;
+    return leagueTimeline(league).at(-1)?.delta ?? null;
+  }, [league, played]);
   return (
     <div className="table-scroll">
       <table className="league-table">
@@ -608,7 +615,9 @@ function ManagerTable({
         <tbody>
           {rows.map((r, i) => (
             <tr key={r.team} className={r.team === you ? 'is-user' : ''}>
-              <td>{i + 1}</td>
+              <td>
+                {i + 1} {delta && <Trend delta={delta[r.team]} />}
+              </td>
               <td className="left">{nameOf(r.team)}</td>
               <td>{r.played}</td>
               <td>{r.w}</td>
