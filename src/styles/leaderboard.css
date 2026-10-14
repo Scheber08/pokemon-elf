@@ -188,3 +188,14 @@
 .profile .card + .card {
   margin-top: 16px;
 }
+
+/* Spielername in der Rangliste → Profil */
+.lb-who__link {
+  font-weight: 700;
+  color: inherit;
+  text-decoration: none;
+}
+.lb-who__link:hover,
+.lb-who__link:focus-visible {
+  text-decoration: underline;
+}

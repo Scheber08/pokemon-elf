@@ -39,6 +39,8 @@ interface BoardRow {
   me: boolean;
   /** Team dieser Zeile (Dialog „Team ansehen") */
   source: EntrySource;
+  /** Online: Eintrag, über den das Spielerprofil erreichbar ist */
+  profile?: string;
 }
 
 /** Fehler einer Abfrage: Code der API (falls vorhanden) + deutsche Meldung – übersetzt wird beim Anzeigen. */
@@ -119,7 +121,13 @@ function BoardTable({ rows, mine, onReload, focusPlayer = null }: BoardTableProp
     >
       <td>{r.rank}</td>
       <td className="left lb-who">
-        <strong className="lb-who__player">{r.player}</strong>
+        {r.profile ? (
+          <Link className="lb-who__player lb-who__link" to={`/spieler/${r.profile}`} title={t.leaderboard.entry.profileTitle(r.player)}>
+            {r.player}
+          </Link>
+        ) : (
+          <strong className="lb-who__player">{r.player}</strong>
+        )}
         <button
           ref={(el) => {
             if (el) buttons.current.set(r.key, el);
@@ -272,6 +280,7 @@ function OnlineBoard({ challenge, period, reload, onRetry, panelRef }: OnlineBoa
       score: r.score,
       me: r.me,
       source: { kind: 'online', entryId: r.entryId, summary },
+      profile: r.entryId,
     };
   };
 
