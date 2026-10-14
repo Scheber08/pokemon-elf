@@ -161,7 +161,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
     const team = s.teams[i];
     if (!team) return null;
     const l = m?.playedLineups?.[match.round]?.[team.id] ?? m?.lineups[team.id];
-    return l ? { formation: l.formation, ids: l.slots, jerseys: team.jerseys } : null;
+    return l ? { formation: l.formation, ids: l.slots, jerseys: team.jerseys, captain: team.captain } : null;
   });
 
   if (!m || !league) {

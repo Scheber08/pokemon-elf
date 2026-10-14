@@ -171,7 +171,7 @@ export function SeasonResultView({
     nameOf,
     (m) => t.draft.matchday(m.round),
     undefined,
-    (i) => (i === 0 ? { formation: input.formation, ids: input.slots, jerseys } : null),
+    (i) => (i === 0 ? { formation: input.formation, ids: input.slots, jerseys, captain: input.captain } : null),
   );
   const leagueMatch = (round: number) => season.league.matches.find((x) => x.round === round && (x.home === 0 || x.away === 0));
 

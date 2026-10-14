@@ -337,6 +337,16 @@
   paint-order: stroke;
   pointer-events: none;
 }
+.match-pitch__captain {
+  font-family: var(--font-head);
+  font-size: 2.2px;
+  font-weight: 700;
+  fill: #f2c230;
+  stroke: #0d1b2a;
+  stroke-width: 0.45;
+  paint-order: stroke;
+  pointer-events: none;
+}
 .match-pitch__number.is-inside {
   fill: #0d1b2a;
   stroke: none;

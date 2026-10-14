@@ -160,6 +160,11 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
                   {p.number}
                 </text>
               )}
+              {p.captain && (
+                <text className="match-pitch__captain" x={pos.x - 2.3} y={pos.y + 2.3} textAnchor="middle" dominantBaseline="central">
+                  C
+                </text>
+              )}
               {p.pokemonId != null && <title>{pokemonName(p.pokemonId)}</title>}
             </g>
           );
@@ -191,7 +196,7 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
           {(() => {
             const pl = replay.players[focus];
             const team = nameOf(pl.side === 0 ? match.home : match.away);
-            const who = `${pl.pokemonId != null ? pokemonName(pl.pokemonId) : t.game.posName[pl.pos]} (${pl.number})`;
+            const who = `${pl.pokemonId != null ? pokemonName(pl.pokemonId) : t.game.posName[pl.pos]} (${pl.number}${pl.captain ? ', C' : ''})`;
             // Tore und Vorlagen dieses Spielers in diesem Spiel
             const goals = pl.side === 0 ? match.homeScorers : match.awayScorers;
             const g = pl.pokemonId != null ? goals.filter((x) => x.pokemonId === pl.pokemonId).length : 0;

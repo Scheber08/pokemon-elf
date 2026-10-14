@@ -19,6 +19,8 @@ export interface ReplayLineup {
   ids: (number | null)[];
   /** Eigene Trikotnummern des Teams (fehlt: Vorgabe nach Position) */
   jerseys?: Jerseys;
+  /** Kapitän (Pokémon-ID) */
+  captain?: number | null;
 }
 
 export interface ReplayPlayer {
@@ -29,6 +31,8 @@ export interface ReplayPlayer {
   pos: PosCode;
   /** Trikotnummer */
   number: number;
+  /** Trägt die Kapitänsbinde */
+  captain: boolean;
   /** Grundposition (Meter) */
   x: number;
   y: number;
@@ -88,6 +92,7 @@ function playersOf(side: 0 | 1, lineup: ReplayLineup): ReplayPlayer[] {
     pokemonId: lineup.ids[slot] ?? null,
     pos: d.pos,
     number: numbers.get(keyOf(lineup, slot)) ?? slot + 1,
+    captain: lineup.captain != null && lineup.ids[slot] === lineup.captain,
     ...basePos(side, d.x, d.y),
   }));
 }

@@ -61,7 +61,7 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
     undefined,
     (i) => {
       const side = i === 0 ? own : opponent;
-      return side ? { formation: side.formation, ids: side.slots, jerseys: side.jerseys } : null;
+      return side ? { formation: side.formation, ids: side.slots, jerseys: side.jerseys, captain: side.captain } : null;
     },
   );
 

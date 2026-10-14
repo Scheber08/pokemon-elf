@@ -59,5 +59,7 @@ describe('buildReplay', () => {
     expect(numbers.get(6)).toBe(77);
     const players = buildReplay(match, [{ ...home, jerseys: { '6': 77 } }, null]).players;
     expect(players.find((p) => p.pokemonId === 6)?.number).toBe(77);
+    const withCaptain = buildReplay(match, [{ ...home, captain: 25 }, null]).players;
+    expect(withCaptain.filter((p) => p.captain).map((p) => p.pokemonId)).toEqual([25]);
   });
 });

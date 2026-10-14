@@ -100,7 +100,9 @@ function ReportBody({
   const numbers = useMemo(() => lineups.map((l) => (l ? lineupNumbers(l) : null)), [lineups]);
   const who = (id: number, home: boolean) => {
     const n = numbers[home ? 0 : 1]?.get(id);
-    return n != null ? `${pokemonName(id)} (${n})` : pokemonName(id);
+    const captain = lineups[home ? 0 : 1]?.captain === id;
+    const tags = [n != null ? String(n) : '', captain ? 'C' : ''].filter(Boolean).join(', ');
+    return tags ? `${pokemonName(id)} (${tags})` : pokemonName(id);
   };
   const events: Event[] = [...eventsOf(match.homeScorers, match.hg, true), ...eventsOf(match.awayScorers, match.ag, false)].sort(
     (a, b) => (a.goal?.minute ?? 999) - (b.goal?.minute ?? 999),
