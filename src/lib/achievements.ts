@@ -37,6 +37,8 @@ export interface AchievementStats {
     managerCups?: number;
     /** Gezogene Shinys in fertigen Online-Ligen (fehlt bei älteren Antworten = 0) */
     shinies?: number;
+    /** Meiste Tore eines eigenen Kapitäns in einer Online-Saison */
+    captainGoals?: number;
   };
 }
 
@@ -94,6 +96,7 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'shiny_first', category: 'draft', coins: 150, goal: 1, value: (s) => s.draft.shinies ?? 0 },
   { id: 'manager_cup', category: 'draft', coins: 350, goal: 1, value: (s) => s.draft.managerCups ?? 0 },
   { id: 'shiny_5', category: 'draft', coins: 500, goal: 5, value: (s) => s.draft.shinies ?? 0 },
+  { id: 'captain_10', category: 'draft', coins: 300, goal: 10, value: (s) => s.draft.captainGoals ?? 0 },
   { id: 'manager_5', category: 'draft', coins: 400, goal: 5, value: (s) => s.draft.seasons ?? 0 },
   { id: 'draft_manager', category: 'draft', coins: 400, goal: 1, value: (s) => s.draft.manager },
   { id: 'draft_unbeaten', category: 'draft', coins: 500, goal: 1, value: (s) => s.draft.unbeaten ?? 0 },

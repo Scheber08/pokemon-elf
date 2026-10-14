@@ -130,7 +130,7 @@ describe('Kennzahlen und /api/me', () => {
     expect(s.dailyStreak).toBe(3);
     expect(s.dailyWins).toBe(1);
     expect(s.bestPlace).toBe(1);
-    expect(s.draft).toEqual({ leagues: 1, titles: 0, cups: 1, manager: 0, podiums: 1, unbeaten: 0, seasons: 0, managerPodiums: 0, managerCups: 0, shinies: 0 });
+    expect(s.draft).toEqual({ leagues: 1, titles: 0, cups: 1, manager: 0, podiums: 1, unbeaten: 0, seasons: 0, managerPodiums: 0, managerCups: 0, shinies: 0, captainGoals: 0 });
     // Doppelt gespeichert (Neuversuch) zählt nicht doppelt
     expect(db.query('SELECT * FROM draft_results')).toHaveLength(1);
     // Manager-Saison als Zweiter: zählt als Saison, nicht als Titel
@@ -198,6 +198,32 @@ describe('Kennzahlen und /api/me', () => {
     expect(achievementStates(sh).find((a) => a.id === 'shiny_first')?.done).toBe(true);
     const collector = achievementStates(sh).find((a) => a.id === 'shiny_5');
     expect(collector).toMatchObject({ done: false, value: 1, goal: 5 });
+    // Kapitänstore: eigene Zeile (Maximum über die Ligen), zählt nicht als Liga
+    const goal = (n: number) => Array.from({ length: n }, () => ({ pokemonId: 129, pos: 'ST', minute: 10 }));
+    await saveDraftResults(
+      db,
+      {
+        code: 'CAP234',
+        settings: { format: 'league' } as never,
+        teams: [{ id: 'c', cpu: true, slots: [], ss: null } as never, { id: 'h', cpu: false, slots: [129, 1], ss: null, captain: 129 } as never],
+        owners: { h: dev },
+        league: {
+          teams: [{ name: 'C', rating: 1 }, { name: 'H', rating: 1 }],
+          matches: [
+            { round: 1, home: 1, away: 0, hg: 6, ag: 0, homeScorers: goal(6), awayScorers: [] },
+            { round: 2, home: 0, away: 1, hg: 0, ag: 5, homeScorers: [], awayScorers: goal(5) },
+          ],
+          table: [
+            { team: 1, name: 'H', rating: 1, isUser: false, played: 2, w: 2, d: 0, l: 0, gf: 11, ga: 0, gd: 11, pts: 6 },
+            { team: 0, name: 'C', rating: 1, isUser: false, played: 2, w: 0, d: 0, l: 2, gf: 0, ga: 11, gd: -11, pts: 0 },
+          ],
+        } as never,
+      },
+      5,
+    );
+    const cap = await achievementStats(db, dev, '2026-10-14');
+    expect(cap.draft).toMatchObject({ leagues: 5, captainGoals: 11 });
+    expect(achievementStates(cap).find((a) => a.id === 'captain_10')?.done).toBe(true);
   });
 
   it('POST /api/me: Erfolge und Münzen des eigenen Geräts (neues Gerät: alles offen)', async () => {

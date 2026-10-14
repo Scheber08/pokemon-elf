@@ -39,16 +39,17 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
       .bind(deviceId, today),
     db
       .prepare(
-        `SELECT SUM(CASE WHEN format NOT IN ('manager_cup', 'shiny') THEN 1 ELSE 0 END) AS leagues,
+        `SELECT SUM(CASE WHEN format NOT IN ('manager_cup', 'shiny', 'captain') THEN 1 ELSE 0 END) AS leagues,
            SUM(CASE WHEN format = 'shiny' THEN rank ELSE 0 END) AS shinies,
+           MAX(CASE WHEN format = 'captain' THEN rank ELSE 0 END) AS captain_goals,
            SUM(CASE WHEN rank = 1 AND format = 'league' THEN 1 ELSE 0 END) AS titles,
            SUM(CASE WHEN rank = 1 AND format = 'manager_cup' THEN 1 ELSE 0 END) AS manager_cups,
            SUM(CASE WHEN rank = 1 AND format = 'cup' THEN 1 ELSE 0 END) AS cups,
            SUM(CASE WHEN rank = 1 AND format = 'manager' THEN 1 ELSE 0 END) AS manager,
-           SUM(CASE WHEN rank <= 3 AND format NOT IN ('manager_cup', 'shiny') THEN 1 ELSE 0 END) AS podiums,
+           SUM(CASE WHEN rank <= 3 AND format NOT IN ('manager_cup', 'shiny', 'captain') THEN 1 ELSE 0 END) AS podiums,
            SUM(CASE WHEN format = 'manager' THEN 1 ELSE 0 END) AS seasons,
            SUM(CASE WHEN format = 'manager' AND rank <= 3 THEN 1 ELSE 0 END) AS manager_podiums,
-           SUM(CASE WHEN losses = 0 AND format NOT IN ('cup', 'manager_cup', 'shiny') AND wins + draws > 0 THEN 1 ELSE 0 END) AS unbeaten
+           SUM(CASE WHEN losses = 0 AND format NOT IN ('cup', 'manager_cup', 'shiny', 'captain') AND wins + draws > 0 THEN 1 ELSE 0 END) AS unbeaten
          FROM draft_results WHERE device_id = ?`,
       )
       .bind(deviceId),
@@ -85,6 +86,7 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
       managerPodiums: num(d.manager_podiums),
       managerCups: num(d.manager_cups),
       shinies: num(d.shinies),
+      captainGoals: num(d.captain_goals),
     },
   };
 }
@@ -238,6 +240,28 @@ export async function saveDraftResults(
         .bind(`${state.code}#shiny`, device, count, now),
     );
   }
+  // Tore des Kapitäns je Mensch (eigene Zeile „…#captain“, rank = Tore) – zählt nur für den Kapitäns-Erfolg
+  state.teams.forEach((team, idx) => {
+    const device = !team.cpu ? state.owners[team.id] : undefined;
+    if (!device || team.captain == null) return;
+    const goals = league.matches.reduce(
+      (n, m) =>
+        n +
+        (m.home === idx ? m.homeScorers.filter((g) => g.pokemonId === team.captain).length : 0) +
+        (m.away === idx ? m.awayScorers.filter((g) => g.pokemonId === team.captain).length : 0),
+      0,
+    );
+    if (!goals) return;
+    stmts.push(
+      db
+        .prepare(
+          `INSERT INTO draft_results (code, device_id, format, rank, teams, wins, draws, losses, points, finished_at)
+           VALUES (?, ?, 'captain', ?, 0, 0, 0, 0, 0, ?)
+           ON CONFLICT (code, device_id) DO UPDATE SET rank = excluded.rank`,
+        )
+        .bind(`${state.code}#captain`, device, goals, now),
+    );
+  });
   if (!stmts.length) return 0;
   await ensureSchema(db);
   await db.batch(stmts);
