@@ -188,6 +188,29 @@ export function playerOfRound(matches: LeagueResult['matches']): PlayerTally | n
   return all[0] ?? null;
 }
 
+/**
+ * Transfer der Saison (Manager-Saison): der Zugang (Transfermarkt oder Tausch) mit den meisten
+ * Torbeteiligungen für sein neues Team ab dem Spieltag des Wechsels – Tore doppelt gewichtet.
+ * teamIndex: Index des Teams in der Liga (gedraftete Teams) oder −1. null ohne Torbeteiligung.
+ */
+export function bestTransfer(
+  matches: LeagueResult['matches'],
+  transfers: readonly { matchday: number; teamId: string; in: number }[],
+  teamIndex: (teamId: string) => number,
+): { pokemonId: number; teamIndex: number; matchday: number; goals: number; assists: number } | null {
+  let best: { pokemonId: number; teamIndex: number; matchday: number; goals: number; assists: number } | null = null;
+  for (const tr of transfers) {
+    const team = teamIndex(tr.teamId);
+    if (team < 0) continue;
+    const since = matches.filter((m) => m.round >= tr.matchday && (m.home === team || m.away === team));
+    const tally = playerTallies({ matches: since }).find((p) => p.teamIndex === team && p.pokemonId === tr.in);
+    if (!tally || tally.goals + tally.assists === 0) continue;
+    const value = tally.goals * 2 + tally.assists;
+    if (!best || value > best.goals * 2 + best.assists) best = { pokemonId: tr.in, teamIndex: team, matchday: tr.matchday, goals: tally.goals, assists: tally.assists };
+  }
+  return best;
+}
+
 /** Statistik eines Teams über alle Spiele mit Details (Match.stats) */
 export interface TeamTally {
   team: number;

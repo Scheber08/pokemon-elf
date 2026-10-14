@@ -2,9 +2,9 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
-import type { DraftPickLog, DraftTeam } from '../lib/api/draftContract';
+import type { DraftPickLog, DraftTeam, ManagerTransfer } from '../lib/api/draftContract';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, headToHead, leagueTimeline, longestWinStreak, recentForm, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { bestTransfer, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, headToHead, leagueTimeline, longestWinStreak, recentForm, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { formatRecord, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -39,6 +39,8 @@ interface Props {
   leagueName: string;
   /** Picks des Drafts (für das „Schnäppchen") – fehlt bei sehr alten Ständen */
   picks?: DraftPickLog[];
+  /** Manager-Saison: vollzogene Transfers (für den „Transfer der Saison") */
+  transfers?: ManagerTransfer[];
 }
 
 /** Wie viele Torjäger die Liste zeigt */
@@ -51,7 +53,7 @@ const TOP_SCORERS = 10;
  * entschieden wurde. „Ergebnis teilen" (mit Link zur Liga) nutzt das Teilen-Menü oder die
  * Zwischenablage.
  */
-export function DraftResults({ league, teams, ratings, highlight, sprite, code, leagueName, picks = [] }: Props) {
+export function DraftResults({ league, teams, ratings, highlight, sprite, code, leagueName, picks = [], transfers = [] }: Props) {
   const t = useT();
   const tx = t.draft.results;
   const c = t.draft.col;
@@ -70,6 +72,10 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
     return m;
   }, [allScorers]);
   const steal = useMemo(() => draftSteal(picks, teams, byId, scale('all')), [picks, teams, byId, scale]);
+  const signing = useMemo(
+    () => bestTransfer(league.matches, transfers, (id) => teams.findIndex((tm) => tm.id === id)),
+    [league, transfers, teams],
+  );
   const table = league.table;
   const you = highlight != null && highlight >= 0 && highlight < league.teams.length ? highlight : null;
   const duels = useMemo(() => (you != null ? headToHead(league, you) : []), [league, you]);
@@ -244,6 +250,16 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
         {steal && stealMon && stealTeam >= 0 && (
           <p className="draft-results__steal">
             {tx.steal(t.game.pokemon(stealMon), steal.pick + 1, nameOf(stealTeam), t.game.posName[steal.pos])}
+          </p>
+        )}
+        {signing && byId.get(signing.pokemonId) && (
+          <p className="draft-results__steal">
+            {tx.signing(
+              t.game.pokemon(byId.get(signing.pokemonId)!),
+              nameOf(signing.teamIndex),
+              signing.matchday,
+              t.draft.manager.starLine(signing.goals, signing.assists),
+            )}
           </p>
         )}
         {ownRow && (

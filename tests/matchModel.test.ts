@@ -209,3 +209,27 @@ describe('Spieler des Spieltags', () => {
     expect(playerOfRound([m([], [])])).toBeNull();
   });
 });
+
+describe('Transfer der Saison', () => {
+  it('Zugang mit den meisten Torbeteiligungen ab dem Wechsel, fürs neue Team', async () => {
+    const { bestTransfer } = await import('../src/lib/leagueTimeline');
+    const goal = (pokemonId: number, assist?: number) => ({ pokemonId, pos: 'ST' as const, ...(assist != null ? { assist } : {}) });
+    const m = (round: number, home: number, away: number, hs: ReturnType<typeof goal>[], as: ReturnType<typeof goal>[] = []) => ({
+      round, home, away, hg: hs.length, ag: as.length, homeScorers: hs, awayScorers: as,
+    });
+    const matches = [
+      m(1, 0, 1, [goal(50), goal(50)]), // vor dem Wechsel: zählt nicht
+      m(2, 0, 1, [goal(50, 7)]),
+      m(3, 1, 0, [goal(60)], [goal(50)]),
+    ];
+    const idx = (id: string) => ['a', 'b'].indexOf(id);
+    const best = bestTransfer(matches, [
+      { matchday: 2, teamId: 'a', in: 50 },
+      { matchday: 3, teamId: 'b', in: 60 },
+      { matchday: 2, teamId: 'x', in: 70 },
+    ], idx);
+    expect(best).toEqual({ pokemonId: 50, teamIndex: 0, matchday: 2, goals: 2, assists: 0 });
+    expect(bestTransfer(matches, [{ matchday: 2, teamId: 'b', in: 99 }], idx)).toBeNull();
+  });
+});
+

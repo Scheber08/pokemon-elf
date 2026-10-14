@@ -277,6 +277,7 @@ const draft: Messages['draft'] = {
     recordWinLine: (home, score, away, round) => `${home} ${score} ${away} (matchday ${round})`,
     streak: (team, n, from, to) => `${team}, ${n} wins in a row (matchdays ${from}–${to})`,
     steal: (pokemon, pick, team, pos) => `Steal of the draft: ${pokemon} (pick ${pick}) for ${team} as ${pos}`,
+    signing: (pokemon, team, matchday, line) => `Signing of the season: ${pokemon} to ${team} (before matchday ${matchday}) – then ${line}`,
     gradeTitle: 'Draft grade by team score – relative to the other teams in this league (A+ to D)',
     finalTable: 'Final table',
     yourTeamSr: ' (your team)',
