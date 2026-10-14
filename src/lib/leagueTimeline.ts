@@ -561,3 +561,39 @@ export function biggestUpset(matches: readonly Match[], ratings: readonly number
   }
   return best;
 }
+
+/** Schnellster Picker: Team mit der kürzesten durchschnittlichen Bedenkzeit (ms) seiner eigenen Picks. */
+export interface FastestPicker {
+  teamId: string;
+  avgMs: number;
+  picks: number;
+}
+
+/**
+ * Bedenkzeit = Abstand zum vorigen Pick (der erste Pick zählt nicht). Automatische Picks
+ * (CPU, Timer, Auto-Pick) bleiben draußen; ein Team braucht mindestens minPicks eigene Picks.
+ */
+export function fastestPicker(
+  picks: readonly Pick<DraftPickLog, 'pick' | 'teamId' | 'auto' | 'at'>[],
+  minPicks = 3,
+): FastestPicker | null {
+  const sorted = [...picks].sort((a, b) => a.pick - b.pick);
+  const sum = new Map<string, { ms: number; n: number }>();
+  for (let i = 1; i < sorted.length; i++) {
+    const p = sorted[i];
+    if (p.auto) continue;
+    const ms = p.at - sorted[i - 1].at;
+    if (!(ms >= 0)) continue;
+    const cur = sum.get(p.teamId) ?? { ms: 0, n: 0 };
+    cur.ms += ms;
+    cur.n++;
+    sum.set(p.teamId, cur);
+  }
+  let best: FastestPicker | null = null;
+  for (const [teamId, { ms, n }] of sum) {
+    if (n < minPicks) continue;
+    const avgMs = ms / n;
+    if (!best || avgMs < best.avgMs) best = { teamId, avgMs, picks: n };
+  }
+  return best;
+}

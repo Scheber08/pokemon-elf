@@ -3,7 +3,7 @@ import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftTeam } from '../lib/api/draftContract';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { draftGrades, draftShareText, biggestWin, draftSteal, headToHead, leagueTimeline, longestWinStreak, recentForm, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, headToHead, leagueTimeline, longestWinStreak, recentForm, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { formatRecord, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -70,6 +70,8 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
   const duels = useMemo(() => (you != null ? headToHead(league, you) : []), [league, you]);
   const streak = useMemo(() => (league.cup ? null : longestWinStreak(league)), [league]);
   const bigWin = useMemo(() => (league.cup ? null : biggestWin(league.matches)), [league]);
+  const fastest = useMemo(() => fastestPicker(picks), [picks]);
+  const fastestTeam = fastest ? teams.findIndex((tm) => tm.id === fastest.teamId) : -1;
 
   // Vereinsnamen der CPU-Teams erst bei der Anzeige übersetzen – gespeichert bleibt der deutsche Name
   const nameOf = useCallback(
@@ -404,6 +406,12 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                 <div>
                   <dt>{tx.recordWin}</dt>
                   <dd>{tx.recordWinLine(nameOf(bigWin.home), `${bigWin.hg}:${bigWin.ag}`, nameOf(bigWin.away), bigWin.round)}</dd>
+                </div>
+              )}
+              {fastest && fastestTeam >= 0 && (
+                <div>
+                  <dt>{tx.recordFastest}</dt>
+                  <dd>{tx.recordFastestLine(nameOf(fastestTeam), Math.max(1, Math.round(fastest.avgMs / 1000)))}</dd>
                 </div>
               )}
               {streak && streak.length >= 3 && (

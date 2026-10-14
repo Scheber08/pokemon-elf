@@ -12,7 +12,7 @@ import {
   startDraft,
 } from '../src/lib/draftEngine';
 import { buildScale } from '../src/lib/fit';
-import { biggestUpset, biggestWin, longestWinStreak, recentForm,
+import { biggestUpset, biggestWin, fastestPicker, longestWinStreak, recentForm,
   currentMatchday,
   FINALE_MS,
   leagueTimeline,
@@ -305,5 +305,20 @@ describe('Überraschung des Spieltags', () => {
     expect(biggestUpset([m(1, 2, 3, 1, 2)], ratings)).toMatchObject({ winner: 3, gap: 150 });
     expect(biggestUpset([m(1, 2, 3, 1, 2)], ratings, 200)).toBeNull();
     expect(biggestUpset([m(1, 0, 1, 3, 0)], ratings)).toBeNull();
+  });
+});
+
+describe('Schnellster Picker', () => {
+  const p = (pick: number, teamId: string, at: number, auto = false) => ({ pick, teamId, at, auto });
+  it('Ø Abstand zum vorigen Pick, ohne automatische Picks, Mindestzahl', () => {
+    const picks = [
+      p(0, 'a', 0), p(1, 'b', 10_000), p(2, 'b', 12_000), p(3, 'a', 30_000),
+      p(4, 'a', 32_000), p(5, 'b', 40_000), p(6, 'b', 41_000, true), p(7, 'a', 45_000),
+    ];
+    // a: Picks 3 (18 s), 4 (2 s), 7 (4 s) → Ø 8 s; b: 1 (10 s), 2 (2 s), 5 (8 s) → Ø ≈ 6,7 s
+    expect(fastestPicker(picks)).toMatchObject({ teamId: 'b', picks: 3 });
+    expect(fastestPicker(picks)!.avgMs).toBeCloseTo(20_000 / 3);
+    expect(fastestPicker(picks, 4)).toBeNull();
+    expect(fastestPicker([])).toBeNull();
   });
 });

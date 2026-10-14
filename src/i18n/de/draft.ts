@@ -284,6 +284,8 @@ const draft = {
     recordDefense: 'Beste Abwehr',
     recordWin: 'Höchster Sieg',
     recordStreak: 'Längste Siegesserie',
+    recordFastest: 'Schnellster Picker',
+    recordFastestLine: (team: string, sec: number) => `${team} – Ø ${sec} s pro Pick`,
     recordGoals: (team: string, n: number) => `${team} – ${n} Tore`,
     recordConceded: (team: string, n: number) => `${team} – ${n === 1 ? '1 Gegentor' : `${n} Gegentore`}`,
     recordWinLine: (home: string, score: string, away: string, round: number) => `${home} ${score} ${away} (${round}. Spieltag)`,

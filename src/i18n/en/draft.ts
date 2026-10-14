@@ -260,6 +260,8 @@ const draft: Messages['draft'] = {
     recordDefense: 'Best defence',
     recordWin: 'Biggest win',
     recordStreak: 'Longest winning run',
+    recordFastest: 'Fastest picker',
+    recordFastestLine: (team, sec) => `${team} – avg ${sec} s per pick`,
     recordGoals: (team, n) => `${team} – ${n} goals`,
     recordConceded: (team, n) => `${team} – ${n === 1 ? '1 goal conceded' : `${n} goals conceded`}`,
     recordWinLine: (home, score, away, round) => `${home} ${score} ${away} (matchday ${round})`,
