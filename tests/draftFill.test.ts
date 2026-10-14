@@ -98,6 +98,8 @@ describe('Niveau der Auffüllteams', () => {
     const out = centerFillRatings(drafted, fill);
     expect(out.map((t) => t.rating)).toEqual([650, 700, 600]);
     expect(centerFillRatings([], fill)).toBe(fill);
+    // Nie über die Skala hinaus
+    expect(centerFillRatings([{ name: 'A', rating: 980 }], [{ name: 'X', rating: 500 }, { name: 'Y', rating: 900 }]).map((t) => t.rating)).toEqual([780, 1000]);
   });
 });
 

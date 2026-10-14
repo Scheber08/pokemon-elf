@@ -1563,7 +1563,8 @@ export function centerFillRatings(drafted: readonly LeagueTeam[], fill: LeagueTe
   if (!drafted.length || !fill.length) return fill;
   const mean = (xs: readonly LeagueTeam[]) => xs.reduce((n, t) => n + t.rating, 0) / xs.length;
   const shift = mean(drafted) - mean(fill);
-  return fill.map((t) => ({ ...t, rating: Math.max(0, Math.round(t.rating + shift)) }));
+  // Auf der Team-Score-Skala bleiben (0–1.000) – starke Auffüllteams sonst über 1.000
+  return fill.map((t) => ({ ...t, rating: Math.min(1000, Math.max(0, Math.round(t.rating + shift))) }));
 }
 
 /**
