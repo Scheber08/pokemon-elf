@@ -545,7 +545,7 @@ const draft = {
     tradeLine: (a: string, aGives: string, b: string, bGives: string) => `Tausch: ${a} gibt ${aGives} an ${b} für ${bGives}`,
     tradeTitle: 'Tausch mit anderen Teams',
     tradeNote:
-      'Biete einem Team ein eigenes Pokémon für eins aus seinem Kader an. CPU-Teams antworten sofort (nur bei klarem Gewinn), Mitspieler nehmen an oder lehnen ab. Ein Tausch gilt sofort.',
+      'Biete einem Team ein eigenes Pokémon für eins aus seinem Kader an. CPU-Teams antworten sofort (nur wenn ihre beste Elf stärker wird) und schlagen nach Spieltagen auch selbst Tausche vor, die beiden helfen. Mitspieler nehmen an oder lehnen ab. Ein Tausch gilt sofort.',
     tradeGive: 'Du gibst',
     tradeTeam: 'An Team',
     tradeGet: 'Du bekommst',

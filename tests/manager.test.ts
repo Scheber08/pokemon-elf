@@ -37,6 +37,8 @@ import {
   answerOffer,
   tradeError,
   OFFERS_PER_TEAM,
+  cpuOffers,
+  squadStrength,
 } from '../src/lib/manager';
 import { expiresAt, parseClientMessage } from '../server/draftCore';
 import { handleApi, type Env } from '../server/handler';
@@ -330,6 +332,41 @@ describe('Tausch zwischen Teams', () => {
     expect(tradeError(played, played.manager!.offers![0], ALL)).toBeNull();
   });
 
+  it('CPU-Teams bieten von sich aus an (beide Elfen werden stärker), annehmen tauscht, alte CPU-Angebote verfallen', () => {
+    let s = startManagerSeason(drafted(), ALL, SCALE);
+    const team = (st: DraftState, id: string) => st.teams.find((t) => t.id === id)!;
+    const gain = (st: DraftState, id: string, out: number, inn: number) => {
+      const t = team(st, id);
+      const swapped = { ...t, slots: t.slots.map((x) => (x === out ? inn : x)), bench: t.bench?.map((x) => (x === out ? inn : x)) };
+      return squadStrength(swapped, BY_ID, SCALE) - squadStrength(t, BY_ID, SCALE);
+    };
+    let seen = 0;
+    let firstOffer: DraftState | null = null;
+    for (let k = 0; k < 10; k++) {
+      s = playMatchday(s, ALL, SCALE);
+      const offers = s.manager!.offers ?? [];
+      // höchstens ein CPU-Angebot je Mensch und Spieltag, nur an Menschen
+      expect(offers.length).toBeLessThanOrEqual(1);
+      for (const o of offers) {
+        seen++;
+        firstOffer ??= s;
+        expect(o).toMatchObject({ from: 'c1', to: 'h' });
+        expect(gain(s, 'c1', o.give, o.get)).toBeGreaterThanOrEqual(0.5);
+        expect(gain(s, 'h', o.get, o.give)).toBeGreaterThan(0);
+        expect(tradeError(s, o, ALL)).toBeNull();
+      }
+    }
+    expect(seen).toBeGreaterThan(0);
+    // Deterministisch
+    expect(cpuOffers(s, ALL, SCALE)).toEqual(cpuOffers(s, ALL, SCALE));
+    // Annehmen eines CPU-Angebots
+    const withOffer = firstOffer!;
+    const o = withOffer.manager!.offers![0];
+    const done = answerOffer(withOffer, 'dev-h', { id: o.id, accept: true }, ALL);
+    expect(rosterOf(team(done, 'h'))).toContain(o.give);
+    expect(done.manager!.transfers!.at(-2)).toMatchObject({ teamId: 'c1', in: o.get, out: o.give, with: 'h' });
+  });
+
   it('Nachrichten offer / offer-reply: nur gültige Form', () => {
     expect(parseClientMessage(JSON.stringify({ type: 'offer', to: 'c1', give: 6, get: 25 }))).toMatchObject({ ok: true });
     expect(parseClientMessage(JSON.stringify({ type: 'offer', to: 'c1', give: '6', get: 25 })).ok).toBe(false);
@@ -337,28 +374,31 @@ describe('Tausch zwischen Teams', () => {
     expect(parseClientMessage(JSON.stringify({ type: 'offer-reply', id: 2, accept: 'ja' })).ok).toBe(false);
   });
 
-  it('CPU-Team antwortet sofort: klarer Gewinn → Tausch, sonst Absage', async () => {
-    const { positionFit } = await import('../src/lib/fit');
-    const { FORMATIONS } = await import('../src/config/formations');
+  it('CPU-Team antwortet sofort: wird seine beste Elf klar stärker → Tausch, sonst Absage', () => {
     const s = startManagerSeason(drafted(), ALL, SCALE);
     const { h, c } = rosters(s);
     const cpu = s.teams.find((t) => t.id === 'c1')!;
-    // Wert für das CPU-Team: bester Fit über die Positionen seiner Formation
-    const value = (id: number) => Math.max(...FORMATIONS[cpu.formation].slots.map((d) => positionFit(BY_ID.get(id)!, d.pos, SCALE)));
-    const byValue = (ids: number[]) => [...ids].sort((a, b) => value(a) - value(b));
-    const [weakOwn, strongOwn] = [byValue(h)[0], byValue(h).at(-1)!];
-    const [weakCpu, strongCpu] = [byValue(c)[0], byValue(c).at(-1)!];
-    // Schwächstes eigenes gegen das stärkste des CPU-Teams: Absage
-    expect(() => makeOffer(s, 'dev-h', { to: 'c1', give: weakOwn, get: strongCpu }, ALL, SCALE)).toThrow(/lehnt/);
-    // Stärkstes eigenes gegen das schwächste: Tausch sofort (wenn es klar besser ist)
-    if (value(strongOwn) >= value(weakCpu) + 3) {
-      const r = makeOffer(s, 'dev-h', { to: 'c1', give: strongOwn, get: weakCpu }, ALL, SCALE);
-      expect(rosters(r).c).toContain(strongOwn);
-      expect(rosters(r).h).toContain(weakCpu);
-      expect(r.manager!.offers ?? []).toEqual([]);
-    } else {
-      throw new Error('Testaufbau: kein klar besserer Spieler für das CPU-Team');
+    const base = squadStrength(cpu, BY_ID, SCALE);
+    const gain = (give: number, get: number) =>
+      squadStrength({ ...cpu, slots: cpu.slots.map((x) => (x === get ? give : x)), bench: cpu.bench?.map((x) => (x === get ? give : x)) }, BY_ID, SCALE) - base;
+    let accepted = 0;
+    let declined = 0;
+    for (const give of h.slice(0, 6)) {
+      for (const get of c.slice(0, 6)) {
+        const expectYes = gain(give, get) >= 0.5;
+        if (expectYes) {
+          const r = makeOffer(s, 'dev-h', { to: 'c1', give, get }, ALL, SCALE);
+          expect(rosters(r).c).toContain(give);
+          expect(rosters(r).h).toContain(get);
+          accepted++;
+        } else {
+          expect(() => makeOffer(s, 'dev-h', { to: 'c1', give, get }, ALL, SCALE)).toThrow(/lehnt/);
+          declined++;
+        }
+      }
     }
+    expect(declined).toBeGreaterThan(0);
+    expect(accepted).toBeGreaterThan(0);
   });
 });
 

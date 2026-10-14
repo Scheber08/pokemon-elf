@@ -503,7 +503,7 @@ const draft: Messages['draft'] = {
     tradeLine: (a, aGives, b, bGives) => `Trade: ${a} gives ${aGives} to ${b} for ${bGives}`,
     tradeTitle: 'Trade with other teams',
     tradeNote:
-      'Offer a team one of your Pokémon for one from their squad. CPU teams answer right away (only for a clear gain), other players accept or decline. A trade applies immediately.',
+      'Offer a team one of your Pokémon for one from their squad. CPU teams answer right away (only if their best eleven gets stronger) and after matchdays also suggest trades that help both sides. Other players accept or decline. A trade applies immediately.',
     tradeGive: 'You give',
     tradeTeam: 'To team',
     tradeGet: 'You get',

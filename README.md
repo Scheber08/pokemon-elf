@@ -186,7 +186,9 @@ letzten Spieltag. **Transfermarkt**: Jedes Team kann pro Spieltag ein freies Pok
 gegen eins aus dem Kader wünschen (Nachricht `transfer`, privat); zum Anpfiff vergibt der Server in
 Tabellen-Reihenfolge (Letzter zuerst), CPU-Teams holen bei klarem Gewinn selbst jemanden. **Tausch zwischen Teams**:
 Nachricht `offer` (eigenes Pokémon gegen eins aus einem anderen Kader, höchstens 3 offene Angebote); CPU-Teams
-antworten sofort (nur bei klarem Gewinn), Mitspieler mit `offer-reply` (annehmen/ablehnen, Anbieter zieht zurück).
+antworten sofort (nur wenn ihre beste Elf stärker wird, `squadStrength`) und bieten nach jedem Spieltag selbst Tausche an,
+die beiden Elfen helfen (`cpuOffers`, deterministisch, verfallen zum nächsten Anpfiff); Mitspieler antworten mit
+`offer-reply` (annehmen/ablehnen, Anbieter zieht zurück).
 Ein Tausch gilt sofort (Kader, Aufstellungen, Protokoll mit `with`); Angebote sind nur für die beiden Teams sichtbar
 und verfallen, sobald eins der Pokémon weg ist. Die Manager-Saison hat
 einen eigenen Menüpunkt (`/manager`, `src/pages/Manager.tsx`: Liga anlegen, beitreten, eigene Manager-Ligen);

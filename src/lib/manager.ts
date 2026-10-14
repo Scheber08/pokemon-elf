@@ -324,11 +324,15 @@ export function playMatchday(before: DraftState, list: Pokemon[], scale: Scale):
     return { ...state, phase: 'done', league, manager: { ...cur, played: k, form: {} } };
   }
   const nextForm_ = rosterForm(state, k + 1);
-  return {
-    ...state,
-    league,
-    manager: { ...cur, played: k, form: nextForm_, lineups: refreshAuto(state, lineups, nextForm_, byId, scale) },
-  };
+  return cpuOffers(
+    {
+      ...state,
+      league,
+      manager: { ...cur, played: k, form: nextForm_, lineups: refreshAuto(state, lineups, nextForm_, byId, scale) },
+    },
+    list,
+    scale,
+  );
 }
 
 /** Alle fälligen Spieltage spielen (z. B. nach einer Pause des Servers). */
@@ -492,8 +496,24 @@ export function processClaims(state: DraftState, list: Pokemon[], scale: Scale):
 
 /** So viele offene Angebote darf ein Team gleichzeitig haben */
 export const OFFERS_PER_TEAM = 3;
-/** CPU-Teams nehmen einen Tausch an, wenn sie damit so viele Fit-Punkte gewinnen */
-const CPU_TRADE_GAIN = 3;
+/** CPU-Teams nehmen einen Tausch an, wenn ihre beste Elf damit um so viel stärker wird (gewichtete Fit-Punkte) */
+const CPU_TRADE_GAIN = 0.5;
+
+/** Stärke eines Kaders: gewichteter Fit seiner besten Elf in der eigenen Formation (ohne Tagesform). */
+export function squadStrength(team: Pick<DraftTeam, 'slots' | 'ss' | 'bench' | 'formation'>, byId: ById, scale: Scale): number {
+  const pool = rosterOf(team).flatMap((id) => byId.get(id) ?? []);
+  const defs = FORMATIONS[team.formation].slots;
+  const best = bestEleven(team.formation, pool, scale);
+  return defs.reduce((n, d, i) => {
+    const p = best.slots[i] != null ? byId.get(best.slots[i]!) : undefined;
+    return n + (p ? positionFit(p, d.pos, scale) * POSITIONS[d.pos].teamWeight : 0);
+  }, 0);
+}
+
+/** Stärkegewinn eines Teams durch den Tausch out → in */
+function tradeGain(team: DraftTeam, out: number, inn: number, byId: ById, scale: Scale, base = squadStrength(team, byId, scale)): number {
+  return squadStrength(swapRoster(team, out, inn), byId, scale) - base;
+}
 
 /** Grund, warum dieser Tausch (gerade) nicht geht – oder null. */
 export function tradeError(state: Pick<DraftState, 'settings' | 'teams'>, offer: Omit<ManagerOffer, 'id'>, list: Pokemon[]): string | null {
@@ -567,12 +587,9 @@ export function makeOffer(
   if (offers.some((o) => o.from === offer.from && o.to === offer.to && o.give === offer.give && o.get === offer.get)) return state;
   const to = state.teams.find((t) => t.id === offer.to)!;
   if (to.cpu) {
+    // Das CPU-Team nimmt an, wenn seine beste Elf damit klar stärker wird
     const byId = new Map(list.map((p) => [p.id, p]));
-    const gain = (id: number) => {
-      const p = byId.get(id);
-      return p ? bestFit(p, to.formation, scale) : 0;
-    };
-    if (gain(offer.give) < gain(offer.get) + CPU_TRADE_GAIN) fail('trade_declined', 'Das CPU-Team lehnt den Tausch ab');
+    if (tradeGain(to, offer.get, offer.give, byId, scale) < CPU_TRADE_GAIN) fail('trade_declined', 'Das CPU-Team lehnt den Tausch ab');
     return executeTrade(state, offer);
   }
   if (offers.filter((o) => o.from === teamId).length >= OFFERS_PER_TEAM) {
@@ -608,5 +625,53 @@ export function pruneOffers(state: DraftState, list: Pokemon[]): DraftState {
   if (!m?.offers?.length) return state;
   const offers = m.offers.filter((o) => !tradeError(state, o, list));
   return offers.length === m.offers.length ? state : { ...state, manager: { ...m, offers } };
+}
+
+/** Chance je menschlichem Team, nach einem Spieltag ein Angebot eines CPU-Teams zu bekommen */
+const CPU_OFFER_CHANCE = 0.5;
+
+/**
+ * Nach einem Spieltag: CPU-Teams bieten menschlichen Teams einen Tausch an, der beiden hilft (das
+ * CPU-Team gewinnt klar, das andere verliert nichts). Alte CPU-Angebote verfallen dabei. Deterministisch
+ * (Liga-Seed, Spieltag).
+ */
+export function cpuOffers(state: DraftState, list: Pokemon[], scale: Scale): DraftState {
+  const m = state.manager;
+  if (!m || state.phase !== 'season') return state;
+  const cpuIds = new Set(state.teams.filter((t) => t.cpu).map((t) => t.id));
+  let offers = (m.offers ?? []).filter((o) => !cpuIds.has(o.from));
+  let seq = m.offerSeq ?? 0;
+  const cpus = state.teams.filter((t) => t.cpu);
+  if (cpus.length) {
+    const byId = new Map(list.map((p) => [p.id, p]));
+    const rng = leagueRng(state.seed, 'offers', m.played);
+    for (const human of state.teams.filter((t) => !t.cpu)) {
+      const roll = rng();
+      const cpu = cpus[Math.floor(rng() * cpus.length)];
+      if (roll >= CPU_OFFER_CHANCE) continue;
+      const baseCpu = squadStrength(cpu, byId, scale);
+      const baseHuman = squadStrength(human, byId, scale);
+      let best: { give: number; get: number; score: number } | null = null;
+      for (const give of rosterOf(cpu)) {
+        for (const get of rosterOf(human)) {
+          // Beide Elfen werden stärker: das CPU-Team klar, das menschliche Team überhaupt
+          const gainCpu = tradeGain(cpu, give, get, byId, scale, baseCpu);
+          if (gainCpu < CPU_TRADE_GAIN) continue;
+          const gainHuman = tradeGain(human, get, give, byId, scale, baseHuman);
+          if (gainHuman <= 0) continue;
+          const score = gainCpu + gainHuman;
+          if (!best || score > best.score || (score === best.score && (give < best.give || (give === best.give && get < best.get)))) {
+            best = { give, get, score };
+          }
+        }
+      }
+      if (!best) continue;
+      const offer = { from: cpu.id, to: human.id, give: best.give, get: best.get };
+      if (tradeError(state, offer, list)) continue;
+      seq += 1;
+      offers = [...offers, { id: seq, ...offer }];
+    }
+  }
+  return { ...state, manager: { ...m, offers, offerSeq: seq } };
 }
 
