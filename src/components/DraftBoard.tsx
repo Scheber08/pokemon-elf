@@ -136,7 +136,7 @@ export function DraftBoard({ state, byId, currentId }: Props) {
                       {p && team.captain === p.id && (
                         <>
                           {' '}
-                          <span className="draft-board__captain" title={t.captain.title}>
+                          <span className="draft-board__captain captain-badge" title={t.captain.title}>
                             C<span className="sr-only"> – {t.captain.title}</span>
                           </span>
                         </>

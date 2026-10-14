@@ -692,10 +692,12 @@ function LineupEditor({
                 <td className="left">
                   {t.game.pokemon(r.p)}
                   {team.captain === r.p.id && (
-                    <span className="manager__captain" title={t.captain.title}>
+                    <>
                       {' '}
-                      ©<span className="sr-only"> – {t.captain.title}</span>
-                    </span>
+                      <span className="manager__captain captain-badge" title={t.captain.title}>
+                        C<span className="sr-only"> – {t.captain.title}</span>
+                      </span>
+                    </>
                   )}
                   {shinySet?.has(r.p.id) && (
                     <span title={t.shiny.title}>

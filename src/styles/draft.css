@@ -1383,17 +1383,3 @@ button.draft-bench__slot {
   gap: 8px;
   margin: 10px 0 0;
 }
-
-/* Kapitän auf dem Draft-Board: kleines gelbes C-Abzeichen wie auf dem Feld (in beiden Themes lesbar) */
-.draft-board__captain {
-  display: inline-block;
-  padding: 0 4px;
-  border-radius: 4px;
-  background: var(--yellow);
-  color: #0d1b2a;
-  font-family: var(--font-head);
-  font-size: 0.75em;
-  font-weight: 700;
-  line-height: 1.4;
-  vertical-align: 1px;
-}
