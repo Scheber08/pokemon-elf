@@ -426,6 +426,22 @@ describe('Saisonbilanz und Ticker', () => {
     );
   };
 
+  it('Spielwiedergabe: Ergebnis öffnet den Bericht; „Aus“ macht die Ergebnisse wieder zu Text', async () => {
+    const el = await resultView('de');
+    await settle();
+    const buttons = () => el.querySelectorAll('.match__score--btn');
+    expect(buttons().length).toBe(34);
+    await act(async () => (buttons()[0] as unknown as { click(): void }).click());
+    await settle();
+    expect(allText(document.body as never)).toContain('Spielbericht');
+    // Dialog zu, Wiedergabe ausschalten
+    const close = document.body.querySelector('.modal .icon-btn') as unknown as { click(): void };
+    await act(async () => close.click());
+    const off = el.querySelectorAll('.replay-toggle [role="radio"]').find((b) => b.textContent === 'Aus') as unknown as { click(): void };
+    await act(async () => off.click());
+    expect(buttons()).toHaveLength(0);
+  });
+
   it('Englisch: keine deutschen Texte, Vereine übersetzt, Ordnungszahlen', async () => {
     const el = await resultView('en');
     await settle();
