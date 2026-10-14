@@ -15,6 +15,7 @@ import {
 } from '../lib/leagueTimeline';
 import { cupPens, cupStageOf, cupStatus, cupWinner, type CupInfo } from '../lib/cup';
 import { buildTable, type LeagueResult, type Match, type TableRow } from '../lib/season';
+import { useMatchReport } from './MatchReport';
 import { scorerSummary } from '../lib/seasonTimeline';
 import { usePokemonData } from '../state/PokemonData';
 import { CupBracket, CupGroups, cupStatusText } from './CupBracket';
@@ -137,6 +138,7 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
   /** Gruppenphase läuft (oder steht bevor) → Gruppentabellen statt Baum */
   const groupsPhase = !!cup?.groups && (!day || cupStageOf(cup, day.round) === 'group');
   const pensOf = useCallback((m: Match) => (cup ? cupPens(cup, m) : null), [cup]);
+  const report = useMatchReport(nameOf, pokemonName, (m) => dayLabel(m.round), pensOf);
   /** Überraschung des Spieltags (Außenseitersieg, Rating-Rückstand ≥ 100) */
   const upset = useMemo(
     () => (day ? biggestUpset(day.matches, league.teams.map((tm) => tm.rating)) : null),
@@ -186,6 +188,7 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
 
   return (
     <section className="league-ticker card" aria-labelledby="league-ticker-title">
+      {report.element}
       <header className="league-ticker__head">
         <div className="league-ticker__heading">
           <span className="kicker">
@@ -342,6 +345,7 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
                 nameOf={nameOf}
                 pokemonName={pokemonName}
                 pensOf={pensOf}
+                onOpen={report.open}
               />
               {!cup && day.byes.length > 0 && (
                 <p className="league-board__byes">{t.draft.byes(day.byes.map(nameOf).join(', '))}</p>
@@ -429,10 +433,12 @@ interface FixtureListProps {
   className?: string;
   /** KO-Turnier: Elfmeterschießen eines Spiels (sonst null) */
   pensOf?: (m: Match) => { home: number; away: number } | null;
+  /** Spielbericht öffnen (Klick aufs Ergebnis) – ohne: Ergebnis nur als Text */
+  onOpen?: (m: Match) => void;
 }
 
 /** Alle Spiele eines Spieltags – das eigene zuerst und hervorgehoben. */
-export function FixtureList({ matches, you, nameOf, pokemonName, upcoming, className = '', pensOf }: FixtureListProps) {
+export function FixtureList({ matches, you, nameOf, pokemonName, upcoming, className = '', pensOf, onOpen }: FixtureListProps) {
   const t = useT();
   const sorted = you == null ? matches : [...matches].sort((a, b) => Number(isOwn(b, you)) - Number(isOwn(a, you)));
   return (
@@ -452,12 +458,24 @@ export function FixtureList({ matches, you, nameOf, pokemonName, upcoming, class
               <span className={`league-fixture__team league-fixture__team--home ${m.home === you ? 'is-you' : ''}`}>
                 {nameOf(m.home)}
               </span>
-              <span
-                className="league-fixture__score"
-                aria-label={upcoming ? t.draft.ticker.scoreOpen : t.draft.ticker.scoreAria(m.hg, m.ag)}
-              >
-                {upcoming ? '–:–' : `${m.hg}:${m.ag}`}
-              </span>
+              {onOpen && !upcoming ? (
+                <button
+                  type="button"
+                  className="league-fixture__score league-fixture__score--btn"
+                  aria-label={t.draft.report.open(nameOf(m.home), nameOf(m.away), `${m.hg}:${m.ag}`)}
+                  title={t.draft.report.title}
+                  onClick={() => onOpen(m)}
+                >
+                  {`${m.hg}:${m.ag}`}
+                </button>
+              ) : (
+                <span
+                  className="league-fixture__score"
+                  aria-label={upcoming ? t.draft.ticker.scoreOpen : t.draft.ticker.scoreAria(m.hg, m.ag)}
+                >
+                  {upcoming ? '–:–' : `${m.hg}:${m.ag}`}
+                </span>
+              )}
               <span className={`league-fixture__team league-fixture__team--away ${m.away === you ? 'is-you' : ''}`}>
                 {nameOf(m.away)}
               </span>

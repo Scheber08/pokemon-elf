@@ -4,6 +4,7 @@
  *   λ_eigen  = 1,4 · exp((Score − Gegner) / 250) + Heimvorteil 0,15
  *   λ_gegner = 1,4 · exp((Gegner − Score) / 250) (+ Heimvorteil, wenn der Gegner zu Hause spielt)
  */
+import { POSITIONS } from '../config/positions';
 import { CLUB_NAMES, GOAL_THREAT, SEASON } from '../config/season';
 import type { PosCode, Record3 } from '../types';
 import type { CupInfo } from './cup';
@@ -37,6 +38,21 @@ export interface Goal {
   pos: PosCode;
   /** Spielminute (1–90, 91–95 = Nachspielzeit 90+1 … 90+5) – nur im Online-Draft (DRAFT_MODEL) */
   minute?: number;
+  /** Vorlagengeber (Pokémon-ID) – nur mit Spieldetails (DRAFT_MODEL) */
+  assist?: number;
+}
+
+/**
+ * Spieldetails (nur DRAFT_MODEL): Paare je [Heim, Gast]. Bewusst number[] statt Tupel – der
+ * Durable Object gibt Schnappschüsse per RPC zurück, dessen Typen Tupel zu Arrays machen.
+ */
+export interface MatchStats {
+  shots: number[];
+  onTarget: number[];
+  /** Ballbesitz des Heimteams in Prozent (Gast = 100 − Wert) */
+  possession: number;
+  /** Erwartete Tore (eine Nachkommastelle) */
+  xg: number[];
 }
 
 export interface Match {
@@ -47,6 +63,8 @@ export interface Match {
   ag: number;
   homeScorers: Goal[];
   awayScorers: Goal[];
+  /** Spieldetails (Schüsse, Ballbesitz, xG) – nur im Online-Draft */
+  stats?: MatchStats;
 }
 
 export interface TableRow {
@@ -129,6 +147,8 @@ export interface MatchModel {
   form: { sd: number; keep: number } | null;
   /** Jedes Tor bekommt eine Spielminute (Goal.minute) */
   minutes: boolean;
+  /** Spieldetails: Schüsse, Ballbesitz, xG (Match.stats) und Vorlagen (Goal.assist) */
+  details: boolean;
 }
 
 export const CLASSIC_MODEL: MatchModel = {
@@ -138,6 +158,7 @@ export const CLASSIC_MODEL: MatchModel = {
   jitter: SEASON.jitter,
   form: null,
   minutes: false,
+  details: false,
 };
 
 /**
@@ -151,6 +172,7 @@ export const DRAFT_MODEL: MatchModel = {
   jitter: 0.15,
   form: { sd: 35, keep: 0.8 },
   minutes: true,
+  details: true,
 };
 
 /**
@@ -260,8 +282,11 @@ export function playMatch(
   const ta = teams[away];
   const rh = th.rating + (form?.[home] ?? 0);
   const ra = ta.rating + (form?.[away] ?? 0);
-  const hg = poisson(rng, lambdaWithJitter(rng, rh, ra, !neutral, setPieceBonus(th), model));
-  const ag = poisson(rng, lambdaWithJitter(rng, ra, rh, false, setPieceBonus(ta), model));
+  // Reihenfolge der Zufallszahlen wie immer (Challenges müssen gleich bleiben): erst Heim, dann Gast
+  const lh = lambdaWithJitter(rng, rh, ra, !neutral, setPieceBonus(th), model);
+  const hg = poisson(rng, lh);
+  const la = lambdaWithJitter(rng, ra, rh, false, setPieceBonus(ta), model);
+  const ag = poisson(rng, la);
   const match: Match = {
     round,
     home,
@@ -280,7 +305,42 @@ export function playMatch(
     match.homeScorers = withMinutes(match.homeScorers);
     match.awayScorers = withMinutes(match.awayScorers);
   }
+  if (model.details) {
+    // Eigener Strom für die Details (eine Zahl aus rng) – Ergebnis und Torschützen stehen schon fest
+    const d = createRng(Math.floor(rng() * 0x7fffffff));
+    match.homeScorers = withAssists(d, th, match.homeScorers);
+    match.awayScorers = withAssists(d, ta, match.awayScorers);
+    match.stats = matchStats(d, lh, la, hg, ag, rh - ra);
+  }
   return match;
+}
+
+/** Anteil der Tore mit Vorlage (Standards ohne) */
+const ASSIST_SHARE = 0.72;
+/** Wie oft eine Linie die Vorlage gibt (relativ) */
+const ASSIST_LINE: Record<'gk' | 'def' | 'mid' | 'att', number> = { gk: 0.05, def: 0.45, mid: 1.15, att: 0.85 };
+
+function withAssists(rng: Rng, team: LeagueTeam, goals: Goal[]): Goal[] {
+  const squad = team.squad;
+  if (!squad?.length) return goals;
+  return goals.map((g) => {
+    if (g.pos === 'SS' || rng() >= ASSIST_SHARE) return g;
+    const mates = squad.filter((p) => p.pokemonId !== g.pokemonId);
+    if (!mates.length) return g;
+    const weights = mates.map((p) => ASSIST_LINE[POSITIONS[p.pos]?.line ?? 'mid'] * (0.6 + p.spa / 255 + (0.4 * p.atk) / 255));
+    return { ...g, assist: mates[weightedIndex(rng, weights)].pokemonId };
+  });
+}
+
+/** Schüsse, Ballbesitz und xG passend zu Erwartung und Ergebnis */
+function matchStats(rng: Rng, lh: number, la: number, hg: number, ag: number, diff: number): MatchStats {
+  const xg = (l: number) => Math.round(l * (0.8 + rng() * 0.4) * 10) / 10;
+  const shots = (l: number, goals: number) => Math.max(goals, Math.round(l * 7 + 3 + gaussian(rng) * 2.2));
+  const hs = shots(lh, hg);
+  const as = shots(la, ag);
+  const onTarget = (s: number, goals: number) => Math.min(s, goals + Math.round((s - goals) * (0.22 + rng() * 0.18)));
+  const possession = Math.round(Math.min(72, Math.max(28, 50 + 16 * Math.tanh(diff / 260) + gaussian(rng) * 4)));
+  return { shots: [hs, as], onTarget: [onTarget(hs, hg), onTarget(as, ag)], possession, xg: [xg(lh), xg(la)] };
 }
 
 /** Simuliert eine komplette Liga (jeder gegen jeden, Hin- und Rückrunde). */

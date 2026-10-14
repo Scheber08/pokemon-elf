@@ -401,6 +401,24 @@ const draft = {
     level: (names: string) => `Punktgleich mit ${names}`,
   },
   /** KO-Turnier (Ticker und Ergebnis) */
+  // ---------------------------------------------------------------- Spielbericht
+  report: {
+    title: 'Spielbericht',
+    open: (home: string, away: string, score: string) => `Spielbericht ${home} gegen ${away} (${score}) öffnen`,
+    goals: 'Tore',
+    noGoals: 'Keine Tore.',
+    /** Tor eines Teams ohne Kader (Verein) */
+    goalOf: (team: string) => `Tor ${team}`,
+    assist: (name: string) => `Vorlage ${name}`,
+    setPiece: 'Standard',
+    stats: 'Statistik',
+    possession: 'Ballbesitz',
+    shots: 'Schüsse',
+    onTarget: 'Aufs Tor',
+    xg: 'Erwartete Tore (xG)',
+    noStats: 'Für dieses Spiel gibt es keine Statistik (ältere Liga).',
+  },
+
   // ---------------------------------------------------------------- Manager-Saison: Bank
   bench: {
     label: 'Bank',

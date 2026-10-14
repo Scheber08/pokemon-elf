@@ -367,6 +367,22 @@ const draft: Messages['draft'] = {
       `Level on points with ${names}, same goal difference and goals scored – decided on ${label}`,
     level: (names) => `Level on points with ${names}`,
   },
+  report: {
+    title: 'Match report',
+    open: (home, away, score) => `Open match report ${home} vs ${away} (${score})`,
+    goals: 'Goals',
+    noGoals: 'No goals.',
+    goalOf: (team) => `Goal ${team}`,
+    assist: (name) => `assist ${name}`,
+    setPiece: 'set piece',
+    stats: 'Stats',
+    possession: 'Possession',
+    shots: 'Shots',
+    onTarget: 'On target',
+    xg: 'Expected goals (xG)',
+    noStats: 'No stats for this match (older league).',
+  },
+
   bench: {
     label: 'Bench',
     short: 'BN',

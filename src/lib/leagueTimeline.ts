@@ -13,7 +13,7 @@ import type { Pokemon, PosCode } from '../types';
 import type { DraftPickLog, DraftTeam } from './api/draftContract';
 import { storedCup } from './cup';
 import { positionFit, type Scale } from './fit';
-import { buildTable, type Goal, type LeagueResult, type LeagueTeam, type Match, type TableRow } from './season';
+import { buildTable, type Goal, type LeagueResult, type LeagueTeam, type Match, type MatchStats, type TableRow } from './season';
 
 export interface Matchday {
   /** Spieltag (1-basiert) */
@@ -169,9 +169,24 @@ function goalsOf(v: unknown, goals: number): Goal[] | null {
     if (!isObj(g) || !isInt(g.pokemonId, 1) || typeof g.pos !== 'string') return null;
     const goal: Goal = { pokemonId: g.pokemonId, pos: g.pos as Goal['pos'] };
     if (isInt(g.minute, 1) && g.minute <= 120) goal.minute = g.minute;
+    if (isInt(g.assist, 1)) goal.assist = g.assist;
     out.push(goal);
   }
   return out;
+}
+
+const pairOf = (v: unknown, ok: (x: unknown) => boolean): number[] | null =>
+  Array.isArray(v) && v.length === 2 && ok(v[0]) && ok(v[1]) ? [v[0] as number, v[1] as number] : null;
+
+/** Spieldetails eines gespeicherten Spiels – null, wenn sie fehlen oder kaputt sind */
+function statsOf(v: unknown): MatchStats | null {
+  if (!isObj(v)) return null;
+  const shots = pairOf(v.shots, (x) => isInt(x));
+  const onTarget = pairOf(v.onTarget, (x) => isInt(x));
+  const xg = pairOf(v.xg, (x) => isNum(x) && (x as number) >= 0);
+  const possession = v.possession;
+  if (!shots || !onTarget || !xg || !isInt(possession) || possession > 100) return null;
+  return { shots, onTarget, xg, possession };
 }
 
 /** Höchstens so viele Teams in einem gespeicherten Ergebnis (gedraftet + aufgefüllt) */
@@ -212,7 +227,10 @@ export function storedLeague(raw: unknown, teamCount: number): LeagueResult | nu
     const homeScorers = goalsOf(m.homeScorers ?? [], hg);
     const awayScorers = goalsOf(m.awayScorers ?? [], ag);
     if (!homeScorers || !awayScorers) return null;
-    matches.push({ round, home, away, hg, ag, homeScorers, awayScorers });
+    const match: Match = { round, home, away, hg, ag, homeScorers, awayScorers };
+    const stats = statsOf(m.stats);
+    if (stats) match.stats = stats;
+    matches.push(match);
   }
 
   const seen = new Set<number>();

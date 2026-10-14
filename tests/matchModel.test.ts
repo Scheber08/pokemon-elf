@@ -124,3 +124,47 @@ describe('Torminuten (Online-Draft)', () => {
     expect(scorerSummary([{ pokemonId: 6, pos: 'ST' }, { pokemonId: 6, pos: 'ST' }], name)).toBe('Glurak 2×');
   });
 });
+
+describe('Spieldetails (DRAFT_MODEL)', () => {
+  const squad = (base: number): LeagueTeam['squad'] =>
+    (['TW', 'IV', 'IV', 'LV', 'RV', 'DM', 'ZM', 'OM', 'LF', 'RF', 'ST'] as const).map((pos, i) => ({ pokemonId: base + i, pos, atk: 100, spa: 90 }));
+  const withSquads = (): LeagueTeam[] => teams().map((t, i) => ({ ...t, squad: squad(100 * (i + 1)) }));
+
+  it('Schüsse, aufs Tor, Ballbesitz und xG passen zum Ergebnis; Vorlagen kommen von Mitspielern', () => {
+    const league = simulateLeague(withSquads(), createRng(9), DRAFT_MODEL);
+    let assists = 0;
+    for (const m of league.matches) {
+      const s = m.stats!;
+      expect(s.shots[0]).toBeGreaterThanOrEqual(m.hg);
+      expect(s.shots[1]).toBeGreaterThanOrEqual(m.ag);
+      expect(s.onTarget[0]).toBeGreaterThanOrEqual(m.hg);
+      expect(s.onTarget[0]).toBeLessThanOrEqual(s.shots[0]);
+      expect(s.onTarget[1]).toBeLessThanOrEqual(s.shots[1]);
+      expect(s.possession).toBeGreaterThanOrEqual(28);
+      expect(s.possession).toBeLessThanOrEqual(72);
+      for (const [goals, team] of [[m.homeScorers, m.home], [m.awayScorers, m.away]] as const) {
+        const ids = league.teams[team].squad!.map((p) => p.pokemonId);
+        for (const g of goals) {
+          if (g.assist == null) continue;
+          assists++;
+          expect(g.assist).not.toBe(g.pokemonId);
+          expect(ids).toContain(g.assist);
+        }
+      }
+    }
+    expect(assists).toBeGreaterThan(50);
+    // Klassisches Modell: keine Details
+    expect(simulateLeague(withSquads(), createRng(9), CLASSIC_MODEL).matches.every((m) => !m.stats)).toBe(true);
+  });
+
+  it('gespeichertes Ergebnis behält Details; kaputte Details fallen weg', () => {
+    const league = simulateLeague(withSquads(), createRng(5), DRAFT_MODEL);
+    const compact = { ...league, teams: league.teams.map((t) => ({ name: t.name, rating: t.rating })) };
+    const stored = storedLeague(JSON.parse(JSON.stringify(compact)), 18)!;
+    expect(stored.matches[0].stats).toEqual(league.matches[0].stats);
+    expect(stored.matches.flatMap((m) => m.homeScorers).some((g) => g.assist != null)).toBe(true);
+    const broken = JSON.parse(JSON.stringify(compact));
+    broken.matches[0].stats = { shots: [1], possession: 50 };
+    expect(storedLeague(broken, 18)!.matches[0].stats).toBeUndefined();
+  });
+});

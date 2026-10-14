@@ -1037,3 +1037,112 @@
   justify-content: space-between;
   gap: 8px;
 }
+
+/* Ergebnis als Knopf: öffnet den Spielbericht */
+.league-fixture__score--btn {
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+}
+.league-fixture__score--btn:hover,
+.league-fixture__score--btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--yellow);
+}
+
+/* Spielbericht */
+.match-report__label {
+  margin: 0 0 4px;
+  text-align: center;
+}
+.match-report__score {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+}
+.match-report__team {
+  font-family: var(--font-head);
+  font-size: 18px;
+  text-transform: uppercase;
+  text-align: right;
+}
+.match-report__team--away {
+  text-align: left;
+}
+.match-report__result {
+  padding: 2px 14px;
+  border-radius: 10px;
+  background: var(--fx-score-bg, var(--surface-2));
+  font-family: var(--font-head);
+  font-size: 30px;
+  font-variant-numeric: tabular-nums;
+}
+.match-report__pens {
+  margin: 4px 0 0;
+  text-align: center;
+  color: var(--text-dim);
+}
+.match-report__heading {
+  margin: 18px 0 8px;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.match-report__events {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.match-report__event {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.match-report__event.is-away {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+.match-report__minute {
+  min-width: 3.2em;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.match-report__event.is-away .match-report__minute {
+  text-align: right;
+}
+.match-report__stats {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+.match-report__stat dt {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: center;
+}
+.match-report__stat dd {
+  display: grid;
+  grid-template-columns: 3.4em 1fr 3.4em;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 0;
+}
+.match-report__val {
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  font-weight: 600;
+}
+.match-report__bar {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line-strong);
+  overflow: hidden;
+}
+.match-report__bar > span {
+  display: block;
+  height: 100%;
+  background: var(--yellow);
+}

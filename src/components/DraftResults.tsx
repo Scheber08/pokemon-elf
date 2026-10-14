@@ -15,6 +15,7 @@ import { cupPath, cupPens, cupStageOf, cupStatus, cupWinner } from '../lib/cup';
 import { Confetti } from './Confetti';
 import { CupBracket, CupGroups, cupStatusText } from './CupBracket';
 import { FixtureList, FormDots } from './LeagueTicker';
+import { useMatchReport } from './MatchReport';
 import { Pitch } from './Pitch';
 import { PlaceChart } from './PlaceChart';
 import { SaveImageButton } from './SaveImageButton';
@@ -90,6 +91,17 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
       return p ? t.game.pokemon(p) : `#${id}`;
     },
     [byId, t],
+  );
+  // Spielbericht (Klick aufs Ergebnis) – Titel wie die Spieltage, KO-Spiele mit Elfmeterschießen
+  const report = useMatchReport(
+    nameOf,
+    pokemonName,
+    (m) => {
+      const stage = league.cup ? cupStageOf(league.cup, m.round) : null;
+      if (stage === 'group') return `${t.draft.cup.stage.group} · ${t.draft.matchday(m.round)}`;
+      return stage ? t.draft.cup.stage[stage] : t.draft.matchday(m.round);
+    },
+    (m) => (league.cup ? cupPens(league.cup, m) : null),
   );
   const ratingOf = (i: number) => ratings[i] ?? league.teams[i]?.rating ?? 0;
   // Noten nur für gedraftete Teams (die Auffüllteams dahinter haben nicht gedraftet)
@@ -202,6 +214,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
 
   return (
     <div className="draft-results">
+      {report.element}
       {youAreChampion && <Confetti />}
 
       <section className={`card draft-results__hero ${youAreChampion ? 'is-you' : ''}`} aria-labelledby="draft-results-champion">
@@ -569,6 +582,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                 pokemonName={pokemonName}
                 className="league-fixtures--plain"
                 pensOf={cup ? (m) => cupPens(cup, m) : undefined}
+                onOpen={report.open}
               />
               {!cup && d.byes.length > 0 && <p className="muted small draft-results__byes">{t.draft.byes(d.byes.map(nameOf).join(', '))}</p>}
             </li>

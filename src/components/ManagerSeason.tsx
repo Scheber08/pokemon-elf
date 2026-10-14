@@ -14,6 +14,7 @@ import type { FormationId, Pokemon, PosCode } from '../types';
 import { PosBadge } from './Badges';
 import { BenchRow } from './BenchRow';
 import { FixtureList } from './LeagueTicker';
+import { useMatchReport } from './MatchReport';
 import { Pitch, SS_INDEX, type SlotState } from './Pitch';
 import '../styles/draft.css';
 
@@ -73,6 +74,8 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
     return p ? t.game.pokemon(p) : `#${id}`;
   }, [byId, t]);
 
+  const report = useMatchReport(nameOf, pokemonName, (x) => tx.next(x.round));
+
   if (!m || !league) {
     return (
       <div className="boot" role="status">
@@ -99,6 +102,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
 
   return (
     <div className="manager">
+      {report.element}
       <section className="card manager__status" aria-live="polite">
         <span className="kicker">{tx.kicker}</span>
         <h2 className="section-title">{tx.played(m.played, m.total)}</h2>
@@ -164,7 +168,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           <h2 id="manager-last" className="section-title">
             {tx.lastResults(m.played)}
           </h2>
-          <FixtureList matches={last} you={you} nameOf={nameOf} pokemonName={pokemonName} />
+          <FixtureList matches={last} you={you} nameOf={nameOf} pokemonName={pokemonName} onOpen={report.open} />
         </section>
       )}
 
