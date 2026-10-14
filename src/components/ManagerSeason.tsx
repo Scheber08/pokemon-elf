@@ -354,7 +354,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
         <h2 id="manager-table" className="section-title">
           {tx.tableTitle}
         </h2>
-        <ManagerTable rows={league.table} you={you} nameOf={nameOf} />
+        <ManagerTable rows={league.table} you={you} nameOf={nameOf} matches={league.matches} played={m.played} />
       </section>
     </div>
   );
@@ -555,7 +555,20 @@ function LineupEditor({
 }
 
 /** Tabelle der Manager-Saison (Platz, Team, Spiele, S/U/N, Tore, Punkte). */
-function ManagerTable({ rows, you, nameOf }: { rows: import('../lib/season').TableRow[]; you: number | null; nameOf: (i: number) => string }) {
+function ManagerTable({
+  rows,
+  you,
+  nameOf,
+  matches,
+  played,
+}: {
+  rows: import('../lib/season').TableRow[];
+  you: number | null;
+  nameOf: (i: number) => string;
+  /** Gespielte Spiele und Spieltage – für die Formkurve */
+  matches: Match[];
+  played: number;
+}) {
   const t = useT();
   const c = t.draft.col;
   return (
@@ -585,6 +598,11 @@ function ManagerTable({ rows, you, nameOf }: { rows: import('../lib/season').Tab
             <th scope="col" title={c.ptsTitle}>
               {c.pts}
             </th>
+            {played > 0 && (
+              <th scope="col" title={c.formTitle} className="league-live__form-col">
+                {c.form}
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -600,6 +618,11 @@ function ManagerTable({ rows, you, nameOf }: { rows: import('../lib/season').Tab
               <td>
                 <strong>{r.pts}</strong>
               </td>
+              {played > 0 && (
+                <td className="league-live__form-col">
+                  <FormDots form={recentForm(matches, r.team, played)} />
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
