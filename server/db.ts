@@ -597,23 +597,28 @@ export function mondayOf(day: string): string {
  * Einmalig nach Einführung der Wochenwertung: Für die laufende Woche gibt es nur Tages-Bestwerte.
  * Daraus (Montag bis heute) den Wochen-Bestwert je Gerät und Wertung eintragen – über dasselbe
  * „nur wenn besser" wie beim Abschluss. Tages-Bestwerte gibt es nur für Geräte mit eigenem Namen,
- * die Wochenwertung bekommt so genau dieselben Geräte. null, wenn schon erledigt.
+ * die Wochenwertung bekommt so genau dieselben Geräte. Liefert die Zahl eingetragener bzw.
+ * verbesserter Wochenwerte – null, wenn schon erledigt.
  */
 export async function backfillWeekBests(db: Db, now: number): Promise<number | null> {
   if (await db.prepare('SELECT 1 AS x FROM meta WHERE key = ?').bind(WEEK_BACKFILL_KEY).first()) return null;
   const today = dayKey(new Date(now));
-  const week = weekKey(today);
-  const rows = await db
-    .prepare(
-      `SELECT challenge, scope, device_id, entry_id, points, score, created_at FROM best_entries
-       WHERE scope >= ? AND scope <= ? AND scope LIKE '____-__-__'`,
-    )
-    .bind(mondayOf(today), today)
-    .all<{ challenge: string; scope: string; device_id: string; entry_id: string; points: number; score: number; created_at: number }>();
-  const statements: DbStatement[] = rows.results.map((r) =>
-    db.prepare(UPSERT_BEST_SQL).bind(r.challenge, week, r.device_id, r.entry_id, r.points, r.score, r.created_at),
-  );
-  statements.push(db.prepare('INSERT OR IGNORE INTO meta (key, value) VALUES (?, ?)').bind(WEEK_BACKFILL_KEY, new Date(now).toISOString()));
-  await db.batch(statements);
-  return rows.results.length;
+  // Eine Anweisung (D1 begrenzt die Abfragen pro Aufruf): je Gerät und Wertung der beste Tageswert
+  // der Woche (gleiche Reihenfolge wie UPSERT_BEST_SQL), eingetragen mit „nur wenn besser"
+  const onConflict = UPSERT_BEST_SQL.slice(UPSERT_BEST_SQL.indexOf('ON CONFLICT'));
+  const [res] = await db.batch([
+    db
+      .prepare(
+        `INSERT INTO best_entries (challenge, scope, device_id, entry_id, points, score, created_at)
+         SELECT challenge, ?, device_id, entry_id, points, score, created_at FROM (
+           SELECT challenge, device_id, entry_id, points, score, created_at, ROW_NUMBER() OVER (
+             PARTITION BY challenge, device_id ORDER BY points DESC, score DESC, created_at, entry_id) AS rn
+           FROM best_entries WHERE scope >= ? AND scope <= ? AND scope LIKE '____-__-__'
+         ) WHERE rn = 1
+         ${onConflict}`,
+      )
+      .bind(weekKey(today), mondayOf(today), today),
+    db.prepare('INSERT OR IGNORE INTO meta (key, value) VALUES (?, ?)').bind(WEEK_BACKFILL_KEY, new Date(now).toISOString()),
+  ]);
+  return res.meta.changes;
 }

@@ -71,7 +71,7 @@ function runCleanups(db: Db): Promise<void> {
       })
       .then(
         (n) => {
-          if (n) console.log(`${WEEK_BACKFILL_KEY}: Wochenwertung aus ${n} Tages-Bestwerten nachgetragen`);
+          if (n) console.log(`${WEEK_BACKFILL_KEY}: ${n} Wochen-Bestwerte nachgetragen`);
         },
       (err: unknown) => {
         cleaned.delete(db);

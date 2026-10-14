@@ -32,7 +32,8 @@ describe('Wochenwertung nachtragen', () => {
     // Schon vorhandener (besserer) Wochenwert bleibt
     insert(weekKey('2026-10-14'), 'd', 'd9', 100);
     insert('2026-10-13', 'd', 'd1', 60);
-    expect(await backfillWeekBests(db, now)).toBe(4);
+    // Neu eingetragen: a (bester von zwei Tagen) und b; d behält seinen besseren Wochenwert
+    expect(await backfillWeekBests(db, now)).toBe(2);
     const week = db.query<{ challenge: string; device_id: string; entry_id: string }>(
       'SELECT challenge, device_id, entry_id FROM best_entries WHERE scope = ? ORDER BY device_id',
       weekKey(dayKey(new Date(now))),
