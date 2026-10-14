@@ -323,6 +323,13 @@ function hat(c: Canvas, id: string, cloth: string) {
       c.fill(ellipse(26, 7, 1.6, 1.6), '#f3f3f3', '#c9ced6');
       c.rect(7, 8, 18, 2, '#f3f3f3');
       break;
+    case 'bunny':
+      // Zwei Hasenohren mit rosa Innenseite
+      for (const cx of [11.5, 19.5]) {
+        c.fill(and(ellipse(cx, 2.5, 2, 4.5), above(7)), '#f3f3f3', '#9aa3ae');
+        c.fill(and(ellipse(cx, 3, 0.9, 3), above(6)), '#f2a7c3');
+      }
+      break;
     case 'straw':
       // Breite Krempe, rotes Band
       c.fill(and(ellipse(15.5, 8, 6.5, 5), above(8)), '#e9c46a', '#a8862e');

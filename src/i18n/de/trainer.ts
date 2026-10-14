@@ -109,6 +109,7 @@ const trainer = {
       pumpkin: 'Kürbis',
       santa: 'Weihnachtsmütze',
       straw: 'Strohhut',
+      bunny: 'Hasenohren',
     },
     accessory: {
       none: 'Ohne',

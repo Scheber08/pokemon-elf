@@ -110,6 +110,7 @@ const trainer: Messages['trainer'] = {
       pumpkin: 'Pumpkin',
       santa: 'Santa hat',
       straw: 'Straw hat',
+      bunny: 'Bunny ears',
     },
     accessory: {
       none: 'None',
