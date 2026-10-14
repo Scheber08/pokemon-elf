@@ -216,6 +216,13 @@ Statistik, Torschützen mit Vorlagen) oder die 2D-Ansicht von oben (`src/lib/mat
 Illustration, das Ergebnis ändert sich nicht; Tempo 1×/2×/4×, „⏭ Tor“, Leertaste/N, „TOR!“-Einblendung). In den
 Einstellungen bzw. per Umschalter: 2D, Bericht oder aus. In der Manager-Saison zusätzlich der Spieler des Spieltags.
 
+**Trikotnummern** (alle Modi, `src/lib/jerseys.ts`, `src/components/JerseyEditor.tsx`): Ohne eigene Wahl gilt
+eine Vorgabe nach Position (Torwart 1, Abwehr 2–5, Sechser 6, Zehner 10, Stürmer 9 …). Jedes Team kann seinen
+Pokémon Nummern von 1 bis 99 geben – je Team eindeutig (belegte Nummern tauschen), die Nummer hängt am Pokémon,
+nicht an der Position. Builder: im Zustand und in „Meine Teams“; Online-Draft/Manager-Saison: Feld `jerseys` am
+Team (Nachricht `jerseys`, nach dem Draft); Challenges und lokaler Draft: im Browser (`useJerseys`). Reine Optik
+auf Feld, Bild und 2D-Wiedergabe – Wertung und Rangliste kennen keine Nummern.
+
 ## Trainer & Erfolge
 
 **Erfolge** (`/trainer`, `src/lib/achievements.ts`, `server/achievements.ts`): `POST /api/me` rechnet aus den Runs
