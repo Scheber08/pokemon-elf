@@ -11,6 +11,10 @@ const online = {
   notifyDenied: 'Benachrichtigungen sind im Browser blockiert – erlaube sie in den Website-Einstellungen.',
   notifyHeading: (league: string) => `Du bist dran – ${league}`,
   notifyBody: (pick: number, total: number) => `Pick ${pick} von ${total}. Wähl dein nächstes Pokémon!`,
+  /** Benachrichtigung am Saisonende */
+  seasonDoneHeading: (league: string) => `Saison vorbei – ${league}`,
+  seasonDoneLeague: (place: number) => (place === 1 ? 'Dein Team ist Meister!' : `Dein Team wird ${place}.`),
+  seasonDoneCup: (status: string) => `Dein Team: ${status}`,
   // ------------------------------------------------ /draft (Online-Modus)
   title: 'Fantasy-Draft',
   lead: 'Online-Liga mit Freunden: Liga erstellen, Link teilen, live im Snake-Draft wählen – mit Pick-Timer, CPU-Teams und einer gemeinsamen Saison zum Schluss.',

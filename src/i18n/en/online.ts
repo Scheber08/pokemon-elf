@@ -13,6 +13,9 @@ const online: Messages['online'] = {
   notifyDenied: 'Notifications are blocked in your browser – allow them in the site settings.',
   notifyHeading: (league) => `Your turn – ${league}`,
   notifyBody: (pick, total) => `Pick ${pick} of ${total}. Choose your next Pokémon!`,
+  seasonDoneHeading: (league) => `Season over – ${league}`,
+  seasonDoneLeague: (place) => (place === 1 ? 'Your team are champions!' : `Your team finish ${place}${place % 10 === 1 && place % 100 !== 11 ? 'st' : place % 10 === 2 && place % 100 !== 12 ? 'nd' : place % 10 === 3 && place % 100 !== 13 ? 'rd' : 'th'}.`),
+  seasonDoneCup: (status) => `Your team: ${status}`,
   // ------------------------------------------------ /draft (online mode)
   title: 'Fantasy Draft',
   lead: 'Online league with friends: create a league, share the link, pick live in a snake draft – with a pick timer, CPU teams and a shared season at the end.',

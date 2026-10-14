@@ -522,6 +522,41 @@ describe('KO-Turnier auf Englisch', () => {
   });
 });
 
+describe('Benachrichtigung am Saisonende', () => {
+  it('Tab im Hintergrund, Hinweise an: nach dem Abpfiff kommt der eigene Platz', async () => {
+    localStorage.setItem('pokemon-elf:settings', JSON.stringify({ lang: 'de', notify: true }));
+    const shown: { title: string; body?: string; tag?: string }[] = [];
+    class FakeNotification {
+      static permission = 'granted';
+      onclick: (() => void) | null = null;
+      constructor(title: string, opts: { body?: string; tag?: string }) {
+        shown.push({ title, ...opts });
+      }
+      close() {}
+    }
+    vi.stubGlobal('Notification', FakeNotification);
+    doc.visibilityState = 'hidden';
+    try {
+      const s = runnerUpView(finishedDraft());
+      const total = Math.max(...s.league!.matches.map((m) => m.round));
+      // Abpfiff (letzter Spieltag + FINALE_MS) in gut einer halben Sekunde
+      s.season = { ...s.season!, startsAt: Date.now() - (total - 1) * s.season!.stepMs - timeline.FINALE_MS + 500 };
+      await render(app(h(DraftSeasonStage, { room: fakeRoom(s) })));
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 900));
+      });
+      await settle();
+      const you = s.teams.findIndex((t) => t.id === s.you);
+      const place = s.league!.table.findIndex((r) => r.team === you) + 1;
+      expect(shown).toEqual([
+        expect.objectContaining({ title: 'Saison vorbei – Liga K7MPQ2', body: `Dein Team wird ${place}.`, tag: 'draft-season-K7MPQ2' }),
+      ]);
+    } finally {
+      doc.visibilityState = 'visible';
+    }
+  });
+});
+
 describe('Deutsch bleibt unverändert', () => {
   it('Ergebnis und Ticker auf Deutsch', async () => {
     storeLang('de');

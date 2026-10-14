@@ -4,11 +4,14 @@ import { useT } from '../i18n';
 import { ApiRequestError } from '../lib/api/client';
 import { requestRematch } from '../lib/api/draftClient';
 import { draftSeason, groupEntries } from '../lib/draftEngine';
+import { cupStatus } from '../lib/cup';
 import { leagueRatings, resolveLeague } from '../lib/leagueTimeline';
+import { showNotify } from '../lib/notify';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import { useToast } from '../state/Toast';
 import { draftErrorText, teamLabel, type DraftRoom } from '../state/useDraftRoom';
+import { cupStatusText } from './CupBracket';
 import { DraftResults } from './DraftResults';
 import { DraftSquads } from './DraftSquads';
 import { EternalTable } from './EternalTable';
@@ -25,7 +28,7 @@ import '../styles/draft.css';
 export function DraftSeasonStage({ room }: { room: DraftRoom }) {
   const t = useT();
   const { byId, scale } = usePokemonData();
-  const { sprite } = useSettings();
+  const { sprite, notify } = useSettings();
   const s = room.state!;
   const season = s.season;
 
@@ -88,7 +91,17 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           startsAt={season.startsAt}
           stepMs={season.stepMs}
           clockOffset={room.clockOffset}
-          onDone={() => setTicker(false)}
+          onDone={() => {
+            setTicker(false);
+            // Tab im Hintergrund: Saisonende melden (wie „Du bist dran" – nur mit Erlaubnis)
+            if (notify && highlight != null) {
+              const place = league.table.findIndex((r) => r.team === highlight) + 1;
+              const body = league.cup
+                ? t.online.seasonDoneCup(cupStatusText(t, cupStatus(league.cup, highlight)))
+                : t.online.seasonDoneLeague(place);
+              showNotify(t.online.seasonDoneHeading(s.settings.name || t.online.leagueFallback(s.code)), body, `draft-season-${s.code}`);
+            }
+          }}
           preKickoff={
             <DraftSquads
               teams={s.teams}
