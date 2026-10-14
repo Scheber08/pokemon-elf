@@ -409,6 +409,9 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     expect(all).toContain('Matchday 1');
     expect(all).toMatch(/Bye: /);
     expect(all).toContain('Share result');
+    expect(all).toMatch(/⚽ Top scorer: [^|]+ \(\d+ goals?\)/);
+    // Duelle des eigenen Teams
+    expect(all).toContain('Your head-to-heads');
     expect(all).toContain('New league');
     expect(all).toContain(clubEn(s.teams[1].name));
     // Platz der Aufstellungen als englische Ordnungszahl

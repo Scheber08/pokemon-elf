@@ -49,7 +49,14 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
   const toast = useToast();
   const [saving, setSaving] = useState(false);
   const days = useMemo(() => leagueTimeline(league), [league]);
-  const scorers = useMemo(() => topScorers(league).slice(0, TOP_SCORERS), [league]);
+  const allScorers = useMemo(() => topScorers(league), [league]);
+  const scorers = allScorers.slice(0, TOP_SCORERS);
+  /** Bester Torschütze je Team (Index in league.teams) für die Kader-Karten */
+  const teamTopScorer = useMemo(() => {
+    const m = new Map<number, (typeof allScorers)[number]>();
+    for (const sc of allScorers) if (!m.has(sc.teamIndex)) m.set(sc.teamIndex, sc);
+    return m;
+  }, [allScorers]);
   const steal = useMemo(() => draftSteal(picks, teams, byId, scale('all')), [picks, teams, byId, scale]);
   const table = league.table;
   const you = highlight != null && highlight >= 0 && highlight < league.teams.length ? highlight : null;
@@ -354,6 +361,11 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                   </span>
                 </header>
                 <p className="draft-results__roster-meta muted small">{tx.rosterMeta(team.formation, r.pts, r.gf, r.ga)}</p>
+                {teamTopScorer.has(r.team) && (
+                  <p className="draft-results__roster-meta small">
+                    {tx.teamTopScorer(pokemonName(teamTopScorer.get(r.team)!.pokemonId), teamTopScorer.get(r.team)!.goals)}
+                  </p>
+                )}
                 <Pitch
                   formation={team.formation}
                   slots={team.slots}

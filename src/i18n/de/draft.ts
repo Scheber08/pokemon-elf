@@ -260,6 +260,8 @@ const draft = {
     setPiecePart: (n: number) => `davon ${n} Standard`,
     goalsAria: (n: number) => `${n} ${n === 1 ? 'Tor' : 'Tore'}`,
     lineups: 'Aufstellungen',
+    /** Bester Torschütze eines Teams (Kader-Karte) */
+    teamTopScorer: (pokemon: string, goals: number) => `⚽ Bester Torschütze: ${pokemon} (${goals === 1 ? '1 Tor' : `${goals} Tore`})`,
     rosterMeta: (formation: string, pts: number, gf: number, ga: number) => `${formation} · ${pts} Pkt · Tore ${gf}:${ga}`,
     lineupAria: (team: string) => `Aufstellung ${team}`,
     allMatchdays: 'Alle Spieltage',

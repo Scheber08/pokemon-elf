@@ -241,6 +241,7 @@ const draft: Messages['draft'] = {
     setPiecePart: (n) => `${n} from set pieces`,
     goalsAria: (n) => plural(n, 'goal', 'goals'),
     lineups: 'Line-ups',
+    teamTopScorer: (pokemon, goals) => `⚽ Top scorer: ${pokemon} (${plural(goals, 'goal', 'goals')})`,
     rosterMeta: (formation, pts, gf, ga) => `${formation} · ${plural(pts, 'pt', 'pts')} · Goals ${gf}:${ga}`,
     lineupAria: (team) => `${team} line-up`,
     allMatchdays: 'All matchdays',
