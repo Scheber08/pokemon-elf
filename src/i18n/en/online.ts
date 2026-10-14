@@ -37,7 +37,7 @@ const online: Messages['online'] = {
   leagueCode: 'League code',
   join: 'Join',
   codeHint: (n) => `${plural(n, 'character', 'characters')} – or just paste the invite link.`,
-  phase: { lobby: 'Lobby', drafting: 'Drafting', done: 'Finished' },
+  phase: { lobby: 'Lobby', drafting: 'Drafting', season: 'Season running', done: 'Finished' },
   recentTitle: 'Your leagues',
   leagueFallback: (code) => `League ${code}`,
   result: 'Result',
@@ -61,6 +61,7 @@ const online: Messages['online'] = {
   phaseLead: {
     lobby: 'Lobby – share the code, choose team names and formations. The host starts the draft.',
     drafting: 'Snake draft in progress – everyone sees every pick instantly.',
+    season: 'Manager season – pick your eleven from squad and bench before every matchday.',
     done: 'Draft complete – the season runs for everyone at the same time.',
   },
   phaseLeadFixed: 'Draft in progress – everyone sees every pick instantly.',

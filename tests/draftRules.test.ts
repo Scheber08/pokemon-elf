@@ -334,6 +334,8 @@ describe('Ältere Ligen und Clients (region / legends)', () => {
       visibility: 'public',
       format: 'league',
       cupGroups: true,
+      bench: 3,
+      matchdayMinutes: 720,
     });
     expect(up).not.toHaveProperty('region');
     expect(up).not.toHaveProperty('legends');

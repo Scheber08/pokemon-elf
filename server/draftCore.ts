@@ -67,6 +67,7 @@ import {
   type DraftState,
 } from '../src/lib/draftEngine';
 import type { Scale } from '../src/lib/fit';
+import { nextKickoff, playDueMatchdays, seasonEndsAt, setLineup, startManagerSeason } from '../src/lib/manager';
 import type { FormationId, Pokemon, TypeKey } from '../src/types';
 import { authenticateDevice, HOUR_MS, normalizeIp } from './auth';
 import { randomHex, sha256Hex, timingSafeEqual } from './crypto';
@@ -247,6 +248,8 @@ export const SETTING_KEYS = [
   'visibility',
   'format',
   'cupGroups',
+  'bench',
+  'matchdayMinutes',
   'region',
   'legends',
 ] as const satisfies readonly (keyof DraftSettingsPatch)[];
@@ -295,6 +298,8 @@ export function cleanSettingsPatch(raw: unknown): DraftSettingsPatch {
   }
   if (patch.roll !== undefined && typeof patch.roll !== 'string') badSettings('Ungültiger Zufallsmodus');
   if (patch.format !== undefined && typeof patch.format !== 'string') badSettings('Ungültiger Spielmodus');
+  if (patch.bench !== undefined && !isInt(patch.bench)) badSettings('Ungültige Bank');
+  if (patch.matchdayMinutes !== undefined && !isInt(patch.matchdayMinutes)) badSettings('Ungültiger Spieltag-Takt');
   if (patch.rerolls !== undefined) {
     const r = patch.rerolls;
     if (!isObject(r)) return badSettings('Ungültige Rerolls');
@@ -385,6 +390,21 @@ export function parseClientMessage(raw: unknown): ParsedMessage {
         ...(d.teamId !== undefined ? { teamId: d.teamId as string } : {}),
         ...(d.pickIndex !== undefined ? { pickIndex: d.pickIndex as number } : {}),
       });
+    case 'lineup': {
+      const slots = d.slots;
+      if (
+        typeof d.formation !== 'string' ||
+        d.formation.length > 16 ||
+        !Array.isArray(slots) ||
+        slots.length > 11 ||
+        !slots.every(isInt) ||
+        !(d.ss === null || isInt(d.ss)) ||
+        !isBool(d.auto)
+      ) {
+        return badMessage();
+      }
+      return ok({ type: 'lineup', formation: d.formation as FormationId, slots: [...(slots as number[])], ss: d.ss as number | null, auto: d.auto });
+    }
     case 'react':
       return (DRAFT_REACTIONS as readonly unknown[]).includes(d.emoji) ? ok({ type: 'react', emoji: d.emoji as DraftReaction }) : badMessage();
     case 'queue':
@@ -403,8 +423,12 @@ export function parseClientMessage(raw: unknown): ParsedMessage {
 
 // ---------------------------------------------------------------- Zeitplan
 
-/** Ab hier wird die Liga gelöscht. */
-export const expiresAt = (state: Pick<DraftState, 'createdAt'>) => state.createdAt + DRAFT_LIMITS.retentionDays * DAY_MS;
+/** Ab hier wird die Liga gelöscht – eine Manager-Saison erst so lange nach ihrem letzten Spieltag. */
+export const expiresAt = (state: Pick<DraftState, 'createdAt'> & Partial<Pick<DraftState, 'season' | 'manager' | 'settings'>>) => {
+  const keep = DRAFT_LIMITS.retentionDays * DAY_MS;
+  const end = state.settings ? seasonEndsAt({ season: state.season ?? null, manager: state.manager, settings: state.settings }) : null;
+  return Math.max(state.createdAt + keep, end != null ? end + keep : -Infinity);
+};
 
 /**
  * Nächster Alarm: CPU-Pick, Ablauf der Bedenkzeit, Lobby-Zeile nachziehen, Gnadenfristen
@@ -418,6 +442,9 @@ export function nextAlarmAt(rec: RoomRecord, now = -Infinity): number {
   if (cur?.cpu && rec.cpuAt != null) due.push(rec.cpuAt);
   else if (cur && !cur.cpu && s.deadline != null) due.push(s.deadline);
   if (rec.syncAt != null) due.push(rec.syncAt);
+  // Manager-Saison: Anpfiff des nächsten Spieltags
+  const kickoff = s.phase === 'season' ? nextKickoff(s) : null;
+  if (kickoff != null) due.push(kickoff);
   const future = (t: number | null) => {
     if (t != null && t > now) due.push(t);
   };
@@ -901,6 +928,8 @@ export class DraftRoomCore {
         if (!(err instanceof DraftError)) throw err;
         console.error('Draft-Raum: Auto-Pick unmöglich', err);
       }
+      // Manager-Saison: fällige Spieltage spielen
+      if (next.phase === 'season') next = playDueMatchdays(next, now, this.ports.list, this.ports.scale);
       next = transferHost(next, now);
       if (next !== s) return this.commit(s, next, now);
       // Gnadenfrist vorbei: Alle bekommen den Stand (Auto-Pick für andere ist jetzt erlaubt).
@@ -1115,8 +1144,11 @@ export class DraftRoomCore {
   private async commit(prev: DraftState | null, input: DraftState, now: number): Promise<void> {
     const hosted = transferHost(input, now);
     // Saisonende: Teams echter Spieler aus der Rangliste zum Auffüllen laden (nur einmal)
-    const candidates = hosted.phase === 'done' && hosted.season && !hosted.league ? await loadFillCandidates(this.ports.env.DB) : [];
-    const next = withLeague(hosted, this.ports.list, this.ports.scale, candidates);
+    const needsFill = (hosted.phase === 'done' && hosted.season && !hosted.league) || (hosted.phase === 'season' && !hosted.manager);
+    const candidates = needsFill ? await loadFillCandidates(this.ports.env.DB) : [];
+    // Manager-Saison: Auffüllteams und erste Aufstellungen beim Ende des Drafts
+    const started = startManagerSeason(hosted, this.ports.list, this.ports.scale, candidates);
+    const next = withLeague(started, this.ports.list, this.ports.scale, candidates);
     const cur = currentTeam(next);
     const moved = !prev || prev.phase !== next.phase || prev.pickIndex !== next.pickIndex;
     const cpuAt = cur?.cpu ? (moved || this.rec?.cpuAt == null ? now + DRAFT_LIMITS.cpuPickMs : this.rec.cpuAt) : null;
@@ -1471,6 +1503,9 @@ export class DraftRoomCore {
         return startDraft(state, deviceId, now, list);
       case 'queue':
         return setQueue(state, deviceId, msg.ids, list);
+      case 'lineup':
+        // Ein überfälliger Spieltag (Alarm noch nicht gelaufen) wird erst gespielt – die Aufstellung gilt für den nächsten
+        return setLineup(playDueMatchdays(state, now, list, scale), deviceId, msg, list, scale);
       case 'pick': {
         const teamId = teamOfDevice(state, deviceId) ?? fail('not_joined', 'Du bist in dieser Liga nicht dabei');
         return applyPick(state, teamId, msg.pokemonId, msg.slot, false, now, list);

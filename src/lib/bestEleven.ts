@@ -14,17 +14,19 @@ export interface BestElevenOptions {
   megaMax?: number | null;
   /** Auch einen Standardschützen wählen */
   setPiece?: boolean;
+  /** Zuschlag auf den Fit je Pokémon (z. B. Tagesform der Manager-Saison) */
+  bonus?: (p: Pokemon) => number;
 }
 
 export function bestEleven(
   formation: FormationId,
   pool: Pokemon[],
   scale: Scale,
-  { megaMax = null, setPiece = false }: BestElevenOptions = {},
+  { megaMax = null, setPiece = false, bonus }: BestElevenOptions = {},
 ): { slots: (number | null)[]; ss: number | null } {
   const defs = FORMATIONS[formation].slots;
   const weight = (pos: PosCode) => POSITIONS[pos].teamWeight;
-  const fit = (p: Pokemon, pos: PosCode) => positionFit(p, pos, scale);
+  const fit = (p: Pokemon, pos: PosCode) => positionFit(p, pos, scale) + (bonus ? bonus(p) : 0);
   const order = defs.map((_, i) => i).sort((a, b) => weight(defs[b].pos) - weight(defs[a].pos) || a - b);
   const used = new Set<number>();
   const chosen: (Pokemon | null)[] = defs.map(() => null);

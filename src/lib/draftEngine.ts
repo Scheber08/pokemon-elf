@@ -28,6 +28,7 @@ import type { FormationId, Pokemon, RegionFilter, TypeKey } from '../types';
 import {
   DEFAULT_DRAFT_SETTINGS,
   DRAFT_ALL_GENS,
+  DRAFT_BENCH_SLOT,
   DRAFT_FORMATS,
   DRAFT_LIMITS,
   DRAFT_REROLL_KINDS,
@@ -52,6 +53,7 @@ import {
 import { positionFit, type Scale } from './fit';
 import { createRng, hashSeed, shuffle, streamRng, type Rng } from './rng';
 import { CUP_SIZE, simulateCup } from './cup';
+import type { ManagerState } from './manager';
 import { DRAFT_MODEL, opponentRatings, simulateLeague, type LeagueResult, type LeagueTeam } from './season';
 import { evaluateTeam } from './teamScore';
 
@@ -98,6 +100,8 @@ export interface DraftState {
   rematch?: string | null;
   /** Wunschlisten je Team-ID (privat – nur das eigene Team sieht seine) */
   queues?: Record<string, number[]>;
+  /** Manager-Saison (src/lib/manager.ts) – ab dem Ende des Drafts */
+  manager?: ManagerState;
 }
 
 /** Lesende Sicht – passt auf den Server-Zustand und auf Client-Schnappschüsse. */
@@ -188,8 +192,14 @@ export const leagueRng = (seed: number | string, ...parts: (string | number)[]) 
 
 // ---------------------------------------------------------------- Einstellungen & Pool
 
-export function rounds(settings: Pick<DraftSettings, 'setPiece'>): number {
-  return 11 + (settings.setPiece ? 1 : 0);
+/** Picks pro Team: 11 + Standardschütze + (nur Manager-Saison) Bank */
+export function rounds(settings: Pick<DraftSettings, 'setPiece'> & Partial<Pick<DraftSettings, 'format' | 'bench'>>): number {
+  return 11 + (settings.setPiece ? 1 : 0) + benchSize(settings);
+}
+
+/** Bankplätze pro Team – nur in der Manager-Saison, sonst 0 */
+export function benchSize(settings: Partial<Pick<DraftSettings, 'format' | 'bench'>>): number {
+  return settings.format === 'manager' ? (settings.bench ?? DEFAULT_DRAFT_SETTINGS.bench) : 0;
 }
 
 type Obj = Record<string, unknown>;
@@ -303,6 +313,10 @@ export function upgradeSettings(raw: unknown): DraftSettings {
     visibility: r.visibility === 'private' || r.visibility === 'public' ? r.visibility : d.visibility,
     format: (DRAFT_FORMATS as readonly unknown[]).includes(r.format) ? (r.format as DraftSettings['format']) : d.format,
     cupGroups: isBool(r.cupGroups) ? r.cupGroups : d.cupGroups,
+    bench: (DRAFT_LIMITS.benchSizes as readonly unknown[]).includes(r.bench) ? (r.bench as DraftSettings['bench']) : d.bench,
+    matchdayMinutes: (DRAFT_LIMITS.matchdayMinutes as readonly unknown[]).includes(r.matchdayMinutes)
+      ? (r.matchdayMinutes as DraftSettings['matchdayMinutes'])
+      : d.matchdayMinutes,
   };
   const keys = Object.keys(next) as (keyof DraftSettings)[];
   // Die älteren Schlüssel region/legends dürfen zusätzlich dastehen (Schnappschüsse spiegeln sie
@@ -449,7 +463,10 @@ export function poolPickCapacity(settings: DraftCapacitySettings, teams: number,
  * Wie viele Teams der Pool höchstens trägt: Poolgröße / Runden – mit Legendären-Limit nur so
  * viele, dass die Pokémon, die das Limit erlaubt, für alle Runden reichen (poolPickCapacity).
  */
-export function maxTeamsForPool(settings: DraftCapacitySettings & Pick<DraftSettings, 'setPiece'>, list: Pokemon[]): number {
+export function maxTeamsForPool(
+  settings: DraftCapacitySettings & Pick<DraftSettings, 'setPiece'> & Partial<Pick<DraftSettings, 'format' | 'bench'>>,
+  list: Pokemon[],
+): number {
   const r = rounds(settings);
   let teams = Math.floor(poolOf(settings, list).length / r);
   // Jedes weitere Team braucht r Picks, die Limits geben höchstens je 3 dazu → monoton
@@ -541,6 +558,14 @@ export function normalizeSettings(patch: DraftSettingsPatch, base: DraftSettings
   if (p.format !== undefined) {
     if (!(DRAFT_FORMATS as readonly unknown[]).includes(p.format)) fail('bad_settings', 'Ungültiger Spielmodus');
     s.format = p.format;
+  }
+  if (p.bench !== undefined) {
+    if (!(DRAFT_LIMITS.benchSizes as readonly unknown[]).includes(p.bench)) fail('bad_settings', 'Ungültige Bank');
+    s.bench = p.bench;
+  }
+  if (p.matchdayMinutes !== undefined) {
+    if (!(DRAFT_LIMITS.matchdayMinutes as readonly unknown[]).includes(p.matchdayMinutes)) fail('bad_settings', 'Ungültiger Spieltag-Takt');
+    s.matchdayMinutes = p.matchdayMinutes;
   }
   if (p.pickSeconds !== undefined) {
     if (!(DRAFT_LIMITS.pickSeconds as readonly number[]).includes(p.pickSeconds)) fail('bad_settings', 'Ungültiger Timer');
@@ -837,16 +862,26 @@ export function picksUntilTurn(state: DraftView, teamId: string): number | null 
 
 export function draftedIds(state: Pick<DraftState, 'teams'>): Set<number> {
   const ids = new Set<number>();
-  for (const t of state.teams) {
-    for (const id of t.slots) if (id != null) ids.add(id);
-    if (t.ss != null) ids.add(t.ss);
-  }
+  for (const t of state.teams) for (const id of rosterOf(t)) ids.add(id);
   return ids;
 }
 
+/** Alle Pokémon eines Teams: Elf, Standardschütze, Bank (Manager-Saison) */
+export function rosterOf(team: Pick<DraftTeam, 'slots' | 'ss' | 'bench'>): number[] {
+  const out: number[] = [];
+  for (const id of team.slots) if (id != null) out.push(id);
+  if (team.ss != null) out.push(team.ss);
+  for (const id of team.bench ?? []) if (id != null) out.push(id);
+  return out;
+}
+
+/** Freie Draft-Slots: Feld (0–10), Standardschütze (DRAFT_SS_SLOT), Bank (DRAFT_BENCH_SLOT + i). */
 export function freeSlots(team: DraftTeam, settings: Pick<DraftSettings, 'setPiece'>): number[] {
   const out = team.slots.flatMap((id, i) => (id == null ? [i] : []));
   if (settings.setPiece && team.ss == null) out.push(DRAFT_SS_SLOT);
+  (team.bench ?? []).forEach((id, i) => {
+    if (id == null) out.push(DRAFT_BENCH_SLOT + i);
+  });
   return out;
 }
 
@@ -882,10 +917,10 @@ function poolIdsOf(pool: Pokemon[]): Set<number> {
 }
 
 /** Pokémon der begrenzten Kategorie im Team (der Standardschütze zählt mit). */
-export function kindOf(team: Pick<DraftTeam, 'slots' | 'ss'>, kind: LimitKind, list: Pokemon[]): number {
+export function kindOf(team: Pick<DraftTeam, 'slots' | 'ss' | 'bench'>, kind: LimitKind, list: Pokemon[]): number {
   const byId = byIdOf(list);
   let n = 0;
-  for (const id of [...team.slots, team.ss]) {
+  for (const id of rosterOf(team)) {
     const p = id != null ? byId.get(id) : undefined;
     if (p && hasKind(p, kind)) n++;
   }
@@ -893,7 +928,7 @@ export function kindOf(team: Pick<DraftTeam, 'slots' | 'ss'>, kind: LimitKind, l
 }
 
 /** Legendäre + Mysteriöse im Team (der Standardschütze zählt mit). */
-export const legendsOf = (team: Pick<DraftTeam, 'slots' | 'ss'>, list: Pokemon[]): number => kindOf(team, 'legend', list);
+export const legendsOf = (team: Pick<DraftTeam, 'slots' | 'ss' | 'bench'>, list: Pokemon[]): number => kindOf(team, 'legend', list);
 
 /** Kategorien, deren Limit das Team erreicht hat (ohne Limit: nie). */
 function limitsHit(settings: DraftLimitSettings, team: DraftTeam, list: Pokemon[]): Set<LimitKind> {
@@ -1227,7 +1262,11 @@ export function startDraft(state: DraftState, deviceId: string, now: number, lis
   const next: DraftState = {
     ...state,
     phase: 'drafting',
-    teams: teams.map((t) => ({ ...t, slots: FORMATIONS[t.formation].slots.map(() => null), ss: null })),
+    teams: teams.map((t) => {
+      const { bench: _old, ...rest } = t;
+      const bench = benchSize(state.settings);
+      return { ...rest, slots: FORMATIONS[t.formation].slots.map(() => null), ss: null, ...(bench ? { bench: Array<null>(bench).fill(null) } : {}) };
+    }),
     pickIndex: 0,
     picks: [],
     turnStartedAt: now,
@@ -1281,7 +1320,9 @@ export function applyPick(
       ? t
       : slot === DRAFT_SS_SLOT
         ? { ...t, ss: pokemonId }
-        : { ...t, slots: t.slots.map((v, i) => (i === slot ? pokemonId : v)) },
+        : slot >= DRAFT_BENCH_SLOT
+          ? { ...t, bench: (t.bench ?? []).map((v, i) => (i === slot - DRAFT_BENCH_SLOT ? pokemonId : v)) }
+          : { ...t, slots: t.slots.map((v, i) => (i === slot ? pokemonId : v)) },
   );
   const log: DraftPickLog = { pick: state.pickIndex, teamId, pokemonId, slot, auto, at: now };
   // Vergeben → von allen Wunschlisten streichen
@@ -1291,17 +1332,21 @@ export function applyPick(
   const pickIndex = state.pickIndex + 1;
   const next: DraftState = { ...state, teams, picks, pickIndex, turnStartedAt: now, ...(queues ? { queues } : {}) };
   if (pickIndex >= totalPicks(next)) {
+    // Manager-Saison: Spieltage im eingestellten Takt, der erste nach höchstens managerLeadMs
+    const settings = upgradeSettings(state.settings);
+    const manager = settings.format === 'manager';
+    const stepMs = manager ? settings.matchdayMinutes * 60_000 : DRAFT_LIMITS.seasonStepMs;
     return {
       ...next,
-      phase: 'done',
+      phase: manager ? 'season' : 'done',
       deadline: null,
       turnStartedAt: null,
       roll: null,
       ...(state.roundRoll !== undefined ? { roundRoll: null } : {}),
       season: {
         seed: leagueSeed(state.seed, 'season'),
-        startsAt: now + DRAFT_LIMITS.seasonLeadMs,
-        stepMs: DRAFT_LIMITS.seasonStepMs,
+        startsAt: now + (manager ? Math.min(stepMs, DRAFT_LIMITS.managerLeadMs) : DRAFT_LIMITS.seasonLeadMs),
+        stepMs,
       },
     };
   }
@@ -1335,13 +1380,17 @@ export function autoPickChoice(
   const rng = withNoise ? leagueRng(state.seed, 'cpu', state.pickIndex) : null;
   const defs = FORMATIONS[team.formation].slots;
   let best: { score: number; pokemonId: number; slot: number } | null = null;
+  // Bank (Manager-Saison): bester Fit über die Positionen der eigenen Formation – nach Elf und Standardschütze
+  const benchPositions = [...new Set(defs.map((d) => d.pos))];
   for (const slot of freeSlots(team, state.settings)) {
-    const pos = slot === DRAFT_SS_SLOT ? 'SS' : defs[slot].pos;
-    // Standardschütze zählt nicht zum Team-Score → erst ganz am Ende besetzen
-    const weight = pos === 'SS' ? 0.5 : 0.92 + 0.08 * POSITIONS[pos].teamWeight;
+    const bench = slot >= DRAFT_BENCH_SLOT;
+    const pos = slot === DRAFT_SS_SLOT ? 'SS' : bench ? null : defs[slot].pos;
+    // Standardschütze zählt nicht zum Team-Score → erst am Ende besetzen, die Bank noch danach
+    const weight = bench ? 0.4 : pos === 'SS' ? 0.5 : 0.92 + 0.08 * POSITIONS[pos!].teamWeight;
     for (const p of pool) {
       const noise = rng ? (rng() - 0.5) * 8 : 0;
-      const score = positionFit(p, pos, scale) * weight + noise;
+      const fit = pos ? positionFit(p, pos, scale) : Math.max(...benchPositions.map((bp) => positionFit(p, bp, scale)));
+      const score = fit * weight + noise;
       if (!best || score > best.score || (score === best.score && p.id < best.pokemonId)) {
         best = { score, pokemonId: p.id, slot };
       }
@@ -1539,7 +1588,14 @@ export function snapshotOf(state: DraftState, you: string | null, now: number): 
     ...(state.history?.length ? { history: state.history } : {}),
     ...(state.rematch ? { rematch: state.rematch } : {}),
     ...(you && state.queues?.[you]?.length ? { queue: state.queues[you] } : {}),
+    ...(state.manager ? { manager: managerView(state.manager, state.season) } : {}),
   };
+}
+
+/** Manager-Saison im Schnappschuss – ohne die Kader der Auffüllteams (siehe manager.ts). */
+function managerView(m: ManagerState, season: DraftSeason | null): NonNullable<DraftSnapshot['manager']> {
+  const nextAt = season && m.played < m.total ? season.startsAt + m.played * season.stepMs : null;
+  return { played: m.played, total: m.total, nextAt, lineups: m.lineups, form: m.form };
 }
 
 // ---------------------------------------------------------------- Revanche & ewige Tabelle

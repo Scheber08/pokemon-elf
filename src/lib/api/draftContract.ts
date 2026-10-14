@@ -72,7 +72,16 @@ export const DRAFT_LIMITS = {
   historyMax: 30,
   /** Höchstens so viele Pokémon auf der Wunschliste eines Teams */
   queueMax: 20,
+  /** Manager-Saison: erlaubte Bankplätze pro Team (zusätzliche Picks) */
+  benchSizes: [3, 5] as const,
+  /** Manager-Saison: erlaubte Abstände zwischen zwei Spieltagen (Minuten) */
+  matchdayMinutes: [10, 60, 180, 720, 1440] as const,
+  /** Manager-Saison: höchstens so lange bis zum ersten Spieltag (sonst ein Abstand) */
+  managerLeadMs: 3_600_000,
 } as const;
+
+export type BenchSize = (typeof DRAFT_LIMITS.benchSizes)[number];
+export type MatchdayMinutes = (typeof DRAFT_LIMITS.matchdayMinutes)[number];
 
 export type PickSeconds = (typeof DRAFT_LIMITS.pickSeconds)[number];
 
@@ -173,11 +182,19 @@ export interface DraftSettings {
   format: DraftFormat;
   /** KO-Turnier mit Gruppenphase davor (4 Gruppen à 4, die ersten zwei weiter) – nur bei format 'cup' */
   cupGroups: boolean;
+  /** Manager-Saison: Bankplätze pro Team (werden nach Elf und Standardschütze gedraftet) */
+  bench: BenchSize;
+  /** Manager-Saison: Minuten zwischen zwei Spieltagen */
+  matchdayMinutes: MatchdayMinutes;
 }
 
-/** Spielmodus nach dem Draft */
-export type DraftFormat = 'league' | 'cup';
-export const DRAFT_FORMATS: readonly DraftFormat[] = ['league', 'cup'];
+/**
+ * Spielmodus nach dem Draft: Liga bzw. KO-Turnier (sofort durchgespielt) oder Manager-Saison –
+ * eine Hinrunde mit Spieltagen im festen Takt (matchdayMinutes), vor jedem stellt jedes Team seine
+ * Elf aus Kader und Bank neu auf.
+ */
+export type DraftFormat = 'league' | 'cup' | 'manager';
+export const DRAFT_FORMATS: readonly DraftFormat[] = ['league', 'cup', 'manager'];
 
 /**
  * Ältere Schlüssel, die zwischengespeicherte Clients noch schicken: region (0 = alle
@@ -214,6 +231,8 @@ export const DEFAULT_DRAFT_SETTINGS: DraftSettings = {
   visibility: 'private',
   format: 'league',
   cupGroups: true,
+  bench: 3,
+  matchdayMinutes: 720,
 };
 
 export interface DraftTeam {
@@ -230,9 +249,40 @@ export interface DraftTeam {
   slots: (number | null)[];
   /** Standardschütze (nur mit settings.setPiece) */
   ss: number | null;
+  /** Manager-Saison: Bank (settings.bench Plätze, ab dem Start) – fehlt in den anderen Modi */
+  bench?: (number | null)[];
 }
 
-export type DraftPhase = 'lobby' | 'drafting' | 'done';
+/** Draft-Slot des ersten Bankplatzes (Manager-Saison): Bankplatz i = DRAFT_BENCH_SLOT + i */
+export const DRAFT_BENCH_SLOT = 12;
+
+/** season: nur Manager-Saison – die Spieltage laufen im Takt, Aufstellungen sind änderbar */
+export type DraftPhase = 'lobby' | 'drafting' | 'season' | 'done';
+
+/** Aufstellung eines Teams in der Manager-Saison (gilt für den nächsten Spieltag) */
+export interface ManagerLineup {
+  formation: FormationId;
+  /** Feldspieler in Reihenfolge der Formation (Pokémon-IDs aus dem Kader) */
+  slots: number[];
+  /** Standardschütze (nur mit settings.setPiece, sonst null) */
+  ss: number | null;
+  /** Der Server stellt vor jedem Spieltag die beste Elf auf (CPU-Teams immer) */
+  auto: boolean;
+}
+
+/** Manager-Saison im Schnappschuss */
+export interface ManagerSnapshot {
+  /** Gespielte Spieltage */
+  played: number;
+  /** Spieltage insgesamt (Hinrunde) */
+  total: number;
+  /** Anpfiff des nächsten Spieltags (ms, Serverzeit) – null nach dem letzten */
+  nextAt: number | null;
+  /** Aktuelle Aufstellung je Team-ID (gedraftete Teams) */
+  lineups: Record<string, ManagerLineup>;
+  /** Tagesform des nächsten Spieltags je Pokémon der gedrafteten Kader (−2 … +2, fehlt = 0) */
+  form: Record<string, number>;
+}
 
 export interface DraftPickLog {
   /** Laufende Pick-Nummer (0-basiert) */
@@ -304,6 +354,8 @@ export interface DraftSnapshot {
   roundRoll?: DraftRoll | null;
   /** Genutzte Rerolls je Team-ID (fehlt ein Team: noch keine) */
   rerollsUsed?: Record<string, DraftRerollCount>;
+  /** Manager-Saison (ab dem Ende des Drafts) – league enthält dann die bisher gespielten Spieltage */
+  manager?: ManagerSnapshot | null;
   /** Frühere Ligen der Gruppe, älteste zuerst (fehlt bzw. leer: keine) */
   history?: DraftHistoryEntry[];
   /** Code der Revanche, sobald es eine gibt */
@@ -400,6 +452,11 @@ export type DraftClientMessage =
   | { type: 'reroll'; kind: DraftRerollKind; pickIndex?: number; roll?: DraftRoll }
   /** Wunschliste des eigenen Teams ersetzen (Reihenfolge = Vorrang, höchstens queueMax) */
   | { type: 'queue'; ids: number[] }
+  /**
+   * Manager-Saison: eigene Aufstellung für den nächsten Spieltag. auto = true: der Server stellt in
+   * dieser Formation jeweils die beste Elf auf (slots/ss werden ignoriert).
+   */
+  | { type: 'lineup'; formation: FormationId; slots: number[]; ss: number | null; auto: boolean }
   /** Emoji-Reaktion an alle (nur Mitglieder; wird nicht gespeichert) */
   | { type: 'react'; emoji: DraftReaction }
   | { type: 'ping' };

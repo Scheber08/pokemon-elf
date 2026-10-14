@@ -394,7 +394,9 @@ export function pickAnnouncement(s: DraftSnapshot, byId: Map<number, Pokemon>, t
  * Ohne Seed: Würfe und CPU-Zufall entscheidet allein der Server.
  */
 export function snapshotState(s: DraftSnapshot): DraftState {
-  return { ...s, seed: 0, owners: {} };
+  // Manager-Saison: nur der Schnappschuss (ohne Auffüllteams) – die Engine braucht ihn hier nicht
+  const { manager: _manager, ...rest } = s;
+  return { ...rest, seed: 0, owners: {} };
 }
 
 // ---------------------------------------------------------------- laufende Aktionen

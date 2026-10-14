@@ -37,7 +37,7 @@ const online = {
   leagueCode: 'Liga-Code',
   join: 'Beitreten',
   codeHint: (n: number) => `${n} Zeichen – oder einfach den Einladungslink einfügen.`,
-  phase: { lobby: 'Lobby', drafting: 'Draft läuft', done: 'Fertig' },
+  phase: { lobby: 'Lobby', drafting: 'Draft läuft', season: 'Saison läuft', done: 'Fertig' },
   recentTitle: 'Deine Ligen',
   /** Liga ohne Namen */
   leagueFallback: (code: string) => `Liga ${code}`,
@@ -64,6 +64,7 @@ const online = {
   phaseLead: {
     lobby: 'Lobby – teilt den Code, wählt Teamnamen und Formation. Der Host startet den Draft.',
     drafting: 'Snake-Draft läuft – jeder sieht jeden Pick sofort.',
+    season: 'Manager-Saison – stelle vor jedem Spieltag deine Elf aus Kader und Bank auf.',
     done: 'Draft abgeschlossen – die Saison läuft für alle gleichzeitig.',
   },
   /** Statt phaseLead.drafting, wenn jede Runde dieselbe Reihenfolge hat */
