@@ -478,6 +478,8 @@ const draft: Messages['draft'] = {
     colFit: 'Fit',
     fitTitle: 'Fit at their position including daily form (bench: best position in the formation)',
     colForm: 'Form',
+    colGoals: 'Goals',
+    goalsTitle: 'Goals this season',
     formTitle: (n) => (n > 0 ? `Daily form +${n}` : n < 0 ? `Daily form ${n}` : 'Daily form normal'),
     formNote: (fit) => `Each form step shifts the fit by ${fit} points. The form applies to the next matchday.`,
     lastResults: (n) => `Results matchday ${n}`,

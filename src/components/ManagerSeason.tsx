@@ -350,6 +350,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           out={m.out ?? {}}
           next={m.played + 1}
           shinies={s.shinies}
+          goals={goalsOf(league, meIndex)}
         />
       ) : (
         <p className="notice">{tx.spectator}</p>
@@ -508,6 +509,16 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
 }
 
 /** Eigene Aufstellung: tauschen (Feld, Standardschütze, Bank), Formation, automatisch, Kader mit Tagesform. */
+/** Saisontore je Pokémon eines Liga-Teams (gespielte Spiele) */
+function goalsOf(league: LeagueResult | null | undefined, team: number): Map<number, number> {
+  const out = new Map<number, number>();
+  for (const m of league?.matches ?? []) {
+    const own = m.home === team ? m.homeScorers : m.away === team ? m.awayScorers : [];
+    for (const g of own) out.set(g.pokemonId, (out.get(g.pokemonId) ?? 0) + 1);
+  }
+  return out;
+}
+
 function LineupEditor({
   team,
   lineup,
@@ -517,6 +528,7 @@ function LineupEditor({
   out,
   next,
   shinies,
+  goals,
 }: {
   team: DraftTeam;
   lineup: ManagerLineup;
@@ -529,6 +541,8 @@ function LineupEditor({
   next: number;
   /** Shinys der Liga */
   shinies?: readonly number[];
+  /** Saisontore je Pokémon des eigenen Teams */
+  goals?: ReadonlyMap<number, number>;
 }) {
   const t = useT();
   const tx = t.draft.manager;
@@ -707,6 +721,9 @@ function LineupEditor({
                 {tx.colFit}
               </th>
               <th scope="col">{tx.colForm}</th>
+              <th scope="col" title={tx.goalsTitle}>
+                {tx.colGoals}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -749,6 +766,7 @@ function LineupEditor({
                 <td>
                   <FormMark value={formOf(r.p.id)} />
                 </td>
+                <td>{goals?.get(r.p.id) || '–'}</td>
               </tr>
             ))}
           </tbody>

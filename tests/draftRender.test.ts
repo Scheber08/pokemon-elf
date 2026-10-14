@@ -788,6 +788,12 @@ describe('ManagerSeason', () => {
     const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(st, 'h')), readOnly: false })));
     await settle();
     expect(container.querySelector('.manager__shiny')!.textContent).toContain(ALL.find((p) => p.id === inn)!.de);
+    // Kader-Tabelle: Tore dieser Saison je Pokémon (Summe = eigene Tore am 1. Spieltag)
+    const idx = st.teams.findIndex((t) => t.id === 'h');
+    const m1 = st.league!.matches.find((m) => m.round === 1 && (m.home === idx || m.away === idx))!;
+    const own = m1.home === idx ? m1.hg : m1.ag;
+    const cells = container.querySelectorAll('.manager__squad tbody tr').map((tr) => Number(tr.querySelectorAll('td')[4].textContent) || 0);
+    expect(cells.reduce((a, b) => a + b, 0)).toBe(own);
   });
 
   it('Pokal: Auslosung vor der ersten Runde, nach dem Finale der Sieger', async () => {
