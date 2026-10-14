@@ -19,6 +19,7 @@ export const STORAGE_KEYS = {
   jerseys: (scope: string) => `jerseys:${scope}`,
   kit: (scope: string) => `kit:${scope}`,
   cheer: (scope: string) => `cheer:${scope}`,
+  crest: (scope: string) => `crest:${scope}`,
 } as const;
 
 export function load<T>(key: string, fallback: T): T {

@@ -12,6 +12,7 @@ import { cleanJerseys, type Jerseys } from '../lib/jerseys';
 import { cleanKit, type Kit } from '../lib/kits';
 import '../styles/friendly.css';
 import { cleanCheer } from '../lib/cheer';
+import { cleanCrest, type Crest as CrestData } from '../lib/crest';
 
 /** Gespeicherte Builder-Aufstellung (siehe pages/Builder.tsx) – nur die nötigen Felder. */
 interface StoredLineup {
@@ -24,10 +25,11 @@ interface StoredLineup {
   captain?: unknown;
   kit?: unknown;
   cheer?: unknown;
+  crest?: unknown;
 }
 
 /** Seite eines Testspiels samt eigenen Trikotnummern (nur für die Wiedergabe) */
-type Side = FriendlySide & { jerseys?: Jerseys; kit?: Kit | null; cheer?: string };
+type Side = FriendlySide & { jerseys?: Jerseys; kit?: Kit | null; cheer?: string; crest?: CrestData | null };
 
 const newSeed = () => Math.floor(Math.random() * 0x7fffffff);
 
@@ -45,7 +47,7 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
       if (!fullEleven(slots)) return null;
       const ss = s.ssEnabled && s.ss != null && byId.has(s.ss) ? s.ss : null;
       const captain = typeof s.captain === 'number' && slots.includes(s.captain) ? s.captain : null;
-      return { name: s.teamName?.trim() || fallback, formation: s.formation, slots, ss, captain, jerseys: cleanJerseys(s.jerseys), kit: cleanKit(s.kit), cheer: cleanCheer(s.cheer) };
+      return { name: s.teamName?.trim() || fallback, formation: s.formation, slots, ss, captain, jerseys: cleanJerseys(s.jerseys), kit: cleanKit(s.kit), cheer: cleanCheer(s.cheer), crest: cleanCrest(s.crest) };
     };
     const current = sideOf(load<StoredLineup | null>(STORAGE_KEYS.lineup, null), tr.friendlyYou);
     const saved = loadSavedTeams<StoredLineup>().map((x) => sideOf(x.state, x.name));
@@ -65,7 +67,7 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
     undefined,
     (i) => {
       const side = i === 0 ? own : opponent;
-      return side ? { formation: side.formation, ids: side.slots, jerseys: side.jerseys, captain: side.captain, kit: side.kit, cheer: side.cheer } : null;
+      return side ? { formation: side.formation, ids: side.slots, jerseys: side.jerseys, captain: side.captain, kit: side.kit, cheer: side.cheer, crest: side.crest } : null;
     },
   );
 

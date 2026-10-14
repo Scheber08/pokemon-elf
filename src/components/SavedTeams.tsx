@@ -9,6 +9,7 @@ import { shareUrl, type SharedLineup } from '../lib/urlState';
 import { useSettings } from '../state/Settings';
 import { useToast } from '../state/Toast';
 import { cleanCheer } from '../lib/cheer';
+import { cleanCrest } from '../lib/crest';
 
 /** Testspiel erst beim Öffnen laden – es zieht die Draft-Engine mit, die der Builder sonst nicht braucht */
 const FriendlyMatch = lazy(() => import('./FriendlyMatch').then((m) => ({ default: m.FriendlyMatch })));
@@ -169,6 +170,7 @@ export function SavedTeams<T extends Playable>({ current, onLoad }: Props<T>) {
                 jerseys: cleanJerseys((opp.state as { jerseys?: unknown }).jerseys),
                 kit: cleanKit((opp.state as { kit?: unknown }).kit),
                 cheer: cleanCheer((opp.state as { cheer?: unknown }).cheer),
+                crest: cleanCrest((opp.state as { crest?: unknown }).crest),
                 captain: typeof (opp.state as { captain?: unknown }).captain === 'number' ? ((opp.state as { captain?: number }).captain ?? null) : null,
               }}
             />

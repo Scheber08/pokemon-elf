@@ -32,6 +32,8 @@ import { Pitch, type SlotState } from './Pitch';
 import { PokemonGrid } from './PokemonGrid';
 import { Sprite } from './Sprite';
 import '../styles/run.css';
+import { useCrest } from '../state/useCrest';
+import { CrestEditor } from './CrestEditor';
 
 /** So lange nach einem Reroll werden weitere Reroll-Klicks ignoriert (Doppelklick-Schutz). */
 const REROLL_LOCK_MS = 400;
@@ -89,6 +91,7 @@ export function RunBoard({
   const [jerseys, setJerseys] = useJerseys(challenge);
   const [kit, setKit] = useKit(challenge);
   const [cheer, setCheer] = useCheer(challenge);
+  const [crest, setCrest] = useCrest(challenge);
   const style: SpriteStyle = challenge === 'retro340' ? 'retro' : sprite;
   const total = totalRounds(state.config);
   const complete = isComplete(state);
@@ -367,6 +370,7 @@ export function RunBoard({
         />
       </div>
       <KitPicker kit={kit} onChange={setKit} cheer={cheer} onCheer={setCheer} />
+      <CrestEditor crest={crest} onChange={setCrest} pokemon={[...state.slots, ssEnabled ? state.ss : null].filter((x): x is number => x != null)} />
       <JerseyEditor formation={formation} slots={state.slots} ss={ssEnabled ? state.ss : null} jerseys={jerseys} onChange={setJerseys} />
     </div>
   );

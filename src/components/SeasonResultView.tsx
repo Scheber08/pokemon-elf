@@ -33,6 +33,8 @@ import { SeasonTicker } from './SeasonTicker';
 import { ReplayToggle, useMatchReport } from './MatchReport';
 import { Sprite } from './Sprite';
 import '../styles/ticker.css';
+import { useCrest } from '../state/useCrest';
+import { Crest } from './Crest';
 
 interface Props {
   challenge: ChallengeKey;
@@ -170,12 +172,13 @@ export function SeasonResultView({
   const [jerseys] = useJerseys(challenge);
   const [kit] = useKit(challenge);
   const [cheer] = useCheer(challenge);
+  const [crest] = useCrest(challenge);
   const report = useMatchReport(
     (i) => (i === 0 ? teamName : t.game.club(season.league.teams[i]?.name ?? '')),
     nameOf,
     (m) => t.draft.matchday(m.round),
     undefined,
-    (i) => (i === 0 ? { formation: input.formation, ids: input.slots, jerseys, captain: input.captain, kit, cheer } : null),
+    (i) => (i === 0 ? { formation: input.formation, ids: input.slots, jerseys, captain: input.captain, kit, cheer, crest } : null),
   );
   const leagueMatch = (round: number) => season.league.matches.find((x) => x.round === round && (x.home === 0 || x.away === 0));
 
@@ -189,6 +192,7 @@ export function SeasonResultView({
       teamName,
       jerseys,
       captain: input.captain ?? null,
+      crest,
       subtitle: `${input.formation} · ${t.game.challenge[challenge]}`,
       result: {
         record,
@@ -279,6 +283,11 @@ export function SeasonResultView({
               {tr.title} · {t.game.challenge[challenge]}
             </span>
             <h1 id="result-title" className="result-hero__team" ref={titleRef} tabIndex={-1}>
+              {crest && (
+                <>
+                  <Crest crest={crest} size={40} />{' '}
+                </>
+              )}
               {teamName}
             </h1>
             <div

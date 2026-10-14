@@ -236,6 +236,11 @@ beide gleich, dann in seiner Auswärtsfarbe (notfalls eine Ausweichfarbe). Gespe
 (Builder-Zustand, `DraftTeam.kit` mit Nachricht `kit`, im Browser je Challenge bzw. im lokalen Draft). Dazu ein **Torjubel**
 (`src/lib/cheer.ts`, bis 40 Zeichen, Nachricht `cheer`), der in der 2D-Ansicht unter „TOR!“ erscheint.
 
+**Vereinswappen** (alle Modi, `src/lib/crest.ts`, `src/components/Crest.tsx` + `CrestEditor.tsx`): Form, Muster,
+zwei Farben und ein Symbol bzw. ein Pokémon aus dem eigenen Team als Wappentier. Zu sehen neben dem Teamnamen
+(Builder, Bild, Saisonbilanz), in Tabellen, im Spielbericht und auf der 2D-Anzeigetafel; online als
+`DraftTeam.crest` (Nachricht `crest`).
+
 **Kapitän** (alle Modi): seine Passung zählt im Team-Score doppelt (`captainWeight`). Challenges: beim
 Abschluss (Server prüft, `entry_captains`); Builder/Testspiel: im Zustand und im Teilen-Link (`k`); Online-Draft:
 nur während des Drafts (Nachricht `captain`), Manager-Saison: jederzeit, zählt ab dem nächsten Anpfiff.

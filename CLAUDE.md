@@ -58,7 +58,7 @@ Manager-Saison, eigener Menüpunkt „Manager", Spielbericht + 2D-Wiedergabe in 
 Erfolge für die Manager-Saison, Hinweis „Erfolg freigeschaltet" nach Runs und Ligen, Saisonartikel im Shop
 (Halloween, Weihnachten, Frühling/Ostern, Sommer, Neujahr, Valentinstag), Spieler des Spieltags, Tausch-Angebote zwischen Teams in der Manager-Saison,
 Trikotnummern in allen Modi,
-Kapitän in allen Modi (zählt doppelt; Rangliste dafür einmalig neu gestartet), Trikotfarben und Torjubel in allen Modi.
+Kapitän in allen Modi (zählt doppelt; Rangliste dafür einmalig neu gestartet), Trikotfarben, Torjubel und Vereinswappen in allen Modi.
 
 1. Weitere Saisons im Shop (z. B. Fußball-Sommer, Oktoberfest) – neue Einträge mit `seasonal(...)` in `src/lib/trainer.ts`
 

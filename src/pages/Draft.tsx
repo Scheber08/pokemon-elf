@@ -32,6 +32,9 @@ import { DraftOnline } from './DraftOnline';
 import { ReplayToggle, useMatchReport } from '../components/MatchReport';
 import '../styles/draft.css';
 import { cleanCheer } from '../lib/cheer';
+import { cleanCrest, type Crest as CrestData } from '../lib/crest';
+import { Crest } from '../components/Crest';
+import { CrestEditor } from '../components/CrestEditor';
 
 const ROUNDS = 11;
 
@@ -51,6 +54,8 @@ interface DraftTeam {
   kit?: Kit | null;
   /** Torjubel (nur Menschen) */
   cheer?: string;
+  /** Vereinswappen (nur Menschen) */
+  crest?: CrestData | null;
 }
 
 interface DraftState {
@@ -273,7 +278,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     },
     (m) => tx.roundNo(m.round),
     undefined,
-    (i) => (state.teams[i] ? { formation: state.teams[i].formation, ids: state.teams[i].slots, jerseys: cleanJerseys(state.teams[i].jerseys), captain: state.teams[i].captain, kit: cleanKit(state.teams[i].kit), cheer: cleanCheer(state.teams[i].cheer) } : null),
+    (i) => (state.teams[i] ? { formation: state.teams[i].formation, ids: state.teams[i].slots, jerseys: cleanJerseys(state.teams[i].jerseys), captain: state.teams[i].captain, kit: cleanKit(state.teams[i].kit), cheer: cleanCheer(state.teams[i].cheer), crest: cleanCrest(state.teams[i].crest) } : null),
   );
 
   if (state.phase === 'setup') {
@@ -434,6 +439,11 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     <tr key={r.team} className={r.isUser ? 'is-user' : ''}>
                       <td>{i + 1}</td>
                       <td className="left">
+                        {cleanCrest(state.teams[r.team].crest) && (
+                          <>
+                            <Crest crest={cleanCrest(state.teams[r.team].crest)!} size={16} />{' '}
+                          </>
+                        )}
                         {teamName(r.name)} {state.teams[r.team].cpu && <span className="rating">{t.draft.cpu}</span>}
                       </td>
                       <td>{r.rating}</td>
@@ -515,7 +525,14 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
         <section className="draft__rosters" aria-label={tx.squads}>
           {state.teams.map((tm, i) => (
             <div key={i} className="card draft__roster">
-              <h3 className="section-title">{teamName(tm.name)}</h3>
+              <h3 className="section-title">
+                {cleanCrest(tm.crest) && (
+                  <>
+                    <Crest crest={cleanCrest(tm.crest)!} size={20} />{' '}
+                  </>
+                )}
+                {teamName(tm.name)}
+              </h3>
               <Pitch
                 formation={tm.formation}
                 slots={tm.slots}
@@ -530,6 +547,13 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   onChange={(kit) => setState((s) => ({ ...s, teams: s.teams.map((x, j) => (j === i ? { ...x, kit } : x)) }))}
                   cheer={cleanCheer(tm.cheer)}
                   onCheer={(cheer) => setState((s) => ({ ...s, teams: s.teams.map((x, j) => (j === i ? { ...x, cheer } : x)) }))}
+                />
+              )}
+              {!tm.cpu && (
+                <CrestEditor
+                  crest={cleanCrest(tm.crest)}
+                  onChange={(crest) => setState((s) => ({ ...s, teams: s.teams.map((x, j) => (j === i ? { ...x, crest } : x)) }))}
+                  pokemon={tm.slots.filter((x): x is number => x != null)}
                 />
               )}
               {!tm.cpu && (
