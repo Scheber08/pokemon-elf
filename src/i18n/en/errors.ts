@@ -22,6 +22,7 @@ const errors: Messages['errors'] = {
     team_name_required: 'Please give your team a name',
     locked_item: 'You need to buy that in the shop first',
     not_enough_coins: 'You don’t have enough coins for that yet',
+    not_on_sale: 'This item isn’t available right now – only in its season',
   },
   runNotFound: 'Run not found',
   invalidPlayerName: 'That name won’t work – please choose another one',

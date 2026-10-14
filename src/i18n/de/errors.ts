@@ -33,6 +33,7 @@ const errors = {
     team_name_required: 'Bitte gib deinem Team einen Namen',
     locked_item: 'Das musst du erst im Shop kaufen',
     not_enough_coins: 'Dafür reichen deine Münzen noch nicht',
+    not_on_sale: 'Diesen Artikel gibt es gerade nicht – nur in seiner Saison',
   } as Record<ApiErrorCode, string>,
   /** Genauere Meldungen (aus der Server-Meldung erkannt) */
   runNotFound: 'Run nicht gefunden',

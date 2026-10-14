@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useT, type Messages } from '../i18n';
 import { ApiRequestError, buyTrainerItem, saveTrainer } from '../lib/api/client';
 import type { MeResponse } from '../lib/api/contract';
-import { itemKey, itemsOf, lockedItem, TRAINER_SLOTS, type TrainerItem, type TrainerLook, type TrainerSlot } from '../lib/trainer';
+import { itemKey, itemOnSale, itemsOf, lockedItem, TRAINER_SLOTS, type TrainerItem, type TrainerLook, type TrainerSlot } from '../lib/trainer';
 import type { Pokemon } from '../types';
 import { usePokemonData } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
@@ -166,6 +166,8 @@ export function TrainerEditor({ me, onMe }: Props) {
                 {itemsOf(slot).map((it) => {
                   const key = itemKey(slot, it.id);
                   const have = it.price === 0 || owned.has(key);
+                  // Saisonartikel außerhalb ihrer Saison nur, wenn schon gekauft
+                  if (!have && !itemOnSale(it, Date.now())) return null;
                   const active = look[slot] === it.id;
                   const name = trainerItemName(t, it, byId);
                   return (
@@ -174,7 +176,7 @@ export function TrainerEditor({ me, onMe }: Props) {
                       type="button"
                       className={`trainer-option ${active ? 'is-active' : ''} ${have ? '' : 'is-locked'}`}
                       aria-pressed={active}
-                      title={have ? name : `${name} · ${tx.price(it.price)}`}
+                      title={[name, it.season ? tx.seasonal(it.season.to) : '', have ? '' : tx.price(it.price)].filter(Boolean).join(' · ')}
                       onClick={() => setLook((l) => ({ ...l, [slot]: it.id }))}
                     >
                       {COLOR_SLOTS.has(slot) ? (
@@ -195,6 +197,11 @@ export function TrainerEditor({ me, onMe }: Props) {
                       )}
                       <span className="sr-only">{name}</span>
                       {!have && <span className="trainer-option__price">{tx.price(it.price)}</span>}
+                      {it.season && (
+                        <span className="trainer-option__season" aria-hidden="true">
+                          🎃
+                        </span>
+                      )}
                     </button>
                   );
                 })}

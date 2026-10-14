@@ -6,7 +6,7 @@
 import { isDefaultPlayerName, type MeResponse } from '../src/lib/api/contract';
 import { achievementStates, earnedCoins, longestDayStreak, type AchievementStats } from '../src/lib/achievements';
 import { dayKey } from '../src/lib/daily';
-import { itemByKey, lockedItem, parseLook } from '../src/lib/trainer';
+import { itemByKey, itemOnSale, lockedItem, parseLook } from '../src/lib/trainer';
 import type { DraftState } from '../src/lib/draftEngine';
 import type { ChallengeKey } from '../src/types';
 import { authenticate } from './auth';
@@ -151,6 +151,7 @@ export async function buyItem(request: Request, env: Env): Promise<Response> {
   const key = typeof body.item === 'string' ? body.item : '';
   const it = itemByKey(key);
   if (!it || it.price <= 0) throw new ApiError(400, 'bad_request', 'Diesen Artikel gibt es nicht im Shop');
+  if (!itemOnSale(it, now)) throw new ApiError(400, 'not_on_sale', 'Diesen Artikel gibt es gerade nicht – nur in seiner Saison');
   const db = env.DB;
   const earned = earnedCoins(await achievementStats(db, deviceId, dayKey(new Date(now))));
   const res = await db

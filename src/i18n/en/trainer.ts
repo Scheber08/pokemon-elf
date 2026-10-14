@@ -45,6 +45,7 @@ const trainer: Messages['trainer'] = {
   free: 'Free',
   owned: 'Owned',
   price: (n) => `${n} ◎`,
+  seasonal: (to) => `Seasonal item – only until ${new Date(`2000-${to}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })}`,
   previewing: (name) => `Preview: ${name}`,
   slots: {
     skin: 'Skin',
@@ -95,6 +96,7 @@ const trainer: Messages['trainer'] = {
       pokecap: 'Poké Ball cap',
       wizard: 'Wizard hat',
       crown: 'Crown',
+      pumpkin: 'Pumpkin',
     },
     accessory: {
       none: 'None',

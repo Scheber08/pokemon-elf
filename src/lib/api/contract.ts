@@ -231,7 +231,7 @@ export interface SaveTrainerRequest extends DeviceAuth {
   look: TrainerLook;
 }
 
-/** POST /api/me/buy – Cosmetic kaufen (itemKey; zu wenig Münzen → 400 not_enough_coins) → MeResponse */
+/** POST /api/me/buy – Cosmetic kaufen (itemKey; zu wenig Münzen → 400 not_enough_coins, Saisonartikel außerhalb der Saison → 400 not_on_sale) → MeResponse */
 export interface BuyItemRequest extends DeviceAuth {
   item: string;
 }
@@ -264,7 +264,8 @@ export type ApiErrorCode =
   /** POST /api/me/trainer: Der Look enthält etwas, das noch nicht gekauft ist */
   | 'locked_item'
   /** POST /api/me/buy: Zu wenige Münzen */
-  | 'not_enough_coins';
+  | 'not_enough_coins'
+  | 'not_on_sale';
 
 export interface ApiErrorBody {
   error: ApiErrorCode;

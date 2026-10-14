@@ -310,6 +310,13 @@ function hat(c: Canvas, id: string, cloth: string) {
       c.dots([[15, 6], [16, 6]], '#d8342a');
       c.dots([[11, 7], [20, 7]], '#2f62c9');
       break;
+    case 'pumpkin':
+      c.fill(and(ellipse(15.5, 7, 8.5, 5.5), above(10)), '#e8772a', '#9a4510');
+      // Rippen
+      c.fill((x, y) => (x === 12 || x === 19) && y >= 3 && y <= 10, '#c45d1a');
+      c.rect(15, 0, 2, 2, '#3f7a2e');
+      c.dots([[17, 1], [18, 0]], '#4f9a3a');
+      break;
     case 'wizard':
       c.fill((x, y) => y <= 9 && y >= 0 && Math.abs(x - 15.5) <= 1 + y * 0.9, '#5b3fb0');
       c.rect(6, 9, 20, 2, '#4a3191');

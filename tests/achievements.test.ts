@@ -1,8 +1,8 @@
 /** Erfolge: Definitionen, Kennzahlen aus D1, POST /api/me und die Abschlüsse fertiger Online-Ligen. */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { ACHIEVEMENTS, achievementStates, earnedCoins, longestDayStreak, type AchievementStats } from '../src/lib/achievements';
 import type { MeResponse } from '../src/lib/api/contract';
-import { DEFAULT_LOOK, lockedItem, parseLook, TRAINER_ITEMS, TRAINER_SLOTS } from '../src/lib/trainer';
+import { DEFAULT_LOOK, itemOnSale, lockedItem, parseLook, TRAINER_ITEMS, TRAINER_SLOTS } from '../src/lib/trainer';
 import { achievementStats, saveDraftResults } from '../server/achievements';
 import { handleApi } from '../server/handler';
 import { ensureSchema } from '../server/schema';
@@ -225,6 +225,49 @@ describe('Kennzahlen und /api/me', () => {
       trainer?: unknown;
     };
     expect(profile.trainer).toMatchObject({ hat: 'beanie' });
+  });
+});
+
+describe('Saisonartikel', () => {
+  it('nur in ihrem Zeitraum (auch über den Jahreswechsel)', () => {
+    const at = (d: string) => Date.parse(`${d}T12:00:00Z`);
+    const spooky = { slot: 'hat' as const, id: 'x', price: 1, season: { from: '10-01', to: '11-07' } };
+    expect(itemOnSale(spooky, at('2026-10-01'))).toBe(true);
+    expect(itemOnSale(spooky, at('2026-11-07'))).toBe(true);
+    expect(itemOnSale(spooky, at('2026-11-08'))).toBe(false);
+    expect(itemOnSale(spooky, at('2026-09-30'))).toBe(false);
+    const winter = { ...spooky, season: { from: '12-01', to: '01-06' } };
+    expect(itemOnSale(winter, at('2026-12-24'))).toBe(true);
+    expect(itemOnSale(winter, at('2027-01-03'))).toBe(true);
+    expect(itemOnSale(winter, at('2027-02-01'))).toBe(false);
+    expect(itemOnSale({ slot: 'hat', id: 'cap', price: 0 }, at('2026-06-01'))).toBe(true);
+    expect(TRAINER_ITEMS.some((i) => i.season)).toBe(true);
+  });
+
+  it('Kauf nur in der Saison (400 not_on_sale), danach bleibt er tragbar', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      const db = new D1Shim();
+      const auth = { deviceId: crypto.randomUUID(), deviceSecret: hex(32) };
+      const post = async (path: string, extra: Record<string, unknown> = {}) => {
+        const res = await handleApi(
+          new Request(`http://localhost/api${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...auth, ...extra }) }),
+          { DB: db },
+        );
+        return { status: res.status, body: (await res.json()) as MeResponse & { error?: string } };
+      };
+      vi.setSystemTime(new Date('2026-06-01T12:00:00Z'));
+      await post('/me');
+      addEntry(db, auth.deviceId, 'c340', '2026-05-30', 34, 0, 0);
+      expect(await post('/me/buy', { item: 'hat:pumpkin' })).toMatchObject({ status: 400, body: { error: 'not_on_sale' } });
+      vi.setSystemTime(new Date('2026-10-20T12:00:00Z'));
+      expect((await post('/me/buy', { item: 'hat:pumpkin' })).body.owned).toEqual(['hat:pumpkin']);
+      vi.setSystemTime(new Date('2027-03-01T12:00:00Z'));
+      const worn = await post('/me/trainer', { look: { ...DEFAULT_LOOK, hat: 'pumpkin' } });
+      expect(worn).toMatchObject({ status: 200, body: { trainer: { hat: 'pumpkin' } } });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

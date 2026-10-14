@@ -265,3 +265,12 @@
   padding: 12px 16px;
   border-radius: 14px;
 }
+
+/* Saisonartikel */
+.trainer-option__season {
+  position: absolute;
+  left: -4px;
+  top: -6px;
+  font-size: 12px;
+  line-height: 1;
+}

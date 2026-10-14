@@ -43,6 +43,8 @@ const trainer = {
   free: 'Frei',
   owned: 'Gekauft',
   price: (n: number) => `${n} ◎`,
+  /** Saisonartikel: Ende der Saison (MM-DD) */
+  seasonal: (to: string) => `Saisonartikel – nur bis ${Number(to.slice(3))}.${Number(to.slice(0, 2))}.`,
   previewing: (name: string) => `Vorschau: ${name}`,
   slots: {
     skin: 'Haut',
@@ -93,6 +95,7 @@ const trainer = {
       pokecap: 'Pokéball-Kappe',
       wizard: 'Zauberhut',
       crown: 'Krone',
+      pumpkin: 'Kürbis',
     },
     accessory: {
       none: 'Ohne',
