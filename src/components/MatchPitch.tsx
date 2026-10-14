@@ -138,7 +138,7 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
             >
               <circle cx={pos.x} cy={pos.y} r={p.pos === 'TW' ? 1.9 : 1.7} />
               {/* Unsichtbare, größere Tippfläche */}
-              <circle className="match-pitch__hit" cx={pos.x} cy={pos.y} r={3.6} />
+              <circle className="match-pitch__hit" cx={pos.x} cy={pos.y} r={2.8} />
               {p.pokemonId != null && !broken.has(p.pokemonId) && (
                 <image
                   className="match-pitch__sprite"
