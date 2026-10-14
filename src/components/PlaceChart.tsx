@@ -9,7 +9,7 @@ interface Props {
 
 const W = 600;
 const H = 180;
-const PAD = { left: 30, right: 10, top: 10, bottom: 22 };
+const PAD = { left: 34, right: 12, top: 12, bottom: 26 };
 
 /** Platzverlauf als Linie (Platz 1 oben) mit Achsen für Platz und Spieltag. */
 export function PlaceChart({ places, teams }: Props) {
@@ -31,7 +31,7 @@ export function PlaceChart({ places, teams }: Props) {
         {ticks.map((p) => (
           <g key={p}>
             <line x1={PAD.left} x2={W - PAD.right} y1={y(p)} y2={y(p)} className="place-chart__grid" />
-            <text x={PAD.left - 6} y={y(p) + 4} className="place-chart__label" textAnchor="end">
+            <text x={PAD.left - 8} y={y(p) + 5} className="place-chart__label" textAnchor="end">
               {p}
             </text>
           </g>

@@ -1014,5 +1014,6 @@
 }
 .place-chart__label {
   fill: var(--text-dim);
-  font-size: 11px;
+  /* SVG-Einheiten: skaliert mit der Breite (Handy ~10 px, breit ~15 px) */
+  font-size: 16px;
 }
