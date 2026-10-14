@@ -467,6 +467,8 @@ const draft: Messages['draft'] = {
     notifyHeading: (league, n) => `${league}: matchday ${n} played`,
     notifyResult: (outcome, gf, ga, opponent) => `${outcome} ${gf}:${ga} against ${opponent}.`,
     notifyPlayed: (n) => `Matchday ${n} has been played.`,
+    notifySoonHeading: (league, n) => `${league}: matchday ${n} is about to start`,
+    notifySoon: (min) => `Kick-off in ${min} min – check your lineup and transfers?`,
     marketTitle: 'Transfer market',
     marketNote: (n) =>
       `One swap per matchday: a free Pokémon for one from your squad. Assigned at kick-off of matchday ${n} – if several want the same one, the lower-placed team gets it.`,

@@ -35,6 +35,9 @@ function FormMark({ value }: { value: number }) {
   );
 }
 
+/** Erinnerung so lange vor dem Anpfiff */
+const KICKOFF_REMINDER_MS = 5 * 60_000;
+
 /** Uhrzeit (Serverzeit) im Sekundentakt – für den Countdown bis zum Anpfiff. */
 function useServerNow(clockOffset: number): number {
   const [now, setNow] = useState(() => Date.now() + clockOffset);
@@ -94,6 +97,22 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
       : t.draft.manager.notifyPlayed(playedNow);
     showNotify(t.draft.manager.notifyHeading(s.settings.name || t.online.leagueFallback(s.code), playedNow), body, `manager-${s.code}`);
   }, [playedNow]);
+
+  // Erinnerung kurz vor dem Anpfiff (einmal je Spieltag, nur bei Spieltagen ab einer Stunde Abstand):
+  // noch Zeit für Aufstellung und Transfers
+  const remindedFor = useRef(-1);
+  const msToKickoff = m?.nextAt != null ? m.nextAt - now : null;
+  useEffect(() => {
+    if (msToKickoff == null || msToKickoff <= 0 || msToKickoff > KICKOFF_REMINDER_MS) return;
+    if (remindedFor.current === playedNow) return;
+    remindedFor.current = playedNow;
+    if (!notify || you == null || readOnly || (s.settings.matchdayMinutes ?? 0) < 60) return;
+    showNotify(
+      t.draft.manager.notifySoonHeading(s.settings.name || t.online.leagueFallback(s.code), playedNow + 1),
+      t.draft.manager.notifySoon(Math.ceil(msToKickoff / 60_000)),
+      `manager-${s.code}`,
+    );
+  }, [msToKickoff != null && msToKickoff > 0 && msToKickoff <= KICKOFF_REMINDER_MS, playedNow]);
 
   const report = useMatchReport(nameOf, pokemonName, (x) => tx.next(x.round), undefined, (i, match) => {
     const team = s.teams[i];
