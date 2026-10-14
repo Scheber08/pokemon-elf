@@ -26,6 +26,8 @@ export const SCHEMA_STATEMENTS: readonly string[] = [
   `CREATE INDEX IF NOT EXISTS idx_draft_lobbies_host ON draft_lobbies (host_device, created_at)`,
   `CREATE TABLE IF NOT EXISTS draft_results ( code TEXT NOT NULL, device_id TEXT NOT NULL, format TEXT NOT NULL, rank INTEGER NOT NULL, teams INTEGER NOT NULL, wins INTEGER NOT NULL, draws INTEGER NOT NULL, losses INTEGER NOT NULL, points INTEGER NOT NULL, finished_at INTEGER NOT NULL, PRIMARY KEY (code, device_id) )`,
   `CREATE INDEX IF NOT EXISTS idx_draft_results_device ON draft_results (device_id)`,
+  `CREATE TABLE IF NOT EXISTS trainers ( device_id TEXT PRIMARY KEY, look_json TEXT NOT NULL, updated_at INTEGER NOT NULL )`,
+  `CREATE TABLE IF NOT EXISTS trainer_items ( device_id TEXT NOT NULL, item TEXT NOT NULL, price INTEGER NOT NULL, bought_at INTEGER NOT NULL, PRIMARY KEY (device_id, item) )`,
 ];
 
 const ready = new WeakMap<Db, Promise<void>>();

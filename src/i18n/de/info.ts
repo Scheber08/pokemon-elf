@@ -16,7 +16,7 @@ const info = {
     /** „Was ist neu?" – die wichtigsten Neuerungen, neueste zuerst */
     newsTitle: 'Was ist neu?',
     news: [
-      'Neu: Trainer-Seite mit Erfolgen – jeder Erfolg bringt Münzen',
+      'Neu: Gestalte deinen eigenen Trainer – Münzen aus Erfolgen kaufen Kappen, Trikots, Hintergründe und Begleiter-Pokémon',
       'Online-Draft: Manager-Saison – Bank mitdraften, vor jedem Spieltag die Elf aufstellen, Tagesform je Pokémon',
       'Builder: „Meine Teams“ – bis zu fünf Elfen speichern und laden',
       'Online-Draft: Formkurve, Saisonrekorde, Saisonverlauf, Überraschung des Spieltags, Torjäger live und Hinweis zum Saisonende',

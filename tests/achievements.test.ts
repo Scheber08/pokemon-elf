@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { ACHIEVEMENTS, achievementStates, earnedCoins, longestDayStreak, type AchievementStats } from '../src/lib/achievements';
 import type { MeResponse } from '../src/lib/api/contract';
+import { DEFAULT_LOOK, lockedItem, parseLook, TRAINER_ITEMS, TRAINER_SLOTS } from '../src/lib/trainer';
 import { achievementStats, saveDraftResults } from '../server/achievements';
 import { handleApi } from '../server/handler';
 import { ensureSchema } from '../server/schema';
@@ -33,6 +34,18 @@ function addEntry(db: D1Shim, dev: string, challenge: string, day: string, w: nu
     );
   }
 }
+
+describe('Trainer-Katalog', () => {
+  it('Standard-Look ist frei, Schlüssel eindeutig, jeder Slot hat etwas Freies', () => {
+    expect(lockedItem(DEFAULT_LOOK, new Set())).toBeNull();
+    expect(new Set(TRAINER_ITEMS.map((i) => `${i.slot}:${i.id}`)).size).toBe(TRAINER_ITEMS.length);
+    for (const slot of TRAINER_SLOTS) expect(TRAINER_ITEMS.some((i) => i.slot === slot && i.price === 0)).toBe(true);
+    expect(parseLook(null)).toEqual(DEFAULT_LOOK);
+    expect(parseLook({ hat: 'crown', skin: 7 })).toEqual({ ...DEFAULT_LOOK, hat: 'crown' });
+    expect(lockedItem({ ...DEFAULT_LOOK, hat: 'crown' }, new Set())).toBe('hat:crown');
+    expect(lockedItem({ ...DEFAULT_LOOK, hat: 'crown' }, new Set(['hat:crown']))).toBeNull();
+  });
+});
 
 describe('Definitionen', () => {
   it('eindeutige IDs, Ziele und Münzen positiv', () => {
@@ -125,5 +138,45 @@ describe('Kennzahlen und /api/me', () => {
       { DB: db },
     );
     expect(bad.status).toBe(401);
+  });
+
+  it('Trainer: Freies speichern, Gesperrtes erst nach dem Kauf; Kauf nur mit genug Münzen (atomar, wiederholbar)', async () => {
+    const db = new D1Shim();
+    const auth = { deviceId: crypto.randomUUID(), deviceSecret: hex(32) };
+    const post = async (path: string, extra: Record<string, unknown> = {}) => {
+      const res = await handleApi(
+        new Request(`http://localhost/api${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...auth, ...extra }) }),
+        { DB: db },
+      );
+      return { status: res.status, body: (await res.json()) as MeResponse & { error?: string } };
+    };
+    const first = await post('/me');
+    expect(first.body.trainer).toEqual(DEFAULT_LOOK);
+    expect(first.body.owned).toEqual([]);
+    // Frei: speichern geht
+    const free = await post('/me/trainer', { look: { ...DEFAULT_LOOK, hair: 'long', hairColor: 'blonde' } });
+    expect(free.status).toBe(200);
+    expect(free.body.trainer.hair).toBe('long');
+    // Gesperrt: 400, nichts geändert
+    const locked = await post('/me/trainer', { look: { ...DEFAULT_LOOK, hat: 'beanie' } });
+    expect(locked).toMatchObject({ status: 400, body: { error: 'locked_item' } });
+    expect((await post('/me')).body.trainer.hair).toBe('long');
+    // Ohne Münzen kein Kauf; Unbekanntes bzw. Freies → 400
+    expect(await post('/me/buy', { item: 'hat:beanie' })).toMatchObject({ status: 400, body: { error: 'not_enough_coins' } });
+    expect((await post('/me/buy', { item: 'hat:zylinder' })).status).toBe(400);
+    expect((await post('/me/buy', { item: 'hat:cap' })).status).toBe(400);
+    // 250 Münzen verdient (erster Run + 30 Siege in der 151 Challenge)
+    addEntry(db, auth.deviceId, 'c151', '2026-10-01', 30, 2, 2);
+    const bought = await post('/me/buy', { item: 'hat:beanie' });
+    expect(bought.status).toBe(200);
+    expect(bought.body.owned).toEqual(['hat:beanie']);
+    expect(bought.body.coins).toEqual({ earned: 250, spent: 150, balance: 100 });
+    // Nochmal kaufen: nichts passiert; teurer als der Rest: nein
+    expect((await post('/me/buy', { item: 'hat:beanie' })).body.coins.spent).toBe(150);
+    expect(await post('/me/buy', { item: 'hat:pokecap' })).toMatchObject({ status: 400, body: { error: 'not_enough_coins' } });
+    // Jetzt darf die Mütze getragen werden; Unbekanntes im Look wird zum Standard
+    const worn = await post('/me/trainer', { look: { ...DEFAULT_LOOK, hat: 'beanie', title: 'quatsch' } });
+    expect(worn.status).toBe(200);
+    expect(worn.body.trainer).toMatchObject({ hat: 'beanie', title: DEFAULT_LOOK.title });
   });
 });

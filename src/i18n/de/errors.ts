@@ -31,6 +31,8 @@ const errors = {
     bad_name: 'Bitte wähle einen eigenen Namen',
     name_required: 'Bitte wähle zuerst deinen Namen für die Rangliste',
     team_name_required: 'Bitte gib deinem Team einen Namen',
+    locked_item: 'Das musst du erst im Shop kaufen',
+    not_enough_coins: 'Dafür reichen deine Münzen noch nicht',
   } as Record<ApiErrorCode, string>,
   /** Genauere Meldungen (aus der Server-Meldung erkannt) */
   runNotFound: 'Run nicht gefunden',

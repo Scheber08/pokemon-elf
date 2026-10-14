@@ -20,6 +20,8 @@ const errors: Messages['errors'] = {
     bad_name: 'Please choose a name of your own',
     name_required: 'Please choose your name for the leaderboard first',
     team_name_required: 'Please give your team a name',
+    locked_item: 'You need to buy that in the shop first',
+    not_enough_coins: 'You don’t have enough coins for that yet',
   },
   runNotFound: 'Run not found',
   invalidPlayerName: 'That name won’t work – please choose another one',

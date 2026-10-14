@@ -98,3 +98,161 @@
 .achievement.is-done .achievement__reward small {
   color: var(--yellow);
 }
+
+/* Trainer-Avatar (SVG + Begleiter) */
+.trainer-avatar {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  line-height: 0;
+}
+.trainer-avatar svg {
+  display: block;
+  border-radius: 18%;
+}
+.trainer-avatar__pet {
+  position: absolute;
+  right: -6%;
+  bottom: -4%;
+  width: 46%;
+  height: 46%;
+  display: grid;
+  place-items: end center;
+}
+.trainer-avatar__pet img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.45));
+}
+
+/* Editor */
+.trainer-editor__layout {
+  display: grid;
+  grid-template-columns: minmax(200px, 240px) 1fr;
+  gap: 20px;
+  align-items: start;
+  margin-top: 8px;
+}
+@media (max-width: 720px) {
+  .trainer-editor__layout {
+    grid-template-columns: 1fr;
+  }
+}
+.trainer-editor__preview {
+  position: sticky;
+  top: 12px;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+}
+@media (max-width: 720px) {
+  .trainer-editor__preview {
+    position: static;
+  }
+}
+.trainer-editor__name {
+  font-family: var(--font-head);
+  font-size: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.trainer-editor__title {
+  padding: 1px 10px;
+  border-radius: 999px;
+  background: rgba(255, 203, 5, 0.15);
+  color: var(--yellow);
+  font-size: 13px;
+}
+.trainer-editor__buy {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+.trainer-editor__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.trainer-editor__slots {
+  display: grid;
+  gap: 14px;
+}
+.trainer-slot {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.trainer-slot__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.trainer-option {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 60px;
+  min-height: 60px;
+  padding: 3px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.trainer-slot__options.is-colors .trainer-option {
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 50%;
+}
+.trainer-option.is-active {
+  border-color: var(--yellow);
+  box-shadow: 0 0 0 2px rgba(255, 203, 5, 0.35);
+}
+.trainer-option.is-locked > :first-child {
+  opacity: 0.55;
+}
+.trainer-option__swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+.trainer-option__text {
+  padding: 0 10px;
+  font-size: 13px;
+}
+.trainer-option__price {
+  position: absolute;
+  right: -4px;
+  bottom: -6px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--yellow);
+  color: #3a2c00;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  white-space: nowrap;
+}
+.trainer-option__pet {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  font-size: 20px;
+  color: var(--text-dim);
+}
+.trainer-option__pet img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}

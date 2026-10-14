@@ -4,6 +4,7 @@ import { ACHIEVEMENT_CATEGORIES, ACHIEVEMENTS } from '../lib/achievements';
 import { fetchMe } from '../lib/api/client';
 import type { MeResponse } from '../lib/api/contract';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
+import { TrainerEditor } from '../components/TrainerEditor';
 import '../styles/trainer.css';
 
 type Status = { status: 'loading' } | { status: 'ready'; me: MeResponse } | { status: 'error'; message: string };
@@ -60,19 +61,24 @@ export function Trainer() {
           </button>
         </div>
       ) : (
-        <Achievements me={state.me} seen={seen} />
+        <>
+          <Wallet me={state.me} />
+          <TrainerEditor me={state.me} onMe={(me) => setState({ status: 'ready', me })} />
+          <Achievements me={state.me} seen={seen} />
+        </>
       )}
     </div>
   );
 }
 
-function Achievements({ me, seen }: { me: MeResponse; seen: Set<string> }) {
+/** Münzen: Kontostand, verdient, Fortschritt der Erfolge */
+function Wallet({ me }: { me: MeResponse }) {
   const t = useT();
   const tx = t.trainer;
   const done = me.achievements.filter((a) => a.done).length;
   return (
     <>
-      <section className="card trainer__wallet" aria-label={tx.coins}>
+      <section className="card trainer__wallet" aria-label={tx.coins} aria-live="polite">
         <span className="trainer__coin" aria-hidden="true">
           ◎
         </span>
@@ -84,6 +90,15 @@ function Achievements({ me, seen }: { me: MeResponse; seen: Set<string> }) {
         </div>
       </section>
       {!me.player && <p className="notice">{tx.noName}</p>}
+    </>
+  );
+}
+
+function Achievements({ me, seen }: { me: MeResponse; seen: Set<string> }) {
+  const t = useT();
+  const tx = t.trainer;
+  return (
+    <>
       {ACHIEVEMENT_CATEGORIES.map((cat) => {
         const items = me.achievements.filter((a) => CATEGORY_OF.get(a.id) === cat);
         if (!items.length) return null;

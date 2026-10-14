@@ -6,6 +6,7 @@ import { currentLang, messages } from '../../i18n';
 import type { ChallengeKey } from '../../types';
 import { getDevice } from '../device';
 import { parseEntryDetail } from '../leaderboard/entryDetail';
+import type { TrainerLook } from '../trainer';
 import type {
   ApiErrorBody,
   ApiErrorCode,
@@ -207,6 +208,16 @@ export async function fetchPlayerProfile(entryId: string): Promise<PlayerProfile
 /** Erfolge und Münzen des eigenen Geräts */
 export function fetchMe(): Promise<MeResponse> {
   return request<MeResponse>('/me', { method: 'POST', body: JSON.stringify(getDevice()) });
+}
+
+/** Aussehen des Trainers speichern – liefert den neuen Stand */
+export function saveTrainer(look: TrainerLook): Promise<MeResponse> {
+  return request<MeResponse>('/me/trainer', { method: 'POST', body: JSON.stringify({ ...getDevice(), look }) });
+}
+
+/** Cosmetic kaufen (itemKey) – liefert den neuen Stand */
+export function buyTrainerItem(item: string): Promise<MeResponse> {
+  return request<MeResponse>('/me/buy', { method: 'POST', body: JSON.stringify({ ...getDevice(), item }) });
 }
 
 export async function renamePlayer(player: string): Promise<void> {

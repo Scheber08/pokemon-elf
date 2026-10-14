@@ -10,7 +10,9 @@
  *   GET  /api/entries/:id                    → EntryDetail (nur Ranglisten-Einträge, sonst 404)
  *   GET  /api/entries/:id/player             → PlayerProfile (Spieler dieses Ranglisten-Eintrags)
  *   POST /api/player        RenameRequest    → { ok: true }
- *   POST /api/me            DeviceAuth       → MeResponse (Erfolge und Münzen)
+ *   POST /api/me            DeviceAuth       → MeResponse (Erfolge, Münzen, Trainer)
+ *   POST /api/me/trainer    SaveTrainerRequest → MeResponse
+ *   POST /api/me/buy        BuyItemRequest   → MeResponse
  *
  * Spielername: Ein neues Gerät heißt auf dem Server „Trainer" (DEFAULT_PLAYER_NAME). Mit
  * diesem Standardnamen (oder leerem Namen, siehe isDefaultPlayerName) startet kein
@@ -34,6 +36,7 @@
 import type { ChallengeKey, FormationId, Record3 } from '../../types';
 import type { AchievementState } from '../achievements';
 import type { PickLog } from '../challengeEngine';
+import type { TrainerLook } from '../trainer';
 
 export const API_VERSION = 1;
 
@@ -213,6 +216,20 @@ export interface MeResponse {
   coins: { earned: number; spent: number; balance: number };
   /** Alle Erfolge (Reihenfolge wie ACHIEVEMENTS) */
   achievements: AchievementState[];
+  /** Aussehen des Trainers (ohne gespeicherten: DEFAULT_LOOK) */
+  trainer: TrainerLook;
+  /** Gekaufte Cosmetics (itemKey: „hat:crown") */
+  owned: string[];
+}
+
+/** POST /api/me/trainer – Aussehen speichern (nur Freies und Gekauftes, sonst 400 locked_item) → MeResponse */
+export interface SaveTrainerRequest extends DeviceAuth {
+  look: TrainerLook;
+}
+
+/** POST /api/me/buy – Cosmetic kaufen (itemKey; zu wenig Münzen → 400 not_enough_coins) → MeResponse */
+export interface BuyItemRequest extends DeviceAuth {
+  item: string;
 }
 
 export interface RenameRequest extends DeviceAuth {
@@ -239,7 +256,11 @@ export type ApiErrorCode =
   /** POST /api/runs/start: Das Gerät hat noch keinen eigenen Namen (erst POST /api/player) */
   | 'name_required'
   /** POST /api/runs/finish: Teamname fehlt (leer oder nichts Sichtbares) */
-  | 'team_name_required';
+  | 'team_name_required'
+  /** POST /api/me/trainer: Der Look enthält etwas, das noch nicht gekauft ist */
+  | 'locked_item'
+  /** POST /api/me/buy: Zu wenige Münzen */
+  | 'not_enough_coins';
 
 export interface ApiErrorBody {
   error: ApiErrorCode;
