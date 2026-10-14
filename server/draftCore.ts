@@ -74,7 +74,7 @@ import {
 } from '../src/lib/draftEngine';
 import type { Scale } from '../src/lib/fit';
 import { lookFromJson, type TrainerLook } from '../src/lib/trainer';
-import { answerOffer, makeOffer, nextKickoff, playDueMatchdays, seasonEndsAt, setClaim, setLineup, startManagerSeason } from '../src/lib/manager';
+import { answerOffer, makeOffer, nextKickoff, playDueMatchdays, refreshAutoLineup, seasonEndsAt, setClaim, setLineup, startManagerSeason } from '../src/lib/manager';
 import type { FormationId, Pokemon, TypeKey } from '../src/types';
 import { authenticateDevice, HOUR_MS, normalizeIp } from './auth';
 import { randomHex, sha256Hex, timingSafeEqual } from './crypto';
@@ -1603,8 +1603,9 @@ export class DraftRoomCore {
       case 'crest':
         return setTeamCrest(state, deviceId, msg.crest);
       case 'captain':
-        // Manager-Saison: Überfälliges erst spielen – der Kapitän gilt ab dem nächsten Anpfiff
-        return setTeamCaptain(state.manager ? playDueMatchdays(state, now, list, scale) : state, deviceId, msg.pokemonId, now);
+        // Manager-Saison: Überfälliges erst spielen – der Kapitän gilt ab dem nächsten Anpfiff, „auto“ stellt gleich neu auf
+        if (state.manager) return refreshAutoLineup(setTeamCaptain(playDueMatchdays(state, now, list, scale), deviceId, msg.pokemonId, now), deviceId, list, scale);
+        return setTeamCaptain(state, deviceId, msg.pokemonId, now);
       case 'offer':
         // Tausch sofort (CPU) bzw. als Angebot – Überfälliges erst spielen, wie beim Transfer
         return makeOffer(playDueMatchdays(state, now, list, scale), deviceId, { to: msg.to, give: msg.give, get: msg.get }, list, scale);

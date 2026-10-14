@@ -594,6 +594,14 @@ export function setLineup(
   return { ...state, manager: { ...m, lineups: { ...m.lineups, [teamId]: lineup } } };
 }
 
+/** Kapitän in der Manager-Saison: Steht die eigene Aufstellung auf „auto“, gleich neu aufstellen (mit Kapitän). */
+export function refreshAutoLineup(state: DraftState, deviceId: string, list: Pokemon[], scale: Scale): DraftState {
+  const teamId = teamOfDevice(state, deviceId);
+  const cur = teamId != null ? state.manager?.lineups[teamId] : undefined;
+  if (state.phase !== 'season' || !cur?.auto) return state;
+  return setLineup(state, deviceId, { formation: cur.formation, slots: [], ss: null, auto: true }, list, scale);
+}
+
 // ---------------------------------------------------------------- Transfermarkt
 
 /** Freie Pokémon: im Pool der Liga und von keinem gedrafteten Team besetzt. */

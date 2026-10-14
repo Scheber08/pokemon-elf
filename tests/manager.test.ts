@@ -51,6 +51,7 @@ import {
   cpuOffers,
   squadStrength,
   lineupScore,
+  refreshAutoLineup,
   rollAbsences,
   absentAt,
   INJURY_CHANCE,
@@ -239,6 +240,18 @@ describe('Saison', () => {
     }
     // Kapitän schon in der Elf: nichts ändert sich
     expect(bestLineup(host, '4-3-3', BY_ID, SCALE, form, false, new Set(), undefined, plain.slots[0])).toEqual(plain);
+  });
+
+  it('Kapitänswechsel: „auto“ stellt sofort neu auf, eigene Aufstellung bleibt', () => {
+    const s = startManagerSeason(drafted(), ALL, SCALE);
+    const host = s.teams.find((t) => t.id === 'h')!;
+    const bencher = rosterOf(host).find((id) => !s.manager!.lineups.h.slots.includes(id))!;
+    const withCaptain = setTeamCaptain(s, 'dev-h', bencher);
+    const auto = refreshAutoLineup(withCaptain, 'dev-h', ALL, SCALE);
+    const expected = bestLineup(host, s.manager!.lineups.h.formation, BY_ID, SCALE, s.manager!.form, false, new Set(), undefined, bencher);
+    expect(auto.manager!.lineups.h).toEqual({ ...expected, auto: true });
+    const manual = { ...s, manager: { ...s.manager!, lineups: { ...s.manager!.lineups, h: { ...s.manager!.lineups.h, auto: false } } } };
+    expect(refreshAutoLineup(setTeamCaptain(manual, 'dev-h', bencher), 'dev-h', ALL, SCALE).manager!.lineups.h).toEqual(manual.manager!.lineups.h);
   });
 
   it('Tagesform: −2 … +2, meist 0, fest je Liga, Spieltag und Pokémon', () => {
