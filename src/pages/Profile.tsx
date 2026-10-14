@@ -4,7 +4,9 @@ import { EntryDialog, type EntrySource } from '../components/EntryDialog';
 import { useT } from '../i18n';
 import { ApiRequestError, fetchPlayerProfile } from '../lib/api/client';
 import type { PlayerProfile } from '../lib/api/contract';
+import { copyText } from '../lib/exportImage';
 import { formatRecord } from '../lib/season';
+import { useToast } from '../state/Toast';
 import '../styles/leaderboard.css';
 
 type Status = { status: 'loading' } | { status: 'ready'; profile: PlayerProfile } | { status: 'gone' } | { status: 'error'; message: string };
@@ -16,6 +18,7 @@ export function Profile() {
   const tp = t.leaderboard.profile;
   const [state, setState] = useState<Status>({ status: 'loading' });
   const [open, setOpen] = useState<EntrySource | null>(null);
+  const toast = useToast();
 
   useEffect(() => {
     let alive = true;
@@ -56,6 +59,20 @@ export function Profile() {
   }
 
   const p = state.profile;
+
+  /** Profil-Link teilen (Teilen-Menü, sonst Zwischenablage) */
+  const share = async () => {
+    const url = window.location.href;
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title: t.leaderboard.entry.profileTitle(p.player), url });
+        return;
+      } catch (e) {
+        if ((e as Error).name === 'AbortError') return;
+      }
+    }
+    toast((await copyText(url)) ? tp.linkCopied : tp.copyFailed);
+  };
   const date = (iso: string) => t.game.day(iso.slice(0, 10));
   return (
     <div className="page profile">
@@ -164,6 +181,9 @@ export function Profile() {
       </section>
 
       <div className="actionbar">
+        <button type="button" className="btn btn--primary" onClick={share}>
+          {tp.share}
+        </button>
         <Link className="btn" to="/rangliste">
           {tp.toBoard}
         </Link>

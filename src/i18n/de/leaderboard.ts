@@ -120,6 +120,9 @@ const leaderboard = {
     gone: 'Dieses Profil ist nicht (mehr) erreichbar – der Eintrag steht nicht mehr in der Rangliste.',
     error: (message: string) => `Profil nicht erreichbar: ${message}`,
     toBoard: 'Zur Rangliste',
+    share: 'Profil teilen',
+    linkCopied: 'Link zum Profil kopiert',
+    copyFailed: 'Kopieren nicht möglich',
     pts: (n: number) => `${n} Pkt`,
     score: (n: number) => `Score ${n}`,
     /** Aktueller Allzeit-Platz in dieser Wertung */
