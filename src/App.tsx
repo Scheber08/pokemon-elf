@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { AchievementWatcher } from './components/AchievementWatcher';
 import { Footer, Header } from './components/Layout';
 import { useT } from './i18n';
 import { Builder } from './pages/Builder';
@@ -64,6 +65,7 @@ export function App() {
       <SettingsProvider>
         <ToastProvider>
           <SkipLink />
+          <AchievementWatcher />
           <Header />
           <main id="main" className="main">
             <PokemonDataProvider>

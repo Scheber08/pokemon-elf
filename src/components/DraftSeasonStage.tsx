@@ -11,6 +11,7 @@ import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import { useToast } from '../state/Toast';
 import { draftErrorText, teamLabel, type DraftRoom } from '../state/useDraftRoom';
+import { requestAchievementCheck } from './AchievementWatcher';
 import { cupStatusText } from './CupBracket';
 import { DraftResults } from './DraftResults';
 import { DraftSquads } from './DraftSquads';
@@ -94,6 +95,8 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           clockOffset={room.clockOffset}
           onDone={() => {
             setTicker(false);
+            // Liga fertig: neue Erfolge (Online-Draft) melden
+            if (highlight != null) requestAchievementCheck();
             // Tab im Hintergrund: Saisonende melden (wie „Du bist dran" – nur mit Erlaubnis)
             if (notify && highlight != null) {
               const place = league.table.findIndex((r) => r.team === highlight) + 1;

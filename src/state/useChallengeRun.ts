@@ -110,6 +110,7 @@ import {
 } from '../lib/runFinish';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
 import type { ChallengeKey, FormationId, Pokemon } from '../types';
+import { requestAchievementCheck } from '../components/AchievementWatcher';
 import { usePokemonData } from './PokemonData';
 
 export type RunPhase = 'setup' | 'play' | 'result';
@@ -699,6 +700,8 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
       setStatsVersion((v) => v + 1);
       setCanFinishOffline(false);
       setNamesNeeded(false);
+      // Online gewertet: neue Erfolge melden
+      if (outcome.ranking.status === 'ranked') requestAchievementCheck();
       return true;
     } catch (e) {
       // Token und Phase 'play' bleiben – erneut senden ist möglich.
