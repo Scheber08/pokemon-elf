@@ -238,6 +238,8 @@ const draft: Messages['draft'] = {
     yourPlace: (team, place, pts) => `Your team ${team}: ${ordinal(place)} place · ${plural(pts, 'pt', 'pts')}`,
     share: 'Share result',
     saveOwnImage: 'My XI as image',
+    saveTable: 'As image',
+    saveTableAria: 'Save the table as an image',
     grade: 'Grade',
     duels: 'Your head-to-heads',
     duelsOpponent: 'Opponent',

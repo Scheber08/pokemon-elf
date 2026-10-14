@@ -1029,3 +1029,11 @@
   margin: 0 0 10px;
   accent-color: var(--yellow);
 }
+
+/* Abschlusstabelle: Überschrift mit „Als Bild" */
+.draft-results__table-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}

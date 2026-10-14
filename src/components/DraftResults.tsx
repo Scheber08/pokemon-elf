@@ -1,8 +1,8 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftTeam } from '../lib/api/draftContract';
-import { copyText, downloadBlob } from '../lib/exportImage';
+import { copyText, downloadBlob, nodeToPng } from '../lib/exportImage';
 import { draftGrades, draftShareText, biggestWin, draftSteal, headToHead, leagueTimeline, longestWinStreak, recentForm, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { formatRecord, type LeagueResult } from '../lib/season';
@@ -52,6 +52,8 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
   const { byId, scale } = usePokemonData();
   const toast = useToast();
   const [saving, setSaving] = useState(false);
+  const [savingTable, setSavingTable] = useState(false);
+  const tableRef = useRef<HTMLElement>(null);
   const days = useMemo(() => leagueTimeline(league), [league]);
   const allScorers = useMemo(() => topScorers(league), [league]);
   const scorers = allScorers.slice(0, TOP_SCORERS);
@@ -167,6 +169,21 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
     }
   };
 
+  /** Abschlusstabelle als Bild (Hintergrund wie die Seite, Knopf selbst nicht im Bild) */
+  const onSaveTable = async () => {
+    if (!tableRef.current) return;
+    setSavingTable(true);
+    try {
+      const bg = getComputedStyle(document.body).backgroundColor;
+      downloadBlob(await nodeToPng(tableRef.current, { scale: 2, background: bg }), `${slugify(leagueName || code)}-tabelle.png`);
+    } catch (e) {
+      console.error(e);
+      toast(t.builder.imageFailed);
+    } finally {
+      setSavingTable(false);
+    }
+  };
+
   const onShare = async () => {
     if (typeof navigator.share === 'function') {
       try {
@@ -244,10 +261,23 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
       )}
 
       <div className="result-grid">
-        <section className="card" aria-labelledby="draft-results-table">
-          <h2 id="draft-results-table" className="section-title">
-            {cup ? t.draft.cup.standings : tx.finalTable}
-          </h2>
+        <section className="card" aria-labelledby="draft-results-table" ref={tableRef}>
+          <div className="draft-results__table-head">
+            <h2 id="draft-results-table" className="section-title">
+              {cup ? t.draft.cup.standings : tx.finalTable}
+            </h2>
+            <button
+              type="button"
+              className="btn btn--small btn--ghost"
+              onClick={onSaveTable}
+              disabled={savingTable}
+              aria-label={tx.saveTableAria}
+              title={tx.saveTableAria}
+              data-html2canvas-ignore
+            >
+              {savingTable ? t.builder.savingImage : tx.saveTable}
+            </button>
+          </div>
           <div className="table-scroll">
             <table className="league-table draft-results__table">
               <thead>

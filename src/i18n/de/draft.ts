@@ -257,6 +257,8 @@ const draft = {
     yourPlace: (team: string, place: number, pts: number) => `Dein Team ${team}: Platz ${place} · ${pts} Pkt`,
     share: 'Ergebnis teilen',
     saveOwnImage: 'Meine Elf als Bild',
+    saveTable: 'Als Bild',
+    saveTableAria: 'Tabelle als Bild speichern',
     grade: 'Note',
     /** Direkte Duelle des eigenen Teams */
     duels: 'Deine Duelle',
