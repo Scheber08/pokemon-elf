@@ -185,6 +185,8 @@ const trainer = {
     draft_title: { name: 'Meister', desc: 'Gewinne eine Online-Liga.' },
     draft_cup: { name: 'Pokalsieger', desc: 'Gewinne ein KO-Turnier im Online-Draft.' },
     draft_manager: { name: 'Meistertrainer', desc: 'Gewinne eine Manager-Saison.' },
+    draft_unbeaten: { name: 'Ungeschlagen', desc: 'Eine Online-Liga oder Manager-Saison ohne Niederlage.' },
+    draft_titles_3: { name: 'Serienmeister', desc: '3 Titel im Online-Draft (Liga, Pokal oder Manager-Saison).' },
   } as Record<string, { name: string; desc: string }>,
 };
 

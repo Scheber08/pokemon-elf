@@ -21,7 +21,15 @@ export interface AchievementStats {
   /** Bester Allzeit-Platz über alle Wertungen (null = keiner) */
   bestPlace: number | null;
   /** Fertige Online-Ligen: gespielt, Meister (Liga), Turniersiege, Manager-Meister, Podestplätze (1–3) */
-  draft: { leagues: number; titles: number; cups: number; manager: number; podiums: number };
+  draft: {
+    leagues: number;
+    titles: number;
+    cups: number;
+    manager: number;
+    podiums: number;
+    /** Ligen bzw. Manager-Saisons ohne Niederlage (fehlt bei älteren Antworten = 0) */
+    unbeaten?: number;
+  };
 }
 
 export type AchievementCategory = 'challenge' | 'daily' | 'ranking' | 'draft';
@@ -74,6 +82,8 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'draft_title', category: 'draft', coins: 300, goal: 1, value: (s) => s.draft.titles },
   { id: 'draft_cup', category: 'draft', coins: 300, goal: 1, value: (s) => s.draft.cups },
   { id: 'draft_manager', category: 'draft', coins: 400, goal: 1, value: (s) => s.draft.manager },
+  { id: 'draft_unbeaten', category: 'draft', coins: 500, goal: 1, value: (s) => s.draft.unbeaten ?? 0 },
+  { id: 'draft_titles_3', category: 'draft', coins: 800, goal: 3, value: (s) => s.draft.titles + s.draft.cups + s.draft.manager },
 ];
 
 export const ACHIEVEMENT_CATEGORIES: readonly AchievementCategory[] = ['challenge', 'daily', 'ranking', 'draft'];

@@ -42,7 +42,8 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
            SUM(CASE WHEN rank = 1 AND format = 'league' THEN 1 ELSE 0 END) AS titles,
            SUM(CASE WHEN rank = 1 AND format = 'cup' THEN 1 ELSE 0 END) AS cups,
            SUM(CASE WHEN rank = 1 AND format = 'manager' THEN 1 ELSE 0 END) AS manager,
-           SUM(CASE WHEN rank <= 3 THEN 1 ELSE 0 END) AS podiums
+           SUM(CASE WHEN rank <= 3 THEN 1 ELSE 0 END) AS podiums,
+           SUM(CASE WHEN losses = 0 AND format != 'cup' AND wins + draws > 0 THEN 1 ELSE 0 END) AS unbeaten
          FROM draft_results WHERE device_id = ?`,
       )
       .bind(deviceId),
@@ -68,7 +69,14 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
     dailyStreak: longestDayStreak(dailyDays),
     dailyWins: num(wins.results[0]?.n),
     bestPlace: places.length ? Math.min(...places) : null,
-    draft: { leagues: num(d.leagues), titles: num(d.titles), cups: num(d.cups), manager: num(d.manager), podiums: num(d.podiums) },
+    draft: {
+      leagues: num(d.leagues),
+      titles: num(d.titles),
+      cups: num(d.cups),
+      manager: num(d.manager),
+      podiums: num(d.podiums),
+      unbeaten: num(d.unbeaten),
+    },
   };
 }
 
