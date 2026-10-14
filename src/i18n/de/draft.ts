@@ -158,6 +158,8 @@ const draft = {
     setPiece: 'Standardschütze',
     shinies: 'Shinys',
     shiniesTitle: '2 % je Pick: schillernde Pokémon spielen besser und heben das Team',
+    shinyParty: 'Party',
+    shinyPartyTitle: '10 % je Pick – viel mehr Shinys',
     /** Spielmodus nach dem Draft */
     format: 'Spielmodus',
     formatLeague: 'Liga',
@@ -231,6 +233,7 @@ const draft = {
     withSetPiece: 'mit Standardschütze',
     withoutSetPiece: 'ohne Standardschütze',
     withoutShinies: 'ohne Shinys',
+    withShinyParty: 'Shiny-Party (10 %)',
     maxTeams: (n: number) => `bis ${n} Teams`,
     orderRandom: 'Reihenfolge zufällig',
     orderHost: 'Reihenfolge vom Host',

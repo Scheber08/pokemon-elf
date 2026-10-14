@@ -326,6 +326,7 @@ describe('Ältere Ligen und Clients (region / legends)', () => {
       maxMegas: 1,
       setPiece: true,
       shinies: true,
+      shinyParty: false,
       maxTeams: 6,
       pickSeconds: 30,
       order: 'host',

@@ -21,6 +21,7 @@ import {
   fillTeams,
   leagueRng,
   leagueSeed,
+  shinyFor,
   leagueTeams,
   limitOf,
   LIMIT_KINDS,
@@ -39,7 +40,7 @@ import { hashSeed, shuffle } from './rng';
 import { CUP_SIZE, playTie, type CupRound, type CupStage, type CupTie } from './cup';
 import { buildTable, DRAFT_MODEL, nextForm, playMatch, roundRobin, type LeagueResult, type LeagueTeam, type Match, type SquadPlayer } from './season';
 import { captainWeights, teamScoreFromFits } from './teamScore';
-import { SHINY_FIT_BONUS, shinyBonus, shinyRoll, shinyTeamBoost } from './shiny';
+import { SHINY_FIT_BONUS, shinyBonus, shinyTeamBoost } from './shiny';
 
 /** Fit-Punkte je Formstufe */
 export const FORM_FIT = 5;
@@ -711,8 +712,7 @@ export function processClaims(state: DraftState, list: Pokemon[], scale: Scale):
     const l = lineups[team.id];
     if (l) lineups[team.id] = { ...l, slots: l.slots.map((id) => (id === claim.out ? claim.in : id)), ss: l.ss === claim.out ? claim.in : l.ss };
     // Neuzugang vom Transfermarkt: dieselbe Shiny-Chance wie ein Pick (fest je Liga und Pokémon)
-    const shiny =
-      upgradeSettings(next.settings).shinies && !next.shinies?.includes(claim.in) && shinyRoll(leagueSeed(next.seed, 'shiny'), claim.in);
+    const shiny = !next.shinies?.includes(claim.in) && shinyFor(next.settings, next.seed, claim.in);
     next = {
       ...next,
       teams: next.teams.map((t, j) => (j === i ? swapRoster(t, claim.out, claim.in) : t)),

@@ -582,13 +582,14 @@ export function DraftSettingsForm({ value, onChange, list, teamsJoined = 0, disa
         />
         <DraftChoice
           label={tx.shinies}
-          value={value.shinies}
+          value={!value.shinies ? 'off' : value.shinyParty ? 'party' : 'on'}
           disabled={disabled}
           busy={busy}
-          onChange={(shinies) => change({ shinies })}
+          onChange={(v) => change(v === 'off' ? { shinies: false } : { shinies: true, shinyParty: v === 'party' })}
           options={[
-            { value: false, label: t.draft.off },
-            { value: true, label: t.draft.on, title: tx.shiniesTitle },
+            { value: 'off', label: t.draft.off },
+            { value: 'on', label: t.draft.on, title: tx.shiniesTitle },
+            { value: 'party', label: tx.shinyParty, title: tx.shinyPartyTitle },
           ]}
         />
         <div className="draft-settings__pair">
@@ -721,7 +722,7 @@ export function DraftSettingsSummary({ settings }: { settings: DraftSettings }) 
     settings.forms ? tx.withForms : null,
     poolHasMegas(settings) ? (settings.maxMegas != null ? tx.maxMegas(settings.maxMegas) : tx.withMegas) : null,
     settings.setPiece ? tx.withSetPiece : tx.withoutSetPiece,
-    settings.shinies === false ? tx.withoutShinies : null,
+    settings.shinies === false ? tx.withoutShinies : settings.shinyParty ? tx.withShinyParty : null,
     settings.format === 'cup'
       ? settings.cupGroups
         ? tx.cupWithGroups(CUP_SIZE)

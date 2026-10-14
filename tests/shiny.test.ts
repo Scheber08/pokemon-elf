@@ -60,3 +60,22 @@ describe('Shiny', () => {
   });
 });
 
+
+describe('Shiny-Party', () => {
+  it('10 % statt 2 %, nur mit Shinys an; Einstellung wird übernommen', async () => {
+    const { shinyFor, upgradeSettings } = await import('../src/lib/draftEngine');
+    const { DEFAULT_DRAFT_SETTINGS } = await import('../src/lib/api/draftContract');
+    const count = (party: boolean, on = true) =>
+      Array.from({ length: 2000 }, (_, i) => i + 1).filter((id) => shinyFor({ ...DEFAULT_DRAFT_SETTINGS, shinies: on, shinyParty: party }, 'seed-x', id)).length;
+    const normal = count(false);
+    const party = count(true);
+    expect(normal).toBeGreaterThan(15);
+    expect(normal).toBeLessThan(70);
+    expect(party).toBeGreaterThan(140);
+    expect(party).toBeLessThan(270);
+    expect(count(true, false)).toBe(0);
+    // Alte Einstellungen ohne Feld: keine Party
+    const { shinyParty: _x, ...old } = DEFAULT_DRAFT_SETTINGS;
+    expect(upgradeSettings(old as never).shinyParty).toBe(false);
+  });
+});

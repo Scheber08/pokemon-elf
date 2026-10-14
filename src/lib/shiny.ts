@@ -9,6 +9,8 @@ import { hashSeed } from './rng';
 
 /** Chance je Pick */
 export const SHINY_CHANCE = 0.02;
+/** Shiny-Party (Lobby-Einstellung): deutlich mehr Shinys */
+export const SHINY_PARTY_CHANCE = 0.1;
 /** Bessere Werte: so viele Punkte mehr Positionspassung (0–100) */
 export const SHINY_FIT_BONUS = 10;
 /** Team-Bonus (Team-Score-Punkte) eines sehr schwachen Shinys; starke geben weniger (mindestens 10 %) */
@@ -17,8 +19,8 @@ export const SHINY_TEAM_MAX = 40;
 const statTotal = (p: Pick<Pokemon, 'hp' | 'atk' | 'def' | 'spa' | 'spd' | 'spe'>) => p.hp + p.atk + p.def + p.spa + p.spd + p.spe;
 
 /** Ist dieses Pokémon bei diesem Seed ein Shiny? */
-export function shinyRoll(seed: number, pokemonId: number): boolean {
-  return hashSeed(seed, 'shiny', pokemonId) / 0x80000000 < SHINY_CHANCE;
+export function shinyRoll(seed: number, pokemonId: number, chance = SHINY_CHANCE): boolean {
+  return hashSeed(seed, 'shiny', pokemonId) / 0x80000000 < chance;
 }
 
 /** Team-Bonus eines Shinys: 200 Basiswerte → voller Bonus, 600+ → 10 % */

@@ -63,7 +63,7 @@ import { cleanKit } from './kits';
 import { cleanCheer } from './cheer';
 import { cleanCrest } from './crest';
 import { bestEleven } from './bestEleven';
-import { SHINY_FIT_BONUS, shinyBonus, shinyRoll } from './shiny';
+import { SHINY_CHANCE, SHINY_FIT_BONUS, SHINY_PARTY_CHANCE, shinyBonus, shinyRoll } from './shiny';
 
 /** Slot-Index des Standardschützen */
 export const DRAFT_SS_SLOT = 11;
@@ -312,6 +312,7 @@ export function upgradeSettings(raw: unknown): DraftSettings {
     maxMegas: isMaxMegas(r.maxMegas) ? r.maxMegas : d.maxMegas,
     setPiece: isBool(r.setPiece) ? r.setPiece : d.setPiece,
     shinies: isBool(r.shinies) ? r.shinies : d.shinies,
+    shinyParty: isBool(r.shinyParty) ? r.shinyParty : d.shinyParty,
     maxTeams:
       typeof r.maxTeams === 'number' && Number.isInteger(r.maxTeams) && r.maxTeams >= DRAFT_LIMITS.minTeams && r.maxTeams <= DRAFT_LIMITS.maxTeams
         ? r.maxTeams
@@ -544,7 +545,7 @@ export function normalizeSettings(patch: DraftSettingsPatch, base: DraftSettings
     if (!types.length) fail('bad_settings', 'Mindestens ein Typ');
     s.types = types;
   }
-  for (const key of ['legendary', 'mythical', 'ultraBeasts', 'forms', 'megas', 'setPiece', 'shinies', 'snake', 'cupGroups'] as const) {
+  for (const key of ['legendary', 'mythical', 'ultraBeasts', 'forms', 'megas', 'setPiece', 'shinies', 'shinyParty', 'snake', 'cupGroups'] as const) {
     if (p[key] !== undefined) {
       if (!isBool(p[key])) fail('bad_settings', 'Ungültige Einstellung');
       s[key] = p[key] as boolean;
@@ -806,6 +807,12 @@ export function setTeamCaptain(state: DraftState, deviceId: string, pokemonId: n
     // Ergebnis mit dem neuen Kapitän neu berechnen (gleicher Saison-Seed; withLeague beim Speichern)
     ...(window_ ? { league: null } : {}),
   };
+}
+
+/** Schillert dieses Pokémon in dieser Liga? (Pick oder Neuzugang; Chance nach Einstellung, fest je Liga-Seed) */
+export function shinyFor(settings: DraftSettings, seed: DraftState['seed'], pokemonId: number): boolean {
+  const s = upgradeSettings(settings);
+  return s.shinies && shinyRoll(leagueSeed(seed, 'shiny'), pokemonId, s.shinyParty ? SHINY_PARTY_CHANCE : SHINY_CHANCE);
 }
 
 /** Kapitän nach dem letzten Pick noch wählbar? (Liga/Turnier, bis zum Anpfiff) */
@@ -1528,7 +1535,7 @@ export function applyPick(
   );
   const log: DraftPickLog = { pick: state.pickIndex, teamId, pokemonId, slot, auto, at: now };
   // Shiny? Aus dem geheimen Liga-Seed – erst beim Pick bekannt
-  const shiny = upgradeSettings(state.settings).shinies && shinyRoll(leagueSeed(state.seed, 'shiny'), pokemonId);
+  const shiny = shinyFor(state.settings, state.seed, pokemonId);
   if (shiny) log.shiny = true;
   // Vergeben → von allen Wunschlisten streichen
   const queues = state.queues && withoutQueued(state.queues, pokemonId);

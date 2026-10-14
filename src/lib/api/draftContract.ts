@@ -164,6 +164,8 @@ export interface DraftSettings {
   setPiece: boolean;
   /** Shinys (2 % je Pick, src/lib/shiny.ts) – aus: keine */
   shinies: boolean;
+  /** Shiny-Party: 10 % statt 2 % (nur mit shinies) */
+  shinyParty: boolean;
   /** Maximale Teamzahl (2–8) */
   maxTeams: number;
   /** Bedenkzeit pro Pick in Sekunden, 0 = ohne Timer */
@@ -226,6 +228,7 @@ export const DEFAULT_DRAFT_SETTINGS: DraftSettings = {
   maxMegas: 1,
   setPiece: false,
   shinies: true,
+  shinyParty: false,
   maxTeams: 4,
   pickSeconds: 60,
   order: 'random',
