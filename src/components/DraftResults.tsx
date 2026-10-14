@@ -3,7 +3,7 @@ import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftTeam } from '../lib/api/draftContract';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { draftGrades, draftShareText, draftSteal, headToHead, leagueTimeline, longestWinStreak, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { draftGrades, draftShareText, draftSteal, headToHead, leagueTimeline, longestWinStreak, recentForm, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { formatRecord, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -13,7 +13,7 @@ import type { SpriteStyle } from '../types';
 import { cupPens, cupStageOf, cupStatus, cupWinner } from '../lib/cup';
 import { Confetti } from './Confetti';
 import { CupBracket, CupGroups, cupStatusText } from './CupBracket';
-import { FixtureList } from './LeagueTicker';
+import { FixtureList, FormDots } from './LeagueTicker';
 import { Pitch } from './Pitch';
 import { Sprite } from './Sprite';
 import '../styles/league.css';
@@ -281,6 +281,11 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                   <th scope="col" title={c.ptsTitle}>
                     {c.pts}
                   </th>
+                  {!cup && (
+                    <th scope="col" title={c.formTitle} className="league-live__form-col">
+                      {c.form}
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -310,6 +315,11 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                     <td>
                       <strong>{r.pts}</strong>
                     </td>
+                    {!cup && (
+                      <td className="league-live__form-col">
+                        <FormDots form={recentForm(league.matches, r.team, Infinity)} />
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

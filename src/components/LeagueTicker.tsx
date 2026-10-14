@@ -563,7 +563,7 @@ function LiveTable({ table, day, you, nameOf, matches }: LiveTableProps) {
 }
 
 /** Formkurve als Punkte (ältestes links) mit Text für Screenreader. */
-function FormDots({ form }: { form: ('S' | 'U' | 'N')[] }) {
+export function FormDots({ form }: { form: ('S' | 'U' | 'N')[] }) {
   const t = useT();
   if (!form.length) return <span aria-hidden="true">–</span>;
   return (
