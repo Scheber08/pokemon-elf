@@ -47,10 +47,11 @@ Deploy stehen in der README.
 
 Erledigt (siehe README): Ultrabestien/Megas/Formen, Revanche + ewige Tabelle, Benachrichtigung „Du bist
 dran", Testspiel, Spielerprofil, Wochenwertung, Tägliche-Elf-Serie, OG-Tags (auch je Liga), Routen
-nachladen, PWA, Wunschliste und Emoji-Reaktionen im Draft, Rückgängig und Fit-Sortierung im Builder.
+nachladen, PWA, Wunschliste, Emoji-Reaktionen, Vorlagen und Draft-Noten im Draft, Rückgängig,
+Fit-Sortierung und „Beste Elf" im Builder, Wochenwertung rückwirkend gefüllt.
 
-1. Wochenwertung rückwirkend für die laufende Woche füllen (einmalige Bereinigung wie cleanupDefaultNames)
-2. Tausch-Angebote zwischen Teams im Online-Draft (nach dem Draft, vor der Saison)
+1. Tausch-Angebote zwischen Teams im Online-Draft (nach dem Draft, vor der Saison) – braucht eine neue
+   Phase (DraftPhase, upgradeState, ältere Clients); erst mit dem Besitzer abstimmen
 
 ## Daten
 
