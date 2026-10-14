@@ -131,7 +131,15 @@ export function DraftBoard({ state, byId, currentId }: Props) {
                         {t.draft.bench.short}
                       </span>
                     )}
-                    <span>{p ? t.game.pokemon(p) : '–'}</span>
+                    <span>
+                      {p ? t.game.pokemon(p) : '–'}
+                      {p && state.shinies?.includes(p.id) && (
+                        <span className="draft-board__shiny" title={t.shiny.title}>
+                          {' '}
+                          ✨<span className="sr-only">{t.shiny.title}</span>
+                        </span>
+                      )}
+                    </span>
                   </li>
                 );
               })}
