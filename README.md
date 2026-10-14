@@ -198,6 +198,12 @@ trägt die Ergebnisse ihrer Vorgänger mit – daraus die **ewige Tabelle**. Fü
 Worker eigene Open-Graph-Tags (Link-Vorschau mit Liganame, Host und Teams, `server/preview.ts`) – ebenso für
 Spielerprofile `/spieler/:id` (Name, gewertete Runs, bester Allzeit-Platz).
 
+## Trainer & Erfolge
+
+**Erfolge** (`/trainer`, `src/lib/achievements.ts`, `server/achievements.ts`): `POST /api/me` rechnet aus den Runs
+(Anzahl, Siege, perfekte Saisons), der Tageswertung (Serie, Tagessiege), den Allzeit-Plätzen und den fertigen
+Online-Ligen (`draft_results`, schreibt der Draft-Raum am Saisonende) die Erfolge des Geräts – jeder bringt Münzen.
+
 ## Deploy auf Cloudflare
 
 ### Workers (empfohlen)

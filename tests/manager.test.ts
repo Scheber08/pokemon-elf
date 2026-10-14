@@ -278,5 +278,10 @@ describe('Draft-Raum: Manager-Saison', () => {
     expect(end.phase).toBe('done');
     expect(end.league!.matches).toHaveLength(153);
     expect(room.alarmAt).toBe(expiresAt(end));
+    // Abschluss des menschlichen Teams für die Erfolge gespeichert
+    const rows = db.query<{ device_id: string; format: string; rank: number; teams: number }>('SELECT * FROM draft_results');
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ device_id: dev.deviceId, format: 'manager', teams: 18 });
+    expect(end.league!.table.findIndex((r) => r.team === end.teams.findIndex((t) => !t.cpu)) + 1).toBe(rows[0].rank);
   });
 });

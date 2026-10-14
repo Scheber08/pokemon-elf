@@ -11,6 +11,7 @@ const TABS = [
   { to: '/151', key: 'c151' },
   { to: '/draft', key: 'draft' },
   { to: '/rangliste', key: 'leaderboard' },
+  { to: '/trainer', key: 'trainer' },
 ] as const;
 
 export function Header() {

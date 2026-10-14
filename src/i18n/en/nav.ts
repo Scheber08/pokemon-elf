@@ -9,6 +9,7 @@ const nav: Messages['nav'] = {
     c151: '151 Challenge',
     draft: 'Fantasy Draft',
     leaderboard: 'Leaderboard',
+    trainer: 'Trainer',
   },
   mainNav: 'Main navigation',
   logoSub: 'Lineup Builder',

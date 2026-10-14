@@ -425,7 +425,7 @@ export function isUniqueViolation(err: unknown): boolean {
  * stehen gar nicht erst in best_entries (insertEntry, cleanupDefaultNames) – deshalb passen
  * diese Zählungen zur gefilterten Liste.
  */
-const RANK_EXPR = `(1
+export const RANK_EXPR = `(1
   + (SELECT COUNT(*) FROM best_entries o WHERE o.challenge = b.challenge AND o.scope = b.scope
       AND o.points > b.points)
   + (SELECT COUNT(*) FROM best_entries o WHERE o.challenge = b.challenge AND o.scope = b.scope

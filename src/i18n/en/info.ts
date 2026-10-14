@@ -14,6 +14,7 @@ const info: Messages['info'] = {
     guidePost: '.',
     newsTitle: 'What’s new?',
     news: [
+      'New: trainer page with achievements – every achievement earns coins',
       'Online draft: manager season – draft a bench, set your eleven before every matchday, daily form per Pokémon',
       'Builder: “My teams” – save and load up to five XIs',
       'Online draft: form guide, season records, your season chart, upset of the matchday, live top scorers and an end-of-season notification',

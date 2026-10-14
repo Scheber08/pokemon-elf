@@ -11,6 +11,8 @@ export const STORAGE_KEYS = {
   draft: 'draft',
   /** Builder: gespeicherte Elfen (Meine Teams) */
   savedTeams: 'saved-teams',
+  /** Trainer: schon gesehene Erfolge (für „Neu") */
+  seenAchievements: 'achievements-seen',
 } as const;
 
 export function load<T>(key: string, fallback: T): T {

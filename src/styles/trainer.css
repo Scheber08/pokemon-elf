@@ -1,0 +1,100 @@
+/* Trainer-Seite: Münzen und Erfolge */
+.trainer__wallet {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.trainer__coin {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--yellow);
+  color: #3a2c00;
+  font-size: 26px;
+  font-weight: 700;
+}
+.trainer__balance {
+  font-family: var(--font-head);
+  font-size: 24px;
+  letter-spacing: 0.02em;
+}
+.achievements {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.achievement {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.achievement.is-done {
+  border-color: rgba(255, 203, 5, 0.45);
+  background: rgba(255, 203, 5, 0.07);
+}
+.achievement__icon {
+  font-size: 22px;
+  color: var(--text-dim);
+}
+.achievement.is-done .achievement__icon {
+  color: var(--yellow);
+}
+.achievement__body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.achievement__name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.achievement__new {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--red);
+  color: #fff;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.achievement__desc {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.achievement__bar {
+  display: block;
+  height: 5px;
+  margin-top: 4px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.achievement__bar > span {
+  display: block;
+  height: 100%;
+  background: var(--yellow);
+}
+.achievement__reward {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.achievement__reward small {
+  color: var(--text-dim);
+}
+.achievement.is-done .achievement__reward small {
+  color: var(--yellow);
+}

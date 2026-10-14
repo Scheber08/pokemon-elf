@@ -14,6 +14,7 @@ import type {
   FinishRunResponse,
   HealthResponse,
   LeaderboardResponse,
+  MeResponse,
   Period,
   PlayerProfile,
   StartRunResponse,
@@ -201,6 +202,11 @@ export async function fetchPlayerProfile(entryId: string): Promise<PlayerProfile
     throw new ApiRequestError(messages().errors.unexpected, 200, 'server_error');
   }
   return body;
+}
+
+/** Erfolge und Münzen des eigenen Geräts */
+export function fetchMe(): Promise<MeResponse> {
+  return request<MeResponse>('/me', { method: 'POST', body: JSON.stringify(getDevice()) });
 }
 
 export async function renamePlayer(player: string): Promise<void> {

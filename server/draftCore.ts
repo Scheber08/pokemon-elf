@@ -73,6 +73,7 @@ import { authenticateDevice, HOUR_MS, normalizeIp } from './auth';
 import { randomHex, sha256Hex, timingSafeEqual } from './crypto';
 import type { CreateRoomInput, CreateRoomResult, Db, Env, RematchTemplateResult } from './env';
 import { ApiError } from './http';
+import { saveDraftResults } from './achievements';
 import { loadFillCandidates } from './fill';
 import { ensureSchema } from './schema';
 import { cleanText, hasVisible, parseDeviceAuth } from './validate';
@@ -164,6 +165,8 @@ export interface RoomRecord {
   syncAt?: number | null;
   /** Nicht volle Eimer der Lobby-Änderungen je Gerät – überleben so die Hibernation */
   rates?: Record<string, { tokens: number; at: number }>;
+  /** Abschlüsse der fertigen Liga (draft_results) noch nicht gespeichert: nächster Versuch */
+  resultsAt?: number | null;
 }
 
 /** Grabstein einer geschlossenen Lobby: der Zustand ist weg, die D1-Zeile wird zu deleteAt gelöscht. */
@@ -442,6 +445,7 @@ export function nextAlarmAt(rec: RoomRecord, now = -Infinity): number {
   if (cur?.cpu && rec.cpuAt != null) due.push(rec.cpuAt);
   else if (cur && !cur.cpu && s.deadline != null) due.push(s.deadline);
   if (rec.syncAt != null) due.push(rec.syncAt);
+  if (rec.resultsAt != null) due.push(rec.resultsAt);
   // Manager-Saison: Anpfiff des nächsten Spieltags
   const kickoff = s.phase === 'season' ? nextKickoff(s) : null;
   if (kickoff != null) due.push(kickoff);
@@ -935,7 +939,8 @@ export class DraftRoomCore {
       // Gnadenfrist vorbei: Alle bekommen den Stand (Auto-Pick für andere ist jetzt erlaubt).
       const opens = autoPickOpensAt(s);
       if (cur && !cur.cpu && opens != null && opens <= now) this.broadcast(s, now);
-      // Sonst (veralteter Alarm): Lobby-Zeile nachziehen, richtigen Alarm wieder stellen.
+      // Sonst (veralteter Alarm): Abschlüsse bzw. Lobby-Zeile nachziehen, richtigen Alarm wieder stellen.
+      if (rec.resultsAt != null && now >= rec.resultsAt) await this.saveResults(now);
       await this.syncLobby(now);
       await this.schedule(now);
     });
@@ -1161,12 +1166,30 @@ export class DraftRoomCore {
     };
     const rates = this.changeRates(now);
     if (rates) rec.rates = rates;
+    // Liga gerade fertig geworden: Abschlüsse für die Erfolge speichern (sonst später erneut)
+    const finished = next.phase === 'done' && !!next.league && !!prev && prev.phase !== 'done';
+    if (finished) rec.resultsAt = now;
+    else if (this.rec?.resultsAt != null) rec.resultsAt = this.rec.resultsAt;
     await this.persist(rec);
     this.tomb = null;
     this.loaded = true;
     this.broadcast(next, now);
+    if (finished) await this.saveResults(now);
     await this.syncLobby(now);
     await this.schedule(now);
+  }
+
+  /** Abschlüsse der fertigen Liga in D1 – bei einem Fehler nach LOBBY_RETRY_MS erneut (Alarm). */
+  private async saveResults(now: number): Promise<void> {
+    const rec = this.rec;
+    if (!rec || rec.resultsAt == null) return;
+    try {
+      await saveDraftResults(this.ports.env.DB, rec.state, now);
+      await this.persist({ ...rec, resultsAt: null });
+    } catch (err) {
+      console.error('Draft-Raum: Abschlüsse nicht gespeichert – neuer Versuch folgt', err);
+      await this.persist({ ...rec, resultsAt: now + LOBBY_RETRY_MS });
+    }
   }
 
   /**

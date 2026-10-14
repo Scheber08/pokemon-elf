@@ -97,3 +97,20 @@ CREATE TABLE IF NOT EXISTS draft_lobbies (
 CREATE INDEX IF NOT EXISTS idx_draft_lobbies_public ON draft_lobbies (visibility, phase, updated_at);
 -- Limit neuer Ligen pro Gerät und Stunde.
 CREATE INDEX IF NOT EXISTS idx_draft_lobbies_host ON draft_lobbies (host_device, created_at);
+
+-- Online-Draft: Abschluss jedes menschlichen Teams einer fertigen Liga (Grundlage der Erfolge).
+-- format: league | cup | manager; rank 1 = Meister bzw. Turniersieger; teams = Teams der Saison.
+CREATE TABLE IF NOT EXISTS draft_results (
+  code TEXT NOT NULL,
+  device_id TEXT NOT NULL,
+  format TEXT NOT NULL,
+  rank INTEGER NOT NULL,
+  teams INTEGER NOT NULL,
+  wins INTEGER NOT NULL,
+  draws INTEGER NOT NULL,
+  losses INTEGER NOT NULL,
+  points INTEGER NOT NULL,
+  finished_at INTEGER NOT NULL,
+  PRIMARY KEY (code, device_id)
+);
+CREATE INDEX IF NOT EXISTS idx_draft_results_device ON draft_results (device_id);

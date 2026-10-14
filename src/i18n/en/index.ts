@@ -13,5 +13,6 @@ import nav from './nav';
 import online from './online';
 import result from './result';
 import scouting from './scouting';
+import trainer from './trainer';
 
-export const en: Messages = { common, nav, game, builder, challenge, result, daily, leaderboard, draft, online, scouting, info, errors };
+export const en: Messages = { common, nav, game, builder, challenge, result, daily, leaderboard, draft, online, scouting, info, errors, trainer };

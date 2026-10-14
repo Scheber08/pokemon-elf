@@ -27,7 +27,7 @@ describe('Datenbank-Schema', () => {
     expect(tables()).toEqual([]);
     const res = await handleApi(new Request('http://localhost/api/health'), { DB: db });
     expect(res.status).toBe(200);
-    expect(tables().sort()).toEqual(['best_entries', 'devices', 'draft_lobbies', 'entries', 'meta', 'run_tokens']);
+    expect(tables().sort()).toEqual(['best_entries', 'devices', 'draft_lobbies', 'draft_results', 'entries', 'meta', 'run_tokens']);
     // Ein zweiter Aufruf (gleiches Binding) legt nichts doppelt an und bleibt gesund.
     expect((await handleApi(new Request('http://localhost/api/health'), { DB: db })).status).toBe(200);
   });

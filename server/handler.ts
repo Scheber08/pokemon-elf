@@ -4,6 +4,7 @@
  * (Cloudflare Pages Functions) aufgerufen und in tests/server.test.ts direkt getestet.
  */
 import type { HealthResponse } from '../src/lib/api/contract';
+import { me } from './achievements';
 import { draftRoute, draftsUnavailable } from './drafts';
 import { entryDetail, finishRun, health, leaderboard, playerProfile, renamePlayer, startRun } from './endpoints';
 import type { Env } from './env';
@@ -28,6 +29,7 @@ const ROUTES: Record<string, { method: 'GET' | 'POST'; run: Route }> = {
   '/api/runs/finish': { method: 'POST', run: (req, env) => finishRun(req, env) },
   '/api/leaderboard': { method: 'GET', run: (_req, env, url) => leaderboard(url, env) },
   '/api/player': { method: 'POST', run: (req, env) => renamePlayer(req, env) },
+  '/api/me': { method: 'POST', run: (req, env) => me(req, env) },
 };
 
 /** GET /api/entries/:id – die ID prüft der Endpunkt (ungültig → 400), Unterpfade gibt es nicht. */

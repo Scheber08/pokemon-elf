@@ -10,6 +10,7 @@
  *   GET  /api/entries/:id                    → EntryDetail (nur Ranglisten-Einträge, sonst 404)
  *   GET  /api/entries/:id/player             → PlayerProfile (Spieler dieses Ranglisten-Eintrags)
  *   POST /api/player        RenameRequest    → { ok: true }
+ *   POST /api/me            DeviceAuth       → MeResponse (Erfolge und Münzen)
  *
  * Spielername: Ein neues Gerät heißt auf dem Server „Trainer" (DEFAULT_PLAYER_NAME). Mit
  * diesem Standardnamen (oder leerem Namen, siehe isDefaultPlayerName) startet kein
@@ -31,6 +32,7 @@
  * 409 token_used gibt es nur noch, solange eine parallele Anfrage den Run gerade speichert.
  */
 import type { ChallengeKey, FormationId, Record3 } from '../../types';
+import type { AchievementState } from '../achievements';
 import type { PickLog } from '../challengeEngine';
 
 export const API_VERSION = 1;
@@ -202,6 +204,15 @@ export interface PlayerProfile {
   challenges: PlayerChallengeStats[];
   /** Die letzten gewerteten Runs, neuester zuerst (höchstens 20) */
   recent: PlayerRun[];
+}
+
+/** POST /api/me (Body: DeviceAuth) – Erfolge und Münzen des eigenen Geräts */
+export interface MeResponse {
+  /** Eigener Spielername – null mit Standardnamen */
+  player: string | null;
+  coins: { earned: number; spent: number; balance: number };
+  /** Alle Erfolge (Reihenfolge wie ACHIEVEMENTS) */
+  achievements: AchievementState[];
 }
 
 export interface RenameRequest extends DeviceAuth {

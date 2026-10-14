@@ -7,6 +7,7 @@ const nav = {
     c151: '151 Challenge',
     draft: 'Fantasy-Draft',
     leaderboard: 'Rangliste',
+    trainer: 'Trainer',
   },
   mainNav: 'Hauptnavigation',
   logoSub: 'Lineup Builder',
