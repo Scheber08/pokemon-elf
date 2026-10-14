@@ -592,6 +592,7 @@ const draft = {
     cupYouOut: (stage: string) => `Dein Team ist im ${stage} ausgeschieden.`,
     cupYouWinner: 'Dein Team holt den Pokal! 🏆',
     cupWinner: (team: string) => `Pokalsieger: ${team} 🏆`,
+    rivalOut: (names: string) => `Fällt aus: ${names}`,
     outTitle: 'Ausfälle',
     outNote: 'Nach jedem Spieltag kann sich ein eingesetztes Pokémon verletzen (1–3 Spieltage) oder Rot sehen (1 Spieltag gesperrt).',
     outNone: 'Gerade fällt niemand aus.',

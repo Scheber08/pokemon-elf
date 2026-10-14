@@ -547,6 +547,7 @@ const draft: Messages['draft'] = {
     cupYouOut: (stage) => `Your team went out in the ${stage}.`,
     cupYouWinner: 'Your team wins the cup! 🏆',
     cupWinner: (team) => `Cup winner: ${team} 🏆`,
+    rivalOut: (names) => `Out: ${names}`,
     outTitle: 'Absences',
     outNote: 'After every matchday a fielded Pokémon may get injured (1–3 matchdays) or see red (banned for 1 matchday).',
     outNone: 'Nobody is out right now.',

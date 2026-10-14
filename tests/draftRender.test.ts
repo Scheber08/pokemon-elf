@@ -780,5 +780,23 @@ describe('ManagerSeason', () => {
     await settle();
     expect(container.querySelector('.draft-career__preview')!.textContent).toMatch(/Nächste Saison: \d\. Pokémon-Liga/);
   });
+
+  it('Nächster Gegner: seine Ausfälle stehen dabei', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, managerSchedule } = await import('../src/lib/manager');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    const me = s.teams.findIndex((t) => t.id === 'h');
+    const other = s.teams.findIndex((t) => t.id !== 'h');
+    // Spieltag, an dem die beiden gedrafteten Teams aufeinandertreffen
+    const k = managerSchedule(18).findIndex((round) => round.some(([a, b]) => (a === me && b === other) || (a === other && b === me)));
+    expect(k).toBeGreaterThanOrEqual(0);
+    const hurt = s.teams[other].slots[0]!;
+    s = { ...s, manager: { ...s.manager!, played: k, out: { [hurt]: { kind: 'red', until: k + 1, since: k } } } };
+    const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    expect(container.querySelector('.manager__rival-out')!.textContent).toContain(ALL.find((p) => p.id === hurt)!.de);
+  });
 });
 

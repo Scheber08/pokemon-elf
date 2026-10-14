@@ -281,6 +281,14 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
               <FormDots form={recentForm(shown.matches, rival, m.played)} />
             </p>
           )}
+          {s.teams[rival] && (() => {
+            // Ausfälle des Gegners zum nächsten Spieltag
+            const absent = absentAt({ out: m.out ?? {} }, m.played + 1);
+            const theirs = rosterOf(s.teams[rival]).filter((id) => absent.has(id));
+            if (!theirs.length) return null;
+            const names = theirs.map((id) => `${pokemonName(id)} ${m.out![id].kind === 'red' ? '🟥' : '🚑'}`);
+            return <p className="small manager__rival-out">{tx.rivalOut(names.join(', '))}</p>;
+          })()}
           {/* Stärkevergleich der besten Elfen (nur gedraftete Gegner – Auffüllteams haben keinen Kader im Schnappschuss) */}
           {you != null && s.teams[rival] && (() => {
             const sc = scale('all');
