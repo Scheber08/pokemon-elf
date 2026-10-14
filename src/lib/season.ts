@@ -143,9 +143,9 @@ export const CLASSIC_MODEL: MatchModel = {
  * eine Tagesform, die über mehrere Spieltage trägt (Serien, Formkrisen).
  */
 export const DRAFT_MODEL: MatchModel = {
-  divisor: 330,
+  divisor: 380,
   softCap: 320,
-  maxLambda: 4.2,
+  maxLambda: 3.8,
   jitter: 0.15,
   form: { sd: 35, keep: 0.8 },
   minutes: true,
