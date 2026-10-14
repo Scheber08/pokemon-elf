@@ -305,3 +305,23 @@
   background: #e9eef5;
   box-shadow: inset 0 0 0 1.5px #2f62c9;
 }
+
+/* Angetippter Spieler */
+.match-pitch__player {
+  cursor: pointer;
+}
+.match-pitch__player.is-focus circle {
+  stroke: #ffffff;
+  stroke-width: 0.8;
+}
+.match-pitch__focus {
+  margin: 0;
+  text-align: center;
+  color: var(--text-dim);
+}
+
+/* Spezifischer als die Team-/Schützen-Regeln (.is-home circle usw.) – bleibt unsichtbar */
+.match-pitch .match-pitch__player circle.match-pitch__hit {
+  fill: transparent;
+  stroke: none;
+}

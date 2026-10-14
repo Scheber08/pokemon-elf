@@ -401,6 +401,7 @@ const draft: Messages['draft'] = {
     nextGoal: 'Jump to the next goal (key N)',
     playKey: 'Play/pause (space bar)',
     goalFlash: 'GOAL!',
+    focus: (who, pos, team) => `${who} · ${pos} · ${team}`,
     goalMark: (minute, team) => `Goal ${minute} – ${team}`,
     nextGoalShort: '⏭ Goal',
     speed: (rate) => `Speed ${rate}× – click to change`,

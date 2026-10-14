@@ -25,6 +25,8 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
   const [time, setTime] = useState(0);
   const [playing, setPlaying] = useState(!reduced);
   const [rate, setRate] = useState<(typeof RATES)[number]>(1);
+  /** Angetippter Spieler (Handy: kein Tooltip) – Name unter dem Feld */
+  const [focus, setFocus] = useState<number | null>(null);
   const last = useRef<number | null>(null);
   // Sprites, die nicht laden (z. B. offline) – dann bleibt der Punkt allein
   const [broken, setBroken] = useState<ReadonlySet<number>>(() => new Set());
@@ -129,8 +131,14 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
             pos = { x: pos.x + (tx2 - pos.x) * f, y: pos.y + (shooterPos.y - pos.y) * f };
           }
           return (
-            <g key={i} className={`match-pitch__player ${p.side === 0 ? 'is-home' : 'is-away'} ${i === shooter ? 'is-shooter' : ''}`}>
+            <g
+              key={i}
+              className={`match-pitch__player ${p.side === 0 ? 'is-home' : 'is-away'} ${i === shooter ? 'is-shooter' : ''} ${i === focus ? 'is-focus' : ''}`}
+              onClick={() => setFocus((f) => (f === i ? null : i))}
+            >
               <circle cx={pos.x} cy={pos.y} r={p.pos === 'TW' ? 1.9 : 1.7} />
+              {/* Unsichtbare, größere Tippfläche */}
+              <circle className="match-pitch__hit" cx={pos.x} cy={pos.y} r={3.6} />
               {p.pokemonId != null && !broken.has(p.pokemonId) && (
                 <image
                   className="match-pitch__sprite"
@@ -168,6 +176,16 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
             : tx.shot(nameOf(recent.side === 0 ? match.home : match.away))
           : ' '}
       </p>
+      {focus != null && replay.players[focus] && (
+        <p className="match-pitch__focus small">
+          {(() => {
+            const pl = replay.players[focus];
+            const team = nameOf(pl.side === 0 ? match.home : match.away);
+            const who = pl.pokemonId != null ? pokemonName(pl.pokemonId) : t.game.posName[pl.pos];
+            return tx.focus(who, t.game.posName[pl.pos], team);
+          })()}
+        </p>
+      )}
       <div className="match-pitch__controls">
         <button
           type="button"

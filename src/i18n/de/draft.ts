@@ -439,6 +439,7 @@ const draft = {
     nextGoal: 'Zum nächsten Tor springen (Taste N)',
     playKey: 'Abspielen/Pause (Leertaste)',
     goalFlash: 'TOR!',
+    focus: (who: string, pos: string, team: string) => `${who} · ${pos} · ${team}`,
     goalMark: (minute: string, team: string) => `Tor ${minute} – ${team}`,
     nextGoalShort: '⏭ Tor',
     speed: (rate: number) => `Tempo ${rate}× – zum Wechseln klicken`,
