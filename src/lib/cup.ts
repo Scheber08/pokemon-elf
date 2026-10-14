@@ -91,7 +91,7 @@ export function penaltyShootout(rng: Rng, home: LeagueTeam, away: LeagueTeam): {
 }
 
 /** Ein KO-Spiel samt Elfmeterschießen. */
-function playTie(
+export function playTie(
   rng: Rng,
   teams: readonly LeagueTeam[],
   round: number,

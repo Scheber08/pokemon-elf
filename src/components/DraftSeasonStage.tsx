@@ -24,6 +24,7 @@ import { cleanKit } from '../lib/kits';
 import { CrestEditor } from './CrestEditor';
 import { cleanCrest } from '../lib/crest';
 import { rosterOf } from '../lib/draftEngine';
+import { ManagerCupView } from './ManagerSeason';
 
 /**
  * Nach dem letzten Pick: Das Ergebnis der Saison kommt vom Server (im Schnappschuss
@@ -139,6 +140,13 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           leagueName={s.settings.name}
           picks={s.picks}
           transfers={s.manager?.transfers}
+        />
+      )}
+      {s.manager?.cup && league && (
+        <ManagerCupView
+          cup={s.manager.cup}
+          you={meIndex >= 0 ? meIndex : null}
+          nameOf={(i) => (s.teams[i] ? teamLabel(s.teams[i], t) : league.teams[i]?.name ? t.game.club(league.teams[i].name) : `Team ${i + 1}`)}
         />
       )}
       {meIndex >= 0 && (

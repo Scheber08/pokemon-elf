@@ -2641,3 +2641,45 @@ button.sheet__row:hover {
   display: grid;
   gap: 4px;
 }
+
+.manager__cup-round {
+  margin-top: 0.75rem;
+}
+.manager__cup-stage {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-head);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.manager__cup-ties {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+.manager__cup-ties li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+.manager__cup-ties li > span:first-child {
+  text-align: right;
+}
+.manager__cup-ties li.is-user {
+  background: rgba(255, 203, 5, 0.12);
+}
+.manager__cup-ties .is-winner {
+  font-weight: 700;
+}
+.manager__cup-score {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.manager__cup-winner {
+  font-size: 1.1rem;
+}

@@ -331,6 +331,12 @@ export interface ManagerSnapshot {
   playedLineups?: Record<string, Record<string, Pick<ManagerLineup, 'formation' | 'slots'>>>;
   /** Ausfälle: Pokémon-ID → Verletzung bzw. Rote Karte bis einschließlich Spieltag `until` (fehlt = keine) */
   out?: Record<string, { kind: 'injury' | 'red'; until: number; since: number }>;
+  /** Pokal neben der Liga (fehlt bei älteren Saisons) – Runden mit round = Liga-Spieltag */
+  cup?: {
+    bracket: number[];
+    rounds: { stage: 'r16' | 'qf' | 'sf' | 'final'; round: number; ties: { home: number; away: number; winner: number; pens: { home: number; away: number } | null }[] }[];
+    matches: import('../season').Match[];
+  };
 }
 
 export interface DraftPickLog {

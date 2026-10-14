@@ -717,5 +717,24 @@ describe('ManagerSeason', () => {
     expect(container.querySelector('.manager__lineup')!.textContent).toContain('beim Anpfiff springt der beste verfügbare Ersatz ein');
     expect(container.querySelectorAll('.manager__squad .manager__out')).toHaveLength(1);
   });
+
+  it('Pokal: Auslosung vor der ersten Runde, nach dem Finale der Sieger', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    const first = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    const cup = first.container.querySelector('.manager__cup')!;
+    expect(cup.textContent).toContain('Auslosung (Achtelfinale)');
+    expect(cup.querySelectorAll('.manager__cup-ties li')).toHaveLength(8);
+    expect(cup.textContent).toContain('Nächste Runde: Achtelfinale nach Spieltag 4');
+    for (let k = 0; k < 16; k++) s = playMatchday(s, ALL, SCALE);
+    const later = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    expect(later.container.querySelector('.manager__cup')!.textContent).toMatch(/Pokalsieger|holt den Pokal/);
+    expect(later.container.querySelectorAll('.manager__cup-round')).toHaveLength(4);
+  });
 });
 

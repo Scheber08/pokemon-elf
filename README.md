@@ -226,6 +226,11 @@ kann sich ein eingesetztes Pokémon verletzen (3 %, 1–3 Spieltage) oder Rot se
 deterministisch aus dem Liga-Seed, gespeichert in `ManagerState.out`. Automatische Aufstellungen und CPU-Teams
 lassen Ausfälle draußen; eigene Aufstellungen bekommen zum Anpfiff den besten verfügbaren Ersatz.
 
+**Pokal der Manager-Saison** (`ManagerState.cup`, `CUP_MATCHDAYS`): neben der Liga ein KO-Pokal mit 16 Teams
+(alle gedrafteten, aufgefüllt mit den stärksten Auffüllteams, Auslosung aus dem Liga-Seed). Je eine Runde nach den
+Spieltagen 4, 8, 12 und 16 – gleiche Aufstellungen und Tagesform, Remis → Elfmeterschießen, Finale neutral.
+Nur in Saisons, die nach der Einführung starten.
+
 **Trikotnummern** (alle Modi, `src/lib/jerseys.ts`, `src/components/JerseyEditor.tsx`): Ohne eigene Wahl gilt
 eine Vorgabe nach Position (Torwart 1, Abwehr 2–5, Sechser 6, Zehner 10, Stürmer 9 …). Jedes Team kann seinen
 Pokémon Nummern von 1 bis 99 geben – je Team eindeutig (belegte Nummern tauschen), die Nummer hängt am Pokémon,

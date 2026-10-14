@@ -1725,6 +1725,7 @@ function managerView(m: ManagerState, season: DraftSeason | null, you: string | 
     ...(you ? { offers: (m.offers ?? []).filter((o) => o.from === you || o.to === you) } : {}),
     ...(m.playedLineups ? { playedLineups: m.playedLineups } : {}),
     ...(m.out ? { out: m.out } : {}),
+    ...(m.cup ? { cup: m.cup } : {}),
   };
 }
 

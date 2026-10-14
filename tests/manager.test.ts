@@ -49,6 +49,8 @@ import {
   absentAt,
   INJURY_CHANCE,
   RED_CARD_CHANCE,
+  CUP_MATCHDAYS,
+  managerCupWinner,
 } from '../src/lib/manager';
 import { expiresAt, parseClientMessage } from '../server/draftCore';
 import { handleApi, type Env } from '../server/handler';
@@ -649,5 +651,32 @@ describe('Verletzungen und Sperren', () => {
     s = { ...s, manager: { ...s.manager!, out: { [injured]: { kind: 'red', until: 1, since: 0 } } } };
     const after = playMatchday(s, ALL, SCALE);
     expect(after.manager!.playedLineups!['1'].c1.slots).not.toContain(injured);
+  });
+});
+
+describe('Pokal der Manager-Saison', () => {
+  it('16 Teams inkl. aller gedrafteten, eine Runde an den Pokal-Spieltagen, am Ende ein Sieger', () => {
+    let s = startManagerSeason(drafted(), ALL, SCALE);
+    const cup = s.manager!.cup!;
+    expect(cup.bracket).toHaveLength(16);
+    expect(new Set(cup.bracket).size).toBe(16);
+    for (let i = 0; i < s.teams.length; i++) expect(cup.bracket).toContain(i);
+    expect(startManagerSeason(drafted(), ALL, SCALE).manager!.cup!.bracket).toEqual(cup.bracket);
+    while (s.phase === 'season') s = playMatchday(s, ALL, SCALE);
+    const done = s.manager!.cup!;
+    expect(done.rounds.map((r) => r.stage)).toEqual(['r16', 'qf', 'sf', 'final']);
+    expect(done.rounds.map((r) => r.round)).toEqual([...CUP_MATCHDAYS]);
+    expect(done.matches).toHaveLength(15);
+    // Remis nur mit Elfmeterschießen, Sieger gehört zur Paarung
+    for (const r of done.rounds) {
+      for (const tie of r.ties) {
+        expect([tie.home, tie.away]).toContain(tie.winner);
+        const m = done.matches.find((x) => x.round === r.round && x.home === tie.home && x.away === tie.away)!;
+        if (m.hg === m.ag) expect(tie.pens).not.toBeNull();
+      }
+    }
+    expect(managerCupWinner(done)).toBe(done.rounds[3].ties[0].winner);
+    // Ligaspiele bleiben unberührt: 17 Spieltage × 9 Spiele
+    expect(s.league!.matches).toHaveLength(17 * 9);
   });
 });

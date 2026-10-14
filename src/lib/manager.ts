@@ -34,8 +34,9 @@ import {
   type FillCandidate,
 } from './draftEngine';
 import { positionFit, type Scale } from './fit';
-import { hashSeed } from './rng';
-import { buildTable, DRAFT_MODEL, nextForm, playMatch, roundRobin, type LeagueResult, type LeagueTeam, type SquadPlayer } from './season';
+import { hashSeed, shuffle } from './rng';
+import { CUP_SIZE, playTie, type CupRound, type CupStage, type CupTie } from './cup';
+import { buildTable, DRAFT_MODEL, nextForm, playMatch, roundRobin, type LeagueResult, type LeagueTeam, type Match, type SquadPlayer } from './season';
 import { captainWeights, teamScoreFromFits } from './teamScore';
 
 /** Fit-Punkte je Formstufe */
@@ -76,7 +77,22 @@ export interface ManagerState {
   offerSeq?: number;
   /** Ausfälle (Pokémon-ID → bis einschließlich Spieltag `until`): Verletzung oder Rote Karte */
   out?: Record<string, ManagerAbsence>;
+  /** Pokal neben der Liga (fehlt bei Saisons von vor dem Pokal) */
+  cup?: ManagerCup;
 }
+
+/** Pokal der Manager-Saison: 16 Teams, eine KO-Runde an jedem Spieltag aus CUP_MATCHDAYS */
+export interface ManagerCup {
+  /** Liga-Team-Indizes in Baum-Reihenfolge (Sieger von 2i und 2i+1 treffen sich) */
+  bracket: number[];
+  /** Gespielte Runden (round = Liga-Spieltag) */
+  rounds: CupRound[];
+  /** Gespielte Pokalspiele (round = Liga-Spieltag) */
+  matches: Match[];
+}
+
+/** An diesen Spieltagen (nach dem Ligaspiel) wird eine Pokalrunde gespielt: Achtel-, Viertel-, Halbfinale, Finale */
+export const CUP_MATCHDAYS = [4, 8, 12, 16] as const;
 
 /** Ein Ausfall: verletzt (1–3 Spieltage) oder nach Roter Karte gesperrt (1 Spieltag) */
 export interface ManagerAbsence {
@@ -344,10 +360,14 @@ export function startManagerSeason(
     ss: t.setPieceTaker?.pokemonId ?? null,
   }));
   const n = state.teams.length + fill.length;
+  // Pokal: alle gedrafteten Teams, aufgefüllt mit den stärksten Auffüllteams; Auslosung aus dem Liga-Seed
+  const fillByRating = fill.map((t, i) => ({ i: state.teams.length + i, r: t.rating })).sort((a, b) => b.r - a.r || a.i - b.i);
+  const cupTeams = [...state.teams.map((_, i) => i), ...fillByRating.map((x) => x.i)].slice(0, CUP_SIZE);
+  const cup: ManagerCup | undefined = cupTeams.length === CUP_SIZE ? { bracket: shuffle(leagueRng(state.seed, 'cup-draw'), cupTeams), rounds: [], matches: [] } : undefined;
   const form = rosterForm(state, 1);
   const lineups = refreshAuto(state, {}, form, byId, scale);
   const teams = [...drafted, ...fill];
-  const manager: ManagerState = { played: 0, total: managerSchedule(n).length, lineups, form, fill: fillTeamsStored };
+  const manager: ManagerState = { played: 0, total: managerSchedule(n).length, lineups, form, fill: fillTeamsStored, ...(cup ? { cup } : {}) };
   const league: LeagueResult = { teams: compactTeams(teams), matches: [], table: buildTable(compactTeams(teams), []) };
   return { ...state, manager, league };
 }
@@ -403,6 +423,36 @@ function teamForm(seed: number | string, teams: number, matchday: number): numbe
   return form;
 }
 
+/** Noch im Pokal: Sieger der letzten Runde bzw. alle aus der Auslosung */
+export function cupAlive(cup: ManagerCup): number[] {
+  const last = cup.rounds[cup.rounds.length - 1];
+  return last ? last.ties.map((t) => t.winner) : cup.bracket;
+}
+
+/** Pokalsieger (Liga-Team-Index) – null, solange das Finale fehlt */
+export function managerCupWinner(cup: ManagerCup | undefined): number | null {
+  const last = cup?.rounds[cup.rounds.length - 1];
+  return last?.stage === 'final' ? last.ties[0].winner : null;
+}
+
+const CUP_STAGES: Record<number, CupStage> = { 16: 'r16', 8: 'qf', 4: 'sf', 2: 'final' };
+
+/** Eine Pokalrunde spielen (Finale auf neutralem Platz, Remis → Elfmeterschießen). */
+function playCupRound(cup: ManagerCup, teams: readonly LeagueTeam[], matchday: number, seed: number | string, form: readonly number[]): ManagerCup {
+  const alive = cupAlive(cup);
+  if (alive.length < 2) return cup;
+  const stage = CUP_STAGES[alive.length] ?? 'r16';
+  const rng = leagueRng(seed, 'cup', matchday);
+  const ties: CupTie[] = [];
+  const matches: Match[] = [];
+  for (let i = 0; i + 1 < alive.length; i += 2) {
+    const r = playTie(rng, teams, matchday, alive[i], alive[i + 1], stage === 'final', DRAFT_MODEL, form);
+    ties.push(r.tie);
+    matches.push(r.match);
+  }
+  return { ...cup, rounds: [...cup.rounds, { stage, round: matchday, ties }], matches: [...cup.matches, ...matches] };
+}
+
 /** Den nächsten Spieltag spielen (Server, zum Anpfiff). Nach dem letzten: Phase „done". */
 export function playMatchday(before: DraftState, list: Pokemon[], scale: Scale): DraftState {
   if (before.phase !== 'season' || !before.manager || !before.league || before.manager.played >= before.manager.total) return before;
@@ -430,6 +480,9 @@ export function playMatchday(before: DraftState, list: Pokemon[], scale: Scale):
   const round = managerSchedule(teams.length)[k - 1] ?? [];
   const played = round.map(([h, a]) => playMatch(rng, teams, k, h, a, false, DRAFT_MODEL, form));
   const matches = [...state.league.matches, ...played];
+  // Pokalrunde nach dem Ligaspiel – gleiche Aufstellungen und Tagesform, eigener Zufallsstrom
+  const cupNow = cur.cup && (CUP_MATCHDAYS as readonly number[]).includes(k) ? playCupRound(cur.cup, teams, k, state.seed, form) : cur.cup;
+  if (cupNow) cur.cup = cupNow;
   const compact = compactTeams(teams);
   const league: LeagueResult = { teams: compact, matches, table: buildTable(compact, matches) };
   if (k >= m.total) {

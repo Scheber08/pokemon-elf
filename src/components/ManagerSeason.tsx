@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
-import type { DraftSnapshot, DraftTeam, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
+import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { rosterOf } from '../lib/draftEngine';
 import { leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague } from '../lib/leagueTimeline';
 import { showNotify } from '../lib/notify';
@@ -27,7 +27,7 @@ import '../styles/draft.css';
 import { cleanKit } from '../lib/kits';
 import { CrestEditor } from './CrestEditor';
 import { cleanCrest, type Crest as CrestData } from '../lib/crest';
-import { absentAt, type ManagerAbsence } from '../lib/manager';
+import { absentAt, CUP_MATCHDAYS, type ManagerAbsence } from '../lib/manager';
 import { Crest } from './Crest';
 
 /** Auswahl beim Tauschen: ein Feld-/SS-Platz oder ein Bankspieler */
@@ -299,6 +299,8 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
       )}
 
       <OutList state={s} out={m.out ?? {}} next={m.played + 1} />
+
+      {m.cup && <ManagerCupView cup={m.cup} you={you} nameOf={nameOf} />}
 
       {room.me && !readOnly && m.lineups[room.me.id] && meIndex >= 0 && (
         <section className="card">
@@ -657,6 +659,80 @@ function LineupEditor({
           </tbody>
         </table>
       </div>
+    </section>
+  );
+}
+
+/** Pokal der Manager-Saison: Auslosung bzw. gespielte Runden, nächste Runde, eigenes Abschneiden. */
+export function ManagerCupView({
+  cup,
+  you,
+  nameOf,
+}: {
+  cup: NonNullable<ManagerSnapshot['cup']>;
+  you: number | null;
+  nameOf: (i: number) => string;
+}) {
+  const t = useT();
+  const tx = t.draft.manager;
+  const stages = t.draft.cup.stage;
+  const alive = cup.rounds.length ? cup.rounds[cup.rounds.length - 1].ties.map((x) => x.winner) : cup.bracket;
+  const winner = cup.rounds[cup.rounds.length - 1]?.stage === 'final' ? cup.rounds[cup.rounds.length - 1].ties[0].winner : null;
+  const nextStage = (['r16', 'qf', 'sf', 'final'] as const)[cup.rounds.length];
+  const nextDay = CUP_MATCHDAYS[cup.rounds.length];
+  const youOut = you != null && cup.bracket.includes(you) ? cup.rounds.find((r) => r.ties.some((x) => (x.home === you || x.away === you) && x.winner !== you)) : undefined;
+  const score = (r: (typeof cup.rounds)[number], tie: (typeof r.ties)[number]) => {
+    const m = cup.matches.find((x) => x.round === r.round && x.home === tie.home && x.away === tie.away);
+    return m ? `${m.hg}:${m.ag}${tie.pens ? ` (${t.draft.cup.pens(tie.pens.home, tie.pens.away)})` : ''}` : '–';
+  };
+  return (
+    <section className="card manager__cup" aria-labelledby="manager-cup">
+      <h2 id="manager-cup" className="section-title">
+        🏆 {tx.cupTitle}
+      </h2>
+      <p className="muted small">{tx.cupNote}</p>
+      {winner != null ? (
+        <p className="manager__cup-winner">
+          <strong>{winner === you ? tx.cupYouWinner : tx.cupWinner(nameOf(winner))}</strong>
+        </p>
+      ) : (
+        <>
+          {nextStage && nextDay && <p>{tx.cupNext(stages[nextStage], nextDay)}</p>}
+          {you != null && cup.bracket.includes(you) && (
+            <p className="small">{youOut ? tx.cupYouOut(stages[youOut.stage]) : alive.includes(you) ? tx.cupYouAlive : null}</p>
+          )}
+        </>
+      )}
+      {[...cup.rounds].reverse().map((r) => (
+        <div key={r.round} className="manager__cup-round">
+          <h3 className="manager__cup-stage">
+            {stages[r.stage]} · {t.draft.matchday(r.round)}
+          </h3>
+          <ul className="manager__cup-ties">
+            {r.ties.map((tie) => (
+              <li key={`${tie.home}-${tie.away}`} className={tie.home === you || tie.away === you ? 'is-user' : ''}>
+                <span className={tie.winner === tie.home ? 'is-winner' : ''}>{nameOf(tie.home)}</span>
+                <span className="manager__cup-score">{score(r, tie)}</span>
+                <span className={tie.winner === tie.away ? 'is-winner' : ''}>{nameOf(tie.away)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      {!cup.rounds.length && (
+        <div className="manager__cup-round">
+          <h3 className="manager__cup-stage">{tx.cupDraw}</h3>
+          <ul className="manager__cup-ties">
+            {Array.from({ length: cup.bracket.length / 2 }, (_, i) => [cup.bracket[2 * i], cup.bracket[2 * i + 1]]).map(([h, a]) => (
+              <li key={`${h}-${a}`} className={h === you || a === you ? 'is-user' : ''}>
+                <span>{nameOf(h)}</span>
+                <span className="manager__cup-score">–</span>
+                <span>{nameOf(a)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </section>
   );
 }
