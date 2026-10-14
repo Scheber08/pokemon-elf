@@ -408,7 +408,15 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
               <li key={`${sc.teamIndex}-${sc.pokemonId}`} className={sc.teamIndex === you ? 'is-you' : ''}>
                 <span className="muted">{i + 1}.</span>
                 <span className="league-ticker__scorer-name">
-                  {pokemonName(sc.pokemonId)} <small className="muted">{nameOf(sc.teamIndex)}</small>
+                  {pokemonName(sc.pokemonId)}
+                  {lineups?.[sc.teamIndex]?.captain === sc.pokemonId && (
+                        <>
+                          {' '}
+                          <span className="captain-badge" title={t.captain.title}>
+                            C<span className="sr-only"> – {t.captain.title}</span>
+                          </span>
+                        </>
+                      )} <small className="muted">{nameOf(sc.teamIndex)}</small>
                 </span>
                 <strong>{sc.goals}</strong>
               </li>

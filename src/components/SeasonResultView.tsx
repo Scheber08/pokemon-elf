@@ -449,7 +449,17 @@ export function SeasonResultView({
                     <li key={`${s.pokemonId}-${s.pos}`}>
                       <PosBadge pos={s.pos} />
                       {p && <Sprite pokemon={p} style={sprite} className="scorers__sprite" />}
-                      <span className="scorers__name">{p && t.game.pokemon(p)}</span>
+                      <span className="scorers__name">
+                        {p && t.game.pokemon(p)}
+                        {input.captain === s.pokemonId && (
+                        <>
+                          {' '}
+                          <span className="captain-badge" title={t.captain.title}>
+                            C<span className="sr-only"> – {t.captain.title}</span>
+                          </span>
+                        </>
+                      )}
+                      </span>
                       <span className="scorers__goals">{s.goals}</span>
                     </li>
                   );
