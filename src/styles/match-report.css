@@ -325,3 +325,20 @@
   fill: transparent;
   stroke: none;
 }
+
+/* Trikotnummer in der 2D-Ansicht */
+.match-pitch__number {
+  font-family: var(--font-head);
+  font-size: 2.2px;
+  font-weight: 700;
+  fill: #ffffff;
+  stroke: #0d1b2a;
+  stroke-width: 0.45;
+  paint-order: stroke;
+  pointer-events: none;
+}
+.match-pitch__number.is-inside {
+  fill: #0d1b2a;
+  stroke: none;
+  font-size: 1.9px;
+}

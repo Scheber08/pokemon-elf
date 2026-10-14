@@ -150,6 +150,16 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
                   onError={() => setBroken((b) => new Set(b).add(p.pokemonId!))}
                 />
               )}
+              {/* Trikotnummer: neben dem Sprite bzw. im Punkt (ohne Pokémon) */}
+              {p.pokemonId != null && !broken.has(p.pokemonId) ? (
+                <text className="match-pitch__number" x={pos.x + 2.3} y={pos.y + 2.3} textAnchor="middle" dominantBaseline="central">
+                  {p.number}
+                </text>
+              ) : (
+                <text className="match-pitch__number is-inside" x={pos.x} y={pos.y} textAnchor="middle" dominantBaseline="central">
+                  {p.number}
+                </text>
+              )}
               {p.pokemonId != null && <title>{pokemonName(p.pokemonId)}</title>}
             </g>
           );

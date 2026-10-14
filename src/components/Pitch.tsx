@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { FORMATIONS } from '../config/formations';
 import { useT } from '../i18n';
+import { jerseyNumbers, type Jerseys } from '../lib/jerseys';
 import { usePokemonData } from '../state/PokemonData';
 import type { FormationId, PosCode, Pokemon, Slots, SpriteStyle } from '../types';
 import { PitchMarkings } from './PitchMarkings';
@@ -34,6 +35,8 @@ interface Props {
   positionTips?: boolean;
   ariaLabel?: string;
   className?: string;
+  /** Eigene Trikotnummern (Pokémon-ID → Nummer); ohne: Vorgabe nach Position. false = keine Nummern */
+  jerseys?: Jerseys | false;
 }
 
 interface Press {
@@ -69,6 +72,7 @@ export function Pitch({
   positionTips = true,
   ariaLabel,
   className = '',
+  jerseys,
 }: Props) {
   const { byId } = usePokemonData();
   const t = useT();
@@ -92,6 +96,13 @@ export function Pitch({
   const defs = FORMATIONS[formation].slots;
   const idAt = useCallback((i: number) => (i === SS_INDEX ? ss ?? null : slots[i] ?? null), [slots, ss]);
   const posAt = (i: number): PosCode => (i === SS_INDEX ? 'SS' : defs[i].pos);
+  // Trikotnummern: eigene bzw. Vorgabe nach Position (Feld in Formationsreihenfolge, dann Standardschütze)
+  const numbers = useMemo(() => {
+    if (jerseys === false) return null;
+    const players = defs.flatMap((d, i) => (slots[i] != null ? [{ pokemonId: slots[i] as number, pos: d.pos }] : []));
+    if (ss != null) players.push({ pokemonId: ss, pos: 'SS' });
+    return jerseyNumbers(players, jerseys ?? {});
+  }, [defs, slots, ss, jerseys]);
 
   const slotFromPoint = (x: number, y: number): number | null => {
     const el = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-slot-index]');
@@ -232,7 +243,8 @@ export function Pitch({
     const label = pokemon
       ? t.builder.pitch.filled(t.game.posName[pos], t.game.pokemon(pokemon), !!onSlotClick)
       : t.builder.pitch.empty(t.game.posName[pos], !!onSlotClick);
-    const content = <PlayerToken key={`${index}-${id ?? 'x'}`} pos={pos} pokemon={pokemon} sprite={sprite} />;
+    const number = pokemon && numbers ? (numbers.get(pokemon.id) ?? null) : null;
+    const content = <PlayerToken key={`${index}-${id ?? 'x'}`} pos={pos} pokemon={pokemon} sprite={sprite} number={number} />;
     if (!interactive) {
       return (
         <div

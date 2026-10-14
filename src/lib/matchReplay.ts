@@ -6,6 +6,7 @@
  */
 import { FORMATIONS } from '../config/formations';
 import type { FormationId, PosCode } from '../types';
+import { jerseyNumbers, type Jerseys } from './jerseys';
 import { createRng, hashSeed, type Rng } from './rng';
 import type { Match } from './season';
 
@@ -16,6 +17,8 @@ export const PITCH_H = 68;
 export interface ReplayLineup {
   formation: FormationId;
   ids: (number | null)[];
+  /** Eigene Trikotnummern des Teams (fehlt: Vorgabe nach Position) */
+  jerseys?: Jerseys;
 }
 
 export interface ReplayPlayer {
@@ -24,6 +27,8 @@ export interface ReplayPlayer {
   slot: number;
   pokemonId: number | null;
   pos: PosCode;
+  /** Trikotnummer */
+  number: number;
   /** Grundposition (Meter) */
   x: number;
   y: number;
@@ -67,7 +72,17 @@ function basePos(side: 0 | 1, x: number, y: number): { x: number; y: number } {
 
 function playersOf(side: 0 | 1, lineup: ReplayLineup): ReplayPlayer[] {
   const defs = FORMATIONS[lineup.formation]?.slots ?? FORMATIONS['4-4-2'].slots;
-  return defs.map((d, slot) => ({ side, slot, pokemonId: lineup.ids[slot] ?? null, pos: d.pos, ...basePos(side, d.x, d.y) }));
+  // Ohne Pokémon (Vereine): Platzhalter-IDs je Slot, damit jeder eine Vorgabe-Nummer bekommt
+  const keyOf = (slot: number) => lineup.ids[slot] ?? -1 - slot;
+  const numbers = jerseyNumbers(defs.map((d, slot) => ({ pokemonId: keyOf(slot), pos: d.pos })), lineup.jerseys ?? {});
+  return defs.map((d, slot) => ({
+    side,
+    slot,
+    pokemonId: lineup.ids[slot] ?? null,
+    pos: d.pos,
+    number: numbers.get(keyOf(slot)) ?? slot + 1,
+    ...basePos(side, d.x, d.y),
+  }));
 }
 
 /** Verschiebung beider Teams mit dem Ball (Meter in x-Richtung) */

@@ -828,6 +828,7 @@ button.slot.slot--filled:hover .token__sprite-wrap {
   }
 }
 .token__sprite-wrap {
+  position: relative;
   width: calc(var(--pw) * 0.17);
   height: calc(var(--pw) * 0.15);
   display: flex;
@@ -836,6 +837,22 @@ button.slot.slot--filled:hover .token__sprite-wrap {
   transition: transform 0.15s;
   filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.35));
   pointer-events: none;
+}
+/* Trikotnummer oben rechts am Sprite */
+.token__number {
+  position: absolute;
+  top: 0;
+  right: calc(var(--pw) * -0.006);
+  min-width: max(14px, calc(var(--pw) * 0.034));
+  padding: 0 2px;
+  border-radius: 4px;
+  background: #0d1b2a;
+  color: #ffffff;
+  font-family: var(--font-head);
+  font-size: max(9px, calc(var(--pw) * 0.022));
+  line-height: 1.35;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 .token__sprite {
   display: block;
