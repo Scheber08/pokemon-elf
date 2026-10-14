@@ -4,6 +4,7 @@ import type { Messages } from '../de';
 const captain: Messages['captain'] = {
   title: 'Captain',
   label: 'Captain',
+  best: 'Best choice',
   none: 'No captain',
   note: "The captain's position fit counts double in the team rating – a well-fitting captain lifts the team, a poorly fitting one drags it down.",
   effect: (diff) => `Effect on the team score: ${diff}`,

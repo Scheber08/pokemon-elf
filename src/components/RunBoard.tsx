@@ -33,6 +33,7 @@ import { PokemonGrid } from './PokemonGrid';
 import { Sprite } from './Sprite';
 import '../styles/run.css';
 import { useCrest } from '../state/useCrest';
+import { usePokemonData } from '../state/PokemonData';
 import { CrestEditor } from './CrestEditor';
 
 /** So lange nach einem Reroll werden weitere Reroll-Klicks ignoriert (Doppelklick-Schutz). */
@@ -87,6 +88,7 @@ export function RunBoard({
   const tc = t.challenge;
   const { challenge, formation, ssEnabled } = state.config;
   const rules = MODE_RULES[challenge];
+  const { scale } = usePokemonData();
   // Eigene Trikotnummern je Challenge (Gerät) – reine Optik, der Run bleibt unberührt
   const [jerseys, setJerseys] = useJerseys(challenge);
   const [kit, setKit] = useKit(challenge);
@@ -325,7 +327,7 @@ export function RunBoard({
           <div className="done-box card">
             <p>{tc.done}</p>
             {onCaptain && (
-              <CaptainPicker formation={formation} slots={state.slots} captain={captain} onChange={onCaptain} disabled={finishing} />
+              <CaptainPicker formation={formation} slots={state.slots} captain={captain} onChange={onCaptain} disabled={finishing} scale={scale(rules.scale)} />
             )}
             <button
               type="button"

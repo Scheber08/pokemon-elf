@@ -1,6 +1,8 @@
 import { useId } from 'react';
 import { FORMATIONS } from '../config/formations';
 import { useT } from '../i18n';
+import type { Scale } from '../lib/fit';
+import { bestCaptain } from '../lib/teamScore';
 import { usePokemonData } from '../state/PokemonData';
 import type { FormationId, Slots } from '../types';
 
@@ -13,13 +15,15 @@ interface Props {
   disabled?: boolean;
   /** Zusatzzeile unter der Auswahl (z. B. Wirkung auf den Score) */
   hint?: string | null;
+  /** Skala für „Beste Wahl“ (Standard: alle 1.025) */
+  scale?: Scale;
 }
 
 /** Kapitän wählen: einer der elf Spieler auf dem Feld (nicht der Standardschütze). */
-export function CaptainPicker({ formation, slots, captain, onChange, disabled = false, hint }: Props) {
+export function CaptainPicker({ formation, slots, captain, onChange, disabled = false, hint, scale: scaleProp }: Props) {
   const t = useT();
   const tx = t.captain;
-  const { byId } = usePokemonData();
+  const { byId, scale } = usePokemonData();
   const id = useId();
   const defs = FORMATIONS[formation].slots;
   const players = defs.flatMap((d, i) => {
@@ -27,6 +31,11 @@ export function CaptainPicker({ formation, slots, captain, onChange, disabled = 
     return mon ? [{ id: mon.id, label: `${t.game.posShort[d.pos]} · ${t.game.pokemon(mon)}` }] : [];
   });
   if (!players.length) return null;
+  const best = bestCaptain(
+    formation,
+    defs.map((_, i) => (slots[i] != null ? byId.get(slots[i] as number) : undefined)),
+    scaleProp ?? scale('all'),
+  );
   return (
     <div className="captain-picker">
       <label className="field__label" htmlFor={id}>
@@ -46,6 +55,11 @@ export function CaptainPicker({ formation, slots, captain, onChange, disabled = 
           </option>
         ))}
       </select>
+      {best != null && (
+        <button type="button" className="btn btn--small captain-picker__best" disabled={disabled || best === captain} onClick={() => onChange(best)}>
+          {tx.best}
+        </button>
+      )}
       <p className="muted small">{hint ?? tx.note}</p>
     </div>
   );

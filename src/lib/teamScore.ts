@@ -69,6 +69,21 @@ export function evaluateTeam(
   return { score: Math.round(exact), exact, fits, weakest };
 }
 
+/** Kapitän mit dem höchsten Team-Score (bei Gleichstand der vordere) – null ohne Spieler. */
+export function bestCaptain(formation: FormationId, players: (Pokemon | null | undefined)[], scale: Scale): number | null {
+  let best: number | null = null;
+  let bestScore = -1;
+  for (const p of players) {
+    if (!p) continue;
+    const { exact } = evaluateTeam(formation, players, scale, p.id);
+    if (exact > bestScore) {
+      bestScore = exact;
+      best = p.id;
+    }
+  }
+  return best;
+}
+
 export function positionWeights(formation: FormationId): number[] {
   return FORMATIONS[formation].slots.map((s) => POSITIONS[s.pos].teamWeight);
 }

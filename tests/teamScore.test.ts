@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FORMATION_IDS, FORMATIONS } from '../src/config/formations';
 import { buildScale } from '../src/lib/fit';
-import { evaluateTeam, positionWeights, teamScoreFromFits } from '../src/lib/teamScore';
+import { bestCaptain, evaluateTeam, positionWeights, teamScoreFromFits } from '../src/lib/teamScore';
 import { ALL, byName } from './helpers';
 
 const weights433 = positionWeights('4-3-3');
@@ -100,5 +100,15 @@ describe('Team-Score – mit echten Daten', () => {
     expect(evaluateTeam('4-3-3', team, scale, best).exact).toBeGreaterThan(base.exact);
     expect(evaluateTeam('4-3-3', team, scale, worst).exact).toBeLessThan(base.exact);
     expect(evaluateTeam('4-3-3', team, scale, best).fits).toEqual(base.fits);
+  });
+
+  it('bestCaptain: kein anderer Kapitän ergibt einen höheren Score', () => {
+    const scale = buildScale(ALL, 'all');
+    const team = FORMATIONS['4-3-3'].slots.map((_, i) => ALL[i * 53 + 3]);
+    const best = bestCaptain('4-3-3', team, scale)!;
+    expect(team.map((p) => p.id)).toContain(best);
+    const top = evaluateTeam('4-3-3', team, scale, best).exact;
+    for (const p of team) expect(evaluateTeam('4-3-3', team, scale, p.id).exact).toBeLessThanOrEqual(top);
+    expect(bestCaptain('4-3-3', [], scale)).toBeNull();
   });
 });
