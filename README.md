@@ -190,7 +190,9 @@ antworten sofort (nur wenn ihre beste Elf stärker wird, `squadStrength`) und bi
 die beiden Elfen helfen (`cpuOffers`, deterministisch, verfallen zum nächsten Anpfiff); Mitspieler antworten mit
 `offer-reply` (annehmen/ablehnen, Anbieter zieht zurück).
 Ein Tausch gilt sofort (Kader, Aufstellungen, Protokoll mit `with`); Angebote sind nur für die beiden Teams sichtbar
-und verfallen, sobald eins der Pokémon weg ist. Die Manager-Saison hat
+und verfallen, sobald eins der Pokémon weg ist. Entscheidungshilfen in der Saison-Ansicht: nächster Gegner mit Platz,
+Formkurve und Stärkevergleich der besten Elfen; bei jedem Tausch bzw. freien Pokémon die Wirkung auf die eigene beste
+Elf (`squadStrength`, gewichtete Fit-Punkte ohne Tagesform) und ein Tipp für den besten Transfer. Die Manager-Saison hat
 einen eigenen Menüpunkt (`/manager`, `src/pages/Manager.tsx`: Liga anlegen, beitreten, eigene Manager-Ligen);
 mit Hinweisen meldet der Browser jeden gespielten Spieltag und erinnert 5 Minuten vor dem Anpfiff.
 Öffentliche Lobbys: `GET /api/drafts/public`. Ligen werden nach 14 Tagen gelöscht. Vertrag und Limits:
