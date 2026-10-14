@@ -464,6 +464,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
           pickSeconds={s.settings.pickSeconds}
           clockOffset={room.clockOffset}
           cpu={!!current?.cpu}
+          mine={myTurn && !readOnly}
         />
         {randomMode && current && <DraftRollBar room={room} readOnly={readOnly} />}
         {lastPick && lastMon && (

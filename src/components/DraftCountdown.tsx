@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useT } from '../i18n';
 import { remainingMs } from '../state/useDraftRoom';
 import '../styles/draft.css';
@@ -11,6 +11,8 @@ interface Props {
   clockOffset: number;
   /** Team am Zug ist eine CPU (wählt ohne Timer gleich selbst) */
   cpu: boolean;
+  /** Eigener Pick: bei knapper Zeit einmal kurz vibrieren (Handy) */
+  mine?: boolean;
 }
 
 function formatSeconds(ms: number): string {
@@ -22,7 +24,7 @@ function formatSeconds(ms: number): string {
  * Restzeit des aktuellen Picks als Balken – nach Serveruhr (clockOffset). Eigene Komponente, damit
  * nur sie tickt. Keine Live-Region: Picks sagt DraftLive einmal an.
  */
-export function DraftCountdown({ deadline, pickSeconds, clockOffset, cpu }: Props) {
+export function DraftCountdown({ deadline, pickSeconds, clockOffset, cpu, mine = false }: Props) {
   const t = useT();
   const [now, setNow] = useState(Date.now);
   useEffect(() => {
@@ -32,6 +34,20 @@ export function DraftCountdown({ deadline, pickSeconds, clockOffset, cpu }: Prop
     return () => window.clearInterval(id);
   }, [deadline]);
 
+  const left = remainingMs(deadline, clockOffset, now);
+  const urgent = left != null && left <= 10_000;
+  // Einmal je Pick (Deadline) – nur wenn die Zeit noch läuft, nicht nach einem Neuladen bei 0
+  const buzzed = useRef<number | null>(null);
+  useEffect(() => {
+    if (!mine || !urgent || !pickSeconds || deadline == null || buzzed.current === deadline || !left) return;
+    buzzed.current = deadline;
+    try {
+      navigator.vibrate?.([120, 80, 120]);
+    } catch {
+      // Ohne Vibration (Desktop, Browser verbietet es) einfach nichts tun
+    }
+  }, [mine, urgent, deadline]);
+
   if (cpu) {
     return (
       <div className="draft-timer draft-timer--idle">
@@ -40,14 +56,12 @@ export function DraftCountdown({ deadline, pickSeconds, clockOffset, cpu }: Prop
       </div>
     );
   }
-  const left = remainingMs(deadline, clockOffset, now);
   if (left == null || !pickSeconds) {
     return (
       <div className="draft-timer draft-timer--idle">{t.online.noTimer}</div>
     );
   }
   const share = Math.max(0, Math.min(1, left / (pickSeconds * 1000)));
-  const urgent = left <= 10_000;
   return (
     <div className={`draft-timer ${urgent ? 'draft-timer--urgent' : ''}`}>
       <div

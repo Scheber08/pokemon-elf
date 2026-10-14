@@ -205,7 +205,7 @@ mit Hinweisen meldet der Browser jeden gespielten Spieltag und erinnert 5 Minute
 
 Weitere Liga-Funktionen: Pool mit Legendären/Mysteriösen, Ultrabestien, Formen und Megas – je mit Limit
 pro Team; Zufallsmodus mit Rerolls; Wunschliste für Auto-Picks (privat); Emoji-Reaktionen (nur verteilt,
-nicht gespeichert); „Du bist dran" als Ton und Browser-Benachrichtigung; QR-Code des Liga-Links in der
+nicht gespeichert); „Du bist dran" als Ton und Browser-Benachrichtigung, bei 10 s Restzeit vibriert das Handy einmal; QR-Code des Liga-Links in der
 Lobby; Taste „/" springt ins Suchfeld. Das Ergebnis zeigt Draft-Noten, das „Schnäppchen des Drafts"
 (bester später Pick), „Deine Duelle" (Bilanz gegen jeden Gegner), Saisonrekorde, den eigenen Saisonverlauf
 und die Formkurve. Der Ticker zeigt Torjäger live und die Überraschung des Spieltags; mit Hinweisen meldet der
