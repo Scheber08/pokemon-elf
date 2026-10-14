@@ -226,3 +226,18 @@ describe('Trainer im Online-Draft', () => {
     expect(room.stored!.state.teams[1].trainer).toMatchObject({ hair: 'long' });
   });
 });
+
+describe('Pixel-Trainer', () => {
+  it('jeder Katalog-Eintrag ergibt ein volles 32×32-Raster (Hintergrund deckt alles), gleiches Aussehen → gleiches Raster', async () => {
+    const { trainerPixels, pixelRuns, PX } = await import('../src/lib/trainerPixels');
+    for (const it of TRAINER_ITEMS) {
+      const grid = trainerPixels({ ...DEFAULT_LOOK, [it.slot]: it.id });
+      expect(grid).toHaveLength(PX);
+      expect(grid.every((row) => row.length === PX && row.every((c) => typeof c === 'string' && /^#[0-9a-f]{6}$/.test(c)))).toBe(true);
+    }
+    const a = pixelRuns(trainerPixels({ ...DEFAULT_LOOK, hat: 'crown' }));
+    expect(a.reduce((n, r) => n + r.w, 0)).toBe(PX * PX);
+    // Alte gespeicherte Looks ohne „face" bekommen den Standard
+    expect(parseLook({ hair: 'long' }).face).toBe('smile');
+  });
+});

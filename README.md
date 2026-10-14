@@ -205,7 +205,7 @@ Spielerprofile `/spieler/:id` (Name, gewertete Runs, bester Allzeit-Platz).
 **Erfolge** (`/trainer`, `src/lib/achievements.ts`, `server/achievements.ts`): `POST /api/me` rechnet aus den Runs
 (Anzahl, Siege, perfekte Saisons), der Tageswertung (Serie, Tagessiege), den Allzeit-Plätzen und den fertigen
 Online-Ligen (`draft_results`, schreibt der Draft-Raum am Saisonende) die Erfolge des Geräts – jeder bringt Münzen.
-Dafür gibt es Cosmetics für den selbst gestalteten **Trainer** (`src/lib/trainer.ts`, SVG in
+Dafür gibt es Cosmetics für den selbst gestalteten **Trainer** (`src/lib/trainer.ts`, Pixel-Art 32 × 32 aus `src/lib/trainerPixels.ts`, als SVG in
 `src/components/TrainerAvatar.tsx`): Haut, Frisur, Haarfarbe, Kleidung, Kopfbedeckung, Accessoire, Hintergrund,
 Begleiter-Pokémon und Titel. `POST /api/me/buy` kauft atomar (nur wenn die Münzen nach allen Käufen reichen,
 `trainer_items`), `POST /api/me/trainer` speichert den Look (`trainers`, nur Freies und Gekauftes).

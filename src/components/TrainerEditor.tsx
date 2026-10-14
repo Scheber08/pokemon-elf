@@ -18,6 +18,7 @@ export function trainerItemName(t: Messages, it: Pick<TrainerItem, 'slot' | 'id'
     case 'hairColor':
     case 'outfitColor':
       return tx.items.color[it.id] ?? it.id;
+    case 'face':
     case 'hair':
     case 'outfit':
     case 'hat':
