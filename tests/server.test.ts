@@ -568,9 +568,15 @@ describe('Runs: start → finish', () => {
     const start = await startOnline(dev);
     const state = autoPlay({ challenge: 'c340', formation: '4-3-3', ssEnabled: false, seed: start.body.seed });
     const good = finishBody(dev, start.body.token, state);
-    const legend = ALL.find((p) => p.leg && p.types.includes('dragon'))!;
+    // Ein Pokémon, das beim 4. Pick sicher nicht zur Wahl stand (ein festes könnte bei manchen Seeds
+    // gerade angeboten werden – dann wäre der „manipulierte" Run gültig)
+    let before = startRun(state.config, DATA);
+    for (const p of state.picks.slice(0, 3)) before = place(before, p.pokemonId, p.slot, DATA);
+    const offered = new Set(candidates(before, DATA).map((p) => p.id));
+    const used = new Set(state.picks.map((p) => p.pokemonId));
+    const foreign = ALL.find((p) => !offered.has(p.id) && !used.has(p.id))!;
     const tampered: [string, PickLog[]][] = [
-      ['anderes Pokémon', state.picks.map((p, i) => (i === 3 ? { ...p, pokemonId: legend.id } : p))],
+      ['anderes Pokémon', state.picks.map((p, i) => (i === 3 ? { ...p, pokemonId: foreign.id } : p))],
       ['unbekanntes Pokémon', state.picks.map((p, i) => (i === 0 ? { ...p, pokemonId: 99_999 } : p))],
       ['doppelter Slot', state.picks.map((p, i) => (i === 1 ? { ...p, slot: state.picks[0].slot } : p))],
       ['Standardschütze ohne SS', state.picks.map((p, i) => (i === 2 ? { ...p, slot: SS_SLOT } : p))],
