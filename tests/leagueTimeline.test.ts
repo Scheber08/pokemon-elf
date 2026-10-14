@@ -12,7 +12,7 @@ import {
   startDraft,
 } from '../src/lib/draftEngine';
 import { buildScale } from '../src/lib/fit';
-import { biggestWin, longestWinStreak, recentForm,
+import { biggestUpset, biggestWin, longestWinStreak, recentForm,
   currentMatchday,
   FINALE_MS,
   leagueTimeline,
@@ -293,5 +293,17 @@ describe('Höchster Sieg', () => {
   it('größte Differenz, dann mehr Tore, dann früher; ohne Sieg null', () => {
     expect(biggestWin([m(1, 0, 1, 3, 0), m(2, 1, 0, 4, 1), m(3, 0, 1, 1, 4)])).toEqual(m(2, 1, 0, 4, 1));
     expect(biggestWin([m(1, 0, 1, 1, 1)])).toBeNull();
+  });
+});
+
+describe('Überraschung des Spieltags', () => {
+  const m = (round: number, home: number, away: number, hg: number, ag: number) => ({ round, home, away, hg, ag, homeScorers: [], awayScorers: [] });
+  it('Außenseitersieg mit dem größten Rückstand, ab der Mindestgrenze', () => {
+    const ratings = [900, 500, 800, 650];
+    const matches = [m(1, 0, 1, 0, 1), m(1, 2, 3, 1, 2), m(1, 1, 3, 1, 1)];
+    expect(biggestUpset(matches, ratings)).toMatchObject({ winner: 1, loser: 0, gap: 400 });
+    expect(biggestUpset([m(1, 2, 3, 1, 2)], ratings)).toMatchObject({ winner: 3, gap: 150 });
+    expect(biggestUpset([m(1, 2, 3, 1, 2)], ratings, 200)).toBeNull();
+    expect(biggestUpset([m(1, 0, 1, 3, 0)], ratings)).toBeNull();
   });
 });

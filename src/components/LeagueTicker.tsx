@@ -10,6 +10,7 @@ import {
   titleRace,
   titleTieNote,
   topScorers,
+  biggestUpset,
   type Matchday,
 } from '../lib/leagueTimeline';
 import { cupPens, cupStageOf, cupStatus, cupWinner, type CupInfo } from '../lib/cup';
@@ -136,6 +137,11 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
   /** Gruppenphase läuft (oder steht bevor) → Gruppentabellen statt Baum */
   const groupsPhase = !!cup?.groups && (!day || cupStageOf(cup, day.round) === 'group');
   const pensOf = useCallback((m: Match) => (cup ? cupPens(cup, m) : null), [cup]);
+  /** Überraschung des Spieltags (Außenseitersieg, Rating-Rückstand ≥ 100) */
+  const upset = useMemo(
+    () => (day ? biggestUpset(day.matches, league.teams.map((tm) => tm.rating)) : null),
+    [day, league],
+  );
   /** Torjäger bis zum aktuellen Spieltag (Top 5) */
   const scorers = useMemo(
     () => (md > 0 ? topScorers({ ...league, matches: league.matches.filter((m) => m.round <= md) }).slice(0, LIVE_SCORERS) : []),
@@ -318,6 +324,18 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
                 <span>{dayLabel(day.round)}</span>
                 <span>{finale ? tx.finalScores : tx.results}</span>
               </div>
+              {upset && (
+                <p className="league-board__upset">
+                  <span aria-hidden="true">⚡ </span>
+                  {tx.upset(
+                    nameOf(upset.winner),
+                    nameOf(upset.loser),
+                    upset.match.home === upset.winner
+                      ? `${upset.match.hg}:${upset.match.ag}`
+                      : `${upset.match.ag}:${upset.match.hg}`,
+                  )}
+                </p>
+              )}
               <FixtureList
                 matches={day.matches}
                 you={you}

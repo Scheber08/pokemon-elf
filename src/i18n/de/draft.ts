@@ -329,6 +329,8 @@ const draft = {
     statusLive: 'Live',
     statusSoon: 'Gleich',
     sharedSeason: 'Gemeinsame Saison',
+    /** Außenseitersieg des Spieltags; score aus Sicht des Siegers */
+    upset: (winner: string, loser: string, score: string) => `Überraschung: ${winner} schlägt ${loser} ${score}`,
     title: 'Saison-Ticker',
     toResult: 'Zum Ergebnis',
     skip: 'Überspringen',

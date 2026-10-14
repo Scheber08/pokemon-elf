@@ -305,6 +305,7 @@ const draft: Messages['draft'] = {
     statusLive: 'Live',
     statusSoon: 'Soon',
     sharedSeason: 'Shared season',
+    upset: (winner, loser, score) => `Upset: ${winner} beat ${loser} ${score}`,
     title: 'Season ticker',
     toResult: 'See result',
     skip: 'Skip',

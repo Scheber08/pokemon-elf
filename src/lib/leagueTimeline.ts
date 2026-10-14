@@ -539,3 +539,25 @@ export function biggestWin(matches: readonly Match[]): Match | null {
   }
   return best;
 }
+
+/** Überraschung eines Spieltags: Sieg des Außenseiters mit dem größten Rating-Rückstand. */
+export interface Upset {
+  match: Match;
+  winner: number;
+  loser: number;
+  /** Rating-Rückstand des Siegers */
+  gap: number;
+}
+
+/** Größte Überraschung unter den Spielen (Rückstand mindestens minGap) – null ohne. */
+export function biggestUpset(matches: readonly Match[], ratings: readonly number[], minGap = 100): Upset | null {
+  let best: Upset | null = null;
+  for (const m of matches) {
+    if (m.hg === m.ag) continue;
+    const winner = m.hg > m.ag ? m.home : m.away;
+    const loser = winner === m.home ? m.away : m.home;
+    const gap = (ratings[loser] ?? 0) - (ratings[winner] ?? 0);
+    if (gap >= minGap && (!best || gap > best.gap)) best = { match: m, winner, loser, gap };
+  }
+  return best;
+}
