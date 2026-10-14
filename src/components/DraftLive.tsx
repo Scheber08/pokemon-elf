@@ -37,6 +37,7 @@ import {
 import type { Pokemon } from '../types';
 import { TypeBadge } from './Badges';
 import { BenchRow } from './BenchRow';
+import { CaptainPicker } from './CaptainPicker';
 import { JerseyEditor } from './JerseyEditor';
 import { DraftBoard, DraftPickFeed } from './DraftBoard';
 import { DraftQueue } from './DraftQueue';
@@ -541,6 +542,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                 onSlotClick={pitchTeam === me ? onSlotClick : undefined}
                 ariaLabel={t.online.pitchAria(teamLabel(pitchTeam, t), pitchTeam.formation)}
                 jerseys={pitchTeam.jerseys}
+                captain={pitchTeam.captain ?? null}
               />
               {pitchTeam.bench && (
                 <BenchRow
@@ -554,6 +556,15 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                 />
               )}
               {pending && <p className="hint draft-pending">{t.online.pickSending}</p>}
+              {pitchTeam === me && me && !readOnly && (
+                <CaptainPicker
+                  formation={me.formation}
+                  slots={me.slots}
+                  captain={me.captain ?? null}
+                  onChange={(c) => room.setCaptain(c)}
+                  hint={s.settings.format === 'manager' ? t.captain.managerNote : t.captain.draftNote}
+                />
+              )}
               {pitchTeam === me && me && !readOnly && (
                 <JerseyEditor
                   formation={me.formation}

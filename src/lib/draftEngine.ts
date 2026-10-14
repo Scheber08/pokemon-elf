@@ -716,6 +716,31 @@ export function setTeamJerseys(state: DraftState, deviceId: string, raw: unknown
   };
 }
 
+/**
+ * Kapitän des eigenen Teams setzen (null = keiner). Im Draft einer aus der Elf – mit dem Ende des
+ * Drafts steht das Ergebnis fest, danach nicht mehr; in der Manager-Saison jeder aus dem Kader
+ * (zählt an Spieltagen, an denen er in der Aufstellung steht).
+ */
+export function setTeamCaptain(state: DraftState, deviceId: string, pokemonId: number | null): DraftState {
+  const teamId = teamOfDevice(state, deviceId) ?? fail('not_joined', 'Du bist in dieser Liga nicht dabei');
+  const manager = state.phase === 'season' && !!state.manager;
+  if (state.phase !== 'drafting' && !manager) fail('not_allowed', 'Den Kapitän wählst du im Draft – jetzt steht das Ergebnis fest');
+  const team = state.teams.find((t) => t.id === teamId)!;
+  const allowed = manager ? rosterOf(team) : team.slots.filter((id): id is number => id != null);
+  if (pokemonId != null && !allowed.includes(pokemonId)) fail('not_allowed', 'Der Kapitän muss in deinem Team stehen');
+  return {
+    ...state,
+    teams: state.teams.map((t) => {
+      if (t.id !== teamId) return t;
+      if (pokemonId == null) {
+        const { captain: _drop, ...rest } = t;
+        return rest;
+      }
+      return { ...t, captain: pokemonId };
+    }),
+  };
+}
+
 export function updateTeam(
   state: DraftState,
   deviceId: string,

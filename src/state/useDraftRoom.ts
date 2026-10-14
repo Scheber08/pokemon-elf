@@ -553,6 +553,8 @@ export interface DraftRoom extends DraftRoomView {
   setTransfer(inId: number | null, outId: number | null): boolean;
   /** Eigene Trikotnummern setzen (leer = Vorgabe) */
   setJerseys(jerseys: Record<string, number>): boolean;
+  /** Kapitän setzen (null = keiner) */
+  setCaptain(pokemonId: number | null): boolean;
   /** Manager-Saison: Tausch anbieten (eigenes give gegen get von Team to) */
   offerTrade(to: string, give: number, get: number): boolean;
   /** Manager-Saison: Angebot annehmen bzw. ablehnen / zurückziehen */
@@ -940,6 +942,7 @@ export function useDraftRoom(code: string): DraftRoom {
     setQueue: useCallback((ids: number[]) => send({ type: 'queue', ids }), [send]),
     setTransfer: useCallback((inId: number | null, outId: number | null) => send({ type: 'transfer', in: inId, out: outId }), [send]),
     setJerseys: useCallback((jerseys: Record<string, number>) => send({ type: 'jerseys', jerseys }), [send]),
+    setCaptain: useCallback((pokemonId: number | null) => send({ type: 'captain', pokemonId }), [send]),
     offerTrade: useCallback((to: string, give: number, get: number) => send({ type: 'offer', to, give, get }), [send]),
     answerOffer: useCallback((id: number, accept: boolean) => send({ type: 'offer-reply', id, accept }), [send]),
     setLineup: useCallback((l: ManagerLineup) => send({ type: 'lineup', formation: l.formation, slots: l.slots, ss: l.ss, auto: l.auto }), [send]),

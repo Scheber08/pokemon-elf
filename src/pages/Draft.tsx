@@ -6,6 +6,7 @@ import { REGIONS } from '../config/regions';
 import { CLUB_NAMES } from '../config/season';
 import { PosBadge } from '../components/Badges';
 import { FilterBar, useFilteredPokemon, type PokemonFilters } from '../components/FilterBar';
+import { CaptainPicker } from '../components/CaptainPicker';
 import { JerseyEditor } from '../components/JerseyEditor';
 import { cleanJerseys, type Jerseys } from '../lib/jerseys';
 import { Pitch, type SlotState } from '../components/Pitch';
@@ -41,6 +42,8 @@ interface DraftTeam {
   slots: Slots;
   /** Eigene Trikotnummern (nur Menschen; fehlt: Vorgabe nach Position) */
   jerseys?: Jerseys;
+  /** Kapitän (Pokémon-ID aus der Elf, nur Menschen) – wird im Draft gewählt, zählt doppelt */
+  captain?: number | null;
 }
 
 interface DraftState {
@@ -228,7 +231,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     const sc = scale('all');
     const leagueTeams: LeagueTeam[] = state.teams.map((tm) => {
       const players = tm.slots.map((id) => (id != null ? byId.get(id) ?? null : null));
-      const ev = evaluateTeam(tm.formation, players, sc);
+      const ev = evaluateTeam(tm.formation, players, sc, tm.captain);
       const defs = FORMATIONS[tm.formation].slots;
       return {
         name: tm.name,
@@ -506,7 +509,14 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           {state.teams.map((tm, i) => (
             <div key={i} className="card draft__roster">
               <h3 className="section-title">{teamName(tm.name)}</h3>
-              <Pitch formation={tm.formation} slots={tm.slots} sprite={sprite} ariaLabel={tx.squadAria(teamName(tm.name))} jerseys={tm.jerseys} />
+              <Pitch
+                formation={tm.formation}
+                slots={tm.slots}
+                sprite={sprite}
+                ariaLabel={tx.squadAria(teamName(tm.name))}
+                jerseys={tm.jerseys}
+                captain={tm.captain ?? null}
+              />
               {!tm.cpu && (
                 <JerseyEditor
                   formation={tm.formation}
@@ -624,6 +634,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 slots={team.slots}
                 sprite={sprite}
                 jerseys={team.jerseys}
+                captain={team.captain ?? null}
                 slotState={slotState}
                 positionTips
                 onSlotClick={(i) => {
@@ -631,6 +642,17 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   lock(currentTeam, i, state.selected);
                 }}
               />
+              {!team.cpu && (
+                <CaptainPicker
+                  formation={team.formation}
+                  slots={team.slots}
+                  captain={team.captain ?? null}
+                  onChange={(captain) =>
+                    setState((s) => ({ ...s, teams: s.teams.map((x, j) => (j === currentTeam ? { ...x, captain } : x)) }))
+                  }
+                  hint={t.captain.draftNote}
+                />
+              )}
             </>
           )}
         </div>

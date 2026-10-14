@@ -61,6 +61,7 @@ import {
   transferHost,
   updateSettings,
   updateTeam,
+  setTeamCaptain,
   setTeamJerseys,
   upgradeSettings,
   upgradeState,
@@ -427,6 +428,8 @@ export function parseClientMessage(raw: unknown): ParsedMessage {
       if (!Object.values(j as Record<string, unknown>).every((v) => typeof v === 'number')) return badMessage();
       return ok({ type: 'jerseys', jerseys: j as Record<string, number> });
     }
+    case 'captain':
+      return d.pokemonId === null || isInt(d.pokemonId) ? ok({ type: 'captain', pokemonId: d.pokemonId as number | null }) : badMessage();
     case 'offer-reply':
       return isInt(d.id) && isBool(d.accept) ? ok({ type: 'offer-reply', id: d.id, accept: d.accept }) : badMessage();
     case 'react':
@@ -741,7 +744,7 @@ const sameState = (a: DraftState, b: DraftState) => a === b || JSON.stringify(a)
  * Lobby-Änderungen – zusätzlich pro Gerät gedrosselt (jede kostet Speichern und ggf. D1). Züge im
  * Draft (pick, auto-pick, reroll) nicht: Sie begrenzt schon die Engine (nur am Zug, Rerolls je Team).
  */
-const LOBBY_CHANGES = new Set<DraftClientMessage['type']>(['join', 'leave', 'update-team', 'settings', 'add-cpu', 'remove-team', 'set-order', 'queue', 'jerseys']);
+const LOBBY_CHANGES = new Set<DraftClientMessage['type']>(['join', 'leave', 'update-team', 'settings', 'add-cpu', 'remove-team', 'set-order', 'queue', 'jerseys', 'captain']);
 
 interface Bucket {
   tokens: number;
@@ -1570,6 +1573,9 @@ export class DraftRoomCore {
         return setClaim(playDueMatchdays(state, now, list, scale), deviceId, { in: msg.in, out: msg.out }, list);
       case 'jerseys':
         return setTeamJerseys(state, deviceId, msg.jerseys);
+      case 'captain':
+        // Manager-Saison: Überfälliges erst spielen – der Kapitän gilt ab dem nächsten Anpfiff
+        return setTeamCaptain(state.manager ? playDueMatchdays(state, now, list, scale) : state, deviceId, msg.pokemonId);
       case 'offer':
         // Tausch sofort (CPU) bzw. als Angebot – Überfälliges erst spielen, wie beim Transfer
         return makeOffer(playDueMatchdays(state, now, list, scale), deviceId, { to: msg.to, give: msg.give, get: msg.get }, list, scale);

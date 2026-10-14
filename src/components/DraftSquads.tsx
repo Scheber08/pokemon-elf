@@ -51,6 +51,7 @@ export function DraftSquads({ teams, ratings, names, highlight, sprite, setPiece
               sprite={sprite}
               ariaLabel={t.draft.local.squadAria(names[i])}
               jerseys={team.jerseys}
+              captain={team.captain ?? null}
             />
           </article>
         ))}

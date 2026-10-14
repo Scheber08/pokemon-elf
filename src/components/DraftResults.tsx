@@ -589,6 +589,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                   sprite={sprite}
                   ariaLabel={tx.lineupAria(nameOf(r.team))}
                   jerseys={team.jerseys}
+                  captain={team.captain ?? null}
                 />
               </article>
             );

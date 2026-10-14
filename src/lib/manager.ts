@@ -36,7 +36,7 @@ import {
 import { positionFit, type Scale } from './fit';
 import { hashSeed } from './rng';
 import { buildTable, DRAFT_MODEL, nextForm, playMatch, roundRobin, type LeagueResult, type LeagueTeam, type SquadPlayer } from './season';
-import { teamScoreFromFits } from './teamScore';
+import { captainWeights, teamScoreFromFits } from './teamScore';
 
 /** Fit-Punkte je Formstufe */
 export const FORM_FIT = 5;
@@ -159,9 +159,15 @@ export function lineupScore(
   squad: readonly { pos: PosCode; p: Pokemon }[],
   scale: Scale,
   formOf: (id: number) => number,
+  /** Kapitän (Pokémon-ID) – zählt doppelt, wenn er in der Aufstellung steht */
+  captain?: number | null,
 ): number {
   const fits = squad.map(({ p, pos }) => formFit(p, pos, scale, formOf(p.id)));
-  const weights = squad.map(({ pos }) => POSITIONS[pos].teamWeight);
+  const weights = captainWeights(
+    squad.map(({ pos }) => POSITIONS[pos].teamWeight),
+    squad.map(({ p }) => p.id),
+    captain,
+  );
   return Math.round(teamScoreFromFits(fits, weights).exact);
 }
 
@@ -264,7 +270,7 @@ function matchdayTeams(state: DraftState, m: ManagerState, matchday: number, byI
     const ss = setPiece && l.ss != null ? byId.get(l.ss) : undefined;
     return {
       name: t.name,
-      rating: lineupScore(squad, scale, formOf),
+      rating: lineupScore(squad, scale, formOf, t.captain),
       squad: squad.map(({ p, pos }) => squadPlayer(p, pos)),
       setPieceTaker: ss ? squadPlayer(ss, 'SS') : null,
       setPieceFit: ss ? formFit(ss, 'SS', scale, formOf(ss.id)) : undefined,

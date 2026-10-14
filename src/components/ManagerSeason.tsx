@@ -15,6 +15,7 @@ import { PosBadge } from './Badges';
 import { BenchRow } from './BenchRow';
 import { FixtureList, FormDots, Trend } from './LeagueTicker';
 import { ReplayToggle, useMatchReport } from './MatchReport';
+import { CaptainPicker } from './CaptainPicker';
 import { JerseyEditor } from './JerseyEditor';
 import { PlaceChart } from './PlaceChart';
 import { SeasonStats } from './SeasonStats';
@@ -290,6 +291,18 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
       )}
 
       {room.me && !readOnly && m.lineups[room.me.id] && meIndex >= 0 && (
+        <section className="card">
+          <CaptainPicker
+            formation={m.lineups[room.me.id].formation}
+            slots={m.lineups[room.me.id].slots}
+            captain={s.teams[meIndex].captain ?? null}
+            onChange={(c) => room.setCaptain(c)}
+            hint={t.captain.managerNote}
+          />
+        </section>
+      )}
+
+      {room.me && !readOnly && m.lineups[room.me.id] && meIndex >= 0 && (
         <JerseyEditor
           formation={m.lineups[room.me.id].formation}
           slots={m.lineups[room.me.id].slots}
@@ -544,6 +557,7 @@ function LineupEditor({
           onSwap={swapSlots}
           ariaLabel={tx.lineupTitle}
           jerseys={team.jerseys}
+          captain={team.captain ?? null}
         />
         <BenchRow
           bench={bench}

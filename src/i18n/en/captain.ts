@@ -7,6 +7,8 @@ const captain: Messages['captain'] = {
   none: 'No captain',
   note: "The captain's position fit counts double in the team rating – a well-fitting captain lifts the team, a poorly fitting one drags it down.",
   effect: (diff) => `Effect on the team score: ${diff}`,
+  managerNote: 'The captain’s fit counts double – on every matchday they are in your lineup. A change applies from the next kickoff.',
+  draftNote: 'The captain’s fit counts double. You can only choose them during the draft – after that the season is fixed.',
   missing: 'No captain chosen yet – their fit would count double.',
 };
 

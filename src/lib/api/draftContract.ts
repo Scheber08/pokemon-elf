@@ -506,6 +506,8 @@ export type DraftClientMessage =
   | { type: 'transfer'; in: number | null; out: number | null }
   | { type: 'offer'; to: string; give: number; get: number }
   | { type: 'jerseys'; jerseys: Record<string, number> }
+  /** Kapitän setzen (null = keiner) – im Draft bzw. in der Manager-Saison */
+  | { type: 'captain'; pokemonId: number | null }
   | { type: 'offer-reply'; id: number; accept: boolean }
   /** Emoji-Reaktion an alle (nur Mitglieder; wird nicht gespeichert) */
   | { type: 'react'; emoji: DraftReaction }

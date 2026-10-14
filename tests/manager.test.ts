@@ -14,6 +14,7 @@ import {
   rounds,
   snapshotOf,
   startDraft,
+  setTeamCaptain,
   setTeamJerseys,
   totalPicks,
   upgradeSettings,
@@ -40,6 +41,7 @@ import {
   OFFERS_PER_TEAM,
   cpuOffers,
   squadStrength,
+  lineupScore,
 } from '../src/lib/manager';
 import { expiresAt, parseClientMessage } from '../server/draftCore';
 import { handleApi, type Env } from '../server/handler';
@@ -507,3 +509,56 @@ describe('Trikotnummern im Online-Draft', () => {
   });
 });
 
+describe('Kapitän im Online-Draft', () => {
+  it('im Draft aus der eigenen Elf; nach dem Draft einer Liga gesperrt; in der Manager-Saison aus dem Kader', () => {
+    let s = createDraft({
+      code: 'CAP234',
+      seed: 3,
+      settings: { pickSeconds: 0, format: 'league' },
+      host: { teamId: 'h', deviceId: 'dev-h', name: 'Host-Elf', formation: '4-3-3' },
+      now: 0,
+      list: ALL,
+    });
+    s = addCpuTeam(s, 'dev-h', 'c1');
+    expect(() => setTeamCaptain(s, 'dev-h', 1)).toThrow(/Draft/);
+    s = startDraft(s, 'dev-h', 0, ALL);
+    while (s.phase === 'drafting' && !s.teams.find((t) => t.id === 'h')!.slots.some((x) => x != null)) {
+      const cur = currentTeam(s)!;
+      const c = autoPickChoice(s, cur.id, ALL, SCALE, cur.cpu);
+      s = applyPick(s, cur.id, c.pokemonId, c.slot, true, 1000, ALL);
+    }
+    const mine = s.teams.find((t) => t.id === 'h')!.slots.find((x) => x != null)!;
+    const theirs = s.teams.find((t) => t.id === 'c1')!.slots.find((x) => x != null);
+    const set = setTeamCaptain(s, 'dev-h', mine);
+    expect(set.teams.find((t) => t.id === 'h')!.captain).toBe(mine);
+    expect(snapshotOf(set, 'c1', 0).teams.find((t) => t.id === 'h')!.captain).toBe(mine);
+    if (theirs != null) expect(() => setTeamCaptain(s, 'dev-h', theirs)).toThrow(/Team/);
+    expect(setTeamCaptain(set, 'dev-h', null).teams.find((t) => t.id === 'h')).not.toHaveProperty('captain');
+    expect(() => setTeamCaptain(s, 'fremd', mine)).toThrow(/nicht dabei/);
+
+    const done = drafted({ format: 'league' });
+    expect(done.phase).toBe('done');
+    const doneOwn = done.teams.find((t) => t.id === 'h')!.slots[0]!;
+    expect(() => setTeamCaptain(done, 'dev-h', doneOwn)).toThrow(/Ergebnis fest/);
+
+    const season = startManagerSeason(drafted(), ALL, SCALE);
+    const bench = season.teams.find((t) => t.id === 'h')!.bench!.find((x) => x != null)!;
+    expect(setTeamCaptain(season, 'dev-h', bench).teams.find((t) => t.id === 'h')!.captain).toBe(bench);
+  });
+
+  it('Aufstellungs-Score: Kapitän zählt doppelt, nur wenn er aufgestellt ist', () => {
+    const season = startManagerSeason(drafted(), ALL, SCALE);
+    const team = season.teams.find((t) => t.id === 'h')!;
+    const squad = team.slots.flatMap((id, i) => (id != null ? [{ p: BY_ID.get(id)!, pos: (['TW', 'LV', 'IV', 'IV', 'RV', 'ZM', 'DM', 'ZM', 'LF', 'ST', 'RF'] as const)[i] }] : []));
+    const base = lineupScore(squad, SCALE, () => 0);
+    const scores = squad.map(({ p }) => lineupScore(squad, SCALE, () => 0, p.id));
+    expect(Math.max(...scores)).toBeGreaterThan(base);
+    expect(lineupScore(squad, SCALE, () => 0, 99999)).toBe(base);
+  });
+
+  it('Nachricht captain: Zahl oder null', () => {
+    expect(parseClientMessage(JSON.stringify({ type: 'captain', pokemonId: 25 }))).toMatchObject({ ok: true });
+    expect(parseClientMessage(JSON.stringify({ type: 'captain', pokemonId: null }))).toMatchObject({ ok: true });
+    expect(parseClientMessage(JSON.stringify({ type: 'captain', pokemonId: '25' })).ok).toBe(false);
+  });
+});
