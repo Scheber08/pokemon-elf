@@ -12,7 +12,7 @@ import {
   startDraft,
 } from '../src/lib/draftEngine';
 import { buildScale } from '../src/lib/fit';
-import {
+import { recentForm,
   currentMatchday,
   FINALE_MS,
   leagueTimeline,
@@ -264,5 +264,16 @@ describe('Online-Draft → gemeinsame Saison', () => {
 
     // Zweiter Client simuliert dieselbe Saison
     expect(draftSeason(state, byId, scale)).toEqual(league);
+  });
+});
+
+describe('Formkurve', () => {
+  const m = (round: number, home: number, away: number, hg: number, ag: number) => ({ round, home, away, hg, ag, homeScorers: [], awayScorers: [] });
+  it('letzte Ergebnisse bis zum Spieltag, ältestes zuerst, höchstens n', () => {
+    const matches = [m(2, 1, 0, 2, 2), m(1, 0, 1, 3, 0), m(3, 0, 2, 0, 1), m(4, 2, 0, 0, 4), m(5, 0, 1, 1, 0), m(6, 1, 0, 1, 0)];
+    expect(recentForm(matches, 0, 3)).toEqual(['S', 'U', 'N']);
+    expect(recentForm(matches, 0, 6)).toEqual(['U', 'N', 'S', 'S', 'N']);
+    expect(recentForm(matches, 0, 6, 2)).toEqual(['S', 'N']);
+    expect(recentForm(matches, 0, 0)).toEqual([]);
   });
 });

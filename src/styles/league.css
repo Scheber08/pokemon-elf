@@ -894,3 +894,26 @@
 .cup-group__through td:first-child {
   box-shadow: inset 3px 0 0 var(--green);
 }
+
+/* Live-Tabelle: Formkurve der letzten fünf Spiele */
+.league-form {
+  display: inline-flex;
+  gap: 3px;
+}
+.league-form__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-dim);
+}
+.league-form__dot.is-S {
+  background: var(--green);
+}
+.league-form__dot.is-N {
+  background: var(--red);
+}
+@media (max-width: 520px) {
+  .league-live__form-col {
+    display: none;
+  }
+}

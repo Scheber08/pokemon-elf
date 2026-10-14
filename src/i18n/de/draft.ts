@@ -45,6 +45,9 @@ const draft = {
     diffTitle: 'Tordifferenz',
     pts: 'Pkt',
     ptsTitle: 'Punkte',
+    form: 'Form',
+    formTitle: 'Die letzten fünf Spiele (ältestes links)',
+    formAria: (list: string) => `Form: ${list}`,
   },
 
   // ---------------------------------------------------------------- /draft (Modus + lokaler Hot-Seat-Draft)

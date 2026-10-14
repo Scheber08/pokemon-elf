@@ -4,6 +4,7 @@ import {
   currentMatchday,
   leagueTimeline,
   matchFor,
+  recentForm,
   seasonFinishAt,
   secondsToKickoff,
   titleRace,
@@ -345,7 +346,7 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
         ) : (
           <aside className="league-ticker__side" aria-label={t.draft.table}>
             <h3 className="section-title">{day ? tx.tableAfter(day.round) : t.draft.table}</h3>
-            <LiveTable table={table} day={day} you={you} nameOf={nameOf} />
+            <LiveTable table={table} day={day} you={you} nameOf={nameOf} matches={league.matches} />
           </aside>
         )}
       </div>
@@ -462,11 +463,14 @@ interface LiveTableProps {
   day: Matchday | null;
   you: number | null;
   nameOf: (team: number) => string;
+  /** Alle Spiele – für die Formkurve bis zum aktuellen Spieltag */
+  matches: Match[];
 }
 
 /** Komplette Tabelle nach dem Spieltag (höchstens 8 Teams) mit Trendpfeilen. */
-function LiveTable({ table, day, you, nameOf }: LiveTableProps) {
-  const c = useT().draft.col;
+function LiveTable({ table, day, you, nameOf, matches }: LiveTableProps) {
+  const t = useT();
+  const c = t.draft.col;
   return (
     <div className="table-scroll">
       <table className="league-table league-live">
@@ -497,6 +501,9 @@ function LiveTable({ table, day, you, nameOf }: LiveTableProps) {
             <th scope="col" title={c.ptsTitle}>
               {c.pts}
             </th>
+            <th scope="col" title={c.formTitle} className="league-live__form-col">
+              {c.form}
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -518,10 +525,26 @@ function LiveTable({ table, day, you, nameOf }: LiveTableProps) {
               <td>
                 <strong>{r.pts}</strong>
               </td>
+              <td className="league-live__form-col">
+                <FormDots form={day ? recentForm(matches, r.team, day.round) : []} />
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
+  );
+}
+
+/** Formkurve als Punkte (ältestes links) mit Text für Screenreader. */
+function FormDots({ form }: { form: ('S' | 'U' | 'N')[] }) {
+  const t = useT();
+  if (!form.length) return <span aria-hidden="true">–</span>;
+  return (
+    <span className="league-form" aria-label={t.draft.col.formAria(form.map((o) => t.draft.outcome[o]).join(', '))}>
+      {form.map((o, i) => (
+        <span key={i} className={`league-form__dot is-${o}`} aria-hidden="true" />
+      ))}
+    </span>
   );
 }

@@ -482,3 +482,18 @@ export function headToHead(league: Pick<LeagueResult, 'matches' | 'table'>, team
   }
   return league.table.flatMap((r) => byOpp.get(r.team) ?? []);
 }
+
+/**
+ * Formkurve: die letzten n Ergebnisse eines Teams bis einschließlich Spieltag upTo, ältestes zuerst
+ * ('S' Sieg, 'U' Unentschieden, 'N' Niederlage).
+ */
+export function recentForm(matches: readonly Match[], team: number, upTo: number, n = 5): ('S' | 'U' | 'N')[] {
+  const own = matches
+    .filter((m) => m.round <= upTo && (m.home === team || m.away === team))
+    .sort((a, b) => a.round - b.round);
+  return own.slice(-n).map((m) => {
+    const gf = m.home === team ? m.hg : m.ag;
+    const ga = m.home === team ? m.ag : m.hg;
+    return gf > ga ? 'S' : gf < ga ? 'N' : 'U';
+  });
+}

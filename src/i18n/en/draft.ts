@@ -47,6 +47,9 @@ const draft: Messages['draft'] = {
     diffTitle: 'Goal difference',
     pts: 'Pts',
     ptsTitle: 'Points',
+    form: 'Form',
+    formTitle: 'Last five matches (oldest on the left)',
+    formAria: (list) => `Form: ${list}`,
   },
 
   // ---------------------------------------------------------------- /draft (mode + local hot-seat draft)
