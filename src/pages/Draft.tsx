@@ -35,6 +35,7 @@ import { cleanCheer } from '../lib/cheer';
 import { cleanCrest, type Crest as CrestData } from '../lib/crest';
 import { Crest } from '../components/Crest';
 import { CrestEditor } from '../components/CrestEditor';
+import { cpuCaptain } from '../lib/draftEngine';
 
 const ROUNDS = 11;
 
@@ -75,6 +76,8 @@ interface DraftState {
    * neue Ligen; fehlt bei älteren gespeicherten Ligen → klassisch, damit sie gleich bleiben.
    */
   model?: 'draft';
+  /** CPU-Teams mit Kapitän (Ligen ab dessen Einführung – ältere gespeicherte bleiben gleich) */
+  cpuCaptains?: true;
 }
 
 function defaultTeams(n: number): DraftTeam[] {
@@ -115,6 +118,9 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   const t = useT();
   const tx = t.draft.local;
   const { all, byId, scale } = usePokemonData();
+  /** Kapitän: Menschen wählen ihn, CPU-Teams nehmen den am besten passenden Spieler */
+  const captainOf = (tm: DraftTeam): number | null =>
+    tm.cpu ? (state.cpuCaptains ? cpuCaptain(tm, byId, scale('all')) : null) : (tm.captain ?? null);
   const { sprite } = useSettings();
   const [state, setState] = useState<DraftState>(() => ({ ...INITIAL, ...load<Partial<DraftState>>(STORAGE_KEYS.draft, {}) }));
   const [filters, setFilters] = useState<PokemonFilters>({ query: '', type: null, region: 0 });
@@ -168,7 +174,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
         selected: null,
         phase: pick >= s.teams.length * ROUNDS ? 'league' : 'drafting',
         seed: pick >= s.teams.length * ROUNDS ? randomSeed() : s.seed,
-        ...(pick >= s.teams.length * ROUNDS ? { model: 'draft' as const } : {}),
+        ...(pick >= s.teams.length * ROUNDS ? { model: 'draft' as const, cpuCaptains: true as const } : {}),
       };
     });
 
@@ -243,7 +249,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     const sc = scale('all');
     const leagueTeams: LeagueTeam[] = state.teams.map((tm) => {
       const players = tm.slots.map((id) => (id != null ? byId.get(id) ?? null : null));
-      const ev = evaluateTeam(tm.formation, players, sc, tm.captain);
+      const ev = evaluateTeam(tm.formation, players, sc, captainOf(tm));
       const defs = FORMATIONS[tm.formation].slots;
       return {
         name: tm.name,
@@ -278,7 +284,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     },
     (m) => tx.roundNo(m.round),
     undefined,
-    (i) => (state.teams[i] ? { formation: state.teams[i].formation, ids: state.teams[i].slots, jerseys: cleanJerseys(state.teams[i].jerseys), captain: state.teams[i].captain, kit: cleanKit(state.teams[i].kit), cheer: cleanCheer(state.teams[i].cheer), crest: cleanCrest(state.teams[i].crest) } : null),
+    (i) => (state.teams[i] ? { formation: state.teams[i].formation, ids: state.teams[i].slots, jerseys: cleanJerseys(state.teams[i].jerseys), captain: captainOf(state.teams[i]), kit: cleanKit(state.teams[i].kit), cheer: cleanCheer(state.teams[i].cheer), crest: cleanCrest(state.teams[i].crest) } : null),
   );
 
   if (state.phase === 'setup') {
@@ -539,7 +545,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 sprite={sprite}
                 ariaLabel={tx.squadAria(teamName(tm.name))}
                 jerseys={tm.jerseys}
-                captain={tm.captain ?? null}
+                captain={captainOf(tm)}
               />
               {!tm.cpu && (
                 <KitPicker
@@ -569,7 +575,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           ))}
         </section>
         <div className="actionbar">
-          <button type="button" className="btn btn--primary" onClick={() => setState((s) => ({ ...s, seed: randomSeed(), model: 'draft' }))}>
+          <button type="button" className="btn btn--primary" onClick={() => setState((s) => ({ ...s, seed: randomSeed(), model: 'draft', cpuCaptains: true }))}>
             {tx.replay}
           </button>
           <button type="button" className="btn" onClick={reset}>

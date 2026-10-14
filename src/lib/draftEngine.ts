@@ -1403,6 +1403,28 @@ export function startDraft(state: DraftState, deviceId: string, now: number, lis
   return { ...rolled, deadline: deadlineFor(rolled, now) };
 }
 
+/** Kapitän eines CPU-Teams: der Spieler der Elf mit der besten Positionspassung (keiner ohne Spieler). */
+export function cpuCaptain(t: Pick<DraftTeam, 'formation' | 'slots'>, byId: Map<number, Pokemon>, scale: Scale): number | null {
+  const defs = FORMATIONS[t.formation].slots;
+  let best: number | null = null;
+  let bestFit = -1;
+  t.slots.forEach((id, i) => {
+    const p = id != null ? byId.get(id) : undefined;
+    if (!p || !defs[i]) return;
+    const f = positionFit(p, defs[i].pos, scale);
+    if (f > bestFit) {
+      bestFit = f;
+      best = p.id;
+    }
+  });
+  return best;
+}
+
+function withCpuCaptain(t: DraftTeam, byId: Map<number, Pokemon>, scale: Scale): DraftTeam {
+  const captain = cpuCaptain(t, byId, scale);
+  return captain != null ? { ...t, captain } : t;
+}
+
 /** Diese Einstellungen darf der Host in einer Karriere-Lobby noch ändern */
 const CAREER_SETTINGS = new Set(['name', 'visibility', 'matchdayMinutes']);
 
@@ -1503,8 +1525,12 @@ export function applyPick(
     const settings = upgradeSettings(state.settings);
     const manager = settings.format === 'manager';
     const stepMs = manager ? settings.matchdayMinutes * 60_000 : DRAFT_LIMITS.seasonStepMs;
+    // CPU-Teams bestimmen ihren Kapitän: den Spieler, der am besten auf seine Position passt
+    const sc = draftScaleOf(list);
+    const byId = byIdOf(list);
     return {
       ...next,
+      teams: next.teams.map((t) => (t.cpu && t.captain == null ? withCpuCaptain(t, byId, sc) : t)),
       phase: manager ? 'season' : 'done',
       deadline: null,
       turnStartedAt: null,

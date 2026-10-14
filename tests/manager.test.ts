@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { DeviceAuth } from '../src/lib/api/contract';
 import { DRAFT_BENCH_SLOT, DRAFT_LIMITS, type CreateDraftResponse, type DraftSnapshot } from '../src/lib/api/draftContract';
 import {
+  cpuCaptain,
   rematchTemplate,
   nextCareer,
   joinDraft,
@@ -730,5 +731,15 @@ describe('Karriere', () => {
     expect(nextCareer(place(18))).toEqual({ season: 2, tier: 3, move: 'down' });
     expect(nextCareer({ ...place(1), career: { season: 4, tier: 1 } })).toEqual({ season: 5, tier: 1 });
     expect(() => nextCareer(drafted({ format: 'league' }))).toThrow(/Manager/);
+  });
+});
+
+describe('Kapitän der CPU-Teams', () => {
+  it('am Ende des Drafts: der Spieler mit der besten Positionspassung; Menschen wählen selbst', () => {
+    const s = drafted();
+    const cpu = s.teams.find((t) => t.cpu)!;
+    expect(cpu.captain).toBe(cpuCaptain(cpu, BY_ID, SCALE));
+    expect(cpu.slots).toContain(cpu.captain);
+    expect(s.teams.find((t) => t.id === 'h')).not.toHaveProperty('captain');
   });
 });
