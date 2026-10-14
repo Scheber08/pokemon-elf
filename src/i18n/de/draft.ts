@@ -376,6 +376,7 @@ const draft = {
     youWinner: 'Dein Team gewinnt das Turnier!',
     status: 'Turnier',
     alive: 'Noch dabei',
+    next: 'Nächster Gegner',
     winner: 'Turniersieger',
     /** Ausgeschieden in einer KO-Runde (Achtel-, Viertel-, Halbfinale) */
     out: (stage: string) => `Aus im ${stage}`,

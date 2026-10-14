@@ -947,3 +947,9 @@
   flex: 1;
   min-width: 0;
 }
+
+/* Ticker (Turnier): nächster Gegner – Name darf umbrechen */
+.league-ticker__next {
+  font-size: 1.1rem;
+  overflow-wrap: anywhere;
+}

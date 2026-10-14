@@ -122,6 +122,11 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
   const cup: CupInfo | null = league.cup ?? null;
   const winner = cup ? cupWinner(cup) : null;
   const ownStatus = cup && you != null ? cupStatus(cup, you, md) : null;
+  /** Turnier: nächstes Spiel des eigenen Teams (nach dem aktuellen Spieltag) */
+  const nextMatch =
+    cup && you != null && ownStatus === 'alive'
+      ? league.matches.filter((m) => m.round > md && (m.home === you || m.away === you)).sort((a, b) => a.round - b.round)[0] ?? null
+      : null;
   /** Spieltag bzw. (Turnier) Rundenname */
   const dayLabel = (round: number) => {
     const stage = cup ? cupStageOf(cup, round) : null;
@@ -216,6 +221,15 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
             <dt>{t.draft.cup.status}</dt>
             <dd>{day ? cupStatusText(t, ownStatus) : '–'}</dd>
           </div>
+          {nextMatch && (
+            <div>
+              <dt>{t.draft.cup.next}</dt>
+              <dd className="league-ticker__next">
+                {nameOf(nextMatch.home === you ? nextMatch.away : nextMatch.home)}
+                <small className="muted">{` · ${dayLabel(nextMatch.round)}`}</small>
+              </dd>
+            </div>
+          )}
           <div>
             <dt>{tx.record}</dt>
             <dd>

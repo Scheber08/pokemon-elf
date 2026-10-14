@@ -347,6 +347,7 @@ const draft: Messages['draft'] = {
     youWinner: 'Your team wins the cup!',
     status: 'Cup',
     alive: 'Still in',
+    next: 'Next opponent',
     winner: 'Cup winners',
     out: (stage) => `Out in the ${stage.toLowerCase()}`,
     outFinal: 'Lost the final',
