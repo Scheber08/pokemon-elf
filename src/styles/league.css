@@ -981,3 +981,38 @@
   border: 1px dashed var(--line-strong);
   font-size: 13px;
 }
+
+/* Platzverlauf (Liga-Ergebnis) */
+.place-chart {
+  margin: 0;
+}
+.place-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.place-chart__grid {
+  stroke: var(--line);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.place-chart__line {
+  fill: none;
+  stroke: var(--yellow);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+:root[data-theme='light'] .place-chart__line {
+  stroke: #b45309;
+}
+.place-chart__dot {
+  fill: var(--yellow);
+}
+:root[data-theme='light'] .place-chart__dot {
+  fill: #b45309;
+}
+.place-chart__label {
+  fill: var(--text-dim);
+  font-size: 11px;
+}

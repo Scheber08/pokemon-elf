@@ -412,6 +412,8 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     expect(all).toContain('Share result');
     expect(all).toMatch(/⚽ Top scorer: [^|]+ \(\d+ goals?\)/);
     expect(all).toContain('Season records');
+    expect(all).toContain('Your season');
+    expect(all).toMatch(/League position over 34 matchdays – best \d+, final \d+/);
     expect(all).toMatch(/Best attack \| [^|]+ – \d+ goals/);
     expect(all).toMatch(/Biggest win \| [^|]+ \d+:\d+ [^|]+ \(matchday \d+\)/);
     expect(all).toMatch(/Longest winning run \| [^|]+, \d+ wins in a row \(matchdays \d+–\d+\)/);

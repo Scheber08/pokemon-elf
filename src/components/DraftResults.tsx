@@ -15,6 +15,7 @@ import { Confetti } from './Confetti';
 import { CupBracket, CupGroups, cupStatusText } from './CupBracket';
 import { FixtureList, FormDots } from './LeagueTicker';
 import { Pitch } from './Pitch';
+import { PlaceChart } from './PlaceChart';
 import { Sprite } from './Sprite';
 import '../styles/league.css';
 
@@ -392,6 +393,15 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                 </div>
               )}
             </dl>
+          </section>
+        )}
+
+        {!cup && you != null && days.length > 1 && (
+          <section className="card" aria-labelledby="draft-results-places">
+            <h2 id="draft-results-places" className="section-title">
+              {tx.placeChart}
+            </h2>
+            <PlaceChart places={days.map((d) => d.places[you])} teams={league.teams.length} />
           </section>
         )}
 

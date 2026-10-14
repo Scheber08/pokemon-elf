@@ -268,6 +268,10 @@ const draft = {
     duelAway: 'Auswärtsspiel',
     /** Auffüllteam aus der Rangliste: Name des echten Spielers */
     fillPlayerTitle: 'Team eines Spielers aus der Rangliste (34–0 Challenge)',
+    /** Platzverlauf des eigenen Teams */
+    placeChart: 'Dein Saisonverlauf',
+    placeChartAria: (days: number, best: number, last: number) => `Tabellenplatz über ${days} Spieltage – bester Platz ${best}, am Ende ${last}`,
+    placeChartCaption: (best: number, last: number) => `Bester Platz: ${best} · am Ende: ${last}`,
     /** Saisonrekorde (Liga) */
     records: 'Saisonrekorde',
     recordAttack: 'Bester Angriff',
