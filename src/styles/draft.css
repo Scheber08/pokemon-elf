@@ -1353,3 +1353,11 @@ button.draft-bench__slot {
   justify-content: space-between;
   gap: 8px;
 }
+
+.manager__offers-link {
+  margin: 6px 0 0;
+  font-weight: 600;
+}
+#manager-trade {
+  scroll-margin-top: 80px;
+}

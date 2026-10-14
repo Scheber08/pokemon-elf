@@ -214,6 +214,11 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             <strong>{tx.next(nextNo)}</strong> · {tx.kickoffIn(m.nextAt - now)} <span className="muted">{tx.kickoffAt(when)}</span>
           </p>
         )}
+        {!readOnly && incomingIds.length > 0 && (
+          <p className="manager__offers-link">
+            <a href="#manager-trade">🤝 {tx.offersOpen(incomingIds.length)}</a>
+          </p>
+        )}
       </section>
 
       {rival != null && myNext && (

@@ -521,6 +521,7 @@ const draft: Messages['draft'] = {
     offerOut: (team, give, get) => `Your offer to ${team}: ${give} for ${get}`,
     tradeDone: (out, team, inn) => `Traded: ${out} to ${team} for ${inn}`,
     offerCpuExpires: 'valid until kick-off',
+    offersOpen: (n) => (n === 1 ? '1 trade offer for you' : `${n} trade offers for you`),
     offerAccepted: (team, give, get) => `${team} accepted: ${get} joins, ${give} leaves.`,
     offerDeclined: (team, give, get) => `Your offer to ${team} (${give} for ${get}) is off the table – declined or no longer possible.`,
     effect: (d) =>
