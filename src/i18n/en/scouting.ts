@@ -65,11 +65,11 @@ const scouting: Messages['scouting'] = {
     },
     {
       q: 'What does the captain do?',
-      a: 'Their position fit counts double in the team score. A well-fitting captain lifts the team, a poorly fitting one drags it down – so pick one who shines in their position. The set-piece taker cannot be captain.',
+      a: 'Their position fit counts double in the team score. A well-fitting captain lifts the team, a poorly fitting one drags it down – so pick one who shines in their position (“Best choice” finds them for you). The set-piece taker cannot be captain. In the online draft, anyone without a captain gets the best-fitting player after the last pick – you can still switch until kickoff.',
     },
     {
       q: 'What are shinies in the draft?',
-      a: 'Every draft pick has a 2% chance to be shiny. A shiny plays better itself and lifts the whole team’s score – the weaker the Pokémon, the more: a shiny Magikarp adds up to +40, a shiny Mewtwo only about +4. So even a weak Pokémon can pay off.',
+      a: 'Every draft pick has a 2% chance to be shiny. A shiny plays better itself and lifts the whole team’s score – the weaker the Pokémon, the more: a shiny Magikarp adds up to +40, a shiny Mewtwo only about +4. So even a weak Pokémon can pay off. In the manager season, a new signing from the transfer market can be shiny too. Prefer playing without? Turn shinies off before the draft.',
     },
     {
       q: 'What does the set-piece taker do?',

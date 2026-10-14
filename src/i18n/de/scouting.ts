@@ -82,11 +82,11 @@ const scouting = {
     },
     {
       q: 'Was bringt der Kapitän?',
-      a: 'Seine Positionspassung zählt im Team-Score doppelt. Ein gut passender Kapitän hebt das Team, ein schlecht passender zieht es runter – nimm also einen, der auf seiner Position glänzt. Der Standardschütze kann nicht Kapitän sein.',
+      a: 'Seine Positionspassung zählt im Team-Score doppelt. Ein gut passender Kapitän hebt das Team, ein schlecht passender zieht es runter – nimm also einen, der auf seiner Position glänzt („Beste Wahl“ sucht ihn dir aus). Der Standardschütze kann nicht Kapitän sein. Im Online-Draft bekommt, wer keinen wählt, nach dem letzten Pick automatisch den bestpassenden – bis zum Anpfiff kannst du noch wechseln.',
     },
     {
       q: 'Was sind Shinys im Draft?',
-      a: 'Jeder Pick im Draft schillert mit 2 % Chance. Ein Shiny spielt selbst besser und hebt das ganze Team im Team-Score – je schwächer das Pokémon, desto mehr: Ein Shiny-Karpador bringt bis zu +40, ein Shiny-Mewtu nur rund +4. So lohnt sich auch ein schwaches Pokémon.',
+      a: 'Jeder Pick im Draft schillert mit 2 % Chance. Ein Shiny spielt selbst besser und hebt das ganze Team im Team-Score – je schwächer das Pokémon, desto mehr: Ein Shiny-Karpador bringt bis zu +40, ein Shiny-Mewtu nur rund +4. So lohnt sich auch ein schwaches Pokémon. In der Manager-Saison kann auch ein Neuzugang vom Transfermarkt schillern. Wer lieber ohne spielt, schaltet Shinys vor dem Draft aus.',
     },
     {
       q: 'Was macht der Standardschütze?',
