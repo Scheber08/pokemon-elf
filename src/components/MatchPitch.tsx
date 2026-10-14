@@ -191,7 +191,7 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
           {(() => {
             const pl = replay.players[focus];
             const team = nameOf(pl.side === 0 ? match.home : match.away);
-            const who = pl.pokemonId != null ? pokemonName(pl.pokemonId) : t.game.posName[pl.pos];
+            const who = `${pl.pokemonId != null ? pokemonName(pl.pokemonId) : t.game.posName[pl.pos]} (${pl.number})`;
             // Tore und Vorlagen dieses Spielers in diesem Spiel
             const goals = pl.side === 0 ? match.homeScorers : match.awayScorers;
             const g = pl.pokemonId != null ? goals.filter((x) => x.pokemonId === pl.pokemonId).length : 0;
