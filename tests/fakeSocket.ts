@@ -209,9 +209,9 @@ export class FakeNamespace implements DraftNamespace {
       create: (input) => room.core.create(input),
       snapshot: () => room.core.snapshot(),
       // Wie RPC: Werte kommen als Kopie an
-      rematchTemplate: async (deviceId) => structuredClone(await room.core.rematchTemplate(deviceId)),
+      rematchTemplate: async (deviceId, dead) => structuredClone(await room.core.rematchTemplate(deviceId, dead)),
       createFrom: (state) => room.core.createFrom(structuredClone(state)),
-      setRematch: (code) => room.core.setRematch(code),
+      setRematch: (code, dead) => room.core.setRematch(code, dead),
       fetch: async (request) => {
         this.forwarded.push(request);
         return new Response('weitergereicht', { status: 200 });

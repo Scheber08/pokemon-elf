@@ -197,7 +197,15 @@ export async function rematchEndpoint(request: Request, env: Env, rawCode: strin
   await authenticate(request, env, auth, now);
   await requireLobby(env, code);
   const old = roomOf(ns, code);
-  const tpl = await old.rematchTemplate(auth.deviceId);
+  let tpl = await old.rematchTemplate(auth.deviceId);
+  let dead: string | null = null;
+  if (tpl.ok && 'existing' in tpl) {
+    // Lebt die Revanche noch? Haben alle sie verlassen, ist ihre Lobby-Zeile weg bzw. geschlossen.
+    const lobby = await getLobby(env.DB, tpl.existing);
+    if (lobby && lobby.phase !== 'closed') return json({ code: tpl.existing } satisfies CreateDraftResponse);
+    dead = tpl.existing;
+    tpl = await old.rematchTemplate(auth.deviceId, dead);
+  }
   if (!tpl.ok) {
     if (tpl.code === 'not_found') throw notFound();
     throw new ApiError(409, 'bad_request', tpl.message);
@@ -218,7 +226,7 @@ export async function rematchEndpoint(request: Request, env: Env, rawCode: strin
     await deleteLobby(db, next).catch(() => undefined);
     throw new Error(`Revanche ${next}: ${result.message}`);
   }
-  const winner = await old.setRematch(next);
+  const winner = await old.setRematch(next, dead);
   // Eine gleichzeitige Anfrage war schneller: deren Liga gilt, unsere Zeile verschwindet wieder
   if (winner !== next) await deleteLobby(db, next).catch(() => undefined);
   return json({ code: winner ?? next } satisfies CreateDraftResponse);

@@ -775,11 +775,12 @@ export class DraftRoomCore {
   }
 
   /** Revanche: Vorlage aus dieser fertigen Liga (RPC von POST /api/drafts/:code/rematch) – oder die schon angelegte. */
-  rematchTemplate(deviceId: string): Promise<RematchTemplateResult> {
+  rematchTemplate(deviceId: string, dead: string | null = null): Promise<RematchTemplateResult> {
     return this.exclusive(async () => {
       const rec = await this.load();
       if (!rec) return { ok: false, code: 'not_found', message: 'Diese Liga gibt es nicht (mehr)' };
-      if (rec.state.rematch) return { ok: true, existing: rec.state.rematch };
+      // Die bisherige Revanche gibt es nicht mehr (alle haben sie verlassen) → neue Vorlage
+      if (rec.state.rematch && rec.state.rematch !== dead) return { ok: true, existing: rec.state.rematch };
       try {
         return { ok: true, template: rematchTemplate(rec.state, deviceId, this.ports.now()) };
       } catch (err) {
@@ -799,11 +800,11 @@ export class DraftRoomCore {
   }
 
   /** Revanche merken und verteilen – der erste Code gilt (gleichzeitige Anfragen). null ohne Liga. */
-  setRematch(code: string): Promise<string | null> {
+  setRematch(code: string, dead: string | null = null): Promise<string | null> {
     return this.exclusive(async () => {
       const rec = await this.load();
       if (!rec) return null;
-      if (rec.state.rematch) return rec.state.rematch;
+      if (rec.state.rematch && rec.state.rematch !== dead) return rec.state.rematch;
       await this.commit(rec.state, { ...rec.state, rematch: code }, this.ports.now());
       return code;
     });

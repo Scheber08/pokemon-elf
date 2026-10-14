@@ -111,6 +111,20 @@ describe('Revanche', () => {
     expect(db.query('SELECT code FROM draft_lobbies')).toHaveLength(2);
   });
 
+  it('haben alle die Revanche verlassen, gibt es beim nächsten Klick eine neue', async () => {
+    const { code, hostDev } = await finishedLeague();
+    const first = await call<CreateDraftResponse>('POST', `/api/drafts/${code}/rematch`, hostDev);
+    // Alle haben die Revanche verlassen: Die leere Lobby wird geschlossen (Zeile „closed“)
+    db.update(`UPDATE draft_lobbies SET phase = 'closed' WHERE code = ?`, first.body.code);
+    const second = await call<CreateDraftResponse>('POST', `/api/drafts/${code}/rematch`, hostDev);
+    expect(second.status).toBe(200);
+    expect(second.body.code).not.toBe(first.body.code);
+    expect(drafts.room(code).stored!.state.rematch).toBe(second.body.code);
+    // Und die lebt: ein weiterer Klick bleibt dabei
+    const third = await call<CreateDraftResponse>('POST', `/api/drafts/${code}/rematch`, hostDev);
+    expect(third.body.code).toBe(second.body.code);
+  });
+
   it('nur Mitglieder, nur fertige Ligen', async () => {
     const { code } = await finishedLeague();
     const stranger = await call<ApiErrorBody>('POST', `/api/drafts/${code}/rematch`, newDevice());

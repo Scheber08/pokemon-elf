@@ -61,11 +61,12 @@ export interface DraftRoomStub {
   /** Schnappschuss für Zuschauer (you = null) – null, wenn es die Liga nicht gibt */
   snapshot(): Promise<DraftSnapshot | null>;
   /** Revanche: Vorlage aus dieser (fertigen) Liga für das Gerät eines Mitglieds */
-  rematchTemplate(deviceId: string): Promise<RematchTemplateResult>;
+  /** dead: Code einer früheren Revanche, die es nicht mehr gibt – sie wird ersetzt */
+  rematchTemplate(deviceId: string, dead?: string | null): Promise<RematchTemplateResult>;
   /** Revanche: neue Liga aus einer Vorlage (mit Code und Seed) anlegen */
   createFrom(state: DraftState): Promise<CreateRoomResult>;
   /** Revanche merken (der erste Code gilt) – liefert den gültigen Code bzw. null ohne Liga */
-  setRematch(code: string): Promise<string | null>;
+  setRematch(code: string, dead?: string | null): Promise<string | null>;
 }
 
 /** ID eines Durable Objects (undurchsichtig). */
