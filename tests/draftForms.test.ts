@@ -141,3 +141,40 @@ describe('Formen und Megas im Online-Draft', () => {
     }
   });
 });
+
+describe('Limits aussetzen – nur so weit wie nötig', () => {
+  it('bricht ein Rest-Pokémon nur ein Limit, bleibt das legendäre Mega gesperrt', async () => {
+    const { mon } = await import('./helpers');
+    const normals = Array.from({ length: 18 }, () => mon({ gen: 1 }));
+    const L1 = mon({ gen: 1, leg: 1 });
+    const M1 = mon({ gen: 1, form: 'mega', base: 6 });
+    const L2 = mon({ gen: 1, leg: 1 });
+    const LM = mon({ gen: 1, leg: 1, form: 'mega', base: 150 });
+    const list = [...normals, L1, M1, L2, LM];
+    let s = createDraft({
+      code: 'ABC234',
+      seed: 1,
+      settings: { order: 'host', gens: [1], legendary: true, megas: true, roll: 'off', maxTeams: 2, maxMegas: null },
+      host: { teamId: 'h', deviceId: 'dev-h', name: 'Host', formation: '4-3-3' },
+      now: 0,
+      list,
+    });
+    s = addCpuTeam(s, 'dev-h', 'c');
+    s = startDraft(s, 'dev-h', 0, list);
+    // Stand kurz vor Schluss: h hat ein Legendäres und ein Mega, beide Teams je 10 Pokémon
+    const ids = normals.map((p) => p.id);
+    s = {
+      ...s,
+      settings: { ...s.settings, maxLegends: 1, maxMegas: 1 },
+      teams: s.teams.map((t) =>
+        t.id === 'h' ? { ...t, slots: [L1.id, M1.id, ...ids.slice(0, 8), null] } : { ...t, slots: [...ids.slice(8, 18), null] },
+      ),
+      pickIndex: 20,
+    };
+    expect(currentTeam(s)!.id).toBe('h');
+    // Rest: L2 (nur Legendären-Limit) und LM (beide Limits) → nur L2
+    expect(allowedPicks(s, 'h', list).map((p) => p.id)).toEqual([L2.id]);
+    expect(pickAllowed(s, 'h', LM, list)).toBe('legend_limit');
+    expect(pickAllowed(s, 'h', L2, list)).toBeNull();
+  });
+});

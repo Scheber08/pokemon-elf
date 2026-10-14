@@ -929,6 +929,8 @@ interface PickRules {
   limitHit: Set<LimitKind>;
   /** … aber im Rest des Pools gibt es nur noch gesperrte: Limits ausgesetzt (der Draft bleibt nie hängen) */
   waived: boolean;
+  /** Beim Aussetzen: so viele erreichte Limits darf ein Pokémon brechen (die wenigsten im Rest) */
+  waiveUpTo: number;
   /** Erlaubte Pokémon (nach Nummer sortiert) */
   allowed: Pokemon[];
 }
@@ -945,7 +947,11 @@ function computeRules(state: DraftView, teamId: string, list: Pokemon[]): PickRu
   // Ein Wurf ohne Wählbares (sollte nie vorkommen, z. B. nach geänderten Daten) gilt nicht: freie Wahl
   const roll = raw && remaining.some((p) => matchesRoll(p, raw) && !blocked(p)) ? { gen: raw.gen, type: raw.type } : null;
   const waived = limitHit.size > 0 && !roll && remaining.every(blocked);
-  const allowed = remaining.filter((p) => (!roll || matchesRoll(p, roll)) && (waived || !blocked(p)));
+  // Ausgesetzt wird nur so weit wie nötig: Bricht ein Rest-Pokémon nur ein Limit (Mewtu), ist ein
+  // legendäres Mega (beide Limits) weiter gesperrt
+  const hits = (p: Pokemon) => limitKindsOf(p).filter((k) => limitHit.has(k)).length;
+  const waiveUpTo = waived ? Math.min(...remaining.map(hits)) : 0;
+  const allowed = remaining.filter((p) => (!roll || matchesRoll(p, roll)) && (waived ? hits(p) <= waiveUpTo : !blocked(p)));
   return {
     list,
     phase: state.phase,
@@ -958,6 +964,7 @@ function computeRules(state: DraftView, teamId: string, list: Pokemon[]): PickRu
     roll,
     limitHit,
     waived,
+    waiveUpTo,
     allowed,
   };
 }
@@ -992,7 +999,8 @@ function blockOf(rules: PickRules, p: Pokemon): PickBlock | null {
   if (!rules.poolIds.has(p.id)) return 'pool';
   if (rules.taken.has(p.id)) return 'taken';
   if (rules.roll && !matchesRoll(p, rules.roll)) return 'roll';
-  const kind = rules.waived ? null : blockedBy(rules.limitHit, p);
+  if (rules.waived && limitKindsOf(p).filter((k) => rules.limitHit.has(k)).length <= rules.waiveUpTo) return null;
+  const kind = blockedBy(rules.limitHit, p);
   return kind ? LIMIT_BLOCK[kind] : null;
 }
 
