@@ -52,7 +52,7 @@ import {
 import { positionFit, type Scale } from './fit';
 import { createRng, hashSeed, shuffle, streamRng, type Rng } from './rng';
 import { CUP_SIZE, simulateCup } from './cup';
-import { opponentRatings, simulateLeague, type LeagueResult, type LeagueTeam } from './season';
+import { DRAFT_MODEL, opponentRatings, simulateLeague, type LeagueResult, type LeagueTeam } from './season';
 import { evaluateTeam } from './teamScore';
 
 /** Slot-Index des Standardschützen */
@@ -1446,7 +1446,9 @@ export function withLeague(state: DraftState, list: Pokemon[], scale: Scale, can
   const rng = createRng(state.season.seed);
   const settings = upgradeSettings(state.settings);
   const full: LeagueResult =
-    settings.format === 'cup' ? simulateCup(teams, rng, { groups: settings.cupGroups }) : simulateLeague(teams, rng);
+    settings.format === 'cup'
+      ? simulateCup(teams, rng, { groups: settings.cupGroups, model: DRAFT_MODEL })
+      : simulateLeague(teams, rng, DRAFT_MODEL);
   return {
     ...state,
     league: {

@@ -27,7 +27,7 @@ import {
   titleTieNote,
 } from '../src/lib/leagueTimeline';
 import { createRng } from '../src/lib/rng';
-import { buildTable, simulateLeague, type LeagueResult, type LeagueTeam, type Match, type TableRow } from '../src/lib/season';
+import { buildTable, DRAFT_MODEL, simulateLeague, type LeagueResult, type LeagueTeam, type Match, type TableRow } from '../src/lib/season';
 import { ALL } from './helpers';
 
 const DEFS = FORMATIONS['4-3-3'].slots;
@@ -103,7 +103,7 @@ describe('gespeichertes Saisonergebnis (SEASON-1)', () => {
     const league = resolveLeague(snap.league, snap.teams.length, recompute)!;
     expect(recompute).not.toHaveBeenCalled();
     // Neue Ligen: gedraftete Teams plus Auffüllteams bis DRAFT_LIMITS.leagueSize
-    const full = simulateLeague(seasonTeams(state, byId, scale), createRng(state.season!.seed));
+    const full = simulateLeague(seasonTeams(state, byId, scale), createRng(state.season!.seed), DRAFT_MODEL);
     expect(league.teams).toHaveLength(DRAFT_LIMITS.leagueSize);
     expect(league.teams.slice(0, state.teams.length).map((t) => t.name)).toEqual(state.teams.map((t) => t.name));
     expect(league.matches).toEqual(full.matches);

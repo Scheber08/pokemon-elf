@@ -1,0 +1,15 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Spielmodelle > ohne Modell = CLASSIC_MODEL: gleiche Saison wie bisher (Challenges unverändert) 1`] = `
+[
+  {
+    "d": 4,
+    "l": 5,
+    "w": 25,
+  },
+  79,
+  5,
+  117,
+  36,
+]
+`;

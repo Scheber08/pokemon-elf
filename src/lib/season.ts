@@ -106,11 +106,59 @@ export function expectedGoals(own: number, opp: number, home: boolean): number {
   return Math.min(SEASON.maxLambda, Math.max(SEASON.minLambda, lambda));
 }
 
-function lambdaWithJitter(rng: Rng, own: number, opp: number, home: boolean, bonus = 0): number {
-  const jitter = Math.exp(gaussian(rng) * SEASON.jitter);
-  const lambda =
-    SEASON.baseGoals * Math.exp((own - opp) / SEASON.divisor) * jitter + (home ? SEASON.homeAdvantage : 0) + bonus;
-  return Math.min(SEASON.maxLambda, Math.max(SEASON.minLambda, lambda));
+/**
+ * Spielmodell: wie aus Ratings erwartete Tore werden. CLASSIC_MODEL ist das der Challenges (der
+ * Server rechnet gewertete Runs damit nach – nie ändern); DRAFT_MODEL nutzt der Online-Draft.
+ */
+export interface MatchModel {
+  /** λ = base · exp(Unterschied / divisor) */
+  divisor: number;
+  /** Weiche Deckelung des Rating-Unterschieds: cap · tanh(Unterschied / cap) – null = keine */
+  softCap: number | null;
+  maxLambda: number;
+  /** Zufallsstreuung je Spiel: λ · exp(N(0, jitter)) */
+  jitter: number;
+  /**
+   * Tagesform je Team (in Rating-Punkten), von Spieltag zu Spieltag: f = keep · f + Rauschen –
+   * auf Dauer mit Standardabweichung sd, dazwischen Serien. null = keine.
+   */
+  form: { sd: number; keep: number } | null;
+}
+
+export const CLASSIC_MODEL: MatchModel = {
+  divisor: SEASON.divisor,
+  softCap: null,
+  maxLambda: SEASON.maxLambda,
+  jitter: SEASON.jitter,
+  form: null,
+};
+
+/**
+ * Online-Draft: große Unterschiede weich gedeckelt (eher 3:0 als 8:0), etwas mehr Streuung und
+ * eine Tagesform, die über mehrere Spieltage trägt (Serien, Formkrisen).
+ */
+export const DRAFT_MODEL: MatchModel = {
+  divisor: 330,
+  softCap: 320,
+  maxLambda: 4.2,
+  jitter: 0.15,
+  form: { sd: 35, keep: 0.8 },
+};
+
+function lambdaWithJitter(rng: Rng, own: number, opp: number, home: boolean, bonus = 0, model: MatchModel = CLASSIC_MODEL): number {
+  const jitter = Math.exp(gaussian(rng) * model.jitter);
+  const raw = own - opp;
+  const diff = model.softCap ? model.softCap * Math.tanh(raw / model.softCap) : raw;
+  const lambda = SEASON.baseGoals * Math.exp(diff / model.divisor) * jitter + (home ? SEASON.homeAdvantage : 0) + bonus;
+  return Math.min(model.maxLambda, Math.max(SEASON.minLambda, lambda));
+}
+
+/** Tagesform aller Teams für den nächsten Spieltag (neues Array) – ohne Modell-Form unverändert. */
+export function nextForm(rng: Rng, form: readonly number[], model: MatchModel): number[] {
+  if (!model.form) return [...form];
+  const { sd, keep } = model.form;
+  const noise = sd * Math.sqrt(1 - keep * keep);
+  return form.map((f) => keep * f + gaussian(rng) * noise);
 }
 
 /** Gleichmäßig verteilte Gegner-Ratings von min bis max. */
@@ -175,11 +223,22 @@ function setPieceBonus(team: LeagueTeam): number {
  * Ein Spiel: Tore Poisson-verteilt (mit Streuung), dann die Torschützen. neutral = ohne
  * Heimvorteil (z. B. ein Endspiel).
  */
-export function playMatch(rng: Rng, teams: readonly LeagueTeam[], round: number, home: number, away: number, neutral = false): Match {
+export function playMatch(
+  rng: Rng,
+  teams: readonly LeagueTeam[],
+  round: number,
+  home: number,
+  away: number,
+  neutral = false,
+  model: MatchModel = CLASSIC_MODEL,
+  form?: readonly number[],
+): Match {
   const th = teams[home];
   const ta = teams[away];
-  const hg = poisson(rng, lambdaWithJitter(rng, th.rating, ta.rating, !neutral, setPieceBonus(th)));
-  const ag = poisson(rng, lambdaWithJitter(rng, ta.rating, th.rating, false, setPieceBonus(ta)));
+  const rh = th.rating + (form?.[home] ?? 0);
+  const ra = ta.rating + (form?.[away] ?? 0);
+  const hg = poisson(rng, lambdaWithJitter(rng, rh, ra, !neutral, setPieceBonus(th), model));
+  const ag = poisson(rng, lambdaWithJitter(rng, ra, rh, false, setPieceBonus(ta), model));
   return {
     round,
     home,
@@ -192,11 +251,13 @@ export function playMatch(rng: Rng, teams: readonly LeagueTeam[], round: number,
 }
 
 /** Simuliert eine komplette Liga (jeder gegen jeden, Hin- und Rückrunde). */
-export function simulateLeague(teams: LeagueTeam[], rng: Rng): LeagueResult {
+export function simulateLeague(teams: LeagueTeam[], rng: Rng, model: MatchModel = CLASSIC_MODEL): LeagueResult {
   const schedule = roundRobin(teams.length);
   const matches: Match[] = [];
+  let form: number[] = teams.map(() => 0);
   schedule.forEach((round, r) => {
-    for (const [home, away] of round) matches.push(playMatch(rng, teams, r + 1, home, away));
+    form = nextForm(rng, form, model);
+    for (const [home, away] of round) matches.push(playMatch(rng, teams, r + 1, home, away, false, model, form));
   });
   return { teams, matches, table: buildTable(teams, matches) };
 }

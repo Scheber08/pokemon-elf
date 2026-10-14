@@ -8,7 +8,18 @@
  * nach Punkten, Tordifferenz, Toren wie buildTable). Deterministisch aus dem Rng.
  */
 import { shuffle, type Rng } from './rng';
-import { buildTable, playMatch, roundRobin, type LeagueResult, type LeagueTeam, type Match, type TableRow } from './season';
+import {
+  buildTable,
+  CLASSIC_MODEL,
+  nextForm,
+  playMatch,
+  roundRobin,
+  type LeagueResult,
+  type LeagueTeam,
+  type Match,
+  type MatchModel,
+  type TableRow,
+} from './season';
 
 export type CupStage = 'r16' | 'qf' | 'sf' | 'final';
 
@@ -80,8 +91,17 @@ export function penaltyShootout(rng: Rng, home: LeagueTeam, away: LeagueTeam): {
 }
 
 /** Ein KO-Spiel samt Elfmeterschießen. */
-function playTie(rng: Rng, teams: readonly LeagueTeam[], round: number, home: number, away: number, neutral: boolean) {
-  const match = playMatch(rng, teams, round, home, away, neutral);
+function playTie(
+  rng: Rng,
+  teams: readonly LeagueTeam[],
+  round: number,
+  home: number,
+  away: number,
+  neutral: boolean,
+  model: MatchModel,
+  form: readonly number[],
+) {
+  const match = playMatch(rng, teams, round, home, away, neutral, model, form);
   let pens: CupTie['pens'] = null;
   let winner = match.hg > match.ag ? home : away;
   if (match.hg === match.ag) {
@@ -95,18 +115,27 @@ function playTie(rng: Rng, teams: readonly LeagueTeam[], round: number, home: nu
  * KO-Runden ab den gegebenen Teams (Baum-Reihenfolge, Länge 2^k) bis zum Finale.
  * Liefert Spiele, Runden und je Team die Runde, in der es ausschied (Sieger: 'winner').
  */
-function playKnockout(rng: Rng, teams: readonly LeagueTeam[], bracket: number[], firstRound: number) {
+function playKnockout(
+  rng: Rng,
+  teams: readonly LeagueTeam[],
+  bracket: number[],
+  firstRound: number,
+  model: MatchModel,
+  startForm: readonly number[],
+) {
   const matches: Match[] = [];
   const rounds: CupRound[] = [];
   const out = new Map<number, CupStage | 'winner'>();
   let alive = bracket;
   let round = firstRound;
+  let form = [...startForm];
   while (alive.length > 1) {
     const stage = STAGE_BY_TEAMS[alive.length] ?? 'r16';
     const ties: CupTie[] = [];
     const next: number[] = [];
+    form = nextForm(rng, form, model);
     for (let i = 0; i + 1 < alive.length; i += 2) {
-      const r = playTie(rng, teams, round, alive[i], alive[i + 1], stage === 'final');
+      const r = playTie(rng, teams, round, alive[i], alive[i + 1], stage === 'final', model, form);
       matches.push(r.match);
       ties.push(r.tie);
       next.push(r.tie.winner);
@@ -146,12 +175,14 @@ export function cupStandings(teams: readonly LeagueTeam[], matches: readonly Mat
 }
 
 /** Simuliert das KO-Turnier (genau CUP_SIZE Teams), optional mit Gruppenphase. */
-export function simulateCup(teams: LeagueTeam[], rng: Rng, opts: { groups?: boolean } = {}): CupResult {
+export function simulateCup(teams: LeagueTeam[], rng: Rng, opts: { groups?: boolean; model?: MatchModel } = {}): CupResult {
   if (teams.length !== CUP_SIZE) throw new Error(`KO-Turnier braucht ${CUP_SIZE} Teams`);
+  const model = opts.model ?? CLASSIC_MODEL;
   const order = seedOrder(teams);
+  let form: number[] = teams.map(() => 0);
   if (!opts.groups) {
     const bracket = BRACKET_16.map((seed) => order[seed - 1]);
-    const ko = playKnockout(rng, teams, bracket, 1);
+    const ko = playKnockout(rng, teams, bracket, 1, model, form);
     const table = cupStandings(teams, ko.matches, (t) => LEVEL[ko.out.get(t) ?? 'r16']);
     return { teams, matches: ko.matches, table, cup: { groups: null, rounds: ko.rounds } };
   }
@@ -162,14 +193,15 @@ export function simulateCup(teams: LeagueTeam[], rng: Rng, opts: { groups?: bool
   const schedule = roundRobin(GROUP_SIZE);
   const matches: Match[] = [];
   schedule.forEach((pairs, r) => {
+    form = nextForm(rng, form, model);
     for (const members of groups) {
-      for (const [h, a] of pairs) matches.push(playMatch(rng, teams, r + 1, members[h], members[a]));
+      for (const [h, a] of pairs) matches.push(playMatch(rng, teams, r + 1, members[h], members[a], false, model, form));
     }
   });
   const tables = groups.map((members) => groupTable(teams, matches, members));
   const [a, b, c, d] = tables.map((tb) => tb.map((row) => row.team));
   const bracket = [a[0], b[1], c[0], d[1], b[0], a[1], d[0], c[1]];
-  const ko = playKnockout(rng, teams, bracket, schedule.length + 1);
+  const ko = playKnockout(rng, teams, bracket, schedule.length + 1, model, form);
   const groupPlace = new Map<number, number>();
   tables.forEach((tb) => tb.forEach((row, i) => groupPlace.set(row.team, i)));
   const all = [...matches, ...ko.matches];
