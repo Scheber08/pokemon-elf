@@ -29,7 +29,7 @@ import {
 import { dayKey } from '../src/lib/daily';
 import type { ChallengeKey } from '../src/types';
 import { DEFAULT_PLAYER } from '../server/auth';
-import { ALL_TIME_SCOPE, cleanupDefaultNames, DEFAULT_NAMES_CLEANUP_KEY, UPSERT_BEST_SQL } from '../server/db';
+import { ALL_TIME_SCOPE, cleanupDefaultNames, DEFAULT_NAMES_CLEANUP_KEY, UPSERT_BEST_SQL, WEEK_BACKFILL_KEY } from '../server/db';
 import type { Db, DbResult, DbStatement } from '../server/env';
 import { handleApi, type Env } from '../server/handler';
 import { parsePlayerName } from '../server/validate';
@@ -468,7 +468,7 @@ describe('Rangliste ohne Standardnamen', () => {
     expect(db.query('SELECT DISTINCT device_id FROM best_entries ORDER BY device_id')).toEqual(
       [ids[1], ids[3], ids[5]].sort().map((device_id) => ({ device_id })),
     );
-    expect(count('SELECT * FROM best_entries')).toBe(6);
+    expect(count("SELECT * FROM best_entries WHERE scope NOT LIKE 'W%'")).toBe(6);
   });
 
   it('Platz nach einem Abschluss zählt Standardnamen nicht mit', async () => {
@@ -604,7 +604,7 @@ describe('einmalige Bereinigung der Standardnamen', () => {
     // Nur noch Mistys Einträge und Bestwerte.
     expect(db.query<{ id: string }>('SELECT id FROM entries ORDER BY id').map((r) => r.id)).toEqual([...s.mEntries].sort());
     expect(db.query<{ device_id: string }>('SELECT DISTINCT device_id FROM best_entries').map((r) => r.device_id)).toEqual([s.misty]);
-    expect(count('SELECT * FROM best_entries')).toBe(4);
+    expect(count("SELECT * FROM best_entries WHERE scope NOT LIKE 'W%'")).toBe(4);
     // Geräte, Draft-Lobby und andere meta-Werte bleiben unverändert.
     expect(db.query('SELECT * FROM devices ORDER BY id')).toEqual(before.devices);
     expect(db.query('SELECT * FROM draft_lobbies')).toEqual(before.drafts);
@@ -627,12 +627,14 @@ describe('einmalige Bereinigung der Standardnamen', () => {
     const second = isolate();
     expect((await call('GET', '/api/health', undefined, { DB: second })).status).toBe(200);
     expect(second.sql.filter((q) => q.startsWith('DELETE'))).toEqual([]);
-    expect(second.sql.filter((q) => q.includes('FROM meta WHERE key'))).toHaveLength(1);
+    // Je ein Blick für die Bereinigung und das Nachtragen der Wochenwertung
+    expect(second.sql.filter((q) => q.includes('FROM meta WHERE key'))).toHaveLength(2);
     expect(count('SELECT * FROM entries WHERE id = ?', late)).toBe(1);
     // Pro Isolate nur ein Blick in meta, nicht bei jeder Anfrage.
     await call('GET', '/api/health', undefined, { DB: second });
     await call('GET', '/api/leaderboard?challenge=c340', undefined, { DB: second });
-    expect(second.sql.filter((q) => q.includes('FROM meta WHERE key'))).toHaveLength(1);
+    // Je ein Blick für die Bereinigung und das Nachtragen der Wochenwertung
+    expect(second.sql.filter((q) => q.includes('FROM meta WHERE key'))).toHaveLength(2);
     expect(await cleanupDefaultNames(db, Date.now())).toBeNull();
     expect(count('SELECT * FROM meta WHERE key = ?', DEFAULT_NAMES_CLEANUP_KEY)).toBe(1);
   });
@@ -659,7 +661,7 @@ describe('einmalige Bereinigung der Standardnamen', () => {
     vi.spyOn(console, 'log').mockImplementation(() => undefined);
     const snapshot = () => ({
       entries: count('SELECT * FROM entries'),
-      best: count('SELECT * FROM best_entries'),
+      best: count("SELECT * FROM best_entries WHERE scope NOT LIKE 'W%'"),
       tokens: count('SELECT * FROM run_tokens'),
     });
     const before = snapshot();
@@ -697,7 +699,7 @@ describe('einmalige Bereinigung der Standardnamen', () => {
 
     expect(await cleanupDefaultNames(db, Date.now())).toEqual({ entries: 4, bestEntries: 8, tokens: 1 });
     expect(db.query<{ id: string }>('SELECT id FROM entries ORDER BY id').map((r) => r.id)).toEqual([...kept].sort());
-    expect(count('SELECT * FROM best_entries')).toBe(4);
+    expect(count("SELECT * FROM best_entries WHERE scope NOT LIKE 'W%'")).toBe(4);
     expect(count('SELECT * FROM run_tokens WHERE token = ?', doneToken)).toBe(0);
     expect(db.query('SELECT * FROM devices ORDER BY id')).toEqual(devices);
   });
@@ -719,7 +721,7 @@ describe('einmalige Bereinigung der Standardnamen', () => {
     const empty = new D1Shim(false);
     vi.spyOn(console, 'log').mockImplementation(() => undefined);
     expect((await call('GET', '/api/health', undefined, { DB: empty })).status).toBe(200);
-    expect(empty.query('SELECT key FROM meta')).toEqual([{ key: DEFAULT_NAMES_CLEANUP_KEY }]);
+    expect(empty.query('SELECT key FROM meta ORDER BY key')).toEqual([{ key: WEEK_BACKFILL_KEY }, { key: DEFAULT_NAMES_CLEANUP_KEY }]);
     expect(console.log).not.toHaveBeenCalled();
     expect((await call('GET', '/api/leaderboard?challenge=daily', undefined, { DB: empty })).status).toBe(200);
   });

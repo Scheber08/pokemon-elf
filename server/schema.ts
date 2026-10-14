@@ -5,7 +5,7 @@
  * enthält dasselbe Schema für `wrangler d1 migrations`; ein Test hält beide gleich.
  * Danach laufen einmalige Daten-Bereinigungen (je einmal pro Datenbank, über meta abgesichert).
  */
-import { cleanupDefaultNames, DEFAULT_NAMES_CLEANUP_KEY } from './db';
+import { backfillWeekBests, cleanupDefaultNames, DEFAULT_NAMES_CLEANUP_KEY, WEEK_BACKFILL_KEY } from './db';
 import type { Db } from './env';
 
 export const SCHEMA_STATEMENTS: readonly string[] = [
@@ -58,15 +58,21 @@ function createSchema(db: Db): Promise<void> {
 function runCleanups(db: Db): Promise<void> {
   let p = cleaned.get(db);
   if (!p) {
-    p = cleanupDefaultNames(db, Date.now()).then(
-      (res) => {
+    p = cleanupDefaultNames(db, Date.now())
+      .then((res) => {
         if (res && (res.entries || res.bestEntries || res.tokens)) {
           console.log(
             `Bereinigung ${DEFAULT_NAMES_CLEANUP_KEY}: ${res.entries} Einträge, ${res.bestEntries} Bestwerte und ` +
               `${res.tokens} Run-Tokens von Geräten ohne eigenen Namen gelöscht`,
           );
         }
-      },
+        // Erst nach der Bereinigung: keine Wochen-Bestwerte für gerade gelöschte Geräte
+        return backfillWeekBests(db, Date.now());
+      })
+      .then(
+        (n) => {
+          if (n) console.log(`${WEEK_BACKFILL_KEY}: Wochenwertung aus ${n} Tages-Bestwerten nachgetragen`);
+        },
       (err: unknown) => {
         cleaned.delete(db);
         console.error(`Bereinigung ${DEFAULT_NAMES_CLEANUP_KEY} gescheitert – neuer Versuch beim nächsten Aufruf`, err);

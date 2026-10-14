@@ -582,3 +582,38 @@ export async function cleanupDefaultNames(db: Db, now: number): Promise<DefaultN
   ]);
   return { entries: entries.meta.changes, bestEntries: bestEntries.meta.changes, tokens: tokens.meta.changes };
 }
+
+// ---------------------------------------------------------------- Wochenwertung nachtragen
+
+export const WEEK_BACKFILL_KEY = 'backfill:week-bests-v1';
+
+/** Montag der Woche eines Tages „YYYY-MM-DD" (ISO-Woche). */
+export function mondayOf(day: string): string {
+  const d = new Date(`${day}T12:00:00Z`);
+  return new Date(d.getTime() - ((d.getUTCDay() + 6) % 7) * 86_400_000).toISOString().slice(0, 10);
+}
+
+/**
+ * Einmalig nach Einführung der Wochenwertung: Für die laufende Woche gibt es nur Tages-Bestwerte.
+ * Daraus (Montag bis heute) den Wochen-Bestwert je Gerät und Wertung eintragen – über dasselbe
+ * „nur wenn besser" wie beim Abschluss. Tages-Bestwerte gibt es nur für Geräte mit eigenem Namen,
+ * die Wochenwertung bekommt so genau dieselben Geräte. null, wenn schon erledigt.
+ */
+export async function backfillWeekBests(db: Db, now: number): Promise<number | null> {
+  if (await db.prepare('SELECT 1 AS x FROM meta WHERE key = ?').bind(WEEK_BACKFILL_KEY).first()) return null;
+  const today = dayKey(new Date(now));
+  const week = weekKey(today);
+  const rows = await db
+    .prepare(
+      `SELECT challenge, scope, device_id, entry_id, points, score, created_at FROM best_entries
+       WHERE scope >= ? AND scope <= ? AND scope LIKE '____-__-__'`,
+    )
+    .bind(mondayOf(today), today)
+    .all<{ challenge: string; scope: string; device_id: string; entry_id: string; points: number; score: number; created_at: number }>();
+  const statements: DbStatement[] = rows.results.map((r) =>
+    db.prepare(UPSERT_BEST_SQL).bind(r.challenge, week, r.device_id, r.entry_id, r.points, r.score, r.created_at),
+  );
+  statements.push(db.prepare('INSERT OR IGNORE INTO meta (key, value) VALUES (?, ?)').bind(WEEK_BACKFILL_KEY, new Date(now).toISOString()));
+  await db.batch(statements);
+  return rows.results.length;
+}

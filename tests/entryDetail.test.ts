@@ -409,7 +409,7 @@ describe('GET /api/entries/:id – nur, was in einer Rangliste steht', () => {
     ).toEqual([]);
   });
 
-  it('Tageswechsel (Berlin): der heutige Bestwert bleibt nach Mitternacht nur während der Schonfrist abrufbar', async () => {
+  it('Tageswechsel (Berlin): der heutige Bestwert bleibt nach Mitternacht während der Schonfrist bzw. als Wochen-Bestwert abrufbar', async () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     // 15.1.2026, 23:58 in Berlin (MEZ = UTC+1); Mitternacht = 23:00 UTC
     const midnight = Date.UTC(2026, 0, 15, 23, 0, 0);
@@ -431,9 +431,14 @@ describe('GET /api/entries/:id – nur, was in einer Rangliste steht', () => {
     // Grenze: bis 1 ms vor Ende der Schonfrist 200, danach 404
     vi.setSystemTime(midnight + ENTRY_DAY_GRACE_MS - 1);
     expect((await entry(today)).status).toBe(200);
+    // Nach der Schonfrist bleibt er als Wochen-Bestwert abrufbar (Do 15.1. → KW 3 bis So 18.1.) …
     vi.setSystemTime(midnight + ENTRY_DAY_GRACE_MS);
-    expectNotFound(await entry(today), 'nach der Schonfrist');
-    vi.setSystemTime(midnight + 3 * HOUR);
+    expect((await entry(today)).status).toBe(200);
+    // … und nach dem Wochenwechsel (Mo 19.1., 00:00 Berlin) samt Schonfrist nicht mehr
+    const monday = Date.UTC(2026, 0, 18, 23, 0, 0);
+    vi.setSystemTime(monday + ENTRY_DAY_GRACE_MS);
+    expectNotFound(await entry(today), 'nach der Woche');
+    vi.setSystemTime(monday + 3 * HOUR);
     expectNotFound(await entry(today), 'Stunden später');
     // Der Allzeit-Bestwert bleibt abrufbar
     expect((await entry(allTime)).status).toBe(200);
