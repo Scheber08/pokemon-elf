@@ -13,6 +13,7 @@ const nav: Messages['nav'] = {
     trainer: 'Trainer',
   },
   mainNav: 'Main navigation',
+  newAchievements: 'New achievements',
   logoSub: 'Lineup Builder',
   homeAria: 'Pokémon Elf – home',
   themeToLight: 'Switch to light theme',

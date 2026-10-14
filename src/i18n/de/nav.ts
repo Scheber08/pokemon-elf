@@ -11,6 +11,7 @@ const nav = {
     trainer: 'Trainer',
   },
   mainNav: 'Hauptnavigation',
+  newAchievements: 'Neue Erfolge',
   logoSub: 'Lineup Builder',
   homeAria: 'Pokémon Elf – zur Startseite',
   themeToLight: 'Helles Design aktivieren',

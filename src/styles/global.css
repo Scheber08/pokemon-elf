@@ -2450,3 +2450,14 @@ button.sheet__row:hover {
 .friendly__report {
   margin-left: 6px;
 }
+
+/* Punkt am Reiter (z. B. neue Erfolge) */
+.tab__dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 5px;
+  border-radius: 50%;
+  background: #e3350d;
+  vertical-align: super;
+}

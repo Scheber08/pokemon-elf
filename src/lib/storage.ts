@@ -13,6 +13,8 @@ export const STORAGE_KEYS = {
   savedTeams: 'saved-teams',
   /** Trainer: schon gesehene Erfolge (für „Neu") */
   seenAchievements: 'achievements-seen',
+  /** Neue Erfolge seit dem letzten Besuch der Trainer-Seite (Punkt im Menü) */
+  newAchievements: 'achievements-new',
 } as const;
 
 export function load<T>(key: string, fallback: T): T {

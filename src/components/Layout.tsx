@@ -1,6 +1,7 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useScrollActiveIntoView } from '../lib/scrollActive';
+import { ACHIEVEMENT_BADGE_EVENT, hasAchievementBadge } from './AchievementWatcher';
 import { useT } from '../i18n';
 import { useSettings } from '../state/Settings';
 
@@ -22,6 +23,13 @@ export function Header() {
   // Handy: aktiven Reiter der Hauptnavigation ins Bild holen
   const navRef = useRef<HTMLElement>(null);
   useScrollActiveIntoView(navRef, [pathname]);
+  // Punkt am Reiter „Trainer", solange neue Erfolge nicht angesehen sind
+  const [badge, setBadge] = useState(hasAchievementBadge);
+  useEffect(() => {
+    const update = () => setBadge(hasAchievementBadge());
+    window.addEventListener(ACHIEVEMENT_BADGE_EVENT, update);
+    return () => window.removeEventListener(ACHIEVEMENT_BADGE_EVENT, update);
+  }, []);
   return (
     <header className="site-header">
       <div className="site-header__inner">
@@ -63,6 +71,11 @@ export function Header() {
               className={({ isActive }) => `tab ${isActive ? 'is-active' : ''}`}
             >
               {t.nav.tabs[tab.key]}
+              {tab.key === 'trainer' && badge && (
+                <span className="tab__dot" title={t.nav.newAchievements}>
+                  <span className="sr-only">{t.nav.newAchievements}</span>
+                </span>
+              )}
             </NavLink>
           ))}
         </div>

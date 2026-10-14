@@ -1,3 +1,4 @@
+import { setAchievementBadge } from '../components/AchievementWatcher';
 import { useCallback, useEffect, useState } from 'react';
 import { useT } from '../i18n';
 import { ACHIEVEMENT_CATEGORIES, ACHIEVEMENTS } from '../lib/achievements';
@@ -35,6 +36,7 @@ export function Trainer() {
 
   useEffect(() => {
     reload();
+    setAchievementBadge(false);
   }, [reload]);
 
   useEffect(() => {
