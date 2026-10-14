@@ -9,6 +9,7 @@ import { formatRecord } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import type { ChallengeKey, FormationId, Record3 } from '../types';
+import { FriendlyMatch } from './FriendlyMatch';
 import { Modal } from './Modal';
 import { Pitch } from './Pitch';
 import { TeamSheet } from './TeamSheet';
@@ -72,6 +73,7 @@ export function EntryDialog({ source, onClose, onReloadBoard }: Props) {
   const { byId } = usePokemonData();
   const bodyRef = useRef<HTMLDivElement>(null);
   const [attempt, setAttempt] = useState(0);
+  const [friendly, setFriendly] = useState(false);
   const onlineId = source.kind === 'online' ? source.entryId : null;
   const key = `${onlineId}:${attempt}`;
   const [loaded, setLoaded] = useState<{ key: string; result: Status } | null>(null);
@@ -183,6 +185,11 @@ export function EntryDialog({ source, onClose, onReloadBoard }: Props) {
           <span id="entry-builder-hint" className="muted small entry__hint">
             {tr.openInBuilderHint}
           </span>
+          {!friendly && (
+            <button type="button" className="btn" onClick={() => setFriendly(true)}>
+              {tr.friendly}
+            </button>
+          )}
         </>
       )}
       <button type="button" className="btn entry__close" onClick={onClose}>
@@ -220,6 +227,11 @@ export function EntryDialog({ source, onClose, onReloadBoard }: Props) {
           </div>
         </dl>
         {content}
+        {friendly && detail && (
+          <FriendlyMatch
+            opponent={{ name: title, formation: detail.formation, slots: detail.slots, ss: detail.ssEnabled ? detail.ss : null }}
+          />
+        )}
       </div>
     </Modal>
   );

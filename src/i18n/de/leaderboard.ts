@@ -82,6 +82,22 @@ const leaderboard = {
     unreadable: 'Diese Aufstellung lässt sich nicht anzeigen.',
     openInBuilder: 'Im Builder öffnen',
     openInBuilderHint: 'Ersetzt deine Aufstellung im Builder.',
+    /** Testspiel: eigene Builder-Elf gegen dieses Team */
+    friendly: 'Testspiel gegen deine Elf',
+    friendlyAgain: 'Nochmal spielen',
+    friendlyTitle: 'Testspiel',
+    friendlyNeedEleven: 'Für ein Testspiel brauchst du im Builder eine volle Elf.',
+    friendlyToBuilder: 'Zum Builder',
+    friendlyYou: 'Deine Elf',
+    friendlyFirst: 'Hinspiel',
+    friendlySecond: 'Rückspiel',
+    friendlyAggregate: 'Gesamt',
+    friendlyWin: 'Du gewinnst das Duell!',
+    friendlyDraw: 'Unentschieden über beide Spiele.',
+    friendlyLoss: 'Das Duell geht an den Gegner.',
+    friendlyScore: (own: number, opp: number) => `Team-Score ${own} : ${opp}`,
+    friendlyScorers: (list: string) => `Tore: ${list}`,
+    friendlyNote: 'Nur zum Spaß – zählt für keine Rangliste. Bewertet über alle 1.025 Pokémon.',
   },
 };
 

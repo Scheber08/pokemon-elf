@@ -161,3 +161,25 @@
     margin-left: 0;
   }
 }
+
+/* Testspiel gegen ein Ranglisten-Team */
+.friendly {
+  margin-top: 16px;
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+.friendly .section-title {
+  margin: 0;
+}
+.friendly__legs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.friendly__verdict {
+  margin: 0;
+  font-size: 1.05rem;
+}
