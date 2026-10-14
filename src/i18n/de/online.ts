@@ -206,6 +206,18 @@ const online = {
   favouriteNoMatch: (name: string) => `${name} passt nicht zu deinem Wurf – such dir ein passendes Pokémon.`,
   /** Hinweis unter „Pool", wenn ein Wurf gilt (mit Leerzeichen vorn) */
   hintRoll: (region: string, type: string) => ` Gesucht: ${region} + ${type}.`,
+  /** Schnellstart-Vorlagen beim Erstellen */
+  presets: 'Schnellstart',
+  presetName: { classic: 'Klassisch', allRegions: 'Alle Regionen', megaChaos: 'Mega-Chaos', blitz: 'Blitz' } as Record<
+    'classic' | 'allRegions' | 'megaChaos' | 'blitz',
+    string
+  >,
+  presetNote: {
+    classic: 'Kanto ohne Legendäre, freie Wahl, 60 s pro Pick',
+    allRegions: 'Alle Generationen mit Formen, je ein Legendäres und eine Ultrabestie pro Team',
+    megaChaos: 'Alle Generationen, Megas (2 pro Team) und Formen, jeder Pick gewürfelt',
+    blitz: 'Kanto und Johto, ein Wurf pro Runde ohne Rerolls, 30 s pro Pick',
+  } as Record<'classic' | 'allRegions' | 'megaChaos' | 'blitz', string>,
   /** Emoji-Reaktionen */
   reactLabel: 'Reaktion an alle',
   reactSend: (emoji: string) => `${emoji} an alle senden`,
