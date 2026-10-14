@@ -273,6 +273,21 @@ export interface ManagerLineup {
   auto: boolean;
 }
 
+/** Transfer-Wunsch eines Teams: freies Pokémon `in` für das eigene `out` (gilt zum nächsten Anpfiff) */
+export interface ManagerClaim {
+  in: number;
+  out: number;
+}
+
+/** Vollzogener Transfer (Transfermarkt der Manager-Saison) */
+export interface ManagerTransfer {
+  /** Vor diesem Spieltag */
+  matchday: number;
+  teamId: string;
+  in: number;
+  out: number;
+}
+
 /** Manager-Saison im Schnappschuss */
 export interface ManagerSnapshot {
   /** Gespielte Spieltage */
@@ -285,6 +300,10 @@ export interface ManagerSnapshot {
   lineups: Record<string, ManagerLineup>;
   /** Tagesform des nächsten Spieltags je Pokémon der gedrafteten Kader (−2 … +2, fehlt = 0) */
   form: Record<string, number>;
+  /** Eigener Transfer-Wunsch (nur im eigenen Schnappschuss; fehlt = keiner) */
+  claim?: ManagerClaim | null;
+  /** Vollzogene Transfers, älteste zuerst (fehlt bei älteren Ständen) */
+  transfers?: ManagerTransfer[];
 }
 
 export interface DraftPickLog {
@@ -460,6 +479,12 @@ export type DraftClientMessage =
    * dieser Formation jeweils die beste Elf auf (slots/ss werden ignoriert).
    */
   | { type: 'lineup'; formation: FormationId; slots: number[]; ss: number | null; auto: boolean }
+  /**
+   * Manager-Saison, Transfermarkt: eigener Wunsch für den nächsten Anpfiff – freies Pokémon `in` für das
+   * eigene `out`; in = null zieht den Wunsch zurück. Zum Anpfiff wird in Tabellen-Reihenfolge vergeben
+   * (Letzter zuerst); ist `in` dann weg, verfällt der Wunsch.
+   */
+  | { type: 'transfer'; in: number | null; out: number | null }
   /** Emoji-Reaktion an alle (nur Mitglieder; wird nicht gespeichert) */
   | { type: 'react'; emoji: DraftReaction }
   | { type: 'ping' };

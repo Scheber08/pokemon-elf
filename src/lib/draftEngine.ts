@@ -1602,14 +1602,23 @@ export function snapshotOf(state: DraftState, you: string | null, now: number): 
     ...(state.history?.length ? { history: state.history } : {}),
     ...(state.rematch ? { rematch: state.rematch } : {}),
     ...(you && state.queues?.[you]?.length ? { queue: state.queues[you] } : {}),
-    ...(state.manager ? { manager: managerView(state.manager, state.season) } : {}),
+    ...(state.manager ? { manager: managerView(state.manager, state.season, you) } : {}),
   };
 }
 
 /** Manager-Saison im Schnappschuss – ohne die Kader der Auffüllteams (siehe manager.ts). */
-function managerView(m: ManagerState, season: DraftSeason | null): NonNullable<DraftSnapshot['manager']> {
+function managerView(m: ManagerState, season: DraftSeason | null, you: string | null): NonNullable<DraftSnapshot['manager']> {
   const nextAt = season && m.played < m.total ? season.startsAt + m.played * season.stepMs : null;
-  return { played: m.played, total: m.total, nextAt, lineups: m.lineups, form: m.form };
+  return {
+    played: m.played,
+    total: m.total,
+    nextAt,
+    lineups: m.lineups,
+    form: m.form,
+    // Transfer-Wünsche sind privat: nur der eigene
+    ...(you ? { claim: m.claims?.[you] ?? null } : {}),
+    transfers: m.transfers ?? [],
+  };
 }
 
 // ---------------------------------------------------------------- Revanche & ewige Tabelle

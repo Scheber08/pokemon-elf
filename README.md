@@ -182,7 +182,9 @@ eine Bank (`bench`: 3 oder 5), danach läuft Phase `season`: eine Hinrunde mit 1
 Team seine Elf aus dem Kader auf (Nachricht `lineup`: Formation, Positionen, Standardschütze – oder `auto`:
 beste Elf zur Tagesform). Jedes Pokémon hat je Spieltag eine Tagesform von −2 bis +2 (aus dem geheimen
 Liga-Seed, vorher sichtbar), die seinen Fit um 5 Punkte je Stufe verschiebt. Löschung erst 14 Tage nach dem
-letzten Spieltag.
+letzten Spieltag. **Transfermarkt**: Jedes Team kann pro Spieltag ein freies Pokémon (Pool ohne Gedraftete)
+gegen eins aus dem Kader wünschen (Nachricht `transfer`, privat); zum Anpfiff vergibt der Server in
+Tabellen-Reihenfolge (Letzter zuerst), CPU-Teams holen bei klarem Gewinn selbst jemanden.
 Öffentliche Lobbys: `GET /api/drafts/public`. Ligen werden nach 14 Tagen gelöscht. Vertrag und Limits:
 `src/lib/api/draftContract.ts`.
 

@@ -15,7 +15,7 @@ const info: Messages['info'] = {
     newsTitle: 'What’s new?',
     news: [
       'New: design your own trainer – coins from achievements buy caps, jerseys, backgrounds and companion Pokémon',
-      'Online draft: manager season – draft a bench, set your eleven before every matchday, daily form per Pokémon',
+      'Online draft: manager season – draft a bench, set your eleven before every matchday, daily form per Pokémon, transfer market',
       'Builder: “My teams” – save and load up to five XIs',
       'Online draft: form guide, season records, your season chart, upset of the matchday, live top scorers and an end-of-season notification',
       'Online draft: the league always has 18 teams – filled up with teams of real players from the leaderboard',

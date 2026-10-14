@@ -69,7 +69,7 @@ import {
 } from '../src/lib/draftEngine';
 import type { Scale } from '../src/lib/fit';
 import { lookFromJson, type TrainerLook } from '../src/lib/trainer';
-import { nextKickoff, playDueMatchdays, seasonEndsAt, setLineup, startManagerSeason } from '../src/lib/manager';
+import { nextKickoff, playDueMatchdays, seasonEndsAt, setClaim, setLineup, startManagerSeason } from '../src/lib/manager';
 import type { FormationId, Pokemon, TypeKey } from '../src/types';
 import { authenticateDevice, HOUR_MS, normalizeIp } from './auth';
 import { randomHex, sha256Hex, timingSafeEqual } from './crypto';
@@ -411,6 +411,11 @@ export function parseClientMessage(raw: unknown): ParsedMessage {
         return badMessage();
       }
       return ok({ type: 'lineup', formation: d.formation as FormationId, slots: [...(slots as number[])], ss: d.ss as number | null, auto: d.auto });
+    }
+    case 'transfer': {
+      const idOrNull = (v: unknown) => v === null || isInt(v);
+      if (!idOrNull(d.in) || !idOrNull(d.out)) return badMessage();
+      return ok({ type: 'transfer', in: d.in as number | null, out: d.out as number | null });
     }
     case 'react':
       return (DRAFT_REACTIONS as readonly unknown[]).includes(d.emoji) ? ok({ type: 'react', emoji: d.emoji as DraftReaction }) : badMessage();
@@ -1548,6 +1553,9 @@ export class DraftRoomCore {
         return startDraft(state, deviceId, now, list);
       case 'queue':
         return setQueue(state, deviceId, msg.ids, list);
+      case 'transfer':
+        // Wie bei der Aufstellung: Überfälliges erst spielen – der Wunsch gilt zum nächsten Anpfiff
+        return setClaim(playDueMatchdays(state, now, list, scale), deviceId, { in: msg.in, out: msg.out }, list);
       case 'lineup':
         // Ein überfälliger Spieltag (Alarm noch nicht gelaufen) wird erst gespielt – die Aufstellung gilt für den nächsten
         return setLineup(playDueMatchdays(state, now, list, scale), deviceId, msg, list, scale);

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
-import type { DraftTeam, ManagerLineup } from '../lib/api/draftContract';
+import type { DraftSnapshot, DraftTeam, ManagerClaim, ManagerLineup } from '../lib/api/draftContract';
 import { rosterOf } from '../lib/draftEngine';
 import { storedLeague } from '../lib/leagueTimeline';
-import { bestLineup, FORM_FIT, formFit, lineupScore, managerSchedule } from '../lib/manager';
+import { bestLineup, FORM_FIT, formFit, freeAgents, lineupScore, managerSchedule } from '../lib/manager';
+import { positionFit } from '../lib/fit';
 import type { Match } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
@@ -17,7 +18,7 @@ import { Pitch, SS_INDEX, type SlotState } from './Pitch';
 import '../styles/draft.css';
 
 /** Auswahl beim Tauschen: ein Feld-/SS-Platz oder ein Bankspieler */
-type Pick = { kind: 'slot'; index: number } | { kind: 'bench'; id: number } | null;
+type Selection = { kind: 'slot'; index: number } | { kind: 'bench'; id: number } | null;
 
 /** Tagesform als Pfeile (▲▲ … ▼▼) */
 function FormMark({ value }: { value: number }) {
@@ -93,6 +94,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
     awayScorers: [],
   }));
   const last = m.played > 0 ? league.matches.filter((x) => x.round === m.played) : [];
+  const lastTransfers = (m.transfers ?? []).filter((x) => x.matchday === m.played);
   const when = m.nextAt != null ? new Date(m.nextAt - room.clockOffset).toLocaleString(localeOf(lang), { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : '';
 
   return (
@@ -118,6 +120,34 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
         />
       ) : (
         <p className="notice">{tx.spectator}</p>
+      )}
+
+      {room.me && !readOnly && m.nextAt != null && meIndex >= 0 && (
+        <TransferMarket
+          state={s}
+          team={s.teams[meIndex]}
+          claim={m.claim ?? null}
+          matchday={nextNo}
+          onTransfer={(inId, outId) => room.setTransfer(inId, outId)}
+        />
+      )}
+
+      {lastTransfers.length > 0 && (
+        <section className="card" aria-labelledby="manager-transfers">
+          <h2 id="manager-transfers" className="section-title">
+            {tx.transfersTitle(m.played)}
+          </h2>
+          <ul className="manager__transfers">
+            {lastTransfers.map((x) => {
+              const team = s.teams.find((tm) => tm.id === x.teamId);
+              return (
+                <li key={`${x.teamId}-${x.in}`}>
+                  {tx.transferLine(team ? teamLabel(team, t) : '?', pokemonName(x.in), pokemonName(x.out))}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       )}
 
       {upcoming.length > 0 && (
@@ -167,7 +197,7 @@ function LineupEditor({
   const { byId, scale } = usePokemonData();
   const { sprite } = useSettings();
   const sc = scale('all');
-  const [pick, setPick] = useState<Pick>(null);
+  const [pick, setPick] = useState<Selection>(null);
   const formOf = (id: number) => form[id] ?? 0;
   const defs = FORMATIONS[lineup.formation].slots;
   const inLineup = new Set([...lineup.slots, ...(lineup.ss != null ? [lineup.ss] : [])]);
@@ -331,6 +361,114 @@ function LineupEditor({
           </tbody>
         </table>
       </div>
+    </section>
+  );
+}
+
+/** Transfermarkt: eigenen Wunsch setzen (wen abgeben, wen holen) bzw. zurückziehen. */
+function TransferMarket({
+  state,
+  team,
+  claim,
+  matchday,
+  onTransfer,
+}: {
+  state: Pick<DraftSnapshot, 'settings' | 'teams'>;
+  team: DraftTeam;
+  claim: ManagerClaim | null;
+  matchday: number;
+  onTransfer: (inId: number | null, outId: number | null) => void;
+}) {
+  const t = useT();
+  const tx = t.draft.manager;
+  const { all: list, byId, scale } = usePokemonData();
+  const sc = scale('all');
+  const roster = rosterOf(team);
+  const defs = FORMATIONS[team.formation].slots;
+  const positions = [...new Set(defs.map((d) => d.pos))];
+  /** Beste Position der Formation samt Fit */
+  const best = (p: Pokemon) =>
+    positions.reduce(
+      (a, pos) => {
+        const fit = positionFit(p, pos, sc);
+        return fit > a.fit ? { pos, fit } : a;
+      },
+      { pos: positions[0], fit: -1 },
+    );
+  // Vorschlag zum Abgeben: der schwächste im Kader
+  const [out, setOut] = useState<number>(
+    () => claim?.out ?? roster.reduce((a, id) => ((byId.get(id) ? best(byId.get(id)!).fit : 999) < (byId.get(a) ? best(byId.get(a)!).fit : 999) ? id : a), roster[0]),
+  );
+  const [query, setQuery] = useState('');
+  const teamsKey = state.teams.map((tm) => rosterOf(tm).join(',')).join('|');
+  const free = useMemo(
+    () => freeAgents(state, list).map((p) => ({ p, ...best(p) })).sort((a, b) => b.fit - a.fit || a.p.id - b.p.id),
+    [teamsKey, list, team.formation],
+  );
+  const q = query.trim().toLowerCase();
+  const shown = (q ? free.filter((x) => t.game.pokemon(x.p).toLowerCase().includes(q)) : free).slice(0, 12);
+  const name = (id: number) => {
+    const p = byId.get(id);
+    return p ? t.game.pokemon(p) : `#${id}`;
+  };
+  const validOut = roster.includes(out) ? out : roster[0];
+  return (
+    <section className="card manager__market" aria-labelledby="manager-market">
+      <h2 id="manager-market" className="section-title">
+        {tx.marketTitle} <small className="muted">{tx.marketFree(free.length)}</small>
+      </h2>
+      <p className="muted small">{tx.marketNote(matchday)}</p>
+      {claim && (
+        <p className="hint hint--active manager__claim">
+          {tx.marketClaim(name(claim.in), name(claim.out), matchday)}{' '}
+          <button type="button" className="btn btn--small btn--ghost" onClick={() => onTransfer(null, null)}>
+            {tx.marketCancel}
+          </button>
+        </p>
+      )}
+      <div className="manager__controls">
+        <label className="field">
+          <span className="field__label">{tx.marketOut}</span>
+          <select className="input" value={validOut} onChange={(e) => setOut(Number(e.target.value))}>
+            {roster.map((id) => {
+              const p = byId.get(id);
+              const b = p ? best(p) : null;
+              return (
+                <option key={id} value={id}>
+                  {name(id)}
+                  {b ? ` (${tx.marketFit(t.game.posShort[b.pos], Math.round(b.fit))})` : ''}
+                </option>
+              );
+            })}
+          </select>
+        </label>
+        <label className="field manager__search">
+          <span className="field__label">{tx.marketSearch}</span>
+          <input className="input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} />
+        </label>
+      </div>
+      {shown.length ? (
+        <ul className="manager__free">
+          {shown.map(({ p, pos, fit }) => (
+            <li key={p.id} className={claim?.in === p.id ? 'is-claimed' : ''}>
+              <span className="manager__free-name">{t.game.pokemon(p)}</span>
+              <PosBadge pos={pos} />
+              <span className="manager__free-fit">{Math.round(fit)}</span>
+              <button
+                type="button"
+                className="btn btn--small"
+                aria-label={tx.marketTakeAria(t.game.pokemon(p), name(validOut))}
+                disabled={claim?.in === p.id && claim.out === validOut}
+                onClick={() => onTransfer(p.id, validOut)}
+              >
+                {tx.marketTake}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="muted small">{tx.marketNone}</p>
+      )}
     </section>
   );
 }

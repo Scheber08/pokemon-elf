@@ -30,6 +30,9 @@ import {
   pokemonForm,
   setLineup,
   startManagerSeason,
+  freeAgents,
+  setClaim,
+  processClaims,
 } from '../src/lib/manager';
 import { expiresAt } from '../server/draftCore';
 import { handleApi, type Env } from '../server/handler';
@@ -209,6 +212,62 @@ describe('Saison', () => {
   });
 });
 
+describe('Transfermarkt', () => {
+  const season = () => startManagerSeason(drafted(), ALL, SCALE);
+
+  it('freie Pokémon: Pool ohne Gedraftete; Wunsch prüfen, setzen, zurückziehen – privat im Schnappschuss', () => {
+    const s = season();
+    const free = freeAgents(s, ALL);
+    const taken = draftedIds(s);
+    expect(free.length).toBeGreaterThan(0);
+    expect(free.some((p) => taken.has(p.id))).toBe(false);
+    const host = s.teams.find((t) => t.id === 'h')!;
+    const cpu = s.teams.find((t) => t.id === 'c1')!;
+    const out = rosterOf(host)[0];
+    expect(() => setClaim(s, 'dev-h', { in: free[0].id, out: rosterOf(cpu)[0] }, ALL)).toThrow(/Kader/);
+    expect(() => setClaim(s, 'dev-h', { in: rosterOf(cpu)[0], out }, ALL)).toThrow(/frei/);
+    expect(() => setClaim(s, 'dev-h', { in: free[0].id, out: null }, ALL)).toThrow(/abgibst/);
+    const c = setClaim(s, 'dev-h', { in: free[0].id, out }, ALL);
+    expect(c.manager!.claims).toEqual({ h: { in: free[0].id, out } });
+    expect(snapshotOf(c, 'h', 0).manager!.claim).toEqual({ in: free[0].id, out });
+    expect(snapshotOf(c, 'c1', 0).manager!.claim).toBeNull();
+    expect(snapshotOf(c, null, 0).manager).not.toHaveProperty('claim');
+    expect(setClaim(c, 'dev-h', { in: null, out: null }, ALL).manager!.claims).toEqual({});
+  });
+
+  it('zum Anpfiff: Tausch im Kader und in der Aufstellung, Protokoll, Wünsche danach leer', () => {
+    const s = season();
+    const host = s.teams.find((t) => t.id === 'h')!;
+    const lineup = s.manager!.lineups.h;
+    const out = lineup.slots[0];
+    const inn = freeAgents(s, ALL)[0].id;
+    // Eigene Aufstellung (nicht automatisch) – der Neue übernimmt den Platz
+    let st = setLineup(s, 'dev-h', { ...lineup, auto: false }, ALL, SCALE);
+    st = setClaim(st, 'dev-h', { in: inn, out }, ALL);
+    const after = playMatchday(st, ALL, SCALE);
+    const team = after.teams.find((t) => t.id === 'h')!;
+    expect(rosterOf(team)).toContain(inn);
+    expect(rosterOf(team)).not.toContain(out);
+    expect(rosterOf(team)).toHaveLength(rosterOf(host).length);
+    expect(after.manager!.lineups.h.slots[0]).toBe(inn);
+    expect(after.manager!.transfers).toContainEqual({ matchday: 1, teamId: 'h', in: inn, out });
+    expect(after.manager!.claims).toBeUndefined();
+    expect(freeAgents(after, ALL).some((p) => p.id === out)).toBe(true);
+  });
+
+  it('gleicher Wunsch zweier Teams: der Tabellenschlechtere bekommt ihn, der andere verfällt', () => {
+    const s = season();
+    const inn = freeAgents(s, ALL)[0].id;
+    const outH = rosterOf(s.teams.find((t) => t.id === 'h')!)[0];
+    const outC = rosterOf(s.teams.find((t) => t.id === 'c1')!)[0];
+    const st = { ...s, manager: { ...s.manager!, claims: { h: { in: inn, out: outH }, c1: { in: inn, out: outC } } } };
+    const after = processClaims(st, ALL, SCALE);
+    const place = (id: string) => s.league!.table.findIndex((r) => r.team === s.teams.findIndex((t) => t.id === id));
+    const worse = place('h') > place('c1') ? 'h' : 'c1';
+    expect(after.manager!.transfers!.filter((x) => x.in === inn)).toEqual([expect.objectContaining({ teamId: worse })]);
+  });
+});
+
 describe('Draft-Raum: Manager-Saison', () => {
   let db: D1Shim;
   let drafts: FakeNamespace;
@@ -264,6 +323,12 @@ describe('Draft-Raum: Manager-Saison', () => {
     const foreign = st.teams.find((t) => t.cpu)!.slots[0];
     await room.send(host, { type: 'lineup', formation: '4-3-3', slots: [foreign, ...slots.slice(1)], ss: null, auto: false });
     expect(host.lastError?.code).toBe('bad_lineup');
+    // Transfer-Wunsch per Nachricht; ungültig → bad_transfer
+    const free = freeAgents(room.stored!.state, ALL)[0].id;
+    await room.send(host, { type: 'transfer', in: free, out: rosterOf(me)[0] });
+    expect(room.stored!.state.manager!.claims![me.id]).toEqual({ in: free, out: rosterOf(me)[0] });
+    await room.send(host, { type: 'transfer', in: free, out: foreign });
+    expect(host.lastError?.code).toBe('bad_transfer');
 
     // Spieltag 1 zum Anpfiff, danach steht der Alarm auf Spieltag 2
     await room.advanceTo(st.season!.startsAt);

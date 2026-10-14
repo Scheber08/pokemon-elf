@@ -1206,3 +1206,46 @@ button.draft-bench__slot {
 .draft-trainer svg {
   border-radius: 5px;
 }
+
+/* Manager-Saison: Transfermarkt */
+.manager__search input {
+  min-width: 14em;
+}
+.manager__free {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.manager__free li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 3em auto;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.manager__free li.is-claimed {
+  border-color: var(--yellow);
+}
+.manager__free-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.manager__free-fit {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.manager__claim {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.manager__transfers {
+  margin: 0;
+  padding-left: 18px;
+}

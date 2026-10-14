@@ -547,6 +547,8 @@ export interface DraftRoom extends DraftRoomView {
   setQueue(ids: number[]): boolean;
   /** Manager-Saison: eigene Aufstellung für den nächsten Spieltag (auto: Server stellt die beste Elf) */
   setLineup(lineup: ManagerLineup): boolean;
+  /** Manager-Saison: Transfer-Wunsch (in = null: zurückziehen) */
+  setTransfer(inId: number | null, outId: number | null): boolean;
   /** Emoji-Reaktion an alle (nur Mitglieder) */
   react(emoji: DraftReaction): boolean;
   /** Reaktionen der letzten Sekunden, älteste zuerst */
@@ -928,6 +930,7 @@ export function useDraftRoom(code: string): DraftRoom {
     autoPick,
     reroll,
     setQueue: useCallback((ids: number[]) => send({ type: 'queue', ids }), [send]),
+    setTransfer: useCallback((inId: number | null, outId: number | null) => send({ type: 'transfer', in: inId, out: outId }), [send]),
     setLineup: useCallback((l: ManagerLineup) => send({ type: 'lineup', formation: l.formation, slots: l.slots, ss: l.ss, auto: l.auto }), [send]),
     react: useCallback((emoji: DraftReaction) => send({ type: 'react', emoji }), [send]),
     reactions,

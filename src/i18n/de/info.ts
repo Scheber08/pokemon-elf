@@ -17,7 +17,7 @@ const info = {
     newsTitle: 'Was ist neu?',
     news: [
       'Neu: Gestalte deinen eigenen Trainer – Münzen aus Erfolgen kaufen Kappen, Trikots, Hintergründe und Begleiter-Pokémon',
-      'Online-Draft: Manager-Saison – Bank mitdraften, vor jedem Spieltag die Elf aufstellen, Tagesform je Pokémon',
+      'Online-Draft: Manager-Saison – Bank mitdraften, vor jedem Spieltag die Elf aufstellen, Tagesform je Pokémon, Transfermarkt',
       'Builder: „Meine Teams“ – bis zu fünf Elfen speichern und laden',
       'Online-Draft: Formkurve, Saisonrekorde, Saisonverlauf, Überraschung des Spieltags, Torjäger live und Hinweis zum Saisonende',
       'Online-Draft: Liga immer mit 18 Teams – aufgefüllt mit Teams echter Spieler aus der Rangliste',
