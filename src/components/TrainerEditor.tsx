@@ -8,6 +8,7 @@ import { usePokemonData } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
 import { useSettings } from '../state/Settings';
 import { SaveImageButton } from './SaveImageButton';
+import { Segmented } from './Segmented';
 import { Sprite } from './Sprite';
 import { TrainerAvatar } from './TrainerAvatar';
 
@@ -62,6 +63,8 @@ export function TrainerEditor({ me, onMe }: Props) {
   const [look, setLook] = useState<TrainerLook>(me.trainer);
   const cardRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState<'save' | string | null>(null);
+  /** Shop-Filter: alles, nur Freigeschaltetes oder was man sich gerade leisten kann */
+  const [filter, setFilter] = useState<'all' | 'owned' | 'affordable'>('all');
   const owned = useMemo(() => new Set(me.owned), [me.owned]);
   const dirty = TRAINER_SLOTS.some((s) => look[s] !== me.trainer[s]);
   const locked = lockedItem(look, owned);
@@ -158,17 +161,27 @@ export function TrainerEditor({ me, onMe }: Props) {
           </div>
           {dirty && <span className="muted small">{locked ? tx.lockedNote : tx.unsaved}</span>}
         </div>
-        {(() => {
-          // Hinweis auf Saisonartikel, die gerade im Shop sind (je Saison einmal)
-          const now = Date.now();
-          const seasons = [...new Map(TRAINER_ITEMS.filter((i) => i.season && itemOnSale(i, now)).map((i) => [i.season!.icon, i.season!])).values()];
-          return seasons.map((s) => (
-            <p key={s.icon} className="trainer-editor__season">
-              <span aria-hidden="true">{s.icon}</span> {tx.seasonNow(s.to)}
-            </p>
-          ));
-        })()}
         <div className="trainer-editor__slots">
+          {(() => {
+            // Hinweis auf Saisonartikel, die gerade im Shop sind (je Saison einmal)
+            const now = Date.now();
+            const seasons = [...new Map(TRAINER_ITEMS.filter((i) => i.season && itemOnSale(i, now)).map((i) => [i.season!.icon, i.season!])).values()];
+            return seasons.map((s) => (
+              <p key={s.icon} className="trainer-editor__season">
+                <span aria-hidden="true">{s.icon}</span> {tx.seasonNow(s.to)}
+              </p>
+            ));
+          })()}
+          <Segmented<'all' | 'owned' | 'affordable'>
+            label={tx.filter}
+            value={filter}
+            onChange={setFilter}
+            options={[
+              { value: 'all', label: tx.filterAll },
+              { value: 'owned', label: tx.filterOwned },
+              { value: 'affordable', label: tx.filterAffordable },
+            ]}
+          />
           {TRAINER_SLOTS.map((slot) => (
             <fieldset key={slot} className="trainer-slot">
               <legend className="field__label">{tx.slots[slot]}</legend>
@@ -178,6 +191,10 @@ export function TrainerEditor({ me, onMe }: Props) {
                   const have = it.price === 0 || owned.has(key);
                   // Saisonartikel außerhalb ihrer Saison nur, wenn schon gekauft
                   if (!have && !itemOnSale(it, Date.now())) return null;
+                  // Filter – das gerade getragene Teil bleibt immer sichtbar
+                  if (look[slot] !== it.id && ((filter === 'owned' && !have) || (filter === 'affordable' && !have && it.price > me.coins.balance))) {
+                    return null;
+                  }
                   const active = look[slot] === it.id;
                   const name = trainerItemName(t, it, byId);
                   return (

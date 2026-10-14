@@ -276,7 +276,7 @@
 }
 
 .trainer-editor__season {
-  margin: 0 0 12px;
+  margin: 0;
   padding: 8px 12px;
   border-radius: 10px;
   background: rgba(232, 119, 42, 0.14);
