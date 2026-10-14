@@ -508,6 +508,7 @@ const draft: Messages['draft'] = {
     marketTipTake: 'Set as request',
     marketNote: (n) =>
       `One swap per matchday: a free Pokémon for one from your squad. Assigned at kick-off of matchday ${n} – if several want the same one, the lower-placed team gets it.`,
+    marketCaptainOut: (name) => `${name} is your captain – if you let them go, the new signing takes the armband.`,
     marketOut: 'Release',
     marketSearch: 'Search free Pokémon',
     marketFree: (n) => `${n} free`,

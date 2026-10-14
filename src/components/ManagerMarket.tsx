@@ -117,6 +117,7 @@ export function TransferMarket({
           <input className="input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} />
         </label>
       </div>
+      {validOut === team.captain && <p className="hint manager__formwarn">©️ {tx.marketCaptainOut(name(validOut))}</p>}
       {shown.length ? (
         <ul className="manager__free">
           {shown.map(({ p, pos, fit }) => (

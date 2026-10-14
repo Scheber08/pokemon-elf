@@ -776,6 +776,26 @@ describe('ManagerSeason', () => {
     expect(container.querySelector('.manager__career')!.textContent).toBe('Bisher: S1 Liga 2: Platz 2 · S2 Liga 1: Platz 7');
   });
 
+  it('Transfermarkt: Hinweis, wenn der Kapitän abgegeben werden soll', async () => {
+    const { TransferMarket } = await import('../src/components/ManagerMarket');
+    const { startManagerSeason, freeAgents } = await import('../src/lib/manager');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    const me = s.teams.find((t) => t.id === 'h')!;
+    const out = engine.rosterOf(me)[0];
+    const claim = { in: freeAgents(s, ALL)[0].id, out };
+    const view = async (captain: number) => {
+      const { container } = await render(
+        app(h(TransferMarket, { state: s, team: { ...me, captain }, claim, matchday: 1, onTransfer: () => {} })),
+      );
+      await settle();
+      return container.textContent;
+    };
+    expect(await view(out)).toContain('übernimmt der Neuzugang die Binde');
+    expect(await view(engine.rosterOf(me)[1])).not.toContain('übernimmt der Neuzugang die Binde');
+  });
+
   it('Shiny-Neuzugang: Hinweis im Status nur fürs eigene Team', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
