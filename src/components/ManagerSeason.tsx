@@ -675,6 +675,12 @@ function LineupEditor({
               <tr key={r.p.id} className={r.role ? '' : 'is-bench'}>
                 <td className="left">
                   {t.game.pokemon(r.p)}
+                  {shinySet?.has(r.p.id) && (
+                    <span title={t.shiny.title}>
+                      {' '}
+                      ✨<span className="sr-only">{t.shiny.title}</span>
+                    </span>
+                  )}
                   {outText(r.p.id) && (
                     <span className="manager__out" title={outText(r.p.id)!}>
                       {' '}
