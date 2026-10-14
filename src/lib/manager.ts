@@ -29,6 +29,7 @@ import {
   draftedIds,
   rosterOf,
   teamOfDevice,
+  cpuCaptain,
   upgradeSettings,
   type DraftState,
   type FillCandidate,
@@ -420,9 +421,11 @@ function matchdayTeams(state: DraftState, m: ManagerState, matchday: number, byI
       return p ? [{ p, pos: defs[i].pos }] : [];
     });
     const ss = setPiece && l.ss != null ? byId.get(l.ss) : undefined;
+    // CPU-Teams: Fehlt ihr Kapitän (verletzt, gesperrt, Bank), führt der bestpassende Spieler der Elf
+    const captain = t.cpu && t.captain != null && !l.slots.includes(t.captain) ? cpuCaptain({ formation: l.formation, slots: l.slots }, byId, scale) : t.captain;
     return {
       name: t.name,
-      rating: lineupScore(squad, scale, formOf, t.captain, shinySet),
+      rating: lineupScore(squad, scale, formOf, captain, shinySet),
       squad: squad.map(({ p, pos }) => squadPlayer(p, pos)),
       setPieceTaker: ss ? squadPlayer(ss, 'SS') : null,
       setPieceFit: ss ? formFit(ss, 'SS', scale, formOf(ss.id)) : undefined,

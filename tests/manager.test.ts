@@ -788,6 +788,18 @@ describe('Kapitän der CPU-Teams', () => {
     expect(cpu.slots).toContain(cpu.captain);
     expect(s.teams.find((t) => t.id === 'h')).not.toHaveProperty('captain');
   });
+
+  it('fällt der CPU-Kapitän aus, führt der bestpassende Spieler der Elf', () => {
+    const s = startManagerSeason(drafted(), ALL, SCALE);
+    const cpu = s.teams.find((t) => t.cpu)!;
+    const idx = s.teams.indexOf(cpu);
+    const hurt = { ...s, manager: { ...s.manager!, out: { [cpu.captain!]: { kind: 'injury' as const, until: 1, since: 0 } } } };
+    const noCaptain = { ...hurt, teams: hurt.teams.map((t) => (t.id === cpu.id ? { ...t, captain: undefined } : t)) };
+    const a = playMatchday(hurt, ALL, SCALE);
+    const b = playMatchday(noCaptain, ALL, SCALE);
+    expect(a.manager!.playedLineups!['1'][cpu.id].slots).not.toContain(cpu.captain);
+    expect(a.league!.teams[idx].rating).toBeGreaterThan(b.league!.teams[idx].rating);
+  });
 });
 
 describe('Shinys in der Manager-Saison', () => {
