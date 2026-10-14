@@ -9,6 +9,7 @@ import { usePokemonData } from '../state/PokemonData';
 import { ReplayToggle, useMatchReport } from './MatchReport';
 import type { FormationId } from '../types';
 import { cleanJerseys, type Jerseys } from '../lib/jerseys';
+import { cleanKit, type Kit } from '../lib/kits';
 import '../styles/friendly.css';
 
 /** Gespeicherte Builder-Aufstellung (siehe pages/Builder.tsx) – nur die nötigen Felder. */
@@ -20,10 +21,11 @@ interface StoredLineup {
   teamName?: string;
   jerseys?: unknown;
   captain?: unknown;
+  kit?: unknown;
 }
 
 /** Seite eines Testspiels samt eigenen Trikotnummern (nur für die Wiedergabe) */
-type Side = FriendlySide & { jerseys?: Jerseys };
+type Side = FriendlySide & { jerseys?: Jerseys; kit?: Kit | null };
 
 const newSeed = () => Math.floor(Math.random() * 0x7fffffff);
 
@@ -41,7 +43,7 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
       if (!fullEleven(slots)) return null;
       const ss = s.ssEnabled && s.ss != null && byId.has(s.ss) ? s.ss : null;
       const captain = typeof s.captain === 'number' && slots.includes(s.captain) ? s.captain : null;
-      return { name: s.teamName?.trim() || fallback, formation: s.formation, slots, ss, captain, jerseys: cleanJerseys(s.jerseys) };
+      return { name: s.teamName?.trim() || fallback, formation: s.formation, slots, ss, captain, jerseys: cleanJerseys(s.jerseys), kit: cleanKit(s.kit) };
     };
     const current = sideOf(load<StoredLineup | null>(STORAGE_KEYS.lineup, null), tr.friendlyYou);
     const saved = loadSavedTeams<StoredLineup>().map((x) => sideOf(x.state, x.name));
@@ -61,7 +63,7 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
     undefined,
     (i) => {
       const side = i === 0 ? own : opponent;
-      return side ? { formation: side.formation, ids: side.slots, jerseys: side.jerseys, captain: side.captain } : null;
+      return side ? { formation: side.formation, ids: side.slots, jerseys: side.jerseys, captain: side.captain, kit: side.kit } : null;
     },
   );
 

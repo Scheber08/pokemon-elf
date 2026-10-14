@@ -2549,3 +2549,38 @@ button.sheet__row:hover {
 .done-box .captain-picker p {
   text-align: center;
 }
+
+.kit-picker__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-block: 0.4rem;
+}
+.kit-picker__label {
+  flex-basis: 100%;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.kit-picker__swatch {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.kit-picker__swatch.is-active {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.kit-picker__preview {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: 0.5rem;
+  vertical-align: -2px;
+}
+.kit-picker__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}

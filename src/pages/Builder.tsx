@@ -18,6 +18,8 @@ import { lineupImage, slugify } from '../lib/lineupImage';
 import { cleanJerseys, type Jerseys } from '../lib/jerseys';
 import { CaptainPicker } from '../components/CaptainPicker';
 import { JerseyEditor } from '../components/JerseyEditor';
+import { KitPicker } from '../components/KitPicker';
+import { cleanKit, type Kit } from '../lib/kits';
 import { SPRITE_STYLE_LABEL } from '../lib/sprites';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
 import { CAPTAIN_PARAM, decodeCaptain, decodeJerseys, decodeLineup, JERSEY_PARAM, shareUrl, URL_PARAM } from '../lib/urlState';
@@ -42,6 +44,8 @@ interface BuilderState {
   jerseys: Jerseys;
   /** Kapitän (Pokémon-ID aus der Elf) – null = keiner */
   captain: number | null;
+  /** Trikotfarben (null = Standard) */
+  kit: Kit | null;
 }
 
 /** So viele Schritte lassen sich rückgängig machen */
@@ -67,6 +71,7 @@ const DEFAULT_STATE: BuilderState = {
   teamName: '',
   jerseys: {},
   captain: null,
+  kit: null,
 };
 
 function normalize(s: Partial<BuilderState>): BuilderState {
@@ -77,6 +82,7 @@ function normalize(s: Partial<BuilderState>): BuilderState {
   if (!MEGA_OPTIONS.includes(merged.megas)) merged.megas = DEFAULT_STATE.megas;
   merged.forms = merged.forms !== false;
   merged.jerseys = cleanJerseys(merged.jerseys);
+  merged.kit = cleanKit(merged.kit);
   merged.captain = typeof merged.captain === 'number' && merged.slots.includes(merged.captain) ? merged.captain : null;
   return merged;
 }
@@ -355,6 +361,8 @@ export function Builder() {
             onChange={(c) => change((s) => ({ ...s, captain: c }))}
           />
         </section>
+
+        <KitPicker kit={state.kit} onChange={(kit) => change((s) => ({ ...s, kit }))} />
 
         <JerseyEditor
           formation={state.formation}

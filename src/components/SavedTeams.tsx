@@ -3,6 +3,7 @@ import type { FormationId } from '../types';
 import { useT } from '../i18n';
 import { copyText } from '../lib/exportImage';
 import { cleanJerseys } from '../lib/jerseys';
+import { cleanKit } from '../lib/kits';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
 import { shareUrl, type SharedLineup } from '../lib/urlState';
 import { useSettings } from '../state/Settings';
@@ -165,6 +166,7 @@ export function SavedTeams<T extends Playable>({ current, onLoad }: Props<T>) {
                 slots: opp.state.slots,
                 ss: opp.state.ssEnabled ? (opp.state.ss ?? null) : null,
                 jerseys: cleanJerseys((opp.state as { jerseys?: unknown }).jerseys),
+                kit: cleanKit((opp.state as { kit?: unknown }).kit),
                 captain: typeof (opp.state as { captain?: unknown }).captain === 'number' ? ((opp.state as { captain?: number }).captain ?? null) : null,
               }}
             />

@@ -11,6 +11,7 @@ import daily from './daily';
 import draft from './draft';
 import errors from './errors';
 import game from './game';
+import kit from './kit';
 import info from './info';
 import leaderboard from './leaderboard';
 import manager from './manager';
@@ -20,6 +21,6 @@ import result from './result';
 import scouting from './scouting';
 import trainer from './trainer';
 
-export const de = { common, nav, game, builder, challenge, result, daily, leaderboard, draft, online, scouting, info, errors, trainer, manager, captain };
+export const de = { common, nav, game, builder, challenge, result, daily, leaderboard, draft, online, scouting, info, errors, trainer, manager, captain, kit };
 
 export type Messages = typeof de;

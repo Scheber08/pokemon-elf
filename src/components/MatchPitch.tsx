@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useT } from '../i18n';
 import { ballAt, buildReplay, PITCH_H, PITCH_W, playerAt, type ReplayLineup } from '../lib/matchReplay';
+import { matchKits } from '../lib/kits';
 import { formatMinute, type Match } from '../lib/season';
 import { SPRITE_BASE } from '../lib/sprites';
 
@@ -21,6 +22,18 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
   const t = useT();
   const tx = t.draft.replay;
   const replay = useMemo(() => buildReplay(match, lineups), [match, lineups]);
+  // Trikotfarben beider Teams als CSS-Variablen (Gast weicht bei gleicher Farbe aus)
+  const kitStyle = useMemo(() => {
+    const [h, a] = matchKits(lineups[0]?.kit, lineups[1]?.kit);
+    return {
+      '--home-fill': h.fill,
+      '--home-stroke': h.stroke,
+      '--home-text': h.text,
+      '--away-fill': a.fill,
+      '--away-stroke': a.stroke,
+      '--away-text': a.text,
+    } as CSSProperties;
+  }, [lineups]);
   const reduced = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const [time, setTime] = useState(0);
   const [playing, setPlaying] = useState(!reduced);
@@ -92,7 +105,7 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
   }, []);
 
   return (
-    <div className="match-pitch">
+    <div className="match-pitch" style={kitStyle}>
       <div className="match-pitch__board" aria-live="polite">
         <span className="match-pitch__team">
           <span className="match-pitch__kit is-home" aria-hidden="true" />

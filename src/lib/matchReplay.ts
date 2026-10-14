@@ -7,6 +7,7 @@
 import { FORMATIONS } from '../config/formations';
 import type { FormationId, PosCode } from '../types';
 import { jerseyNumbers, type Jerseys } from './jerseys';
+import type { Kit } from './kits';
 import { createRng, hashSeed, type Rng } from './rng';
 import type { Match } from './season';
 
@@ -21,6 +22,8 @@ export interface ReplayLineup {
   jerseys?: Jerseys;
   /** Kapitän (Pokémon-ID) */
   captain?: number | null;
+  /** Trikotfarben (fehlt: Gelb/Weiß) */
+  kit?: Kit | null;
 }
 
 export interface ReplayPlayer {

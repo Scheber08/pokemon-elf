@@ -144,12 +144,12 @@
   stroke-width: 0.35;
 }
 .match-pitch__player.is-home circle {
-  fill: #ffcb05;
-  stroke: #7a5a00;
+  fill: var(--home-fill, #ffcb05);
+  stroke: var(--home-stroke, #7a5a00);
 }
 .match-pitch__player.is-away circle {
-  fill: #e9eef5;
-  stroke: #2f62c9;
+  fill: var(--away-fill, #e9eef5);
+  stroke: var(--away-stroke, #2f62c9);
 }
 .match-pitch__player.is-shooter circle {
   stroke: #e3350d;
@@ -173,10 +173,10 @@
   animation: match-pitch-flash 0.8s ease-out;
 }
 .match-pitch__flash.is-home {
-  fill: #ffcb05;
+  fill: var(--home-fill, #ffcb05);
 }
 .match-pitch__flash.is-away {
-  fill: #e9eef5;
+  fill: var(--away-fill, #e9eef5);
 }
 @keyframes match-pitch-flash {
   from {
@@ -260,12 +260,12 @@
   vertical-align: 0;
 }
 .match-pitch__kit.is-home {
-  background: #ffcb05;
-  box-shadow: inset 0 0 0 1.5px #7a5a00;
+  background: var(--home-fill, #ffcb05);
+  box-shadow: inset 0 0 0 1.5px var(--home-stroke, #7a5a00);
 }
 .match-pitch__kit.is-away {
-  background: #e9eef5;
-  box-shadow: inset 0 0 0 1.5px #2f62c9;
+  background: var(--away-fill, #e9eef5);
+  box-shadow: inset 0 0 0 1.5px var(--away-stroke, #2f62c9);
 }
 
 /* Tore auf der Zeitleiste (Daumenbreite links/rechts ausgespart); Trefferfläche 20 px, Punkt 8 px */
@@ -299,11 +299,12 @@
   border-radius: 50%;
 }
 .match-pitch__mark.is-home::after {
-  background: #ffcb05;
+  background: var(--home-fill, #ffcb05);
+  box-shadow: inset 0 0 0 1.5px var(--home-stroke, #7a5a00);
 }
 .match-pitch__mark.is-away::after {
-  background: #e9eef5;
-  box-shadow: inset 0 0 0 1.5px #2f62c9;
+  background: var(--away-fill, #e9eef5);
+  box-shadow: inset 0 0 0 1.5px var(--away-stroke, #2f62c9);
 }
 
 /* Angetippter Spieler */
@@ -351,4 +352,10 @@
   fill: #0d1b2a;
   stroke: none;
   font-size: 1.9px;
+}
+.match-pitch__player.is-home .match-pitch__number.is-inside {
+  fill: var(--home-text, #0d1b2a);
+}
+.match-pitch__player.is-away .match-pitch__number.is-inside {
+  fill: var(--away-text, #0d1b2a);
 }
