@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { isMega } from '../config/categories';
 import { DEFAULT_FORMATION, FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { POSITIONS } from '../config/positions';
 import { REGIONS } from '../config/regions';
@@ -40,6 +41,10 @@ interface DraftState {
   teams: DraftTeam[];
   region: RegionFilter;
   legends: boolean;
+  /** Regional- und Sonderformen im Pool */
+  forms: boolean;
+  /** Megas pro Team: 0 = keine, MEGAS_UNLIMITED = beliebig viele */
+  megas: number;
   pick: number;
   selected: number | null;
   seed: number | null;
@@ -60,10 +65,16 @@ const INITIAL: DraftState = {
   teams: defaultTeams(4),
   region: 0,
   legends: false,
+  forms: false,
+  megas: 0,
   pick: 0,
   selected: null,
   seed: null,
 };
+
+/** Mega-Limit „unbegrenzt" (wie im Builder) */
+const MEGAS_UNLIMITED = 99;
+const MEGA_OPTIONS = [0, 1, 2, 3, MEGAS_UNLIMITED];
 
 /** Snake-Draft: Runde 1 vorwärts, Runde 2 rückwärts … */
 function teamForPick(pick: number, n: number): number {
@@ -76,7 +87,7 @@ function teamForPick(pick: number, n: number): number {
 function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   const t = useT();
   const tx = t.draft.local;
-  const { list, byId, scale } = usePokemonData();
+  const { all, byId, scale } = usePokemonData();
   const { sprite } = useSettings();
   const [state, setState] = useState<DraftState>(() => ({ ...INITIAL, ...load<Partial<DraftState>>(STORAGE_KEYS.draft, {}) }));
   const [filters, setFilters] = useState<PokemonFilters>({ query: '', type: null, region: 0 });
@@ -95,19 +106,26 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   );
   /** Teamname für die Anzeige: Vorgabe „Mein Team" und Vereinsnamen (CPU) in der aktiven Sprache */
   const teamName = (name: string) => (name === OWN_TEAM ? tx.myTeam : t.game.club(name));
+  const megas = MEGA_OPTIONS.includes(state.megas) ? state.megas : 0;
+  const inPool = (p: Pokemon) =>
+    (state.region === 0 || p.gen === state.region) &&
+    (state.legends || (!p.leg && !p.myth)) &&
+    (!p.form || (isMega(p) ? megas > 0 : !!state.forms));
+  // Mega-Limit: Hat das Team am Zug genug Megas, fallen sie für diesen Pick aus dem Pool
+  const teamMegas = team ? team.slots.filter((id) => id != null && isMega(byId.get(id) ?? {})).length : 0;
+  const megaRoom = megas >= MEGAS_UNLIMITED || teamMegas < megas;
   const pool = useMemo(
-    () =>
-      list.filter(
-        (p) =>
-          (state.region === 0 || p.gen === state.region) && (state.legends || (!p.leg && !p.myth)) && !drafted.has(p.id),
-      ),
-    [list, state.region, state.legends, drafted],
+    () => all.filter((p) => inPool(p) && !drafted.has(p.id) && (megaRoom || !isMega(p))),
+    [all, state.region, state.legends, state.forms, megas, megaRoom, drafted],
   );
   const filtered = useFilteredPokemon(pool, filters);
-  const poolSize = useMemo(
-    () => list.filter((p) => (state.region === 0 || p.gen === state.region) && (state.legends || (!p.leg && !p.myth))).length,
-    [list, state.region, state.legends],
-  );
+  // Megas zählen nur, soweit das Limit sie aufnimmt
+  const poolSize = useMemo(() => {
+    const base = all.filter(inPool);
+    const megaCount = base.filter(isMega).length;
+    const cap = megas >= MEGAS_UNLIMITED ? megaCount : Math.min(megaCount, megas * n);
+    return base.length - megaCount + cap;
+  }, [all, state.region, state.legends, state.forms, megas, n]);
   const poolTooSmall = poolSize < n * ROUNDS;
 
   const lock = (teamIdx: number, slot: number, pokemonId: number) =>
@@ -301,6 +319,27 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               ]}
             />
             <p className="settings__desc">{tx.poolDesc(poolPhrase, state.legends)}</p>
+            <Segmented
+              label={t.builder.forms}
+              value={!!state.forms}
+              onChange={(forms) => setState((s) => ({ ...s, forms }))}
+              options={[
+                { value: false, label: t.common.off },
+                { value: true, label: t.common.on },
+              ]}
+            />
+            <Segmented
+              label={t.draft.settings.maxMegas}
+              value={megas}
+              onChange={(m) => setState((s) => ({ ...s, megas: m }))}
+              options={MEGA_OPTIONS.map((m) =>
+                m === 0
+                  ? { value: m, label: t.common.off }
+                  : m === MEGAS_UNLIMITED
+                    ? { value: m, label: '∞', title: t.builder.megasUnlimited }
+                    : { value: m, label: String(m) },
+              )}
+            />
             {poolTooSmall && <p className="notice notice--error">{tx.poolTooSmall(poolSize, n, ROUNDS, n * ROUNDS)}</p>}
             <button type="button" className="btn btn--primary btn--big" onClick={start} disabled={poolTooSmall}>
               {tx.start}
