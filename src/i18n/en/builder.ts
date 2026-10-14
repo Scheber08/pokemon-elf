@@ -14,6 +14,13 @@ const builder: Messages['builder'] = {
   pitchAria: (formation) => `Pitch, formation ${formation}`,
   actions: 'Actions',
   saveImage: 'Save image',
+  jerseys: {
+    title: 'Shirt numbers',
+    note: 'Enter a number 1–99 (Enter). If it is taken, the two players swap. The number stays with the Pokémon even if you move it.',
+    bench: 'Bench',
+    aria: (name) => `Shirt number of ${name}`,
+    reset: 'Reset all to default',
+  },
   savingImage: 'Creating image …',
   random: 'Random',
   undo: 'Undo',

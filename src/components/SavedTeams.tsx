@@ -2,6 +2,7 @@ import { lazy, Suspense, useState } from 'react';
 import type { FormationId } from '../types';
 import { useT } from '../i18n';
 import { copyText } from '../lib/exportImage';
+import { cleanJerseys } from '../lib/jerseys';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
 import { shareUrl, type SharedLineup } from '../lib/urlState';
 import { useSettings } from '../state/Settings';
@@ -163,6 +164,7 @@ export function SavedTeams<T extends Playable>({ current, onLoad }: Props<T>) {
                 formation: opp.formation as FormationId,
                 slots: opp.state.slots,
                 ss: opp.state.ssEnabled ? (opp.state.ss ?? null) : null,
+                jerseys: cleanJerseys((opp.state as { jerseys?: unknown }).jerseys),
               }}
             />
           </Suspense>

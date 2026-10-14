@@ -2478,3 +2478,31 @@ button.sheet__row:hover {
   background: #e3350d;
   vertical-align: super;
 }
+
+/* Trikotnummern bearbeiten */
+.jersey-editor__list {
+  list-style: none;
+  margin: 8px 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.jersey-editor__list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 4.2em;
+  align-items: center;
+  gap: 8px;
+}
+.jersey-editor__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.jersey-editor__bench {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.jersey-editor__input {
+  padding: 4px 6px;
+  text-align: center;
+}

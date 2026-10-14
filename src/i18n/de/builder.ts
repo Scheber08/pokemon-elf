@@ -9,6 +9,13 @@ const builder = {
   pitchAria: (formation: string) => `Spielfeld, Formation ${formation}`,
   actions: 'Aktionen',
   saveImage: 'Bild speichern',
+  jerseys: {
+    title: 'Trikotnummern',
+    note: 'Nummer 1–99 eintragen (Enter). Ist sie schon vergeben, tauschen die beiden. Die Nummer bleibt beim Pokémon, auch wenn du es umstellst.',
+    bench: 'Bank',
+    aria: (name: string) => `Trikotnummer von ${name}`,
+    reset: 'Alle auf Standard zurücksetzen',
+  },
   savingImage: 'Erstelle Bild …',
   random: 'Zufällig',
   undo: 'Rückgängig',

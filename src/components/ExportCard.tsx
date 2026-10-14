@@ -3,6 +3,7 @@ import { useT } from '../i18n';
 import type { FormationId, Pokemon, SpriteStyle } from '../types';
 import { PitchMarkings } from './PitchMarkings';
 import { PlayerToken } from './PlayerToken';
+import { jerseyNumbers, type Jerseys } from '../lib/jerseys';
 import type { SpriteSource } from './Sprite';
 
 export interface ExportResult {
@@ -24,6 +25,8 @@ interface Props {
   subtitle?: string;
   result?: ExportResult;
   watermark: string;
+  /** Eigene Trikotnummern */
+  jerseys?: Jerseys;
 }
 
 export const EXPORT_W = 1200;
@@ -31,9 +34,14 @@ export const EXPORT_H = 1500;
 const PITCH_W = 880;
 
 /** Statisches 1200×1500-Bild (Spielfeld, Teamname, ggf. Saisonbilanz) für html2canvas. */
-export function ExportCard({ formation, players, ss, sprite, images, teamName, subtitle, result, watermark }: Props) {
+export function ExportCard({ formation, players, ss, sprite, images, teamName, subtitle, result, watermark, jerseys }: Props) {
   const t = useT();
   const defs = FORMATIONS[formation].slots;
+  // Trikotnummern wie auf dem Feld (eigene bzw. Vorgabe nach Position)
+  const numbers = jerseyNumbers(
+    [...defs.flatMap((d, i) => (players[i] ? [{ pokemonId: players[i]!.id, pos: d.pos }] : [])), ...(ss ? [{ pokemonId: ss.id, pos: 'SS' as const }] : [])],
+    jerseys ?? {},
+  );
   return (
     <div className="export-card" style={{ width: EXPORT_W, height: EXPORT_H }}>
       <div className="export-card__head">
@@ -61,13 +69,13 @@ export function ExportCard({ formation, players, ss, sprite, images, teamName, s
             const p = players[i] ?? null;
             return (
               <div key={i} className={`slot ${p ? 'slot--filled' : 'slot--empty'}`} style={{ left: `${d.x}%`, top: `${d.y}%`, zIndex: Math.round(d.y) }}>
-                <PlayerToken pos={d.pos} pokemon={p} sprite={sprite} source={p ? images.get(p.id) : undefined} />
+                <PlayerToken pos={d.pos} pokemon={p} sprite={sprite} source={p ? images.get(p.id) : undefined} number={p ? numbers.get(p.id) : null} />
               </div>
             );
           })}
           {ss !== undefined && (
             <div className={`slot slot--export-ss ${ss ? 'slot--filled' : 'slot--empty'}`} style={{ left: '89%', top: '91%' }}>
-              <PlayerToken pos="SS" pokemon={ss} sprite={sprite} source={ss ? images.get(ss.id) : undefined} />
+              <PlayerToken pos="SS" pokemon={ss} sprite={sprite} source={ss ? images.get(ss.id) : undefined} number={ss ? numbers.get(ss.id) : null} />
             </div>
           )}
         </div>

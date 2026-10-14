@@ -15,6 +15,8 @@ import { copyText, downloadBlob } from '../lib/exportImage';
 import { remapFormation } from '../lib/formation';
 import { shuffle } from '../lib/rng';
 import { lineupImage, slugify } from '../lib/lineupImage';
+import { cleanJerseys, type Jerseys } from '../lib/jerseys';
+import { JerseyEditor } from '../components/JerseyEditor';
 import { SPRITE_STYLE_LABEL } from '../lib/sprites';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
 import { decodeLineup, shareUrl, URL_PARAM } from '../lib/urlState';
@@ -35,6 +37,8 @@ interface BuilderState {
   megas: number;
   ssEnabled: boolean;
   teamName: string;
+  /** Eigene Trikotnummern (Pokémon-ID → Nummer) */
+  jerseys: Jerseys;
 }
 
 /** So viele Schritte lassen sich rückgängig machen */
@@ -58,6 +62,7 @@ const DEFAULT_STATE: BuilderState = {
   megas: 1,
   ssEnabled: false,
   teamName: '',
+  jerseys: {},
 };
 
 function normalize(s: Partial<BuilderState>): BuilderState {
@@ -67,6 +72,7 @@ function normalize(s: Partial<BuilderState>): BuilderState {
   merged.slots = Array.from({ length: n }, (_, i) => merged.slots?.[i] ?? null);
   if (!MEGA_OPTIONS.includes(merged.megas)) merged.megas = DEFAULT_STATE.megas;
   merged.forms = merged.forms !== false;
+  merged.jerseys = cleanJerseys(merged.jerseys);
   return merged;
 }
 
@@ -245,6 +251,7 @@ export function Builder() {
         byId,
         teamName: state.teamName,
         subtitle: `${state.formation} · ${state.region ? t.game.region[state.region] : t.common.allRegions}`,
+        jerseys: state.jerseys,
       });
       downloadBlob(blob, `${slugify(state.teamName || 'pokemon-elf')}.png`);
       toast(t.builder.imageSaved);
@@ -281,6 +288,7 @@ export function Builder() {
           onSlotClick={setPicking}
           onSwap={swap}
           ariaLabel={t.builder.pitchAria(state.formation)}
+          jerseys={state.jerseys}
         />
         <div className="actionbar" role="toolbar" aria-label={t.builder.actions}>
           <button type="button" className="btn btn--primary" onClick={saveImage} disabled={busy}>
@@ -325,6 +333,14 @@ export function Builder() {
           ss={state.ssEnabled ? state.ss : undefined}
           sprite={sprite}
           onRowClick={setPicking}
+        />
+
+        <JerseyEditor
+          formation={state.formation}
+          slots={state.slots}
+          ss={state.ssEnabled ? state.ss : null}
+          jerseys={state.jerseys}
+          onChange={(jerseys) => change((s) => ({ ...s, jerseys }))}
         />
 
         <section className="card settings" aria-labelledby="settings-title">

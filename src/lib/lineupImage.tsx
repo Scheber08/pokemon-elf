@@ -1,5 +1,6 @@
 import { ExportCard, type ExportResult } from '../components/ExportCard';
 import type { FormationId, Pokemon, Slots, SpriteStyle } from '../types';
+import type { Jerseys } from './jerseys';
 import { renderToPng, spriteDataUrls } from './exportImage';
 
 interface Options {
@@ -12,6 +13,8 @@ interface Options {
   teamName: string;
   subtitle?: string;
   result?: ExportResult;
+  /** Eigene Trikotnummern */
+  jerseys?: Jerseys;
 }
 
 /** Erzeugt das 1200×1500-PNG einer Aufstellung (optional mit Saisonbilanz). */
@@ -31,6 +34,7 @@ export async function lineupImage(o: Options): Promise<Blob> {
       subtitle={o.subtitle}
       result={o.result}
       watermark={watermark}
+      jerseys={o.jerseys}
     />,
   );
 }

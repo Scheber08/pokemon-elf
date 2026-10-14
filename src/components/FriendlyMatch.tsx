@@ -8,6 +8,7 @@ import { loadSavedTeams } from './SavedTeams';
 import { usePokemonData } from '../state/PokemonData';
 import { ReplayToggle, useMatchReport } from './MatchReport';
 import type { FormationId } from '../types';
+import { cleanJerseys, type Jerseys } from '../lib/jerseys';
 import '../styles/friendly.css';
 
 /** Gespeicherte Builder-Aufstellung (siehe pages/Builder.tsx) – nur die nötigen Felder. */
@@ -17,28 +18,32 @@ interface StoredLineup {
   ss?: number | null;
   ssEnabled?: boolean;
   teamName?: string;
+  jerseys?: unknown;
 }
+
+/** Seite eines Testspiels samt eigenen Trikotnummern (nur für die Wiedergabe) */
+type Side = FriendlySide & { jerseys?: Jerseys };
 
 const newSeed = () => Math.floor(Math.random() * 0x7fffffff);
 
 /** Testspiel der eigenen Builder-Elf gegen ein Ranglisten-Team (Hin- und Rückspiel). */
-export function FriendlyMatch({ opponent }: { opponent: FriendlySide }) {
+export function FriendlyMatch({ opponent }: { opponent: Side }) {
   const t = useT();
   const tr = t.leaderboard.entry;
   const { byId, scale } = usePokemonData();
   const [seed, setSeed] = useState(newSeed);
   /** Wählbare eigene Elfen: die aktuelle Builder-Elf, dann „Meine Teams" – nur vollständige */
-  const sides = useMemo((): FriendlySide[] => {
-    const sideOf = (s: StoredLineup | null, fallback: string): FriendlySide | null => {
+  const sides = useMemo((): Side[] => {
+    const sideOf = (s: StoredLineup | null, fallback: string): Side | null => {
       if (!s?.formation || !s.slots) return null;
       const slots = s.slots.map((id) => (id != null && byId.has(id) ? id : null));
       if (!fullEleven(slots)) return null;
       const ss = s.ssEnabled && s.ss != null && byId.has(s.ss) ? s.ss : null;
-      return { name: s.teamName?.trim() || fallback, formation: s.formation, slots, ss };
+      return { name: s.teamName?.trim() || fallback, formation: s.formation, slots, ss, jerseys: cleanJerseys(s.jerseys) };
     };
     const current = sideOf(load<StoredLineup | null>(STORAGE_KEYS.lineup, null), tr.friendlyYou);
     const saved = loadSavedTeams<StoredLineup>().map((x) => sideOf(x.state, x.name));
-    return [current, ...saved].filter((x): x is FriendlySide => !!x);
+    return [current, ...saved].filter((x): x is Side => !!x);
   }, [byId, tr.friendlyYou]);
   const [choice, setChoice] = useState(0);
   const own = sides[Math.min(choice, sides.length - 1)] ?? null;
@@ -54,7 +59,7 @@ export function FriendlyMatch({ opponent }: { opponent: FriendlySide }) {
     undefined,
     (i) => {
       const side = i === 0 ? own : opponent;
-      return side ? { formation: side.formation, ids: side.slots } : null;
+      return side ? { formation: side.formation, ids: side.slots, jerseys: side.jerseys } : null;
     },
   );
 
