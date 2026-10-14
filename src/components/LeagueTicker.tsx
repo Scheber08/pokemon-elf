@@ -9,6 +9,7 @@ import {
   secondsToKickoff,
   titleRace,
   titleTieNote,
+  topScorers,
   type Matchday,
 } from '../lib/leagueTimeline';
 import { cupPens, cupStageOf, cupStatus, cupWinner, type CupInfo } from '../lib/cup';
@@ -35,6 +36,9 @@ interface Props {
   /** Ticker vorbei oder übersprungen → Ergebnis zeigen */
   onDone: () => void;
 }
+
+/** So viele Torjäger zeigt der Ticker */
+const LIVE_SCORERS = 5;
 
 /** Wie oft die Uhr neu ausgewertet wird */
 const TICK_MS = 250;
@@ -127,6 +131,11 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
   /** Gruppenphase läuft (oder steht bevor) → Gruppentabellen statt Baum */
   const groupsPhase = !!cup?.groups && (!day || cupStageOf(cup, day.round) === 'group');
   const pensOf = useCallback((m: Match) => (cup ? cupPens(cup, m) : null), [cup]);
+  /** Torjäger bis zum aktuellen Spieltag (Top 5) */
+  const scorers = useMemo(
+    () => (md > 0 ? topScorers({ ...league, matches: league.matches.filter((m) => m.round <= md) }).slice(0, LIVE_SCORERS) : []),
+    [league, md],
+  );
   /** Nur am Saisonende: wie der Titel bei Punktgleichheit entschieden wurde (nicht im Turnier) */
   const tieNote = finale && day && !cup ? titleTieNote(titleRace(day.table), nameOf) : null;
 
@@ -350,6 +359,23 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
           </aside>
         )}
       </div>
+
+      {scorers.length > 0 && (
+        <section className="league-ticker__scorers" aria-label={t.draft.topScorers}>
+          <h3 className="section-title">{t.draft.topScorers}</h3>
+          <ol className="league-ticker__scorer-list">
+            {scorers.map((sc, i) => (
+              <li key={`${sc.teamIndex}-${sc.pokemonId}`} className={sc.teamIndex === you ? 'is-you' : ''}>
+                <span className="muted">{i + 1}.</span>
+                <span className="league-ticker__scorer-name">
+                  {pokemonName(sc.pokemonId)} <small className="muted">{nameOf(sc.teamIndex)}</small>
+                </span>
+                <strong>{sc.goals}</strong>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
 
       {!day && preKickoff}
 

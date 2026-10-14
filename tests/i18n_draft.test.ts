@@ -510,6 +510,8 @@ describe('KO-Turnier auf Englisch', () => {
     expect(all).toContain('Quarter-final');
     expect(all).toContain('Bracket');
     expect(all).toMatch(/Still in|Out in the round of 16/);
+    // Torjäger bis zum aktuellen Spieltag
+    expect(all).toContain('Top scorers');
     expect(germanLeft(container)).toEqual([]);
   });
 });

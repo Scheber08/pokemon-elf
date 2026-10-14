@@ -917,3 +917,33 @@
     display: none;
   }
 }
+
+/* Ticker: Torjäger bis zum aktuellen Spieltag */
+.league-ticker__scorers {
+  margin-top: 16px;
+}
+.league-ticker__scorer-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 4px 16px;
+}
+.league-ticker__scorer-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--line);
+}
+.league-ticker__scorer-list li.is-you {
+  color: var(--yellow);
+}
+:root[data-theme='light'] .league-ticker__scorer-list li.is-you {
+  color: #b45309;
+}
+.league-ticker__scorer-name {
+  flex: 1;
+  min-width: 0;
+}
