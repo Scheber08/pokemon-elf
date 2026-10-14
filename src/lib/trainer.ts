@@ -49,6 +49,8 @@ const NEWYEAR = ['12-27', '01-10', '🎆'] as const;
 const AUTUMN = ['09-01', '09-30', '🍂'] as const;
 /** Fußball-Sommer (Zeit der großen Turniere) */
 const FOOTBALL = ['06-01', '07-20', '⚽'] as const;
+/** Oktoberfest */
+const OKTOBERFEST = ['09-16', '10-06', '🥨'] as const;
 /** Valentinstag */
 const VALENTINE = ['02-07', '02-14', '💘'] as const;
 
@@ -145,6 +147,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('hat', 'party', 250), ...NEWYEAR),
   seasonal(item('hat', 'hearts', 200), ...VALENTINE),
   seasonal(item('hat', 'leaves', 250), ...AUTUMN),
+  seasonal(item('hat', 'tyrolean', 250), ...OKTOBERFEST),
   // Accessoire
   item('accessory', 'none', 0),
   item('accessory', 'freckles', 0),

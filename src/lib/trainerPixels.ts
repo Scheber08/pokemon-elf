@@ -374,6 +374,14 @@ function hat(c: Canvas, id: string, cloth: string) {
         c.dots([[cx - 2, 1]], '#f7a1bf');
       }
       break;
+    case 'tyrolean':
+      // Tirolerhut: grüner Filz mit schmaler Krempe, rotem Band und Feder
+      c.fill(and(ellipse(15.5, 9, 6.5, 6), above(9)), '#3f6b3a', '#24401f');
+      c.fill((x, y) => y >= 8 && y <= 9 && x >= 6 && x <= 25, '#4f7f48', '#24401f');
+      c.rect(10, 7, 12, 1, '#d8342a');
+      c.dots([[21, 6], [22, 5], [23, 4], [23, 3], [24, 2], [24, 1]], '#f3f3f3');
+      c.dots([[22, 6], [23, 5]], '#c9ced6');
+      break;
     case 'leaves':
       // Herbstkranz: Blätter in Rot, Orange und Gelb auf einem Reif
       c.fill((x, y) => y === 9 && head(x, y), '#7a5236', null);
