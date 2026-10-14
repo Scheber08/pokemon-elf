@@ -7,7 +7,11 @@
  * Torjägerliste, das vom Server gespeicherte Ergebnis, die Titelentscheidung bei
  * Punktgleichheit und der Teilen-Text.
  */
+import { FORMATIONS } from '../config/formations';
 import { messages } from '../i18n';
+import type { Pokemon, PosCode } from '../types';
+import type { DraftPickLog, DraftTeam } from './api/draftContract';
+import { positionFit, type Scale } from './fit';
 import { buildTable, type Goal, type LeagueResult, type LeagueTeam, type Match, type TableRow } from './season';
 
 export interface Matchday {
@@ -389,4 +393,36 @@ export function draftGrades(ratings: readonly number[]): string[] {
   const spread = Math.max(max - Math.min(...ratings), DRAFT_GRADE_SPREAD);
   const last = DRAFT_GRADES.length - 1;
   return ratings.map((r) => DRAFT_GRADES[Math.round(((max - r) / spread) * last)]);
+}
+
+/** Schnäppchen des Drafts: ein später Pick, der besonders gut auf seine Position passt. */
+export interface DraftSteal {
+  pick: number;
+  teamId: string;
+  pokemonId: number;
+  pos: PosCode;
+}
+
+/**
+ * Bester Pick der zweiten Draft-Hälfte nach Positions-Fit (Standardschütze zählt nicht) – bei
+ * Gleichstand der spätere. null ohne passende Picks.
+ */
+export function draftSteal(
+  picks: readonly Pick<DraftPickLog, 'pick' | 'teamId' | 'pokemonId' | 'slot'>[],
+  teams: readonly Pick<DraftTeam, 'id' | 'formation'>[],
+  byId: Map<number, Pokemon>,
+  scale: Scale,
+): DraftSteal | null {
+  const half = Math.floor(picks.length / 2);
+  let best: (DraftSteal & { fit: number }) | null = null;
+  for (const pk of picks) {
+    if (pk.pick < half) continue;
+    const team = teams.find((t) => t.id === pk.teamId);
+    const p = byId.get(pk.pokemonId);
+    const def = team ? FORMATIONS[team.formation].slots[pk.slot] : undefined;
+    if (!p || !def) continue;
+    const fit = positionFit(p, def.pos, scale);
+    if (!best || fit >= best.fit) best = { pick: pk.pick, teamId: pk.teamId, pokemonId: pk.pokemonId, pos: def.pos, fit };
+  }
+  return best && { pick: best.pick, teamId: best.teamId, pokemonId: best.pokemonId, pos: best.pos };
 }

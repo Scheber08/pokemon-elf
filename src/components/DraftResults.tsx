@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
-import type { DraftTeam } from '../lib/api/draftContract';
+import type { DraftPickLog, DraftTeam } from '../lib/api/draftContract';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { draftGrades, draftShareText, leagueTimeline, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { draftGrades, draftShareText, draftSteal, leagueTimeline, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { formatRecord, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -27,6 +27,8 @@ interface Props {
   sprite: SpriteStyle;
   code: string;
   leagueName: string;
+  /** Picks des Drafts (für das „Schnäppchen") – fehlt bei sehr alten Ständen */
+  picks?: DraftPickLog[];
 }
 
 /** Wie viele Torjäger die Liste zeigt */
@@ -39,15 +41,16 @@ const TOP_SCORERS = 10;
  * entschieden wurde. „Ergebnis teilen" (mit Link zur Liga) nutzt das Teilen-Menü oder die
  * Zwischenablage.
  */
-export function DraftResults({ league, teams, ratings, highlight, sprite, code, leagueName }: Props) {
+export function DraftResults({ league, teams, ratings, highlight, sprite, code, leagueName, picks = [] }: Props) {
   const t = useT();
   const tx = t.draft.results;
   const c = t.draft.col;
-  const { byId } = usePokemonData();
+  const { byId, scale } = usePokemonData();
   const toast = useToast();
   const [saving, setSaving] = useState(false);
   const days = useMemo(() => leagueTimeline(league), [league]);
   const scorers = useMemo(() => topScorers(league).slice(0, TOP_SCORERS), [league]);
+  const steal = useMemo(() => draftSteal(picks, teams, byId, scale('all')), [picks, teams, byId, scale]);
   const table = league.table;
   const you = highlight != null && highlight >= 0 && highlight < league.teams.length ? highlight : null;
 
@@ -85,6 +88,8 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
   const championName = nameOf(champion.team);
   const youAreChampion = you != null && champion.team === you;
   const tieNote = titleTieNote(race, nameOf);
+  const stealMon = steal ? byId.get(steal.pokemonId) : undefined;
+  const stealTeam = steal ? teams.findIndex((tm) => tm.id === steal.teamId) : -1;
   const shareText = draftShareText({
     code,
     championName,
@@ -158,6 +163,11 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
         </h2>
         <p className="draft-results__line">{tx.heroLine(champion, ratingOf(champion.team))}</p>
         {tieNote && <p className="draft-results__tie">{tieNote}</p>}
+        {steal && stealMon && stealTeam >= 0 && (
+          <p className="draft-results__steal">
+            {tx.steal(t.game.pokemon(stealMon), steal.pick + 1, nameOf(stealTeam), t.game.posName[steal.pos])}
+          </p>
+        )}
         {ownRow && (
           <p className="draft-results__you">
             {youAreChampion ? tx.youChampion : tx.yourPlace(nameOf(ownRow.team), ownIndex + 1, ownRow.pts)}

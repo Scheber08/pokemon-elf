@@ -225,6 +225,7 @@ const draft: Messages['draft'] = {
     share: 'Share result',
     saveOwnImage: 'My XI as image',
     grade: 'Grade',
+    steal: (pokemon, pick, team, pos) => `Steal of the draft: ${pokemon} (pick ${pick}) for ${team} as ${pos}`,
     gradeTitle: 'Draft grade by team score – relative to the other teams in this league (A+ to D)',
     finalTable: 'Final table',
     yourTeamSr: ' (your team)',

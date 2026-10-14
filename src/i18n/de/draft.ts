@@ -242,6 +242,8 @@ const draft = {
     share: 'Ergebnis teilen',
     saveOwnImage: 'Meine Elf als Bild',
     grade: 'Note',
+    /** Bester später Pick */
+    steal: (pokemon: string, pick: number, team: string, pos: string) => `Schnäppchen des Drafts: ${pokemon} (Pick ${pick}) für ${team} als ${pos}`,
     gradeTitle: 'Draft-Note nach Team-Score – relativ zu den anderen Teams dieser Liga (A+ bis D)',
     finalTable: 'Abschlusstabelle',
     yourTeamSr: ' (dein Team)',

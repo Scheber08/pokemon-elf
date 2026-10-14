@@ -109,6 +109,7 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           sprite={sprite}
           code={s.code}
           leagueName={s.settings.name}
+          picks={s.picks}
         />
       )}
       {!ticker && entries.length > 1 && <EternalTable entries={entries} youTeamId={room.me?.id ?? null} />}

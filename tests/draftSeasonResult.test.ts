@@ -349,3 +349,16 @@ describe('Draft-Noten', () => {
     expect(draftGrades([])).toEqual([]);
   });
 });
+
+describe('Schnäppchen des Drafts', () => {
+  it('bester Fit der zweiten Draft-Hälfte, ohne Standardschütze', async () => {
+    const { draftSteal } = await import('../src/lib/leagueTimeline');
+    const { state, scale, byId } = finishedDraft();
+    const steal = draftSteal(state.picks, state.teams, byId, scale)!;
+    expect(steal.pick).toBeGreaterThanOrEqual(Math.floor(state.picks.length / 2));
+    expect(steal.pos).not.toBe('SS');
+    const own = state.picks.find((p) => p.pick === steal.pick)!;
+    expect(own.pokemonId).toBe(steal.pokemonId);
+    expect(draftSteal([], state.teams, byId, scale)).toBeNull();
+  });
+});
