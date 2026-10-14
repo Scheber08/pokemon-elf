@@ -162,6 +162,7 @@ function fakeRoom(s: DraftSnapshot, over: Partial<DraftRoom> = {}): DraftRoom {
     setCaptain: vi.fn(() => true),
     setKit: vi.fn(() => true),
     setCheer: vi.fn(() => true),
+    setCrest: vi.fn(() => true),
     answerOffer: vi.fn(() => true),
     react: vi.fn(() => true),
     reactions: [],

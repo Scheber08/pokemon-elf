@@ -10,6 +10,7 @@ import { jerseyNumbers, type Jerseys } from './jerseys';
 import type { Kit } from './kits';
 import { createRng, hashSeed, type Rng } from './rng';
 import type { Match } from './season';
+import type { Crest } from './crest';
 
 export const PITCH_W = 105;
 export const PITCH_H = 68;
@@ -26,6 +27,8 @@ export interface ReplayLineup {
   kit?: Kit | null;
   /** Torjubel (Spruch unter „TOR!“) */
   cheer?: string;
+  /** Vereinswappen (Anzeigetafel, Spielbericht) */
+  crest?: Crest | null;
 }
 
 export interface ReplayPlayer {

@@ -17,6 +17,7 @@ import {
   setTeamCaptain,
   setTeamKit,
   setTeamCheer,
+  setTeamCrest,
   setTeamJerseys,
   totalPicks,
   upgradeSettings,
@@ -588,5 +589,18 @@ describe('Torjubel im Online-Draft', () => {
     expect(setTeamCheer(next, 'dev-h', '   ').teams.find((t) => t.id === 'h')).not.toHaveProperty('cheer');
     expect(parseClientMessage(JSON.stringify({ type: 'cheer', text: 'Hurra' }))).toMatchObject({ ok: true });
     expect(parseClientMessage(JSON.stringify({ type: 'cheer', text: 5 })).ok).toBe(false);
+  });
+});
+
+describe('Wappen im Online-Draft', () => {
+  it('nur gültige Wappen, null = keins; Nachricht nur mit Objekt', () => {
+    const s = drafted();
+    const crest = { shape: 'round', pattern: 'halves', primary: 'red', secondary: 'white', symbol: 'p:6' };
+    const next = setTeamCrest(s, 'dev-h', crest);
+    expect(next.teams.find((t) => t.id === 'h')!.crest).toEqual(crest);
+    expect(setTeamCrest(next, 'dev-h', null).teams.find((t) => t.id === 'h')).not.toHaveProperty('crest');
+    expect(() => setTeamCrest(s, 'dev-h', { ...crest, shape: 'star' })).toThrow(/Wappen/);
+    expect(parseClientMessage(JSON.stringify({ type: 'crest', crest }))).toMatchObject({ ok: true });
+    expect(parseClientMessage(JSON.stringify({ type: 'crest', crest: 'x' })).ok).toBe(false);
   });
 });

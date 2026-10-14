@@ -25,6 +25,9 @@ import { TradePanel, TransferMarket } from './ManagerMarket';
 import { KitPicker } from './KitPicker';
 import '../styles/draft.css';
 import { cleanKit } from '../lib/kits';
+import { CrestEditor } from './CrestEditor';
+import { cleanCrest, type Crest as CrestData } from '../lib/crest';
+import { Crest } from './Crest';
 
 /** Auswahl beim Tauschen: ein Feld-/SS-Platz oder ein Bankspieler */
 type Selection = { kind: 'slot'; index: number } | { kind: 'bench'; id: number } | null;
@@ -163,7 +166,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
     const team = s.teams[i];
     if (!team) return null;
     const l = m?.playedLineups?.[match.round]?.[team.id] ?? m?.lineups[team.id];
-    return l ? { formation: l.formation, ids: l.slots, jerseys: team.jerseys, captain: team.captain, kit: cleanKit(team.kit), cheer: team.cheer } : null;
+    return l ? { formation: l.formation, ids: l.slots, jerseys: team.jerseys, captain: team.captain, kit: cleanKit(team.kit), cheer: team.cheer, crest: cleanCrest(team.crest) } : null;
   });
 
   if (!m || !league) {
@@ -304,7 +307,12 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
         </section>
       )}
 
-      {room.me && !readOnly && meIndex >= 0 && <KitPicker kit={cleanKit(s.teams[meIndex].kit)} onChange={(kit) => room.setKit(kit)} cheer={s.teams[meIndex].cheer ?? ''} onCheer={(c) => room.setCheer(c)} />}
+      {room.me && !readOnly && meIndex >= 0 && (
+        <>
+          <KitPicker kit={cleanKit(s.teams[meIndex].kit)} onChange={(kit) => room.setKit(kit)} cheer={s.teams[meIndex].cheer ?? ''} onCheer={(c) => room.setCheer(c)} />
+          <CrestEditor crest={cleanCrest(s.teams[meIndex].crest)} onChange={(c) => room.setCrest(c)} pokemon={rosterOf(s.teams[meIndex])} />
+        </>
+      )}
 
       {room.me && !readOnly && m.lineups[room.me.id] && meIndex >= 0 && (
         <JerseyEditor
@@ -411,7 +419,15 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
         <h2 id="manager-table" className="section-title">
           {tx.tableTitle}
         </h2>
-        <ManagerTable rows={league.table} you={you} nameOf={nameOf} matches={league.matches} played={m.played} league={league} />
+        <ManagerTable
+          rows={league.table}
+          you={you}
+          nameOf={nameOf}
+          matches={league.matches}
+          played={m.played}
+          league={league}
+          crestOf={(i) => cleanCrest(s.teams[i]?.crest)}
+        />
       </section>
     </div>
   );
@@ -621,7 +637,10 @@ function ManagerTable({
   matches,
   played,
   league,
+  crestOf,
 }: {
+  /** Wappen eines Teams (null = keins) */
+  crestOf: (i: number) => CrestData | null;
   rows: import('../lib/season').TableRow[];
   you: number | null;
   nameOf: (i: number) => string;
@@ -677,7 +696,14 @@ function ManagerTable({
               <td>
                 {i + 1} {delta && <Trend delta={delta[r.team]} />}
               </td>
-              <td className="left">{nameOf(r.team)}</td>
+              <td className="left">
+                {crestOf(r.team) && (
+                  <>
+                    <Crest crest={crestOf(r.team)!} size={16} />{' '}
+                  </>
+                )}
+                {nameOf(r.team)}
+              </td>
               <td>{r.played}</td>
               <td>{r.w}</td>
               <td>{r.d}</td>

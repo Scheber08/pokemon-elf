@@ -49,6 +49,9 @@ import { RunNotice } from './RunBoard';
 import { KitPicker } from './KitPicker';
 import '../styles/draft.css';
 import { cleanKit } from '../lib/kits';
+import { CrestEditor } from './CrestEditor';
+import { cleanCrest } from '../lib/crest';
+import { rosterOf } from '../lib/draftEngine';
 
 /** Draft-Slot schon besetzt? Feld, Standardschütze oder Bank (Manager-Saison). */
 function slotFilled(team: DraftTeam, i: number): boolean {
@@ -567,7 +570,12 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                   hint={s.settings.format === 'manager' ? t.captain.managerNote : t.captain.draftNote}
                 />
               )}
-              {pitchTeam === me && me && !readOnly && <KitPicker kit={cleanKit(me.kit)} onChange={(kit) => room.setKit(kit)} cheer={me.cheer ?? ''} onCheer={(c) => room.setCheer(c)} />}
+              {pitchTeam === me && me && !readOnly && (
+        <>
+          <KitPicker kit={cleanKit(me.kit)} onChange={(kit) => room.setKit(kit)} cheer={me.cheer ?? ''} onCheer={(c) => room.setCheer(c)} />
+          <CrestEditor crest={cleanCrest(me.crest)} onChange={(c) => room.setCrest(c)} pokemon={rosterOf(me)} />
+        </>
+      )}
               {pitchTeam === me && me && !readOnly && (
                 <JerseyEditor
                   formation={me.formation}

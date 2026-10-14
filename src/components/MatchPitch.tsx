@@ -4,6 +4,7 @@ import { ballAt, buildReplay, PITCH_H, PITCH_W, playerAt, type ReplayLineup } fr
 import { matchKits } from '../lib/kits';
 import { formatMinute, type Match } from '../lib/season';
 import { SPRITE_BASE } from '../lib/sprites';
+import { Crest } from './Crest';
 
 interface Props {
   match: Match;
@@ -109,6 +110,7 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
       <div className="match-pitch__board" aria-live="polite">
         <span className="match-pitch__team">
           <span className="match-pitch__kit is-home" aria-hidden="true" />
+          {lineups[0]?.crest && <Crest crest={lineups[0].crest} size={16} />}
           {nameOf(match.home)}
         </span>
         <strong className="match-pitch__score">
@@ -116,6 +118,7 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
         </strong>
         <span className="match-pitch__team match-pitch__team--away">
           {nameOf(match.away)}
+          {lineups[1]?.crest && <Crest crest={lineups[1].crest} size={16} />}
           <span className="match-pitch__kit is-away" aria-hidden="true" />
         </span>
         <span className="match-pitch__clock">{formatMinute(minute)}</span>

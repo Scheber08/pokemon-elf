@@ -27,6 +27,10 @@ import { KitPicker } from './KitPicker';
 import { parseLook } from '../lib/trainer';
 import '../styles/draft.css';
 import { cleanKit } from '../lib/kits';
+import { CrestEditor } from './CrestEditor';
+import { cleanCrest } from '../lib/crest';
+import { rosterOf } from '../lib/draftEngine';
+import { Crest } from './Crest';
 
 /** QR-Code des Liga-Links – zum Scannen, wenn alle im selben Raum sitzen. */
 function DraftQr({ link }: { link: string }) {
@@ -207,6 +211,7 @@ function MyTeamCard({ room }: { room: DraftRoom }) {
         }}
       />
       <KitPicker kit={cleanKit(me.kit)} onChange={(kit) => room.setKit(kit)} cheer={me.cheer ?? ''} onCheer={(c) => room.setCheer(c)} />
+      <CrestEditor crest={cleanCrest(me.crest)} onChange={(c) => room.setCrest(c)} pokemon={rosterOf(me)} />
       <button type="button" className="btn btn--ghost btn--small" onClick={leave}>
         {t.online.leave}
       </button>
@@ -270,6 +275,7 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
                   <span className="draft__no">{i + 1}</span>
                   <span className="draft-lobby__who">
                     {team.trainer && <TrainerAvatar look={parseLook(team.trainer)} size={36} companion={false} />}
+                    {cleanCrest(team.crest) && <Crest crest={cleanCrest(team.crest)!} size={24} />}
                     <span className="draft-lobby__name">
                       <strong>{name}</strong>
                       <small>{team.formation}</small>

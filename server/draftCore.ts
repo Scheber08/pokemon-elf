@@ -63,6 +63,7 @@ import {
   updateTeam,
   setTeamCaptain,
   setTeamCheer,
+  setTeamCrest,
   setTeamKit,
   setTeamJerseys,
   upgradeSettings,
@@ -430,6 +431,12 @@ export function parseClientMessage(raw: unknown): ParsedMessage {
       if (!Object.values(j as Record<string, unknown>).every((v) => typeof v === 'number')) return badMessage();
       return ok({ type: 'jerseys', jerseys: j as Record<string, number> });
     }
+    case 'crest': {
+      const c = d.crest;
+      if (c === null) return ok({ type: 'crest', crest: null });
+      if (typeof c !== 'object' || Array.isArray(c) || Object.keys(c).length > 8) return badMessage();
+      return ok({ type: 'crest', crest: c as Record<string, unknown> });
+    }
     case 'cheer':
       // Wie Teamnamen säubern (Steuer- und Formatzeichen raus) – Länge prüft die Engine
       return typeof d.text === 'string' && d.text.length <= 200 ? ok({ type: 'cheer', text: cleanText(d.text) }) : badMessage();
@@ -758,7 +765,7 @@ const sameState = (a: DraftState, b: DraftState) => a === b || JSON.stringify(a)
  * Lobby-Änderungen – zusätzlich pro Gerät gedrosselt (jede kostet Speichern und ggf. D1). Züge im
  * Draft (pick, auto-pick, reroll) nicht: Sie begrenzt schon die Engine (nur am Zug, Rerolls je Team).
  */
-const LOBBY_CHANGES = new Set<DraftClientMessage['type']>(['join', 'leave', 'update-team', 'settings', 'add-cpu', 'remove-team', 'set-order', 'queue', 'jerseys', 'captain', 'kit', 'cheer']);
+const LOBBY_CHANGES = new Set<DraftClientMessage['type']>(['join', 'leave', 'update-team', 'settings', 'add-cpu', 'remove-team', 'set-order', 'queue', 'jerseys', 'captain', 'kit', 'cheer', 'crest']);
 
 interface Bucket {
   tokens: number;
@@ -1591,6 +1598,8 @@ export class DraftRoomCore {
         return setTeamKit(state, deviceId, msg.kit);
       case 'cheer':
         return setTeamCheer(state, deviceId, msg.text);
+      case 'crest':
+        return setTeamCrest(state, deviceId, msg.crest);
       case 'captain':
         // Manager-Saison: Überfälliges erst spielen – der Kapitän gilt ab dem nächsten Anpfiff
         return setTeamCaptain(state.manager ? playDueMatchdays(state, now, list, scale) : state, deviceId, msg.pokemonId);

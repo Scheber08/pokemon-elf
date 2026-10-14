@@ -60,6 +60,7 @@ import { DRAFT_MODEL, opponentRatings, simulateLeague, type LeagueResult, type L
 import { evaluateTeam } from './teamScore';
 import { cleanKit } from './kits';
 import { cleanCheer } from './cheer';
+import { cleanCrest } from './crest';
 
 /** Slot-Index des Standardschützen */
 export const DRAFT_SS_SLOT = 11;
@@ -714,6 +715,23 @@ export function setTeamJerseys(state: DraftState, deviceId: string, raw: unknown
         return rest;
       }
       return { ...t, jerseys };
+    }),
+  };
+}
+
+/** Wappen des eigenen Teams (null = keins) – jederzeit, reine Optik. */
+export function setTeamCrest(state: DraftState, deviceId: string, raw: unknown): DraftState {
+  const teamId = teamOfDevice(state, deviceId) ?? fail('not_joined', 'Du bist in dieser Liga nicht dabei');
+  const crest = raw == null ? null : cleanCrest(raw) ?? fail('not_allowed', 'Ungültiges Wappen');
+  return {
+    ...state,
+    teams: state.teams.map((t) => {
+      if (t.id !== teamId) return t;
+      if (!crest) {
+        const { crest: _drop, ...rest } = t;
+        return rest;
+      }
+      return { ...t, crest };
     }),
   };
 }

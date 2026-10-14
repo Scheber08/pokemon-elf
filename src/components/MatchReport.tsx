@@ -8,6 +8,7 @@ import { SaveImageButton } from './SaveImageButton';
 import { Segmented } from './Segmented';
 import { useSettings, type ReplayMode } from '../state/Settings';
 import '../styles/match-report.css';
+import { Crest } from './Crest';
 
 interface Props {
   match: Match;
@@ -64,11 +65,26 @@ export function MatchReport({ match, nameOf, pokemonName, label, pens, lineupOf,
       <div ref={cardRef} className="match-report__card">
         {label && <p className="kicker match-report__label">{label}</p>}
         <div className="match-report__score">
-          <span className="match-report__team">{nameOf(match.home)}</span>
+          <span className="match-report__team">
+            {lineups[0]?.crest && (
+              <>
+                <Crest crest={lineups[0].crest} size={22} />{' '}
+              </>
+            )}
+            {nameOf(match.home)}
+          </span>
           <strong className="match-report__result">
             {match.hg}:{match.ag}
           </strong>
-          <span className="match-report__team match-report__team--away">{nameOf(match.away)}</span>
+          <span className="match-report__team match-report__team--away">
+            {nameOf(match.away)}
+            {lineups[1]?.crest && (
+              <>
+                {' '}
+                <Crest crest={lineups[1].crest} size={22} />
+              </>
+            )}
+          </span>
         </div>
         {pens && <p className="match-report__pens">{t.draft.cup.pens(pens.home, pens.away)}</p>}
         {view === 'report' && <ReportBody match={match} nameOf={nameOf} pokemonName={pokemonName} lineups={lineups} />}

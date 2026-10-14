@@ -43,6 +43,7 @@ import { currentLang, LANGS, messages, type Lang, type Messages } from '../i18n'
 import { load, save } from '../lib/storage';
 import type { FormationId, Pokemon, TypeKey } from '../types';
 import { usePokemonData } from './PokemonData';
+import type { Crest } from '../lib/crest';
 
 export type DraftRoomStatus = 'connecting' | 'open' | 'reconnecting' | 'closed' | 'not_found';
 
@@ -559,6 +560,8 @@ export interface DraftRoom extends DraftRoomView {
   setKit(kit: { home: string; away: string } | null): boolean;
   /** Torjubel setzen ('' = keiner) */
   setCheer(text: string): boolean;
+  /** Wappen setzen (null = keins) */
+  setCrest(crest: Crest | null): boolean;
   /** Manager-Saison: Tausch anbieten (eigenes give gegen get von Team to) */
   offerTrade(to: string, give: number, get: number): boolean;
   /** Manager-Saison: Angebot annehmen bzw. ablehnen / zurückziehen */
@@ -949,6 +952,7 @@ export function useDraftRoom(code: string): DraftRoom {
     setCaptain: useCallback((pokemonId: number | null) => send({ type: 'captain', pokemonId }), [send]),
     setKit: useCallback((kit: { home: string; away: string } | null) => send({ type: 'kit', kit }), [send]),
     setCheer: useCallback((text: string) => send({ type: 'cheer', text }), [send]),
+    setCrest: useCallback((crest: Crest | null) => send({ type: 'crest', crest: crest as unknown as Record<string, unknown> | null }), [send]),
     offerTrade: useCallback((to: string, give: number, get: number) => send({ type: 'offer', to, give, get }), [send]),
     answerOffer: useCallback((id: number, accept: boolean) => send({ type: 'offer-reply', id, accept }), [send]),
     setLineup: useCallback((l: ManagerLineup) => send({ type: 'lineup', formation: l.formation, slots: l.slots, ss: l.ss, auto: l.auto }), [send]),

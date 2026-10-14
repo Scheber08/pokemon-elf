@@ -26,6 +26,8 @@ import { TableTimeTravel } from './TableTimeTravel';
 import { Sprite } from './Sprite';
 import '../styles/league.css';
 import { cleanKit } from '../lib/kits';
+import { cleanCrest } from '../lib/crest';
+import { Crest } from './Crest';
 
 interface Props {
   league: LeagueResult;
@@ -113,7 +115,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
     },
     (m) => (league.cup ? cupPens(league.cup, m) : null),
     // 2D-Ansicht: gedraftete Teams mit ihrer Elf, Auffüllteams allgemein
-    (i) => (teams[i] ? { formation: teams[i].formation, ids: teams[i].slots, jerseys: teams[i].jerseys, captain: teams[i].captain, kit: cleanKit(teams[i].kit), cheer: teams[i].cheer } : null),
+    (i) => (teams[i] ? { formation: teams[i].formation, ids: teams[i].slots, jerseys: teams[i].jerseys, captain: teams[i].captain, kit: cleanKit(teams[i].kit), cheer: teams[i].cheer, crest: cleanCrest(teams[i].crest) } : null),
   );
   const ratingOf = (i: number) => ratings[i] ?? league.teams[i]?.rating ?? 0;
   // Noten nur für gedraftete Teams (die Auffüllteams dahinter haben nicht gedraftet)
@@ -377,6 +379,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                       {teams[r.team]?.trainer && (
                         <TrainerAvatar look={parseLook(teams[r.team].trainer)} size={22} companion={false} className="draft-trainer" />
                       )}
+                      {teams[r.team]?.crest && cleanCrest(teams[r.team].crest) && <Crest crest={cleanCrest(teams[r.team].crest)!} size={16} />}
                       {nameOf(r.team)}
                       {teams[r.team]?.cpu && <span className="rating">{t.draft.cpu}</span>}
                       {!teams[r.team] && league.teams[r.team]?.player && (

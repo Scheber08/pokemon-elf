@@ -21,6 +21,9 @@ import { LeagueTicker } from './LeagueTicker';
 import { KitPicker } from './KitPicker';
 import '../styles/draft.css';
 import { cleanKit } from '../lib/kits';
+import { CrestEditor } from './CrestEditor';
+import { cleanCrest } from '../lib/crest';
+import { rosterOf } from '../lib/draftEngine';
 
 /**
  * Nach dem letzten Pick: Das Ergebnis der Saison kommt vom Server (im Schnappschuss
@@ -102,7 +105,7 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           startsAt={season.startsAt}
           stepMs={season.stepMs}
           clockOffset={room.clockOffset}
-          lineups={s.teams.map((tm) => ({ formation: tm.formation, ids: tm.slots, jerseys: tm.jerseys, captain: tm.captain, kit: cleanKit(tm.kit), cheer: tm.cheer }))}
+          lineups={s.teams.map((tm) => ({ formation: tm.formation, ids: tm.slots, jerseys: tm.jerseys, captain: tm.captain, kit: cleanKit(tm.kit), cheer: tm.cheer, crest: cleanCrest(tm.crest) }))}
           onDone={() => {
             setTicker(false);
             // Tab im Hintergrund: Saisonende melden (wie „Du bist dran" – nur mit Erlaubnis)
@@ -138,7 +141,12 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           transfers={s.manager?.transfers}
         />
       )}
-      {meIndex >= 0 && <KitPicker kit={cleanKit(s.teams[meIndex].kit)} onChange={(kit) => room.setKit(kit)} cheer={s.teams[meIndex].cheer ?? ''} onCheer={(c) => room.setCheer(c)} />}
+      {meIndex >= 0 && (
+        <>
+          <KitPicker kit={cleanKit(s.teams[meIndex].kit)} onChange={(kit) => room.setKit(kit)} cheer={s.teams[meIndex].cheer ?? ''} onCheer={(c) => room.setCheer(c)} />
+          <CrestEditor crest={cleanCrest(s.teams[meIndex].crest)} onChange={(c) => room.setCrest(c)} pokemon={rosterOf(s.teams[meIndex])} />
+        </>
+      )}
       {meIndex >= 0 && (
         <JerseyEditor
           formation={s.teams[meIndex].formation}
