@@ -1435,7 +1435,21 @@ export function seasonTeams(
   candidates: readonly FillCandidate[] = [],
 ): LeagueTeam[] {
   const size = upgradeSettings(state.settings).format === 'cup' ? CUP_SIZE : DRAFT_LIMITS.leagueSize;
-  return [...leagueTeams(state, byId, scale), ...fillTeams(state, candidates, byId, scale, size)];
+  const drafted = leagueTeams(state, byId, scale);
+  const fill = fillTeams(state, candidates, byId, scale, size);
+  return [...drafted, ...centerFillRatings(drafted, fill)];
+}
+
+/**
+ * Auffüllteams auf das Niveau der gedrafteten Teams verschieben: Ranglisten-Elfen stammen aus allen
+ * Pokémon, gedraftete oft aus kleinen Pools (z. B. nur Kanto) – ohne Ausgleich lägen sie
+ * 200–300 Punkte darüber. Der Durchschnitt wird angeglichen, die Abstände untereinander bleiben.
+ */
+export function centerFillRatings(drafted: readonly LeagueTeam[], fill: LeagueTeam[]): LeagueTeam[] {
+  if (!drafted.length || !fill.length) return fill;
+  const mean = (xs: readonly LeagueTeam[]) => xs.reduce((n, t) => n + t.rating, 0) / xs.length;
+  const shift = mean(drafted) - mean(fill);
+  return fill.map((t) => ({ ...t, rating: Math.max(0, Math.round(t.rating + shift)) }));
 }
 
 /**

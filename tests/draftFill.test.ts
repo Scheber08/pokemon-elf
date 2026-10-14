@@ -90,6 +90,17 @@ describe('fillTeams', () => {
   });
 });
 
+describe('Niveau der Auffüllteams', () => {
+  it('Durchschnitt wie die gedrafteten Teams, Abstände bleiben', async () => {
+    const { centerFillRatings } = await import('../src/lib/draftEngine');
+    const drafted = [{ name: 'A', rating: 600 }, { name: 'B', rating: 700 }];
+    const fill = [{ name: 'X', rating: 900 }, { name: 'Y', rating: 950 }, { name: 'Z', rating: 850 }];
+    const out = centerFillRatings(drafted, fill);
+    expect(out.map((t) => t.rating)).toEqual([650, 700, 600]);
+    expect(centerFillRatings([], fill)).toBe(fill);
+  });
+});
+
 describe('Kandidaten aus der Rangliste', () => {
   const row = (over: Partial<Parameters<typeof toFillCandidate>[0]> = {}) => ({
     player: 'Ash',
