@@ -182,7 +182,11 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
             const pl = replay.players[focus];
             const team = nameOf(pl.side === 0 ? match.home : match.away);
             const who = pl.pokemonId != null ? pokemonName(pl.pokemonId) : t.game.posName[pl.pos];
-            return tx.focus(who, t.game.posName[pl.pos], team);
+            // Tore und Vorlagen dieses Spielers in diesem Spiel
+            const goals = pl.side === 0 ? match.homeScorers : match.awayScorers;
+            const g = pl.pokemonId != null ? goals.filter((x) => x.pokemonId === pl.pokemonId).length : 0;
+            const a = pl.pokemonId != null ? goals.filter((x) => x.assist === pl.pokemonId).length : 0;
+            return tx.focus(who, t.game.posName[pl.pos], team) + (g || a ? ` · ${tx.focusStats(g, a)}` : '');
           })()}
         </p>
       )}

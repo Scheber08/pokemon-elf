@@ -440,6 +440,7 @@ const draft = {
     playKey: 'Abspielen/Pause (Leertaste)',
     goalFlash: 'TOR!',
     focus: (who: string, pos: string, team: string) => `${who} · ${pos} · ${team}`,
+    focusStats: (goals: number, assists: number) => [goals ? `⚽ ${goals}` : '', assists ? `🅰️ ${assists}` : ''].filter(Boolean).join(' '),
     goalMark: (minute: string, team: string) => `Tor ${minute} – ${team}`,
     nextGoalShort: '⏭ Tor',
     speed: (rate: number) => `Tempo ${rate}× – zum Wechseln klicken`,
