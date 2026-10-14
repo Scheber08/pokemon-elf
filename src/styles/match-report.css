@@ -155,6 +155,10 @@
   stroke: #e3350d;
   stroke-width: 0.7;
 }
+.match-pitch__sprite {
+  image-rendering: pixelated;
+  pointer-events: none;
+}
 .match-pitch__ball {
   fill: #fff;
   stroke: #111;

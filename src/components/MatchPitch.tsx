@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useT } from '../i18n';
 import { ballAt, buildReplay, PITCH_H, PITCH_W, playerAt, type ReplayLineup } from '../lib/matchReplay';
 import { formatMinute, type Match } from '../lib/season';
+import { SPRITE_BASE } from '../lib/sprites';
 
 interface Props {
   match: Match;
@@ -22,6 +23,8 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
   const [time, setTime] = useState(0);
   const [playing, setPlaying] = useState(!reduced);
   const last = useRef<number | null>(null);
+  // Sprites, die nicht laden (z. B. offline) – dann bleibt der Punkt allein
+  const [broken, setBroken] = useState<ReadonlySet<number>>(() => new Set());
 
   useEffect(() => {
     if (!playing) {
@@ -89,9 +92,18 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
           return (
             <g key={i} className={`match-pitch__player ${p.side === 0 ? 'is-home' : 'is-away'} ${i === shooter ? 'is-shooter' : ''}`}>
               <circle cx={pos.x} cy={pos.y} r={p.pos === 'TW' ? 1.9 : 1.7} />
-              {p.pokemonId != null && (
-                <title>{pokemonName(p.pokemonId)}</title>
+              {p.pokemonId != null && !broken.has(p.pokemonId) && (
+                <image
+                  className="match-pitch__sprite"
+                  href={`${SPRITE_BASE}${p.pokemonId}.png`}
+                  x={pos.x - 3}
+                  y={pos.y - 3.6}
+                  width={6}
+                  height={6}
+                  onError={() => setBroken((b) => new Set(b).add(p.pokemonId!))}
+                />
               )}
+              {p.pokemonId != null && <title>{pokemonName(p.pokemonId)}</title>}
             </g>
           );
         })}
