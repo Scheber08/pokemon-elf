@@ -52,7 +52,7 @@ import { cleanKit } from '../lib/kits';
 import { CrestEditor } from './CrestEditor';
 import { cleanCrest } from '../lib/crest';
 import { rosterOf } from '../lib/draftEngine';
-import { shinyTeamBoost } from '../lib/shiny';
+import { SHINY_PARTY_CHANCE, shinyTeamBoost } from '../lib/shiny';
 
 /** Draft-Slot schon besetzt? Feld, Standardschütze oder Bank (Manager-Saison). */
 function slotFilled(team: DraftTeam, i: number): boolean {
@@ -473,6 +473,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
             {lastPick.auto && t.online.autoTag}
           </p>
         )}
+        {s.settings.shinies !== false && s.settings.shinyParty && <p className="draft-turnbar__last">{t.shiny.note(Math.round(SHINY_PARTY_CHANCE * 100))}</p>}
       </div>
 
       {myTurn && (
