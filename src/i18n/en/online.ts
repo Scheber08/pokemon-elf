@@ -18,7 +18,7 @@ const online: Messages['online'] = {
   seasonDoneCup: (status) => `Your team: ${status}`,
   // ------------------------------------------------ /draft (online mode)
   title: 'Fantasy Draft',
-  lead: 'Online league with friends: create a league, share the link, pick live in a snake draft – with a pick timer, CPU teams and a shared season at the end.',
+  lead: 'Online league with friends: create a league, share the link, pick live in a snake draft – with a pick timer and CPU teams. Then you play a shared 18-team league or a knockout cup, filled up with teams of real players from the leaderboard.',
   checking: 'Checking whether online leagues are available …',
   offlineTitle: 'Online leagues are unavailable right now',
   offlineText: '– the server can’t be reached or doesn’t support leagues yet. You can still draft on one device.',

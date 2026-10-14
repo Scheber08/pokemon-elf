@@ -17,7 +17,7 @@ const online = {
   seasonDoneCup: (status: string) => `Dein Team: ${status}`,
   // ------------------------------------------------ /draft (Online-Modus)
   title: 'Fantasy-Draft',
-  lead: 'Online-Liga mit Freunden: Liga erstellen, Link teilen, live im Snake-Draft wählen – mit Pick-Timer, CPU-Teams und einer gemeinsamen Saison zum Schluss.',
+  lead: 'Online-Liga mit Freunden: Liga erstellen, Link teilen, live im Snake-Draft wählen – mit Pick-Timer und CPU-Teams. Danach spielt ihr gemeinsam eine Liga mit 18 Teams oder ein KO-Turnier, aufgefüllt mit Teams echter Spieler aus der Rangliste.',
   checking: 'Prüfe, ob Online-Ligen verfügbar sind …',
   offlineTitle: 'Online-Ligen sind gerade nicht verfügbar',
   offlineText: '– der Server ist nicht erreichbar oder kann noch keine Ligen. Ihr könnt trotzdem an einem Gerät draften.',
