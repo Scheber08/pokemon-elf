@@ -20,6 +20,8 @@ const builder: Messages['builder'] = {
     bench: 'Bench',
     aria: (name) => `Shirt number of ${name}`,
     reset: 'Reset all to default',
+    dex: 'Pokédex numbers',
+    dexTitle: 'Every Pokémon gets the last two digits of its Pokédex number (duplicates keep the default)',
   },
   savingImage: 'Creating image …',
   random: 'Random',

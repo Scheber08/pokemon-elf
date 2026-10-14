@@ -2480,6 +2480,12 @@ button.sheet__row:hover {
 }
 
 /* Trikotnummern bearbeiten */
+.jersey-editor__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .jersey-editor__list {
   list-style: none;
   margin: 8px 0;

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { FORMATIONS } from '../config/formations';
 import { useT } from '../i18n';
-import { isJerseyNumber, jerseyNumbers, setJersey, type Jerseys } from '../lib/jerseys';
+import { dexJerseys, isJerseyNumber, jerseyNumbers, setJersey, type Jerseys } from '../lib/jerseys';
 import { usePokemonData } from '../state/PokemonData';
 import type { FormationId, PosCode, Slots } from '../types';
 import { PosBadge } from './Badges';
@@ -57,11 +57,21 @@ export function JerseyEditor({ formation, slots, ss, bench = [], jerseys, onChan
           );
         })}
       </ul>
-      {custom && (
-        <button type="button" className="btn btn--small btn--ghost" onClick={() => onChange({})}>
-          {tx.reset}
+      <div className="jersey-editor__actions">
+        <button
+          type="button"
+          className="btn btn--small"
+          title={tx.dexTitle}
+          onClick={() => onChange(dexJerseys(players.map((p) => ({ pokemonId: p.pokemonId, dex: byId.get(p.pokemonId)?.base ?? p.pokemonId }))))}
+        >
+          {tx.dex}
         </button>
-      )}
+        {custom && (
+          <button type="button" className="btn btn--small btn--ghost" onClick={() => onChange({})}>
+            {tx.reset}
+          </button>
+        )}
+      </div>
     </details>
   );
 }

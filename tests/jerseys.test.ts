@@ -1,6 +1,6 @@
 /** Trikotnummern: Vorgabe nach Position, eigene Nummern, Bereinigen und Tauschen. */
 import { describe, expect, it } from 'vitest';
-import { cleanJerseys, jerseyNumbers, setJersey } from '../src/lib/jerseys';
+import { cleanJerseys, dexJerseys, jerseyNumbers, setJersey } from '../src/lib/jerseys';
 import type { PosCode } from '../src/types';
 
 const team = (...pos: (PosCode | null)[]) => pos.map((p, i) => ({ pokemonId: 100 + i, pos: p }));
@@ -47,5 +47,17 @@ describe('Trikotnummern', () => {
     expect(setJersey(custom, 101, 0, cur)).toBe(custom);
     // Gespeicherte Nummer eines Pokémon außerhalb des Kaders wird frei
     expect(setJersey({ '999': 5 }, 101, 5, cur)).toEqual({ '101': 5 });
+  });
+
+  it('Pokédex-Nummern: letzte zwei Ziffern, Formen nach Art, Doppelte und 00 ohne eigene Nummer', () => {
+    expect(
+      dexJerseys([
+        { pokemonId: 25, dex: 25 },
+        { pokemonId: 150, dex: 150 },
+        { pokemonId: 125, dex: 125 },
+        { pokemonId: 100, dex: 100 },
+        { pokemonId: 10034, dex: 6 },
+      ]),
+    ).toEqual({ '25': 25, '150': 50, '10034': 6 });
   });
 });

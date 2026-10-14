@@ -98,3 +98,19 @@ export function setJersey(custom: Jerseys, pokemonId: number, n: number | null, 
   next[key] = n;
   return next;
 }
+
+/**
+ * Pokédex-Nummern als Trikotnummern: die letzten beiden Ziffern der Pokédex-Nummer (Formen: die der Art).
+ * Doppelte und 00 bekommen keine eigene Nummer (dort gilt die Vorgabe).
+ */
+export function dexJerseys(players: readonly { pokemonId: number; dex: number }[]): Jerseys {
+  const out: Jerseys = {};
+  const used = new Set<number>();
+  for (const p of players) {
+    const n = p.dex % 100;
+    if (!isJerseyNumber(n) || used.has(n) || out[String(p.pokemonId)] != null) continue;
+    out[String(p.pokemonId)] = n;
+    used.add(n);
+  }
+  return out;
+}

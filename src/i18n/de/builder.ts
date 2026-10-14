@@ -15,6 +15,8 @@ const builder = {
     bench: 'Bank',
     aria: (name: string) => `Trikotnummer von ${name}`,
     reset: 'Alle auf Standard zurücksetzen',
+    dex: 'Pokédex-Nummern',
+    dexTitle: 'Jedes Pokémon bekommt die letzten beiden Ziffern seiner Pokédex-Nummer (Doppelte behalten die Vorgabe)',
   },
   savingImage: 'Erstelle Bild …',
   random: 'Zufällig',
