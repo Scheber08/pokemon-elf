@@ -1549,12 +1549,13 @@ export function applyPick(
     const settings = upgradeSettings(state.settings);
     const manager = settings.format === 'manager';
     const stepMs = manager ? settings.matchdayMinutes * 60_000 : DRAFT_LIMITS.seasonStepMs;
-    // CPU-Teams bestimmen ihren Kapitän: den Spieler, der am besten auf seine Position passt
+    // Wer keinen Kapitän hat (CPU oder vergessen), bekommt den Spieler, der am besten auf seine Position passt –
+    // Menschen können ihn bis zum Anpfiff (Manager: jederzeit) noch ändern
     const sc = draftScaleOf(list);
     const byId = byIdOf(list);
     return {
       ...next,
-      teams: next.teams.map((t) => (t.cpu && t.captain == null ? withCpuCaptain(t, byId, sc) : t)),
+      teams: next.teams.map((t) => (t.captain == null ? withCpuCaptain(t, byId, sc) : t)),
       phase: manager ? 'season' : 'done',
       deadline: null,
       turnStartedAt: null,

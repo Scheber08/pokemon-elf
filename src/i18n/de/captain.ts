@@ -8,7 +8,7 @@ const captain = {
   note: 'Die Positionspassung des Kapitäns zählt in der Teamwertung doppelt – ein gut passender Kapitän hebt das Team, ein schlecht passender zieht es runter.',
   effect: (diff: string) => `Wirkung auf den Team-Score: ${diff}`,
   managerNote: 'Die Passung des Kapitäns zählt doppelt – an jedem Spieltag, an dem er in deiner Aufstellung steht. Ein Wechsel gilt ab dem nächsten Anpfiff.',
-  draftNote: 'Die Passung des Kapitäns zählt doppelt. Wählen kannst du ihn nur im Draft – danach steht die Saison fest.',
+  draftNote: 'Die Passung des Kapitäns zählt doppelt. Wählst du keinen, bekommst du nach dem letzten Pick den bestpassenden – bis zum Anpfiff kannst du noch wechseln.',
   windowTitle: (s: number) => `Kapitän wählen – noch ${s} s bis zum Anpfiff`,
   windowNote: 'Seine Passung zählt doppelt. Wählst du jetzt, rechnet der Server die Saison mit deinem Kapitän.',
   localTitle: 'Kapitäne wählen',

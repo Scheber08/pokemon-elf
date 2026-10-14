@@ -781,12 +781,13 @@ describe('Karriere', () => {
 });
 
 describe('Kapitän der CPU-Teams', () => {
-  it('am Ende des Drafts: der Spieler mit der besten Positionspassung; Menschen wählen selbst', () => {
+  it('am Ende des Drafts: der Spieler mit der besten Positionspassung – auch für Menschen ohne eigene Wahl', () => {
     const s = drafted();
     const cpu = s.teams.find((t) => t.cpu)!;
     expect(cpu.captain).toBe(cpuCaptain(cpu, BY_ID, SCALE));
     expect(cpu.slots).toContain(cpu.captain);
-    expect(s.teams.find((t) => t.id === 'h')).not.toHaveProperty('captain');
+    const host = s.teams.find((t) => t.id === 'h')!;
+    expect(host.captain).toBe(cpuCaptain(host, BY_ID, SCALE));
   });
 
   it('fällt der CPU-Kapitän aus, führt der bestpassende Spieler der Elf', () => {
