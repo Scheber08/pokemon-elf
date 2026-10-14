@@ -26,6 +26,7 @@ import { PosBadge } from './Badges';
 import { StatCards } from './ChallengeParts';
 import { Confetti } from './Confetti';
 import { Pitch } from './Pitch';
+import { useJerseys } from '../state/useJerseys';
 import { SeasonTicker } from './SeasonTicker';
 import { ReplayToggle, useMatchReport } from './MatchReport';
 import { Sprite } from './Sprite';
@@ -163,12 +164,14 @@ export function SeasonResultView({
   /** Vereinsnamen sind intern deutsch – das eigene Team heißt immer teamName */
   const teamLabel = (r: { name: string; isUser: boolean }) => (r.isUser ? teamName : t.game.club(r.name));
   // Spielwiedergabe (2D/Bericht): das eigene Team (Index 0) mit seiner Elf, die Gegner allgemein
+  // Eigene Trikotnummern dieser Challenge (Gerät)
+  const [jerseys] = useJerseys(challenge);
   const report = useMatchReport(
     (i) => (i === 0 ? teamName : t.game.club(season.league.teams[i]?.name ?? '')),
     nameOf,
     (m) => t.draft.matchday(m.round),
     undefined,
-    (i) => (i === 0 ? { formation: input.formation, ids: input.slots } : null),
+    (i) => (i === 0 ? { formation: input.formation, ids: input.slots, jerseys } : null),
   );
   const leagueMatch = (round: number) => season.league.matches.find((x) => x.round === round && (x.home === 0 || x.away === 0));
 
@@ -180,6 +183,7 @@ export function SeasonResultView({
       sprite,
       byId,
       teamName,
+      jerseys,
       subtitle: `${input.formation} · ${t.game.challenge[challenge]}`,
       result: {
         record,
@@ -261,6 +265,7 @@ export function SeasonResultView({
               sprite={sprite}
               highlight={evaluation.weakest}
               ariaLabel={tr.yourTeam}
+              jerseys={jerseys}
             />
           </div>
           <div className="result-hero__info">

@@ -86,6 +86,9 @@ export function setJersey(custom: Jerseys, pokemonId: number, n: number | null, 
     return next;
   }
   if (!isJerseyNumber(n)) return custom;
+  // Gespeicherte Nummern gelten über Teams hinweg (z. B. je Challenge): wer außerhalb des
+  // aktuellen Kaders dieselbe Nummer hat, gibt sie ab
+  for (const [k, x] of Object.entries(next)) if (x === n && k !== key && !current.has(Number(k))) delete next[k];
   const holder = [...current.entries()].find(([id, x]) => x === n && id !== pokemonId)?.[0];
   if (holder != null) {
     const mine = current.get(pokemonId);

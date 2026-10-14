@@ -45,5 +45,7 @@ describe('Trikotnummern', () => {
     custom = setJersey(custom, 101, null, cur);
     expect(jerseyNumbers(players, custom).get(101)).toBe(9);
     expect(setJersey(custom, 101, 0, cur)).toBe(custom);
+    // Gespeicherte Nummer eines Pokémon außerhalb des Kaders wird frei
+    expect(setJersey({ '999': 5 }, 101, 5, cur)).toEqual({ '101': 5 });
   });
 });

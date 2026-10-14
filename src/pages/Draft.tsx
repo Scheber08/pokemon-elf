@@ -6,6 +6,8 @@ import { REGIONS } from '../config/regions';
 import { CLUB_NAMES } from '../config/season';
 import { PosBadge } from '../components/Badges';
 import { FilterBar, useFilteredPokemon, type PokemonFilters } from '../components/FilterBar';
+import { JerseyEditor } from '../components/JerseyEditor';
+import { cleanJerseys, type Jerseys } from '../lib/jerseys';
 import { Pitch, type SlotState } from '../components/Pitch';
 import { PokemonGrid } from '../components/PokemonGrid';
 import { Segmented } from '../components/Segmented';
@@ -37,6 +39,8 @@ interface DraftTeam {
   cpu: boolean;
   formation: FormationId;
   slots: Slots;
+  /** Eigene Trikotnummern (nur Menschen; fehlt: Vorgabe nach Position) */
+  jerseys?: Jerseys;
 }
 
 interface DraftState {
@@ -259,7 +263,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     },
     (m) => tx.roundNo(m.round),
     undefined,
-    (i) => (state.teams[i] ? { formation: state.teams[i].formation, ids: state.teams[i].slots } : null),
+    (i) => (state.teams[i] ? { formation: state.teams[i].formation, ids: state.teams[i].slots, jerseys: cleanJerseys(state.teams[i].jerseys) } : null),
   );
 
   if (state.phase === 'setup') {
@@ -502,7 +506,16 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           {state.teams.map((tm, i) => (
             <div key={i} className="card draft__roster">
               <h3 className="section-title">{teamName(tm.name)}</h3>
-              <Pitch formation={tm.formation} slots={tm.slots} sprite={sprite} ariaLabel={tx.squadAria(teamName(tm.name))} />
+              <Pitch formation={tm.formation} slots={tm.slots} sprite={sprite} ariaLabel={tx.squadAria(teamName(tm.name))} jerseys={tm.jerseys} />
+              {!tm.cpu && (
+                <JerseyEditor
+                  formation={tm.formation}
+                  slots={tm.slots}
+                  ss={null}
+                  jerseys={cleanJerseys(tm.jerseys)}
+                  onChange={(jerseys) => setState((s) => ({ ...s, teams: s.teams.map((x, j) => (j === i ? { ...x, jerseys } : x)) }))}
+                />
+              )}
             </div>
           ))}
         </section>
@@ -610,6 +623,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 formation={team.formation}
                 slots={team.slots}
                 sprite={sprite}
+                jerseys={team.jerseys}
                 slotState={slotState}
                 positionTips
                 onSlotClick={(i) => {

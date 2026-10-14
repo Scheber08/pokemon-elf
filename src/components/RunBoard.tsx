@@ -22,6 +22,8 @@ import { createClickGuard } from '../lib/clickGuard';
 import type { Pokemon, SpriteStyle } from '../types';
 import { TypeBadges } from './Badges';
 import { RollCard, StatusLine, useRolling } from './ChallengeParts';
+import { JerseyEditor } from './JerseyEditor';
+import { useJerseys } from '../state/useJerseys';
 import { Pitch, type SlotState } from './Pitch';
 import { PokemonGrid } from './PokemonGrid';
 import { Sprite } from './Sprite';
@@ -74,6 +76,8 @@ export function RunBoard({
   const tc = t.challenge;
   const { challenge, formation, ssEnabled } = state.config;
   const rules = MODE_RULES[challenge];
+  // Eigene Trikotnummern je Challenge (Gerät) – reine Optik, der Run bleibt unberührt
+  const [jerseys, setJerseys] = useJerseys(challenge);
   const style: SpriteStyle = challenge === 'retro340' ? 'retro' : sprite;
   const total = totalRounds(state.config);
   const complete = isComplete(state);
@@ -344,8 +348,10 @@ export function RunBoard({
           onSlotClick={onSlotClick}
           slotState={slotState}
           ariaLabel={tc.pitchAria(FORMATIONS[formation].label)}
+          jerseys={jerseys}
         />
       </div>
+      <JerseyEditor formation={formation} slots={state.slots} ss={ssEnabled ? state.ss : null} jerseys={jerseys} onChange={setJerseys} />
     </div>
   );
 }

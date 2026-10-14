@@ -15,6 +15,8 @@ export const STORAGE_KEYS = {
   seenAchievements: 'achievements-seen',
   /** Neue Erfolge seit dem letzten Besuch der Trainer-Seite (Punkt im Menü) */
   newAchievements: 'achievements-new',
+  /** Eigene Trikotnummern je Modus (z. B. „c340"), Pokémon-ID → Nummer */
+  jerseys: (scope: string) => `jerseys:${scope}`,
 } as const;
 
 export function load<T>(key: string, fallback: T): T {
