@@ -247,6 +247,8 @@ const draft: Messages['draft'] = {
     duelHome: 'Home',
     duelAway: 'Away',
     fillPlayerTitle: 'Team of a player from the leaderboard (34–0 Challenge)',
+    timeTravel: 'Time travel',
+    timeTravelDay: (day, total) => `Table after matchday ${day} (of ${total})`,
     placeChart: 'Your season',
     placeChartAria: (days, best, last) => `League position over ${days} matchdays – best ${best}, final ${last}`,
     placeChartCaption: (best, last) => `Best position: ${best} · final: ${last}`,

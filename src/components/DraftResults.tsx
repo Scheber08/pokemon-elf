@@ -16,6 +16,7 @@ import { CupBracket, CupGroups, cupStatusText } from './CupBracket';
 import { FixtureList, FormDots } from './LeagueTicker';
 import { Pitch } from './Pitch';
 import { PlaceChart } from './PlaceChart';
+import { TableTimeTravel } from './TableTimeTravel';
 import { Sprite } from './Sprite';
 import '../styles/league.css';
 
@@ -402,6 +403,15 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
               {tx.placeChart}
             </h2>
             <PlaceChart places={days.map((d) => d.places[you])} teams={league.teams.length} />
+          </section>
+        )}
+
+        {!cup && days.length > 1 && (
+          <section className="card" aria-labelledby="draft-results-timetravel">
+            <h2 id="draft-results-timetravel" className="section-title">
+              {tx.timeTravel}
+            </h2>
+            <TableTimeTravel days={days} you={you} nameOf={nameOf} />
           </section>
         )}
 

@@ -268,6 +268,9 @@ const draft = {
     duelAway: 'Auswärtsspiel',
     /** Auffüllteam aus der Rangliste: Name des echten Spielers */
     fillPlayerTitle: 'Team eines Spielers aus der Rangliste (34–0 Challenge)',
+    /** Tabelle nach einem wählbaren Spieltag */
+    timeTravel: 'Zeitreise',
+    timeTravelDay: (day: number, total: number) => `Tabelle nach dem ${day}. Spieltag (von ${total})`,
     /** Platzverlauf des eigenen Teams */
     placeChart: 'Dein Saisonverlauf',
     placeChartAria: (days: number, best: number, last: number) => `Tabellenplatz über ${days} Spieltage – bester Platz ${best}, am Ende ${last}`,

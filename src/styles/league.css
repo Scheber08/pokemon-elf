@@ -1017,3 +1017,15 @@
   /* SVG-Einheiten: skaliert mit der Breite (Handy ~10 px, breit ~15 px) */
   font-size: 16px;
 }
+
+/* Zeitreise: Tabelle nach Spieltag */
+.time-travel__label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.time-travel__range {
+  width: 100%;
+  margin: 0 0 10px;
+  accent-color: var(--yellow);
+}
