@@ -14,6 +14,9 @@ const info: Messages['info'] = {
     guidePost: '.',
     newsTitle: 'What’s new?',
     news: [
+      'Online draft: the league always has 18 teams – filled up with teams of real players from the leaderboard',
+      'Online draft: knockout cup as a format, optionally with a group stage',
+      'Online draft: more realistic season with form swings and goal minutes in the ticker',
       'Online draft: Ultra Beasts, Megas and forms – each with its own per-team limit',
       'Online draft: rematch with an all-time table, a wishlist for auto-picks, emoji reactions and a QR code to join',
       'Online draft: draft grades, steal of the draft, “Your head-to-heads” and each team’s top scorer in the result',

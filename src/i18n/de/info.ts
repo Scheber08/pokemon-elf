@@ -16,6 +16,9 @@ const info = {
     /** „Was ist neu?" – die wichtigsten Neuerungen, neueste zuerst */
     newsTitle: 'Was ist neu?',
     news: [
+      'Online-Draft: Liga immer mit 18 Teams – aufgefüllt mit Teams echter Spieler aus der Rangliste',
+      'Online-Draft: KO-Turnier als Spielmodus, optional mit Gruppenphase',
+      'Online-Draft: realistischere Saison mit Tagesform und Torminuten im Ticker',
       'Online-Draft: Ultrabestien, Megas und Formen – je mit eigenem Limit pro Team',
       'Online-Draft: Revanche mit ewiger Tabelle, Wunschliste für Auto-Picks, Emoji-Reaktionen und QR-Code zum Beitreten',
       'Online-Draft: Draft-Noten, Schnäppchen des Drafts, „Deine Duelle“ und Toptorjäger je Team im Ergebnis',
