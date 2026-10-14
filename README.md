@@ -169,7 +169,9 @@ rechnet der Server die Saison einmal und alle sehen sie gleichzeitig im Ticker. 
 Allzeit-Rangliste der 34–0 Challenge (Teamname, Spielername, ihre Elf – `server/fill.ts`, Auswahl per
 Liga-Seed in `fillTeams`), fehlen welche, Vereine. Statt der Liga geht auch ein **KO-Turnier** (`settings.format = 'cup'`,
 `src/lib/cup.ts`): 16 Teams im Baum, gesetzt nach Team-Score, ein Spiel pro Runde, bei Remis Elfmeterschießen;
-als „Tabelle" speichert der Server das Endklassement, dazu den Baum (`league.cup`).
+als „Tabelle" speichert der Server das Endklassement, dazu den Baum (`league.cup`). Optional (`cupGroups`, Standard an)
+vorher eine Gruppenphase: 4 Gruppen à 4 aus Lostöpfen nach Team-Score, Hin- und Rückspiel, die ersten zwei ins
+Viertelfinale (A1–B2, C1–D2, B1–A2, D1–C2).
 Öffentliche Lobbys: `GET /api/drafts/public`. Ligen werden nach 14 Tagen gelöscht. Vertrag und Limits:
 `src/lib/api/draftContract.ts`.
 

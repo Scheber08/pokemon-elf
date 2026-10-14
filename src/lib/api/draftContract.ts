@@ -171,6 +171,8 @@ export interface DraftSettings {
    * KO-Turnier (16 Teams). Aufgefüllt wird jeweils mit Teams aus der Rangliste.
    */
   format: DraftFormat;
+  /** KO-Turnier mit Gruppenphase davor (4 Gruppen à 4, die ersten zwei weiter) – nur bei format 'cup' */
+  cupGroups: boolean;
 }
 
 /** Spielmodus nach dem Draft */
@@ -211,6 +213,7 @@ export const DEFAULT_DRAFT_SETTINGS: DraftSettings = {
   rerolls: { type: 1, region: 1 },
   visibility: 'private',
   format: 'league',
+  cupGroups: true,
 };
 
 export interface DraftTeam {

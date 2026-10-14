@@ -12,7 +12,7 @@ import { teamLabel } from '../state/useDraftRoom';
 import type { SpriteStyle } from '../types';
 import { cupPens, cupStageOf, cupStatus, cupWinner } from '../lib/cup';
 import { Confetti } from './Confetti';
-import { CupBracket, cupStatusText } from './CupBracket';
+import { CupBracket, CupGroups, cupStatusText } from './CupBracket';
 import { FixtureList } from './LeagueTicker';
 import { Pitch } from './Pitch';
 import { Sprite } from './Sprite';
@@ -115,7 +115,8 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
   const tieNote = cup ? null : titleTieNote(race, nameOf);
   const dayTitle = (round: number) => {
     const stage = cup ? cupStageOf(cup, round) : null;
-    return stage && stage !== 'group' ? t.draft.cup.stage[stage] : t.draft.matchday(round);
+    if (stage === 'group') return `${t.draft.cup.stage.group} · ${t.draft.matchday(round)}`;
+    return stage ? t.draft.cup.stage[stage] : t.draft.matchday(round);
   };
   const stealMon = steal ? byId.get(steal.pokemonId) : undefined;
   const stealTeam = steal ? teams.findIndex((tm) => tm.id === steal.teamId) : -1;
@@ -227,6 +228,14 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
             {t.draft.cup.bracket}
           </h2>
           <CupBracket cup={cup} matches={league.matches} you={you} nameOf={nameOf} />
+        </section>
+      )}
+      {cup?.groups && (
+        <section className="card" aria-labelledby="draft-results-groups">
+          <h2 id="draft-results-groups" className="section-title">
+            {t.draft.cup.groupsTitle}
+          </h2>
+          <CupGroups teams={league.teams} matches={league.matches} groups={cup.groups} you={you} nameOf={nameOf} />
         </section>
       )}
 

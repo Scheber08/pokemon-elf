@@ -302,6 +302,7 @@ export function upgradeSettings(raw: unknown): DraftSettings {
     rerolls: rerollsOf(r.rerolls, d.rerolls) ?? { ...d.rerolls },
     visibility: r.visibility === 'private' || r.visibility === 'public' ? r.visibility : d.visibility,
     format: (DRAFT_FORMATS as readonly unknown[]).includes(r.format) ? (r.format as DraftSettings['format']) : d.format,
+    cupGroups: isBool(r.cupGroups) ? r.cupGroups : d.cupGroups,
   };
   const keys = Object.keys(next) as (keyof DraftSettings)[];
   // Die älteren Schlüssel region/legends dürfen zusätzlich dastehen (Schnappschüsse spiegeln sie
@@ -513,7 +514,7 @@ export function normalizeSettings(patch: DraftSettingsPatch, base: DraftSettings
     if (!types.length) fail('bad_settings', 'Mindestens ein Typ');
     s.types = types;
   }
-  for (const key of ['legendary', 'mythical', 'ultraBeasts', 'forms', 'megas', 'setPiece', 'snake'] as const) {
+  for (const key of ['legendary', 'mythical', 'ultraBeasts', 'forms', 'megas', 'setPiece', 'snake', 'cupGroups'] as const) {
     if (p[key] !== undefined) {
       if (!isBool(p[key])) fail('bad_settings', 'Ungültige Einstellung');
       s[key] = p[key] as boolean;
@@ -1443,7 +1444,9 @@ export function withLeague(state: DraftState, list: Pokemon[], scale: Scale, can
   if (state.phase !== 'done' || !state.season || state.league) return state;
   const teams = seasonTeams(state, byIdOf(list), scale, candidates);
   const rng = createRng(state.season.seed);
-  const full: LeagueResult = upgradeSettings(state.settings).format === 'cup' ? simulateCup(teams, rng) : simulateLeague(teams, rng);
+  const settings = upgradeSettings(state.settings);
+  const full: LeagueResult =
+    settings.format === 'cup' ? simulateCup(teams, rng, { groups: settings.cupGroups }) : simulateLeague(teams, rng);
   return {
     ...state,
     league: {

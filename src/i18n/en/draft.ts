@@ -148,6 +148,9 @@ const draft: Messages['draft'] = {
     format: 'Format',
     formatLeague: 'League',
     formatCup: 'Knockout cup',
+    cupGroups: 'Group stage',
+    cupGroupsNote: '4 groups of 4 teams, home and away – the top two reach the quarter-finals.',
+    cupNoGroupsNote: 'Straight into the round of 16.',
     formatLeagueNote: (teams) => `Everyone plays everyone, home and away – ${teams} teams, filled up with teams from the leaderboard.`,
     formatCupNote: (teams) => `${teams} teams in a knockout bracket, seeded by team score – one match per round, penalties after a draw.`,
     setPieceRound: 'Round 12',
@@ -171,6 +174,7 @@ const draft: Messages['draft'] = {
   summary: {
     league: (teams) => `League with ${teams} teams`,
     cup: (teams) => `Knockout cup with ${teams} teams`,
+    cupWithGroups: (teams) => `Knockout cup with ${teams} teams and group stage`,
     pool: (region) => `Pool: ${region}`,
     gensCount: (n) => `${n} generations`,
     types: (list) => `Types: ${list}`,
@@ -331,6 +335,8 @@ const draft: Messages['draft'] = {
   cup: {
     stage: { r16: 'Round of 16', qf: 'Quarter-final', sf: 'Semi-final', final: 'Final', group: 'Group stage' },
     roundLabel: 'Round',
+    group: (letter) => `Group ${letter}`,
+    groupsTitle: 'Groups',
     progressText: (n, total) => `Round ${n} of ${total}`,
     bracket: 'Bracket',
     winnerLabel: 'Cup winners: ',

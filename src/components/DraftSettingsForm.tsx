@@ -513,6 +513,20 @@ export function DraftSettingsForm({ value, onChange, list, teamsJoined = 0, disa
           ]}
           note={value.format === 'cup' ? tx.formatCupNote(CUP_SIZE) : tx.formatLeagueNote(DRAFT_LIMITS.leagueSize)}
         />
+        {value.format === 'cup' && (
+          <DraftChoice
+            label={tx.cupGroups}
+            value={value.cupGroups}
+            disabled={disabled}
+            busy={busy}
+            onChange={(cupGroups) => change({ cupGroups })}
+            options={[
+              { value: false, label: t.draft.off },
+              { value: true, label: t.draft.on },
+            ]}
+            note={value.cupGroups ? tx.cupGroupsNote : tx.cupNoGroupsNote}
+          />
+        )}
         <DraftChoice
           label={tx.setPiece}
           value={value.setPiece}
@@ -654,7 +668,7 @@ export function DraftSettingsSummary({ settings }: { settings: DraftSettings }) 
     settings.forms ? tx.withForms : null,
     poolHasMegas(settings) ? (settings.maxMegas != null ? tx.maxMegas(settings.maxMegas) : tx.withMegas) : null,
     settings.setPiece ? tx.withSetPiece : tx.withoutSetPiece,
-    settings.format === 'cup' ? tx.cup(CUP_SIZE) : tx.league(DRAFT_LIMITS.leagueSize),
+    settings.format === 'cup' ? (settings.cupGroups ? tx.cupWithGroups(CUP_SIZE) : tx.cup(CUP_SIZE)) : tx.league(DRAFT_LIMITS.leagueSize),
     tx.maxTeams(settings.maxTeams),
     settings.order === 'random' ? tx.orderRandom : tx.orderHost,
     settings.snake ? tx.snake : tx.fixedOrder,

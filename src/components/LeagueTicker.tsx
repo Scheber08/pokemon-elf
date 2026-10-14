@@ -14,7 +14,7 @@ import { cupPens, cupStageOf, cupStatus, cupWinner, type CupInfo } from '../lib/
 import { buildTable, type LeagueResult, type Match, type TableRow } from '../lib/season';
 import { scorerSummary } from '../lib/seasonTimeline';
 import { usePokemonData } from '../state/PokemonData';
-import { CupBracket, cupStatusText } from './CupBracket';
+import { CupBracket, CupGroups, cupStatusText } from './CupBracket';
 import '../styles/league.css';
 
 interface Props {
@@ -120,8 +120,11 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
   /** Spieltag bzw. (Turnier) Rundenname */
   const dayLabel = (round: number) => {
     const stage = cup ? cupStageOf(cup, round) : null;
-    return stage && stage !== 'group' ? t.draft.cup.stage[stage] : t.draft.matchday(round);
+    if (stage === 'group') return `${t.draft.cup.stage.group} · ${t.draft.matchday(round)}`;
+    return stage ? t.draft.cup.stage[stage] : t.draft.matchday(round);
   };
+  /** Gruppenphase läuft (oder steht bevor) → Gruppentabellen statt Baum */
+  const groupsPhase = !!cup?.groups && (!day || cupStageOf(cup, day.round) === 'group');
   const pensOf = useCallback((m: Match) => (cup ? cupPens(cup, m) : null), [cup]);
   /** Nur am Saisonende: wie der Titel bei Punktgleichheit entschieden wurde (nicht im Turnier) */
   const tieNote = finale && day && !cup ? titleTieNote(titleRace(day.table), nameOf) : null;
@@ -329,9 +332,11 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
         </div>
 
         {cup ? (
-          <aside className="league-ticker__side" aria-label={t.draft.cup.bracket}>
-            <h3 className="section-title">{t.draft.cup.bracket}</h3>
-            {day ? (
+          <aside className="league-ticker__side" aria-label={groupsPhase ? t.draft.cup.groupsTitle : t.draft.cup.bracket}>
+            <h3 className="section-title">{groupsPhase ? t.draft.cup.groupsTitle : t.draft.cup.bracket}</h3>
+            {groupsPhase && cup.groups ? (
+              <CupGroups teams={league.teams} matches={league.matches} groups={cup.groups} upTo={day?.round ?? 0} you={you} nameOf={nameOf} />
+            ) : day ? (
               <CupBracket cup={cup} matches={league.matches} upTo={day.round} you={you} nameOf={nameOf} />
             ) : (
               <p className="muted small">{tx.startsSoon}</p>

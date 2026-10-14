@@ -246,6 +246,7 @@ export const SETTING_KEYS = [
   'rerolls',
   'visibility',
   'format',
+  'cupGroups',
   'region',
   'legends',
 ] as const satisfies readonly (keyof DraftSettingsPatch)[];
@@ -280,7 +281,7 @@ export function cleanSettingsPatch(raw: unknown): DraftSettingsPatch {
     }
     patch.types = [...(types as string[])];
   }
-  for (const key of ['legendary', 'mythical', 'ultraBeasts', 'forms', 'megas', 'setPiece', 'snake', 'legends'] as const) {
+  for (const key of ['legendary', 'mythical', 'ultraBeasts', 'forms', 'megas', 'setPiece', 'snake', 'cupGroups', 'legends'] as const) {
     if (patch[key] !== undefined && !isBool(patch[key])) badSettings('Ungültige Einstellung');
   }
   if (patch.maxLegends !== undefined && patch.maxLegends !== null && !isInt(patch.maxLegends)) {

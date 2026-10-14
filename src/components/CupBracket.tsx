@@ -1,6 +1,6 @@
 import { useT, type Messages } from '../i18n';
-import type { CupInfo, CupStage } from '../lib/cup';
-import type { Match } from '../lib/season';
+import { groupTable, type CupInfo, type CupStage } from '../lib/cup';
+import type { LeagueTeam, Match } from '../lib/season';
 
 /** Status eines Teams im Turnier als Text („Noch dabei", „Aus im Viertelfinale", …). */
 export function cupStatusText(t: Messages, status: CupStage | 'group' | 'winner' | 'alive' | null): string {
@@ -57,5 +57,68 @@ export function CupBracket({ cup, matches, upTo = Infinity, you, nameOf }: Props
         </li>
       ))}
     </ol>
+  );
+}
+
+interface GroupsProps {
+  teams: LeagueTeam[];
+  matches: Match[];
+  groups: number[][];
+  /** Tabellen nach diesem Spieltag (Ticker); ohne: Endstand */
+  upTo?: number;
+  you: number | null;
+  nameOf: (team: number) => string;
+}
+
+/** Gruppentabellen (A–D): Platz, Team, Spiele, Tordifferenz, Punkte – die ersten zwei markiert. */
+export function CupGroups({ teams, matches, groups, upTo = Infinity, you, nameOf }: GroupsProps) {
+  const t = useT();
+  const c = t.draft.col;
+  return (
+    <div className="cup-groups">
+      {groups.map((members, g) => {
+        const table = groupTable(teams, matches, members, upTo);
+        const letter = String.fromCharCode(65 + g);
+        return (
+          <section key={letter} className="cup-group" aria-label={t.draft.cup.group(letter)}>
+            <h4 className="cup-bracket__stage">{t.draft.cup.group(letter)}</h4>
+            <table className="league-table cup-group__table">
+              <thead>
+                <tr>
+                  <th scope="col" title={c.placeTitle}>
+                    {c.place}
+                  </th>
+                  <th scope="col" className="left">
+                    {c.team}
+                  </th>
+                  <th scope="col" title={c.playedTitle}>
+                    {c.played}
+                  </th>
+                  <th scope="col" title={c.diffTitle}>
+                    {c.diff}
+                  </th>
+                  <th scope="col" title={c.ptsTitle}>
+                    {c.pts}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {table.map((r, i) => (
+                  <tr key={r.team} className={`${r.team === you ? 'is-user' : ''} ${i < 2 ? 'cup-group__through' : ''}`}>
+                    <td>{i + 1}</td>
+                    <td className="left">{nameOf(r.team)}</td>
+                    <td>{r.played}</td>
+                    <td>{r.gd > 0 ? `+${r.gd}` : r.gd}</td>
+                    <td>
+                      <strong>{r.pts}</strong>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        );
+      })}
+    </div>
   );
 }

@@ -1,12 +1,14 @@
 /**
  * KO-Turnier des Online-Drafts: 16 Teams im Baum (gesetzt nach Team-Score: 1–16, 8–9, …),
  * je Runde ein Spiel, das Endspiel auf neutralem Platz. Unentschieden → Elfmeterschießen.
+ * Optional vorher eine Gruppenphase: 4 Gruppen à 4 (Lostöpfe nach Team-Score), Hin- und
+ * Rückspiel, die ersten zwei ins Viertelfinale (A1–B2, C1–D2 | B1–A2, D1–C2).
  * Das Ergebnis ist ein LeagueResult (alle Spiele, round = Spieltag) plus cup (Baum) – die
  * „Tabelle" ist das Endklassement: Sieger, Finalist, Halbfinalisten, … (innerhalb einer Runde
  * nach Punkten, Tordifferenz, Toren wie buildTable). Deterministisch aus dem Rng.
  */
-import type { Rng } from './rng';
-import { buildTable, playMatch, type LeagueResult, type LeagueTeam, type Match } from './season';
+import { shuffle, type Rng } from './rng';
+import { buildTable, playMatch, roundRobin, type LeagueResult, type LeagueTeam, type Match, type TableRow } from './season';
 
 export type CupStage = 'r16' | 'qf' | 'sf' | 'final';
 
@@ -118,8 +120,18 @@ function playKnockout(rng: Rng, teams: readonly LeagueTeam[], bracket: number[],
   return { matches, rounds, out };
 }
 
-/** Rangstufe im Endklassement (kleiner = besser) */
+/** Rangstufe im Endklassement (kleiner = besser); Gruppendritte 5, Gruppenvierte 6 */
 const LEVEL: Record<CupStage | 'winner', number> = { winner: 0, final: 1, sf: 2, qf: 3, r16: 4 };
+
+/** Zahl und Größe der Gruppen */
+const GROUPS = 4;
+const GROUP_SIZE = 4;
+
+/** Tabelle einer Gruppe (Reihenfolge wie buildTable) aus deren Spielen bis einschließlich upTo. */
+export function groupTable(teams: readonly LeagueTeam[], matches: readonly Match[], members: readonly number[], upTo = Infinity): TableRow[] {
+  const inGroup = matches.filter((m) => m.round <= upTo && members.includes(m.home) && members.includes(m.away));
+  return buildTable([...teams], inGroup).filter((r) => members.includes(r.team));
+}
 
 /**
  * Endklassement: nach erreichter Runde, innerhalb einer Stufe wie buildTable (Punkte aus allen
@@ -133,14 +145,39 @@ export function cupStandings(teams: readonly LeagueTeam[], matches: readonly Mat
     .map((x) => x.row);
 }
 
-/** Simuliert das KO-Turnier (genau CUP_SIZE Teams). */
-export function simulateCup(teams: LeagueTeam[], rng: Rng): CupResult {
+/** Simuliert das KO-Turnier (genau CUP_SIZE Teams), optional mit Gruppenphase. */
+export function simulateCup(teams: LeagueTeam[], rng: Rng, opts: { groups?: boolean } = {}): CupResult {
   if (teams.length !== CUP_SIZE) throw new Error(`KO-Turnier braucht ${CUP_SIZE} Teams`);
   const order = seedOrder(teams);
-  const bracket = BRACKET_16.map((seed) => order[seed - 1]);
-  const ko = playKnockout(rng, teams, bracket, 1);
-  const table = cupStandings(teams, ko.matches, (t) => LEVEL[ko.out.get(t) ?? 'r16']);
-  return { teams, matches: ko.matches, table, cup: { groups: null, rounds: ko.rounds } };
+  if (!opts.groups) {
+    const bracket = BRACKET_16.map((seed) => order[seed - 1]);
+    const ko = playKnockout(rng, teams, bracket, 1);
+    const table = cupStandings(teams, ko.matches, (t) => LEVEL[ko.out.get(t) ?? 'r16']);
+    return { teams, matches: ko.matches, table, cup: { groups: null, rounds: ko.rounds } };
+  }
+
+  // Lostöpfe: die vier stärksten Teams in Topf 1 usw. – je Gruppe eines aus jedem Topf
+  const pots = Array.from({ length: GROUP_SIZE }, (_, k) => shuffle(rng, order.slice(k * GROUPS, (k + 1) * GROUPS)));
+  const groups = Array.from({ length: GROUPS }, (_, g) => pots.map((pot) => pot[g]));
+  const schedule = roundRobin(GROUP_SIZE);
+  const matches: Match[] = [];
+  schedule.forEach((pairs, r) => {
+    for (const members of groups) {
+      for (const [h, a] of pairs) matches.push(playMatch(rng, teams, r + 1, members[h], members[a]));
+    }
+  });
+  const tables = groups.map((members) => groupTable(teams, matches, members));
+  const [a, b, c, d] = tables.map((tb) => tb.map((row) => row.team));
+  const bracket = [a[0], b[1], c[0], d[1], b[0], a[1], d[0], c[1]];
+  const ko = playKnockout(rng, teams, bracket, schedule.length + 1);
+  const groupPlace = new Map<number, number>();
+  tables.forEach((tb) => tb.forEach((row, i) => groupPlace.set(row.team, i)));
+  const all = [...matches, ...ko.matches];
+  const table = cupStandings(teams, all, (t) => {
+    const stage = ko.out.get(t);
+    return stage ? LEVEL[stage] : 3 + (groupPlace.get(t) ?? 3);
+  });
+  return { teams, matches: all, table, cup: { groups, rounds: ko.rounds } };
 }
 
 /** Sieger des Turniers (Finale) – null ohne Finale. */
@@ -168,9 +205,14 @@ export function cupPens(cup: CupInfo, m: Pick<Match, 'round' | 'home' | 'away'>)
  * oder null (gar nicht dabei). upTo: nur Spieltage bis einschließlich dieses zählen
  * (für den Ticker); 'alive' = noch im Rennen.
  */
-export function cupStatus(cup: CupInfo, team: number, upTo = Infinity): CupStage | 'winner' | 'alive' | null {
+export function cupStatus(cup: CupInfo, team: number, upTo = Infinity): CupStage | 'group' | 'winner' | 'alive' | null {
   const inCup = cup.groups ? cup.groups.some((g) => g.includes(team)) : !!cup.rounds[0]?.ties.some((x) => x.home === team || x.away === team);
   if (!inCup) return null;
+  // Gruppenphase vorbei und nicht im KO-Baum → in der Gruppe ausgeschieden
+  const firstKo = cup.rounds[0];
+  if (cup.groups && firstKo && upTo >= firstKo.round - 1 && !firstKo.ties.some((x) => x.home === team || x.away === team)) {
+    return 'group';
+  }
   for (const r of cup.rounds) {
     if (r.round > upTo) break;
     const tie = r.ties.find((x) => x.home === team || x.away === team);

@@ -333,6 +333,7 @@ describe('Ältere Ligen und Clients (region / legends)', () => {
       rerolls: { type: 1, region: 1 },
       visibility: 'public',
       format: 'league',
+      cupGroups: true,
     });
     expect(up).not.toHaveProperty('region');
     expect(up).not.toHaveProperty('legends');

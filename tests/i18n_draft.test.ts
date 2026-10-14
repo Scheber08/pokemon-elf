@@ -131,11 +131,11 @@ const clubEn = (name: string) => messages('en').game.club(name);
 // ---------------------------------------------------------------- Online-Liga (Engine)
 
 /** Drei Teams: Host + zwei CPU-Teams mit deutschen Vereinsnamen – die Saison füllt mit Vereinen auf 18 auf */
-function finishedDraft(format: 'league' | 'cup' = 'league'): DraftState {
+function finishedDraft(format: 'league' | 'cup' = 'league', cupGroups = false): DraftState {
   let s = engine.createDraft({
     code: 'K7MPQ2',
     seed: 42,
-    settings: { region: 0, maxTeams: 4, order: 'host', pickSeconds: 0, legends: false, setPiece: false, format },
+    settings: { region: 0, maxTeams: 4, order: 'host', pickSeconds: 0, legends: false, setPiece: false, format, cupGroups },
     host: { teamId: 'h', deviceId: 'dev-h', name: 'Rocket FC', formation: '4-3-3' },
     now: 0,
     list: ALL,
@@ -473,6 +473,29 @@ describe('KO-Turnier auf Englisch', () => {
     expect(all).toMatch(/Your team [^|]+: (Out in the|Lost the final|Cup winners)/);
     expect(container.querySelectorAll('.draft-results__table tbody tr')).toHaveLength(16);
     expect(germanLeft(container)).toEqual([]);
+  });
+
+  it('mit Gruppenphase: Gruppentabellen im Ticker und im Ergebnis', async () => {
+    storeLang('en');
+    const s = runnerUpView(finishedDraft('cup', true));
+    s.season = { ...s.season!, startsAt: Date.now() - s.season!.stepMs * 2.5 };
+    const ticker = await render(app(h(DraftSeasonStage, { room: fakeRoom(s) })));
+    await settle();
+    let all = texts(ticker.container).join(' | ');
+    expect(all).toContain('Group stage · Matchday 3');
+    expect(all).toContain('Groups');
+    expect(all).toContain('Group D');
+    expect(germanLeft(ticker.container)).toEqual([]);
+    const done = runnerUpView(finishedDraft('cup', true));
+    done.season = { ...done.season!, startsAt: Date.now() - 10 * 24 * 3600 * 1000 };
+    const result = await render(app(h(DraftSeasonStage, { room: fakeRoom(done) })));
+    await settle();
+    all = texts(result.container).join(' | ');
+    expect(all).toContain('Group A');
+    expect(all).toContain('Quarter-final');
+    expect(all).not.toContain('Round of 16');
+    expect(result.container.querySelectorAll('.cup-group__table')).toHaveLength(4);
+    expect(germanLeft(result.container)).toEqual([]);
   });
 
   it('Ticker mitten im Turnier: Runde, Status, Baum', async () => {

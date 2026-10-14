@@ -881,3 +881,16 @@
   color: var(--text-dim);
   white-space: nowrap;
 }
+
+/* KO-Turnier: Gruppentabellen */
+.cup-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+.cup-group__table {
+  width: 100%;
+}
+.cup-group__through td:first-child {
+  box-shadow: inset 3px 0 0 var(--green);
+}

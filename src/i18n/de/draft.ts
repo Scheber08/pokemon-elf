@@ -157,6 +157,9 @@ const draft = {
     format: 'Spielmodus',
     formatLeague: 'Liga',
     formatCup: 'KO-Turnier',
+    cupGroups: 'Gruppenphase',
+    cupGroupsNote: '4 Gruppen à 4 Teams mit Hin- und Rückspiel – die ersten zwei kommen ins Viertelfinale.',
+    cupNoGroupsNote: 'Direkt los mit dem Achtelfinale.',
     formatLeagueNote: (teams: number) => `Jeder gegen jeden, Hin- und Rückrunde – ${teams} Teams, aufgefüllt mit Teams aus der Rangliste.`,
     formatCupNote: (teams: number) =>
       `${teams} Teams im KO-Baum, gesetzt nach Team-Score – ein Spiel pro Runde, bei Unentschieden Elfmeterschießen.`,
@@ -182,6 +185,7 @@ const draft = {
   summary: {
     league: (teams: number) => `Liga mit ${teams} Teams`,
     cup: (teams: number) => `KO-Turnier mit ${teams} Teams`,
+    cupWithGroups: (teams: number) => `KO-Turnier mit ${teams} Teams und Gruppenphase`,
     pool: (region: string) => `Pool: ${region}`,
     /** Mehr als drei Generationen (aber nicht alle) */
     gensCount: (n: number) => `${n} Generationen`,
@@ -359,6 +363,8 @@ const draft = {
   cup: {
     stage: { r16: 'Achtelfinale', qf: 'Viertelfinale', sf: 'Halbfinale', final: 'Finale', group: 'Gruppenphase' },
     roundLabel: 'Runde',
+    group: (letter: string) => `Gruppe ${letter}`,
+    groupsTitle: 'Gruppen',
     progressText: (n: number, total: number) => `Runde ${n} von ${total}`,
     bracket: 'Turnierbaum',
     winnerLabel: 'Turniersieger: ',

@@ -49,7 +49,8 @@ Erledigt (siehe README): Ultrabestien/Megas/Formen, Revanche + ewige Tabelle, Be
 dran", Testspiel, Spielerprofil, Wochenwertung, Tägliche-Elf-Serie, OG-Tags (auch je Liga), Routen
 nachladen, PWA, Wunschliste, Emoji-Reaktionen, Vorlagen und Draft-Noten im Draft, Rückgängig,
 Fit-Sortierung und „Beste Elf" im Builder, Wochenwertung rückwirkend gefüllt, Schnäppchen des Drafts,
-„Deine Duelle", Allzeit-Platz im Profil, Taste „/" im Draft, Noten in der lokalen Liga, QR-Code in der Lobby.
+„Deine Duelle", Allzeit-Platz im Profil, Taste „/" im Draft, Noten in der lokalen Liga, QR-Code in der Lobby,
+Saison auf 18 Teams mit Ranglisten-Teams aufgefüllt, KO-Turnier mit optionaler Gruppenphase.
 
 1. Tausch-Angebote zwischen Teams im Online-Draft (nach dem Draft, vor der Saison) – braucht eine neue
    Phase (DraftPhase, upgradeState, ältere Clients); erst mit dem Besitzer abstimmen

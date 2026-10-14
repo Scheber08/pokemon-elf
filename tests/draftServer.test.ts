@@ -538,6 +538,11 @@ describe('Draft-Raum: Lobby', () => {
     expect(host.lastError).toMatchObject({ code: 'bad_settings', message: 'Ungültiger Spielmodus' });
     await room.send(host, { type: 'settings', settings: { format: 7 } });
     expect(host.lastError).toMatchObject({ code: 'bad_settings', message: 'Ungültiger Spielmodus' });
+    await room.send(host, { type: 'settings', settings: { cupGroups: false } });
+    expect(host.state!.settings.cupGroups).toBe(false);
+    await room.send(host, { type: 'settings', settings: { cupGroups: 'ja' } });
+    expect(host.lastError?.code).toBe('bad_settings');
+    expect(host.state!.settings.cupGroups).toBe(false);
 
     await room.send(host, { type: 'settings', settings: { pickSeconds: 15 } });
     expect(host.lastError?.code).toBe('bad_settings');

@@ -7,6 +7,7 @@ import {
   cupStageOf,
   cupStatus,
   cupWinner,
+  groupTable,
   penaltyShootout,
   seedOrder,
   simulateCup,
@@ -92,12 +93,56 @@ describe('simulateCup', () => {
   });
 });
 
+describe('Gruppenphase', () => {
+  it('4 Gruppen à 4 aus Lostöpfen, 6 Spieltage, die ersten zwei über Kreuz ins Viertelfinale', () => {
+    const teams = teams16();
+    const r = simulateCup(teams, createRng(9), { groups: true });
+    const groups = r.cup.groups!;
+    expect(groups).toHaveLength(4);
+    expect(groups.flat().sort((a, b) => a - b)).toEqual([...Array(16).keys()]);
+    // Topf k: die Plätze 4k..4k+3 der Setzliste – je Gruppe genau einer aus jedem Topf
+    const order = seedOrder(teams);
+    for (let k = 0; k < 4; k++) {
+      expect(groups.map((g) => g[k]).sort((a, b) => a - b)).toEqual(order.slice(4 * k, 4 * k + 4).sort((a, b) => a - b));
+    }
+    const groupMatches = r.matches.filter((m) => m.round <= 6);
+    expect(groupMatches).toHaveLength(48);
+    for (const g of groups) {
+      const table = groupTable(teams, r.matches, g);
+      expect(table.every((row) => row.played === 6)).toBe(true);
+    }
+    expect(r.cup.rounds.map((x) => [x.stage, x.round])).toEqual([
+      ['qf', 7],
+      ['sf', 8],
+      ['final', 9],
+    ]);
+    const [a, b, c, d] = groups.map((g) => groupTable(teams, r.matches, g).map((row) => row.team));
+    expect(r.cup.rounds[0].ties.map((x) => [x.home, x.away])).toEqual([
+      [a[0], b[1]],
+      [c[0], d[1]],
+      [b[0], a[1]],
+      [d[0], c[1]],
+    ]);
+    // Endklassement: Gruppendritte vor -vierten, ganz hinten
+    const thirds = [a[2], b[2], c[2], d[2]];
+    const fourths = [a[3], b[3], c[3], d[3]];
+    expect(r.table.slice(8, 12).map((x) => x.team).sort()).toEqual(thirds.sort());
+    expect(r.table.slice(12).map((x) => x.team).sort()).toEqual(fourths.sort());
+    expect(cupStageOf(r.cup, 3)).toBe('group');
+    // Status: vor Ende der Gruppenphase noch dabei, danach ausgeschieden
+    expect(cupStatus(r.cup, a[3], 5)).toBe('alive');
+    expect(cupStatus(r.cup, a[3], 6)).toBe('group');
+    expect(cupStatus(r.cup, a[0], 6)).toBe('alive');
+    expect(simulateCup(teams16(), createRng(9), { groups: true })).toEqual(r);
+  });
+});
+
 describe('Online-Draft im KO-Modus', () => {
-  function finished(format: 'league' | 'cup') {
+  function finished(format: 'league' | 'cup', cupGroups = false) {
     let s = createDraft({
       code: 'CUP234',
       seed: 3,
-      settings: { pickSeconds: 0, format },
+      settings: { pickSeconds: 0, format, cupGroups },
       host: { teamId: 'h', deviceId: 'dev-h', name: 'Host-Elf', formation: '4-3-3' },
       now: 0,
       list: ALL,
@@ -116,6 +161,15 @@ describe('Online-Draft im KO-Modus', () => {
     expect(upgradeSettings({}).format).toBe('league');
     expect(upgradeSettings({ format: 'cup' }).format).toBe('cup');
     expect(upgradeSettings({ format: 'quatsch' }).format).toBe('league');
+    expect(upgradeSettings({}).cupGroups).toBe(true);
+    expect(upgradeSettings({ cupGroups: false }).cupGroups).toBe(false);
+  });
+
+  it('mit Gruppenphase: Gruppen und 9 Spieltage gespeichert', () => {
+    const s = finished('cup', true);
+    const back = storedLeague(JSON.parse(JSON.stringify(s.league)), s.teams.length)!;
+    expect(back.cup!.groups).toHaveLength(4);
+    expect(Math.max(...back.matches.map((m) => m.round))).toBe(9);
   });
 
   it('KO-Modus: 16 Teams (aufgefüllt), Baum gespeichert und aus dem Schnappschuss lesbar', () => {
