@@ -184,7 +184,9 @@ beste Elf zur Tagesform). Jedes Pokémon hat je Spieltag eine Tagesform von −2
 Liga-Seed, vorher sichtbar), die seinen Fit um 5 Punkte je Stufe verschiebt. Löschung erst 14 Tage nach dem
 letzten Spieltag. **Transfermarkt**: Jedes Team kann pro Spieltag ein freies Pokémon (Pool ohne Gedraftete)
 gegen eins aus dem Kader wünschen (Nachricht `transfer`, privat); zum Anpfiff vergibt der Server in
-Tabellen-Reihenfolge (Letzter zuerst), CPU-Teams holen bei klarem Gewinn selbst jemanden.
+Tabellen-Reihenfolge (Letzter zuerst), CPU-Teams holen bei klarem Gewinn selbst jemanden. Die Manager-Saison hat
+einen eigenen Menüpunkt (`/manager`, `src/pages/Manager.tsx`: Liga anlegen, beitreten, eigene Manager-Ligen);
+mit Hinweisen meldet der Browser jeden gespielten Spieltag und erinnert 5 Minuten vor dem Anpfiff.
 Öffentliche Lobbys: `GET /api/drafts/public`. Ligen werden nach 14 Tagen gelöscht. Vertrag und Limits:
 `src/lib/api/draftContract.ts`.
 
@@ -199,6 +201,11 @@ Browser auch das Saisonende. Nach der Saison legt
 trägt die Ergebnisse ihrer Vorgänger mit – daraus die **ewige Tabelle**. Für `/draft/:code` liefert der
 Worker eigene Open-Graph-Tags (Link-Vorschau mit Liganame, Host und Teams, `server/preview.ts`) – ebenso für
 Spielerprofile `/spieler/:id` (Name, gewertete Runs, bester Allzeit-Platz).
+
+**Spielwiedergabe** (alle Modi): Ein Klick aufs Ergebnis öffnet den Spielbericht (`src/components/MatchReport.tsx`,
+Statistik, Torschützen mit Vorlagen) oder die 2D-Ansicht von oben (`src/lib/matchReplay.ts`,
+`src/components/MatchPitch.tsx`: Formationen mit Pokémon-Sprites, Ballwege, Schüsse und die echten Tore – reine
+Illustration, das Ergebnis ändert sich nicht). In den Einstellungen bzw. per Umschalter: 2D, Bericht oder aus.
 
 ## Trainer & Erfolge
 

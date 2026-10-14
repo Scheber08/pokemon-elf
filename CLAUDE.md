@@ -53,12 +53,12 @@ Fit-Sortierung und „Beste Elf" im Builder, Wochenwertung rückwirkend gefüllt
 Saison auf 18 Teams mit Ranglisten-Teams aufgefüllt, KO-Turnier mit optionaler Gruppenphase, Draft-Spielmodell
 (Tagesform, Torminuten), Formkurve, Saisonrekorde, Saisonverlauf, „Meine Teams" im Builder, Manager-Saison
 (Bank, Spieltage im Takt, Aufstellung, Tagesform je Pokémon), Erfolge mit Münzen, eigener Trainer mit
-Cosmetics-Shop (auch in Rangliste, Profil und Draft).
+Cosmetics-Shop (auch in Rangliste, Profil und Draft), Transfermarkt und Erinnerung vor dem Anpfiff in der
+Manager-Saison, eigener Menüpunkt „Manager", Spielbericht + 2D-Wiedergabe in allen Modi (einstellbar),
+Erfolge für die Manager-Saison, Hinweis „Erfolg freigeschaltet" nach Runs und Ligen.
 
-1. Manager-Saison weiter ausbauen (mit dem Besitzer abgestimmt): Transfermarkt (freie Pokémon gegen eigene,
-   Tabellenletzter zuerst), Tausch-Angebote zwischen Teams, Benachrichtigung vor dem Anpfiff
-2. Mehr Erfolge/Cosmetics (z. B. Erfolge für die Manager-Saison, saisonale Items); Hinweis „Erfolg
-   freigeschaltet" direkt nach einem Run
+1. Tausch-Angebote zwischen Teams in der Manager-Saison (mit dem Besitzer abgestimmt)
+2. Mehr Cosmetics (z. B. saisonale Items)
 
 ## Daten
 
