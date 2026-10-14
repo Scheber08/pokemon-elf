@@ -124,6 +124,18 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
       : null;
   /** Weg des Siegers durch die KO-Runden (ohne das Finale, das steht schon in der Zeile darüber) */
   const championPath = cup && cupFinalLine ? cupPath(cup, league.matches, champion.team).filter((s) => s.stage !== 'final') : [];
+  /** Eigene KO-Spiele (wenn man nicht selbst gewonnen hat – dann steht der Weg schon oben) */
+  const ownPath = cup && you != null && !youAreChampion ? cupPath(cup, league.matches, you) : [];
+  const pathText = (steps: ReturnType<typeof cupPath>) =>
+    steps
+      .map((s) =>
+        t.draft.cup.pathStep(
+          t.draft.cup.stage[s.stage],
+          `${s.gf}:${s.ga}${s.pens ? ` (${t.draft.cup.pens(s.pens.own, s.pens.opp)})` : ''}`,
+          nameOf(s.opponent),
+        ),
+      )
+      .join(' · ');
   const tieNote = cup ? null : titleTieNote(race, nameOf);
   const dayTitle = (round: number) => {
     const stage = cup ? cupStageOf(cup, round) : null;
@@ -207,16 +219,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
         <p className="draft-results__line">{cupFinalLine ?? tx.heroLine(champion, ratingOf(champion.team))}</p>
         {championPath.length > 0 && (
           <p className="draft-results__path muted small">
-            {t.draft.cup.pathTitle}:{' '}
-            {championPath
-              .map((s) =>
-                t.draft.cup.pathStep(
-                  t.draft.cup.stage[s.stage],
-                  `${s.gf}:${s.ga}${s.pens ? ` (${t.draft.cup.pens(s.pens.own, s.pens.opp)})` : ''}`,
-                  nameOf(s.opponent),
-                ),
-              )
-              .join(' · ')}
+            {t.draft.cup.pathTitle}: {pathText(championPath)}
           </p>
         )}
         {tieNote && <p className="draft-results__tie">{tieNote}</p>}
@@ -234,6 +237,11 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
               : youAreChampion
                 ? tx.youChampion
                 : tx.yourPlace(nameOf(ownRow.team), ownIndex + 1, ownRow.pts)}
+          </p>
+        )}
+        {ownPath.length > 0 && (
+          <p className="draft-results__path muted small">
+            {t.draft.cup.ownPathTitle}: {pathText(ownPath)}
           </p>
         )}
         <div className="draft-results__actions">

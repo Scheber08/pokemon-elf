@@ -410,6 +410,7 @@ const draft = {
     pensTitle: 'nach Elfmeterschießen',
     finalLine: (score: string, opponent: string) => `Finale ${score} gegen ${opponent}`,
     pathTitle: 'Weg zum Titel',
+    ownPathTitle: 'Deine KO-Spiele',
     pathStep: (stage: string, score: string, opponent: string) => `${stage}: ${score} gegen ${opponent}`,
     yourCup: (team: string, status: string) => `Dein Team ${team}: ${status}`,
     standings: 'Endklassement',
