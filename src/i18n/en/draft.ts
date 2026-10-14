@@ -224,6 +224,8 @@ const draft: Messages['draft'] = {
     yourPlace: (team, place, pts) => `Your team ${team}: ${ordinal(place)} place · ${plural(pts, 'pt', 'pts')}`,
     share: 'Share result',
     saveOwnImage: 'My XI as image',
+    grade: 'Grade',
+    gradeTitle: 'Draft grade by team score – relative to the other teams in this league (A+ to D)',
     finalTable: 'Final table',
     yourTeamSr: ' (your team)',
     noGoals: 'No goals this season.',

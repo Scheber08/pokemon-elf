@@ -3,7 +3,7 @@ import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftTeam } from '../lib/api/draftContract';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { draftShareText, leagueTimeline, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { draftGrades, draftShareText, leagueTimeline, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { formatRecord, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -69,6 +69,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
     [byId, t],
   );
   const ratingOf = (i: number) => ratings[i] ?? league.teams[i]?.rating ?? 0;
+  const grades = draftGrades(league.teams.map((_, i) => ratingOf(i)));
 
   const champion = table[0];
   const race = titleRace(table);
@@ -190,6 +191,9 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                     {c.team}
                   </th>
                   <th scope="col">{c.teamScore}</th>
+                  <th scope="col" title={tx.gradeTitle}>
+                    {tx.grade}
+                  </th>
                   <th scope="col" title={c.playedTitle}>
                     {c.played}
                   </th>
@@ -221,6 +225,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                       {r.team === you && <span className="sr-only">{tx.yourTeamSr}</span>}
                     </td>
                     <td>{ratingOf(r.team)}</td>
+                    <td className="draft-results__grade">{grades[r.team]}</td>
                     <td>{r.played}</td>
                     <td>{r.w}</td>
                     <td>{r.d}</td>

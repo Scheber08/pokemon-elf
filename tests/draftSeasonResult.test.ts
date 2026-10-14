@@ -336,3 +336,16 @@ describe('Teilen-Text des Online-Drafts (SEASON-2, SEASON-5)', () => {
     );
   });
 });
+
+describe('Draft-Noten', () => {
+  it('relativ in der Liga: bester A+, nach Abstand (mindestens 60 Punkte Spanne)', async () => {
+    const { draftGrades } = await import('../src/lib/leagueTimeline');
+    // Weit auseinander: volle Skala
+    expect(draftGrades([800, 750, 700, 600])).toEqual(['A+', 'B+', 'B', 'D']);
+    // Knapp beieinander: knappe Noten
+    expect(draftGrades([910, 908])).toEqual(['A+', 'A+']);
+    expect(draftGrades([700, 690, 680])).toEqual(['A+', 'A', 'B+']);
+    expect(draftGrades([800, 800])).toEqual(['A+', 'A+']);
+    expect(draftGrades([])).toEqual([]);
+  });
+});

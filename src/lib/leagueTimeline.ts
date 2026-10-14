@@ -371,3 +371,22 @@ export function draftShareText(i: DraftShareInput): string {
     i.url,
   ].join('\n');
 }
+
+/** Noten des Drafts, beste zuerst */
+export const DRAFT_GRADES = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D'] as const;
+
+/** So viele Team-Score-Punkte trennen A+ und D mindestens – knappe Ligen bekommen knappe Noten */
+export const DRAFT_GRADE_SPREAD = 60;
+
+/**
+ * Draft-Note je Team (Reihenfolge wie ratings): relativ innerhalb der Liga – der beste Team-Score
+ * bekommt A+, dann nach Abstand zu ihm (über die Spanne der Liga, mindestens DRAFT_GRADE_SPREAD).
+ * Absolute Werte taugen nicht, weil sie stark vom Pool abhängen (Kanto ≈ 690, alle Regionen ≈ 980).
+ */
+export function draftGrades(ratings: readonly number[]): string[] {
+  if (!ratings.length) return [];
+  const max = Math.max(...ratings);
+  const spread = Math.max(max - Math.min(...ratings), DRAFT_GRADE_SPREAD);
+  const last = DRAFT_GRADES.length - 1;
+  return ratings.map((r) => DRAFT_GRADES[Math.round(((max - r) / spread) * last)]);
+}

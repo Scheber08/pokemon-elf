@@ -780,3 +780,8 @@
 .draft-squads .draft-results__roster-name {
   margin: 0;
 }
+
+.draft-results__grade {
+  font-family: var(--font-head);
+  font-weight: 700;
+}
