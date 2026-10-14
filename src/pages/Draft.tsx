@@ -36,7 +36,7 @@ import { cleanCrest, type Crest as CrestData } from '../lib/crest';
 import { Crest } from '../components/Crest';
 import { CrestEditor } from '../components/CrestEditor';
 import { cpuCaptain } from '../lib/draftEngine';
-import { SHINY_FIT_BONUS, shinyBonus, shinyRoll, shinyTeamBoost } from '../lib/shiny';
+import { SHINY_CHANCE, SHINY_FIT_BONUS, SHINY_PARTY_CHANCE, shinyBonus, shinyRoll, shinyTeamBoost } from '../lib/shiny';
 import { useToast } from '../state/Toast';
 
 const ROUNDS = 11;
@@ -87,6 +87,8 @@ interface DraftState {
   shinies?: number[];
   /** Shinys ausgeschaltet (Einstellung vor dem Draft) */
   noShinies?: true;
+  /** Shiny-Party: 10 % statt 2 % */
+  shinyParty?: true;
 }
 
 function defaultTeams(n: number): DraftTeam[] {
@@ -177,7 +179,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
         i === teamIdx ? { ...tm, slots: tm.slots.map((v, j) => (j === slot ? pokemonId : v)) } : tm,
       );
       const pick = s.pick + 1;
-      const shiny = s.shinySalt != null && shinyRoll(s.shinySalt, pokemonId);
+      const shiny = s.shinySalt != null && shinyRoll(s.shinySalt, pokemonId, s.shinyParty ? SHINY_PARTY_CHANCE : SHINY_CHANCE);
       return {
         ...s,
         teams,
@@ -417,11 +419,16 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
             />
             <Segmented
               label={t.draft.settings.shinies}
-              value={!state.noShinies}
-              onChange={(on) => setState(({ noShinies: _off, ...s }) => (on ? s : { ...s, noShinies: true }))}
+              value={state.noShinies ? 'off' : state.shinyParty ? 'party' : 'on'}
+              onChange={(v) =>
+                setState(({ noShinies: _off, shinyParty: _party, ...s }) =>
+                  v === 'off' ? { ...s, noShinies: true } : v === 'party' ? { ...s, shinyParty: true } : s,
+                )
+              }
               options={[
-                { value: false, label: t.common.off },
-                { value: true, label: t.common.on, title: t.draft.settings.shiniesTitle },
+                { value: 'off', label: t.common.off },
+                { value: 'on', label: t.common.on, title: t.draft.settings.shiniesTitle },
+                { value: 'party', label: t.draft.settings.shinyParty, title: t.draft.settings.shinyPartyTitle },
               ]}
             />
             {poolTooSmall && <p className="notice notice--error">{tx.poolTooSmall(poolSize, n, ROUNDS, n * ROUNDS)}</p>}
