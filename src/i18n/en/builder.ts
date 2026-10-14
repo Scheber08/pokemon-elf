@@ -29,6 +29,8 @@ const builder: Messages['builder'] = {
     updated: (name) => `“${name}” updated`,
     loaded: (name) => `“${name}” loaded`,
     friendly: 'Friendly',
+    link: 'Link',
+    linkTitle: (name) => `Copy link to ${name}`,
     loadingFriendly: 'Loading friendly …',
     friendlyTitle: (name) => `Current XI against ${name} (home and away)`,
   },
