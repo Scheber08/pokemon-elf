@@ -15,6 +15,7 @@ const manager: Messages['manager'] = {
     'Trades: offer other teams your Pokémon for theirs – CPU teams answer right away.',
     'Match reports with a 2D view, statistics and, at the end, achievements for your trainer.',
   ],
+  notifyNote: 'Notifications when a matchday is played, shortly before kick-off and for trade offers:',
   createTitle: 'Create manager league',
   offline: 'The manager season needs the online server – it can’t be reached right now.',
   otherModes: 'League or knockout cup without matchdays:',

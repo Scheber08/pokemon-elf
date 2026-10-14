@@ -1375,3 +1375,11 @@ button.draft-bench__slot {
 .manager h2[id^='manager-'] {
   scroll-margin-top: 80px;
 }
+
+.manager-page__notify {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 0;
+}

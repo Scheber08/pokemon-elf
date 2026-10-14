@@ -13,6 +13,7 @@ const manager = {
     'Tauschbörse: biete anderen Teams eigene Pokémon gegen ihre an – CPU-Teams antworten sofort.',
     'Spielberichte mit 2D-Ansicht, Statistiken und am Ende Erfolge für deinen Trainer.',
   ],
+  notifyNote: 'Hinweise bei gespieltem Spieltag, kurz vor dem Anpfiff und bei Tausch-Angeboten:',
   createTitle: 'Manager-Liga erstellen',
   offline: 'Die Manager-Saison braucht den Online-Server – gerade ist er nicht erreichbar.',
   otherModes: 'Liga oder KO-Turnier ohne Spieltage:',

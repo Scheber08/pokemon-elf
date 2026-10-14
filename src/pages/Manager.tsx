@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useT } from '../i18n';
 import { draftsSupported } from '../lib/api/draftClient';
+import { NotifyToggle } from '../components/NotifyToggle';
 import { CreateLeague, JoinByCode, RecentLeagues } from './DraftOnline';
 import '../styles/draft.css';
 
@@ -41,6 +42,10 @@ export function Manager() {
             <li key={s}>{s}</li>
           ))}
         </ol>
+        {/* Hinweise schon vor der ersten Liga einschalten können */}
+        <p className="manager-page__notify">
+          <span className="muted small">{tx.notifyNote}</span> <NotifyToggle />
+        </p>
       </section>
       {supported == null && (
         <p className="runnet runnet--checking" role="status">
