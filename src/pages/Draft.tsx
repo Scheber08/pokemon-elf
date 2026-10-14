@@ -24,7 +24,7 @@ import { createRng, gaussian, randomSeed, shuffle } from '../lib/rng';
 import { CLASSIC_MODEL, DRAFT_MODEL, simulateLeague, type LeagueTeam } from '../lib/season';
 import { scorerSummary } from '../lib/seasonTimeline';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
-import { evaluateTeam } from '../lib/teamScore';
+import { bestCaptain, evaluateTeam } from '../lib/teamScore';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import type { FormationId, Pokemon, RegionFilter, Slots } from '../types';
@@ -458,6 +458,22 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           )}
         </section>
         <div className="actionbar">
+          {state.teams.some((tm) => !tm.cpu && tm.captain == null) && (
+            <button
+              type="button"
+              className="btn"
+              onClick={() =>
+                setState((s) => ({
+                  ...s,
+                  teams: s.teams.map((x) =>
+                    x.cpu || x.captain != null ? x : { ...x, captain: bestCaptain(x.formation, x.slots.map((id) => (id != null ? byId.get(id) : undefined)), scale('all')) },
+                  ),
+                }))
+              }
+            >
+              {t.captain.bestForAll(state.teams.filter((tm) => !tm.cpu && tm.captain == null).length)}
+            </button>
+          )}
           <button type="button" className="btn btn--primary btn--big" onClick={() => setState((s) => ({ ...s, phase: 'league' }))}>
             {t.captain.kickoff}
           </button>
