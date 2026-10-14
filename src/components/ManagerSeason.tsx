@@ -215,6 +215,24 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             <strong>{tx.next(nextNo)}</strong> · {tx.kickoffIn(m.nextAt - now)} <span className="muted">{tx.kickoffAt(when)}</span>
           </p>
         )}
+        {/* Sprungmenü – die Seite ist lang (vor allem auf dem Handy) */}
+        <nav className="manager__jump" aria-label={tx.jumpAria}>
+          {(
+            [
+              ['manager-lineup', tx.jumpLineup, !readOnly && !!room.me],
+              ['manager-market', tx.jumpMarket, !readOnly && !!room.me && m.nextAt != null],
+              ['manager-trade', tx.jumpTrade, !readOnly && !!room.me && m.nextAt != null],
+              ['manager-last', tx.jumpResults, m.played > 0],
+              ['manager-table', tx.jumpTable, true],
+            ] as const
+          )
+            .filter(([, , show]) => show)
+            .map(([id, label]) => (
+              <a key={id} href={`#${id}`}>
+                {label}
+              </a>
+            ))}
+        </nav>
         {!readOnly && incomingIds.length > 0 && (
           <p className="manager__offers-link">
             <a href="#manager-trade">🤝 {tx.offersOpen(incomingIds.length)}</a>

@@ -1363,3 +1363,15 @@ button.draft-bench__slot {
 #manager-trade {
   scroll-margin-top: 80px;
 }
+
+/* Manager-Saison: Sprungmenü in der Statuskarte */
+.manager__jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 8px;
+  font-size: 14px;
+}
+.manager h2[id^='manager-'] {
+  scroll-margin-top: 80px;
+}

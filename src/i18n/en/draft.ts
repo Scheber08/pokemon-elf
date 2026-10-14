@@ -521,6 +521,12 @@ const draft: Messages['draft'] = {
     offerOut: (team, give, get) => `Your offer to ${team}: ${give} for ${get}`,
     tradeDone: (out, team, inn) => `Traded: ${out} to ${team} for ${inn}`,
     offerCpuExpires: 'valid until kick-off',
+    jumpAria: 'Jump to',
+    jumpLineup: 'Lineup',
+    jumpMarket: 'Transfers',
+    jumpTrade: 'Trades',
+    jumpResults: 'Results',
+    jumpTable: 'Table',
     formWarning: (names) =>
       `${names.length === 1 ? `${names[0]} is` : `${names.length} players in your eleven are`} in poor form today${names.length > 1 ? ` (${names.join(', ')})` : ''} – rotate?`,
     offersOpen: (n) => (n === 1 ? '1 trade offer for you' : `${n} trade offers for you`),

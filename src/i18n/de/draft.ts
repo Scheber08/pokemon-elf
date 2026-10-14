@@ -565,6 +565,12 @@ const draft = {
     offerOut: (team: string, give: string, get: string) => `Dein Angebot an ${team}: ${give} für ${get}`,
     tradeDone: (out: string, team: string, inn: string) => `Getauscht: ${out} an ${team}, dafür ${inn}`,
     offerCpuExpires: 'gilt bis zum Anpfiff',
+    jumpAria: 'Springe zu',
+    jumpLineup: 'Aufstellung',
+    jumpMarket: 'Transfers',
+    jumpTrade: 'Tausch',
+    jumpResults: 'Ergebnisse',
+    jumpTable: 'Tabelle',
     formWarning: (names: string[]) =>
       `${names.length === 1 ? `${names[0]} ist` : `${names.length} Spieler deiner Elf sind`} heute schlecht in Form${names.length > 1 ? ` (${names.join(', ')})` : ''} – vielleicht rotieren?`,
     offersOpen: (n: number) => (n === 1 ? '1 Tausch-Angebot an dich offen' : `${n} Tausch-Angebote an dich offen`),
