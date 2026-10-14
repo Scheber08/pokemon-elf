@@ -65,6 +65,8 @@ const builder = {
   filter: {
     searchLabel: 'Pokémon suchen',
     searchPlaceholder: 'Name oder Nummer suchen …',
+    /** Tooltip am Suchfeld, wenn „/" dorthin springt */
+    slashHint: 'Tastenkürzel: /',
     results: (n: number) => `${n} Treffer`,
     typeFilter: 'Typ-Filter',
     regionFilter: 'Regions-Filter',

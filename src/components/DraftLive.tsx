@@ -479,6 +479,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                 // Die Trefferzahl ist eine Live-Region – ohne Filter änderte sie sich bei jedem Pick
                 // (die freie Zahl steht ohnehin in der Überschrift)
                 resultCount={filtering ? filtered.length : undefined}
+                slashFocus
               />
               <PokemonGrid
                 items={filtered}

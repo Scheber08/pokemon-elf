@@ -68,6 +68,7 @@ const builder: Messages['builder'] = {
   filter: {
     searchLabel: 'Search Pokémon',
     searchPlaceholder: 'Search name or number …',
+    slashHint: 'Shortcut: /',
     results: (n) => (n === 1 ? '1 result' : `${n} results`),
     typeFilter: 'Type filter',
     regionFilter: 'Region filter',

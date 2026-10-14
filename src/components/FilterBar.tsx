@@ -1,4 +1,4 @@
-import { useMemo, type KeyboardEvent, type RefObject } from 'react';
+import { useEffect, useMemo, useRef, type KeyboardEvent, type RefObject } from 'react';
 import { dexId } from '../config/categories';
 import { TYPE_KEYS, TYPES } from '../config/pokemonTypes';
 import { REGIONS } from '../config/regions';
@@ -50,6 +50,16 @@ interface Props {
   resultCount?: number;
   /** Nur diese Regionen (Generationen) als Filter anbieten – z. B. die des Draft-Pools; fehlt: alle */
   regions?: readonly number[];
+  /** Taste „/" springt ins Suchfeld (nicht in Dialogen – die fokussieren selbst) */
+  slashFocus?: boolean;
+}
+
+/** Tippt man gerade woanders (Eingabefeld, Dialog offen)? Dann gehört „/" dorthin. */
+function typingElsewhere(target: EventTarget | null): boolean {
+  if (document.querySelector('[role="dialog"][aria-modal="true"]')) return true;
+  const el = target as HTMLElement | null;
+  if (!el?.tagName) return false;
+  return ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName.toUpperCase()) || el.isContentEditable === true;
 }
 
 export function FilterBar({
@@ -61,8 +71,26 @@ export function FilterBar({
   onSearchKeyDown,
   resultCount,
   regions,
+  slashFocus = false,
 }: Props) {
   const t = useT();
+  const ownRef = useRef<HTMLInputElement>(null);
+  const inputRef = searchRef ?? ownRef;
+
+  useEffect(() => {
+    if (!slashFocus) return;
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
+      if (typingElsewhere(e.target)) return;
+      const input = inputRef.current;
+      if (!input) return;
+      e.preventDefault();
+      input.focus();
+      input.select?.();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [slashFocus, inputRef]);
   return (
     <div className="filterbar">
       <div className="filterbar__search">
@@ -71,8 +99,10 @@ export function FilterBar({
         </label>
         <input
           id="pokemon-search"
-          ref={searchRef}
+          ref={inputRef}
           type="search"
+          aria-keyshortcuts={slashFocus ? '/' : undefined}
+          title={slashFocus ? t.builder.filter.slashHint : undefined}
           className="input"
           placeholder={t.builder.filter.searchPlaceholder}
           value={filters.query}

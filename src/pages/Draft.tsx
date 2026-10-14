@@ -506,7 +506,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   tx.yourTurn(teamName(String(team?.name)))
                 )}
               </p>
-              <FilterBar filters={filters} onChange={setFilters} showRegion={state.region === 0} resultCount={filtered.length} />
+              <FilterBar filters={filters} onChange={setFilters} showRegion={state.region === 0} resultCount={filtered.length} slashFocus />
               <PokemonGrid
                 items={filtered}
                 sprite={sprite}
