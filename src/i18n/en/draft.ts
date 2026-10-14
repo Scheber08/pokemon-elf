@@ -223,6 +223,7 @@ const draft: Messages['draft'] = {
     youChampion: 'Congratulations – your team won the league!',
     yourPlace: (team, place, pts) => `Your team ${team}: ${ordinal(place)} place · ${plural(pts, 'pt', 'pts')}`,
     share: 'Share result',
+    saveOwnImage: 'My XI as image',
     finalTable: 'Final table',
     yourTeamSr: ' (your team)',
     noGoals: 'No goals this season.',

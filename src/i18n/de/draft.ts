@@ -240,6 +240,7 @@ const draft = {
     youChampion: 'Glückwunsch – dein Team ist Meister!',
     yourPlace: (team: string, place: number, pts: number) => `Dein Team ${team}: Platz ${place} · ${pts} Pkt`,
     share: 'Ergebnis teilen',
+    saveOwnImage: 'Meine Elf als Bild',
     finalTable: 'Abschlusstabelle',
     yourTeamSr: ' (dein Team)',
     noGoals: 'Keine Tore in dieser Saison.',

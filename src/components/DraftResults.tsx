@@ -1,10 +1,11 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftTeam } from '../lib/api/draftContract';
-import { copyText } from '../lib/exportImage';
+import { copyText, downloadBlob } from '../lib/exportImage';
 import { draftShareText, leagueTimeline, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
-import type { LeagueResult } from '../lib/season';
+import { lineupImage, slugify } from '../lib/lineupImage';
+import { formatRecord, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
 import { teamLabel } from '../state/useDraftRoom';
@@ -44,6 +45,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
   const c = t.draft.col;
   const { byId } = usePokemonData();
   const toast = useToast();
+  const [saving, setSaving] = useState(false);
   const days = useMemo(() => leagueTimeline(league), [league]);
   const scorers = useMemo(() => topScorers(league).slice(0, TOP_SCORERS), [league]);
   const table = league.table;
@@ -91,6 +93,39 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
     url: draftLink(code),
   });
 
+  /** Eigene Elf als Bild (wie im Builder) – mit Bilanz und Platz dieser Liga */
+  const onSaveImage = async () => {
+    const team = you != null ? teams[you] : undefined;
+    if (!team || !ownRow) return;
+    setSaving(true);
+    try {
+      const name = nameOf(ownRow.team);
+      const blob = await lineupImage({
+        formation: team.formation,
+        slots: team.slots,
+        ss: hasSs ? team.ss : undefined,
+        sprite,
+        byId,
+        teamName: name,
+        subtitle: `${team.formation} · ${tx.kicker(code)}`,
+        result: {
+          record: formatRecord({ w: ownRow.w, d: ownRow.d, l: ownRow.l }),
+          points: ownRow.pts,
+          score: ratingOf(ownRow.team),
+          position: ownIndex + 1,
+          label: leagueName || tx.kicker(code),
+        },
+      });
+      downloadBlob(blob, `${slugify(name || 'pokemon-elf')}.png`);
+      toast(t.builder.imageSaved);
+    } catch (e) {
+      console.error(e);
+      toast(t.builder.imageFailed);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const onShare = async () => {
     if (typeof navigator.share === 'function') {
       try {
@@ -131,6 +166,11 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
           <button type="button" className="btn btn--primary" onClick={onShare}>
             {tx.share}
           </button>
+          {ownRow && (
+            <button type="button" className="btn" onClick={onSaveImage} disabled={saving}>
+              {saving ? t.builder.savingImage : tx.saveOwnImage}
+            </button>
+          )}
         </div>
       </section>
 
