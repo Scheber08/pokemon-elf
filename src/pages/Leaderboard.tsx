@@ -10,6 +10,7 @@ import { leaderboard, type LeaderboardEntry, type Period } from '../lib/leaderbo
 import { localEntryDetail } from '../lib/leaderboard/entryDetail';
 import { playerName, PlayerNameError, savePlayerName } from '../lib/runFinish';
 import { formatRecord } from '../lib/season';
+import { useScrollActiveIntoView } from '../lib/scrollActive';
 import { useToast } from '../state/Toast';
 import { useFieldError } from '../state/useFieldError';
 import { isChallengeKey, useApiOnline } from '../state/useChallengeRun';
@@ -437,6 +438,9 @@ export function Leaderboard() {
   const online = apiOnline === true && source === 'online';
   /** Panel der Rangliste – Fokusziel, während die Tabelle neu lädt */
   const panelRef = useRef<HTMLElement>(null);
+  /** Handy: gewählte Wertung in der Reiterleiste ins Bild holen */
+  const tabsRef = useRef<HTMLDivElement>(null);
+  useScrollActiveIntoView(tabsRef, [challenge]);
 
   const select = (c: ChallengeKey, p: Period) => {
     setParams(
@@ -515,7 +519,7 @@ export function Leaderboard() {
       </div>
 
       <div className="leaderboard__controls">
-        <div className="tabs-inline" role="tablist" aria-label={t.leaderboard.challengeTabs}>
+        <div className="tabs-inline" role="tablist" aria-label={t.leaderboard.challengeTabs} ref={tabsRef}>
           {CHALLENGES.map((c) => (
             <button
               key={c}

@@ -1,4 +1,6 @@
-import { Link, NavLink } from 'react-router-dom';
+import { useRef } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { useScrollActiveIntoView } from '../lib/scrollActive';
 import { useT } from '../i18n';
 import { useSettings } from '../state/Settings';
 
@@ -14,6 +16,10 @@ const TABS = [
 export function Header() {
   const { theme, setTheme, lang, setLang } = useSettings();
   const t = useT();
+  const { pathname } = useLocation();
+  // Handy: aktiven Reiter der Hauptnavigation ins Bild holen
+  const navRef = useRef<HTMLElement>(null);
+  useScrollActiveIntoView(navRef, [pathname]);
   return (
     <header className="site-header">
       <div className="site-header__inner">
@@ -45,7 +51,7 @@ export function Header() {
           </button>
         </div>
       </div>
-      <nav className="tabs" aria-label={t.nav.mainNav}>
+      <nav className="tabs" aria-label={t.nav.mainNav} ref={navRef}>
         <div className="tabs__inner">
           {TABS.map((tab) => (
             <NavLink
