@@ -131,11 +131,11 @@ const clubEn = (name: string) => messages('en').game.club(name);
 // ---------------------------------------------------------------- Online-Liga (Engine)
 
 /** Drei Teams: Host + zwei CPU-Teams mit deutschen Vereinsnamen – die Saison füllt mit Vereinen auf 18 auf */
-function finishedDraft(): DraftState {
+function finishedDraft(format: 'league' | 'cup' = 'league'): DraftState {
   let s = engine.createDraft({
     code: 'K7MPQ2',
     seed: 42,
-    settings: { region: 0, maxTeams: 4, order: 'host', pickSeconds: 0, legends: false, setPiece: false },
+    settings: { region: 0, maxTeams: 4, order: 'host', pickSeconds: 0, legends: false, setPiece: false, format },
     host: { teamId: 'h', deviceId: 'dev-h', name: 'Rocket FC', formation: '4-3-3' },
     now: 0,
     list: ALL,
@@ -454,6 +454,39 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
       for (const e of c.expect) expect(all).toContain(e);
       expect(germanLeft(container)).toEqual([]);
     }
+  });
+});
+
+describe('KO-Turnier auf Englisch', () => {
+  it('Ergebnis: Turniersieger, Baum, Endklassement – ohne Deutsch', async () => {
+    storeLang('en');
+    const s = runnerUpView(finishedDraft('cup'));
+    s.season = { ...s.season!, startsAt: Date.now() - 10 * 24 * 3600 * 1000 };
+    const { container } = await render(app(h(DraftSeasonStage, { room: fakeRoom(s) })));
+    await settle();
+    const all = texts(container).join(' | ');
+    expect(all).toContain('Cup winners: ');
+    expect(all).toContain('Bracket');
+    expect(all).toContain('Round of 16');
+    expect(all).toContain('Quarter-final');
+    expect(all).toContain('Final standings');
+    expect(all).toMatch(/Your team [^|]+: (Out in the|Lost the final|Cup winners)/);
+    expect(container.querySelectorAll('.draft-results__table tbody tr')).toHaveLength(16);
+    expect(germanLeft(container)).toEqual([]);
+  });
+
+  it('Ticker mitten im Turnier: Runde, Status, Baum', async () => {
+    storeLang('en');
+    const s = runnerUpView(finishedDraft('cup'));
+    s.season = { ...s.season!, startsAt: Date.now() - s.season!.stepMs * 1.5 };
+    const { container } = await render(app(h(DraftSeasonStage, { room: fakeRoom(s) })));
+    await settle();
+    const all = texts(container).join(' | ');
+    expect(all).toContain('Round');
+    expect(all).toContain('Quarter-final');
+    expect(all).toContain('Bracket');
+    expect(all).toMatch(/Still in|Out in the round of 16/);
+    expect(germanLeft(container)).toEqual([]);
   });
 });
 

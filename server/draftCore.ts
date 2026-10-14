@@ -245,6 +245,7 @@ export const SETTING_KEYS = [
   'roll',
   'rerolls',
   'visibility',
+  'format',
   'region',
   'legends',
 ] as const satisfies readonly (keyof DraftSettingsPatch)[];
@@ -292,6 +293,7 @@ export function cleanSettingsPatch(raw: unknown): DraftSettingsPatch {
     badSettings('Ungültiges Mega-Limit');
   }
   if (patch.roll !== undefined && typeof patch.roll !== 'string') badSettings('Ungültiger Zufallsmodus');
+  if (patch.format !== undefined && typeof patch.format !== 'string') badSettings('Ungültiger Spielmodus');
   if (patch.rerolls !== undefined) {
     const r = patch.rerolls;
     if (!isObject(r)) return badSettings('Ungültige Rerolls');

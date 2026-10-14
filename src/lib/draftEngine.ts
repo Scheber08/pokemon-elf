@@ -28,6 +28,7 @@ import type { FormationId, Pokemon, RegionFilter, TypeKey } from '../types';
 import {
   DEFAULT_DRAFT_SETTINGS,
   DRAFT_ALL_GENS,
+  DRAFT_FORMATS,
   DRAFT_LIMITS,
   DRAFT_REROLL_KINDS,
   DRAFT_ROLL_MODES,
@@ -50,6 +51,7 @@ import {
 } from './api/draftContract';
 import { positionFit, type Scale } from './fit';
 import { createRng, hashSeed, shuffle, streamRng, type Rng } from './rng';
+import { CUP_SIZE, simulateCup } from './cup';
 import { opponentRatings, simulateLeague, type LeagueResult, type LeagueTeam } from './season';
 import { evaluateTeam } from './teamScore';
 
@@ -299,6 +301,7 @@ export function upgradeSettings(raw: unknown): DraftSettings {
     roll: isRollMode(r.roll) ? r.roll : d.roll,
     rerolls: rerollsOf(r.rerolls, d.rerolls) ?? { ...d.rerolls },
     visibility: r.visibility === 'private' || r.visibility === 'public' ? r.visibility : d.visibility,
+    format: (DRAFT_FORMATS as readonly unknown[]).includes(r.format) ? (r.format as DraftSettings['format']) : d.format,
   };
   const keys = Object.keys(next) as (keyof DraftSettings)[];
   // Die älteren Schlüssel region/legends dürfen zusätzlich dastehen (Schnappschüsse spiegeln sie
@@ -533,6 +536,10 @@ export function normalizeSettings(patch: DraftSettingsPatch, base: DraftSettings
       fail('bad_settings', `Zwischen ${DRAFT_LIMITS.minTeams} und ${DRAFT_LIMITS.maxTeams} Teams`);
     }
     s.maxTeams = p.maxTeams;
+  }
+  if (p.format !== undefined) {
+    if (!(DRAFT_FORMATS as readonly unknown[]).includes(p.format)) fail('bad_settings', 'Ungültiger Spielmodus');
+    s.format = p.format;
   }
   if (p.pickSeconds !== undefined) {
     if (!(DRAFT_LIMITS.pickSeconds as readonly number[]).includes(p.pickSeconds)) fail('bad_settings', 'Ungültiger Timer');
@@ -1409,7 +1416,8 @@ export function seasonTeams(
   scale: Scale,
   candidates: readonly FillCandidate[] = [],
 ): LeagueTeam[] {
-  return [...leagueTeams(state, byId, scale), ...fillTeams(state, candidates, byId, scale)];
+  const size = upgradeSettings(state.settings).format === 'cup' ? CUP_SIZE : DRAFT_LIMITS.leagueSize;
+  return [...leagueTeams(state, byId, scale), ...fillTeams(state, candidates, byId, scale, size)];
 }
 
 /**
@@ -1433,7 +1441,9 @@ export function draftSeason(
  */
 export function withLeague(state: DraftState, list: Pokemon[], scale: Scale, candidates: readonly FillCandidate[] = []): DraftState {
   if (state.phase !== 'done' || !state.season || state.league) return state;
-  const full = simulateLeague(seasonTeams(state, byIdOf(list), scale, candidates), createRng(state.season.seed));
+  const teams = seasonTeams(state, byIdOf(list), scale, candidates);
+  const rng = createRng(state.season.seed);
+  const full: LeagueResult = upgradeSettings(state.settings).format === 'cup' ? simulateCup(teams, rng) : simulateLeague(teams, rng);
   return {
     ...state,
     league: {

@@ -153,6 +153,13 @@ const draft = {
     snakeNote: 'Jede zweite Runde rückwärts.',
     fixedNote: 'Jede Runde dieselbe Reihenfolge.',
     setPiece: 'Standardschütze',
+    /** Spielmodus nach dem Draft */
+    format: 'Spielmodus',
+    formatLeague: 'Liga',
+    formatCup: 'KO-Turnier',
+    formatLeagueNote: (teams: number) => `Jeder gegen jeden, Hin- und Rückrunde – ${teams} Teams, aufgefüllt mit Teams aus der Rangliste.`,
+    formatCupNote: (teams: number) =>
+      `${teams} Teams im KO-Baum, gesetzt nach Team-Score – ein Spiel pro Runde, bei Unentschieden Elfmeterschießen.`,
     setPieceRound: '12. Runde',
     tooManyTeams: 'Der Pool reicht nicht für so viele Teams',
     alreadyJoined: (n: number) => `Es sind schon ${n} Teams dabei`,
@@ -173,6 +180,8 @@ const draft = {
   },
   /** Kurzfassung der Einstellungen (Mitspieler, Lobby-Liste) */
   summary: {
+    league: (teams: number) => `Liga mit ${teams} Teams`,
+    cup: (teams: number) => `KO-Turnier mit ${teams} Teams`,
     pool: (region: string) => `Pool: ${region}`,
     /** Mehr als drei Generationen (aber nicht alle) */
     gensCount: (n: number) => `${n} Generationen`,
@@ -242,7 +251,6 @@ const draft = {
     share: 'Ergebnis teilen',
     saveOwnImage: 'Meine Elf als Bild',
     grade: 'Note',
-    /** Bester später Pick */
     /** Direkte Duelle des eigenen Teams */
     duels: 'Deine Duelle',
     duelsOpponent: 'Gegner',
@@ -253,6 +261,7 @@ const draft = {
     duelAway: 'Auswärtsspiel',
     /** Auffüllteam aus der Rangliste: Name des echten Spielers */
     fillPlayerTitle: 'Team eines Spielers aus der Rangliste (34–0 Challenge)',
+    /** Bester später Pick */
     steal: (pokemon: string, pick: number, team: string, pos: string) => `Schnäppchen des Drafts: ${pokemon} (Pick ${pick}) für ${team} als ${pos}`,
     gradeTitle: 'Draft-Note nach Team-Score – relativ zu den anderen Teams dieser Liga (A+ bis D)',
     finalTable: 'Abschlusstabelle',
@@ -345,6 +354,32 @@ const draft = {
     tiebreak: (names: string, label: string) =>
       `Punktgleich mit ${names}, gleiche Tordifferenz und gleich viele Tore – entschieden nach ${label}`,
     level: (names: string) => `Punktgleich mit ${names}`,
+  },
+  /** KO-Turnier (Ticker und Ergebnis) */
+  cup: {
+    stage: { r16: 'Achtelfinale', qf: 'Viertelfinale', sf: 'Halbfinale', final: 'Finale', group: 'Gruppenphase' },
+    roundLabel: 'Runde',
+    progressText: (n: number, total: number) => `Runde ${n} von ${total}`,
+    bracket: 'Turnierbaum',
+    winnerLabel: 'Turniersieger: ',
+    youWinner: 'Dein Team gewinnt das Turnier!',
+    status: 'Turnier',
+    alive: 'Noch dabei',
+    winner: 'Turniersieger',
+    /** Ausgeschieden in einer KO-Runde (Achtel-, Viertel-, Halbfinale) */
+    out: (stage: string) => `Aus im ${stage}`,
+    outFinal: 'Finale verloren',
+    outGroup: 'Aus in der Gruppenphase',
+    pens: (home: number, away: number) => `i. E. ${home}:${away}`,
+    pensTitle: 'nach Elfmeterschießen',
+    finalLine: (score: string, opponent: string) => `Finale ${score} gegen ${opponent}`,
+    yourCup: (team: string, status: string) => `Dein Team ${team}: ${status}`,
+    standings: 'Endklassement',
+    tbd: 'offen',
+    result: (outcome: string, gf: number, ga: number, home: boolean, opponent: string) =>
+      `${outcome} ${gf}:${ga} ${home ? 'gegen' : 'bei'} ${opponent}.`,
+    shareLine: (code: string, champion: string) => `Pokémon Elf – Online-Draft ${code}: ${champion} gewinnt das KO-Turnier.`,
+    shareOwn: (team: string, status: string) => ` Mein Team ${team}: ${status}.`,
   },
   share: {
     /** Erste Zeile ohne eigenes Team; tie = „ – punktgleich …" oder leer */

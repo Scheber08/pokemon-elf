@@ -529,6 +529,16 @@ describe('Draft-Raum: Lobby', () => {
     await room.advance(LOBBY_SYNC_MS);
     expect(lobbyRow(code).updated_at).toBe(written);
 
+    // Spielmodus: KO-Turnier und zurück; Unsinn wird abgelehnt
+    await room.send(host, { type: 'settings', settings: { format: 'cup' } });
+    expect(host.state!.settings.format).toBe('cup');
+    await room.send(host, { type: 'settings', settings: { format: 'league' } });
+    expect(host.state!.settings.format).toBe('league');
+    await room.send(host, { type: 'settings', settings: { format: 'pokal' } });
+    expect(host.lastError).toMatchObject({ code: 'bad_settings', message: 'Ungültiger Spielmodus' });
+    await room.send(host, { type: 'settings', settings: { format: 7 } });
+    expect(host.lastError).toMatchObject({ code: 'bad_settings', message: 'Ungültiger Spielmodus' });
+
     await room.send(host, { type: 'settings', settings: { pickSeconds: 15 } });
     expect(host.lastError?.code).toBe('bad_settings');
     await room.send(host, { type: 'settings', settings: { maxTeams: 1 } });

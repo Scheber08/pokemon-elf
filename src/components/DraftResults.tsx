@@ -10,7 +10,9 @@ import { usePokemonData } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
 import { teamLabel } from '../state/useDraftRoom';
 import type { SpriteStyle } from '../types';
+import { cupPens, cupStageOf, cupStatus, cupWinner } from '../lib/cup';
 import { Confetti } from './Confetti';
+import { CupBracket, cupStatusText } from './CupBracket';
 import { FixtureList } from './LeagueTicker';
 import { Pitch } from './Pitch';
 import { Sprite } from './Sprite';
@@ -96,7 +98,25 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
 
   const championName = nameOf(champion.team);
   const youAreChampion = you != null && champion.team === you;
-  const tieNote = titleTieNote(race, nameOf);
+  /** KO-Turnier: Baum statt Tabelle, Sieger statt Meister */
+  const cup = league.cup ?? null;
+  const ownCupStatus = cup && you != null ? cupStatusText(t, cupStatus(cup, you)) : null;
+  const finalMatch = cup ? league.matches.find((m) => m.round === cup.rounds.find((r) => r.stage === 'final')?.round) : undefined;
+  const cupFinalLine =
+    cup && finalMatch && cupWinner(cup) === champion.team
+      ? (() => {
+          const home = finalMatch.home === champion.team;
+          const score = home ? `${finalMatch.hg}:${finalMatch.ag}` : `${finalMatch.ag}:${finalMatch.hg}`;
+          const tie = cup.rounds.find((r) => r.stage === 'final')?.ties[0];
+          const pens = tie?.pens ? ` (${t.draft.cup.pens(home ? tie.pens.home : tie.pens.away, home ? tie.pens.away : tie.pens.home)})` : '';
+          return t.draft.cup.finalLine(score + pens, nameOf(home ? finalMatch.away : finalMatch.home));
+        })()
+      : null;
+  const tieNote = cup ? null : titleTieNote(race, nameOf);
+  const dayTitle = (round: number) => {
+    const stage = cup ? cupStageOf(cup, round) : null;
+    return stage && stage !== 'group' ? t.draft.cup.stage[stage] : t.draft.matchday(round);
+  };
   const stealMon = steal ? byId.get(steal.pokemonId) : undefined;
   const stealTeam = steal ? teams.findIndex((tm) => tm.id === steal.teamId) : -1;
   const shareText = draftShareText({
@@ -106,6 +126,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
     tieNote,
     own: ownRow ? { name: nameOf(ownRow.team), place: ownIndex + 1 } : null,
     url: draftLink(code),
+    ...(cup ? { cup: { ownStatus: ownCupStatus } } : {}),
   });
 
   /** Eigene Elf als Bild (wie im Builder) – mit Bilanz und Platz dieser Liga */
@@ -167,10 +188,10 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
           <span className="draft-results__trophy" aria-hidden="true">
             ★
           </span>
-          {tx.championLabel}
+          {cup ? t.draft.cup.winnerLabel : tx.championLabel}
           {championName}
         </h2>
-        <p className="draft-results__line">{tx.heroLine(champion, ratingOf(champion.team))}</p>
+        <p className="draft-results__line">{cupFinalLine ?? tx.heroLine(champion, ratingOf(champion.team))}</p>
         {tieNote && <p className="draft-results__tie">{tieNote}</p>}
         {steal && stealMon && stealTeam >= 0 && (
           <p className="draft-results__steal">
@@ -179,7 +200,13 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
         )}
         {ownRow && (
           <p className="draft-results__you">
-            {youAreChampion ? tx.youChampion : tx.yourPlace(nameOf(ownRow.team), ownIndex + 1, ownRow.pts)}
+            {cup
+              ? youAreChampion
+                ? t.draft.cup.youWinner
+                : t.draft.cup.yourCup(nameOf(ownRow.team), ownCupStatus ?? '')
+              : youAreChampion
+                ? tx.youChampion
+                : tx.yourPlace(nameOf(ownRow.team), ownIndex + 1, ownRow.pts)}
           </p>
         )}
         <div className="draft-results__actions">
@@ -194,10 +221,19 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
         </div>
       </section>
 
+      {cup && (
+        <section className="card" aria-labelledby="draft-results-bracket">
+          <h2 id="draft-results-bracket" className="section-title">
+            {t.draft.cup.bracket}
+          </h2>
+          <CupBracket cup={cup} matches={league.matches} you={you} nameOf={nameOf} />
+        </section>
+      )}
+
       <div className="result-grid">
         <section className="card" aria-labelledby="draft-results-table">
           <h2 id="draft-results-table" className="section-title">
-            {tx.finalTable}
+            {cup ? t.draft.cup.standings : tx.finalTable}
           </h2>
           <div className="table-scroll">
             <table className="league-table draft-results__table">
@@ -390,9 +426,16 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
         <ol className="draft-results__daylist">
           {days.map((d) => (
             <li key={d.round} className="draft-results__day">
-              <h3 className="draft-results__day-title">{t.draft.matchday(d.round)}</h3>
-              <FixtureList matches={d.matches} you={you} nameOf={nameOf} pokemonName={pokemonName} className="league-fixtures--plain" />
-              {d.byes.length > 0 && <p className="muted small draft-results__byes">{t.draft.byes(d.byes.map(nameOf).join(', '))}</p>}
+              <h3 className="draft-results__day-title">{dayTitle(d.round)}</h3>
+              <FixtureList
+                matches={d.matches}
+                you={you}
+                nameOf={nameOf}
+                pokemonName={pokemonName}
+                className="league-fixtures--plain"
+                pensOf={cup ? (m) => cupPens(cup, m) : undefined}
+              />
+              {!cup && d.byes.length > 0 && <p className="muted small draft-results__byes">{t.draft.byes(d.byes.map(nameOf).join(', '))}</p>}
             </li>
           ))}
         </ol>

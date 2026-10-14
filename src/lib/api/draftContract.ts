@@ -166,7 +166,16 @@ export interface DraftSettings {
   rerolls: DraftRerollCount;
   /** Öffentlich = in der Lobby-Liste sichtbar */
   visibility: 'private' | 'public';
+  /**
+   * Was nach dem Draft gespielt wird: Liga (DRAFT_LIMITS.leagueSize Teams, jeder gegen jeden) oder
+   * KO-Turnier (16 Teams). Aufgefüllt wird jeweils mit Teams aus der Rangliste.
+   */
+  format: DraftFormat;
 }
+
+/** Spielmodus nach dem Draft */
+export type DraftFormat = 'league' | 'cup';
+export const DRAFT_FORMATS: readonly DraftFormat[] = ['league', 'cup'];
 
 /**
  * Ältere Schlüssel, die zwischengespeicherte Clients noch schicken: region (0 = alle
@@ -201,6 +210,7 @@ export const DEFAULT_DRAFT_SETTINGS: DraftSettings = {
   roll: 'off',
   rerolls: { type: 1, region: 1 },
   visibility: 'private',
+  format: 'league',
 };
 
 export interface DraftTeam {

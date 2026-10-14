@@ -343,6 +343,7 @@ const online = {
       badMaxUltraBeasts: 'Ungültiges Ultrabestien-Limit',
       badMaxMegas: 'Ungültiges Mega-Limit',
       badRollMode: 'Ungültiger Zufallsmodus',
+      badFormat: 'Ungültiger Spielmodus',
       badRerolls: 'Ungültige Rerolls',
       noRoll: 'Gerade gibt es keinen Wurf',
       noTypeReroll: 'Kein Typ-Reroll mehr übrig',

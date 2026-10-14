@@ -315,6 +315,7 @@ const online: Messages['online'] = {
       badMaxUltraBeasts: 'Invalid Ultra Beast limit',
       badMaxMegas: 'Invalid Mega limit',
       badRollMode: 'Invalid random mode',
+      badFormat: 'Invalid format',
       badRerolls: 'Invalid rerolls',
       noRoll: 'There’s no roll right now',
       noTypeReroll: 'No type rerolls left',

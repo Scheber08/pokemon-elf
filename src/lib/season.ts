@@ -6,6 +6,7 @@
  */
 import { CLUB_NAMES, GOAL_THREAT, SEASON } from '../config/season';
 import type { PosCode, Record3 } from '../types';
+import type { CupInfo } from './cup';
 import { createRng, gaussian, poisson, shuffle, weightedIndex, type Rng } from './rng';
 
 export interface SquadPlayer {
@@ -62,7 +63,10 @@ export interface TableRow {
 export interface LeagueResult {
   teams: LeagueTeam[];
   matches: Match[];
+  /** Liga: Tabelle; KO-Turnier: Endklassement (Sieger zuerst) */
   table: TableRow[];
+  /** Nur KO-Turnier (Online-Draft): Gruppen und KO-Baum – siehe src/lib/cup.ts */
+  cup?: CupInfo;
 }
 
 export interface Scorer {
@@ -167,26 +171,32 @@ function setPieceBonus(team: LeagueTeam): number {
   return SEASON.setPieceBonus * (team.setPieceFit / 50 - 1);
 }
 
+/**
+ * Ein Spiel: Tore Poisson-verteilt (mit Streuung), dann die Torschützen. neutral = ohne
+ * Heimvorteil (z. B. ein Endspiel).
+ */
+export function playMatch(rng: Rng, teams: readonly LeagueTeam[], round: number, home: number, away: number, neutral = false): Match {
+  const th = teams[home];
+  const ta = teams[away];
+  const hg = poisson(rng, lambdaWithJitter(rng, th.rating, ta.rating, !neutral, setPieceBonus(th)));
+  const ag = poisson(rng, lambdaWithJitter(rng, ta.rating, th.rating, false, setPieceBonus(ta)));
+  return {
+    round,
+    home,
+    away,
+    hg,
+    ag,
+    homeScorers: pickScorers(rng, th, hg),
+    awayScorers: pickScorers(rng, ta, ag),
+  };
+}
+
 /** Simuliert eine komplette Liga (jeder gegen jeden, Hin- und Rückrunde). */
 export function simulateLeague(teams: LeagueTeam[], rng: Rng): LeagueResult {
   const schedule = roundRobin(teams.length);
   const matches: Match[] = [];
   schedule.forEach((round, r) => {
-    for (const [home, away] of round) {
-      const th = teams[home];
-      const ta = teams[away];
-      const hg = poisson(rng, lambdaWithJitter(rng, th.rating, ta.rating, true, setPieceBonus(th)));
-      const ag = poisson(rng, lambdaWithJitter(rng, ta.rating, th.rating, false, setPieceBonus(ta)));
-      matches.push({
-        round: r + 1,
-        home,
-        away,
-        hg,
-        ag,
-        homeScorers: pickScorers(rng, th, hg),
-        awayScorers: pickScorers(rng, ta, ag),
-      });
-    }
+    for (const [home, away] of round) matches.push(playMatch(rng, teams, r + 1, home, away));
   });
   return { teams, matches, table: buildTable(teams, matches) };
 }

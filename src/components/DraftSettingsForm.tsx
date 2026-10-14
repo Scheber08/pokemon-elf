@@ -5,10 +5,12 @@ import { useT, type Messages } from '../i18n';
 import {
   DRAFT_ALL_GENS,
   DRAFT_LIMITS,
+  type DraftFormat,
   type DraftRollMode,
   type DraftSettings,
   type PickSeconds,
 } from '../lib/api/draftContract';
+import { CUP_SIZE } from '../lib/cup';
 import { poolHasLegends, poolHasMegas, poolHasUltraBeasts, poolOf, rerollUsable } from '../lib/draftEngine';
 import { fitSettingsPatch, poolCapacity } from '../state/useDraftRoom';
 import type { FormationId, Pokemon, TypeKey } from '../types';
@@ -499,6 +501,18 @@ export function DraftSettingsForm({ value, onChange, list, teamsJoined = 0, disa
             };
           })}
         />
+        <DraftChoice<DraftFormat>
+          label={tx.format}
+          value={value.format}
+          disabled={disabled}
+          busy={busy}
+          onChange={(format) => change({ format })}
+          options={[
+            { value: 'league', label: tx.formatLeague },
+            { value: 'cup', label: tx.formatCup },
+          ]}
+          note={value.format === 'cup' ? tx.formatCupNote(CUP_SIZE) : tx.formatLeagueNote(DRAFT_LIMITS.leagueSize)}
+        />
         <DraftChoice
           label={tx.setPiece}
           value={value.setPiece}
@@ -640,6 +654,7 @@ export function DraftSettingsSummary({ settings }: { settings: DraftSettings }) 
     settings.forms ? tx.withForms : null,
     poolHasMegas(settings) ? (settings.maxMegas != null ? tx.maxMegas(settings.maxMegas) : tx.withMegas) : null,
     settings.setPiece ? tx.withSetPiece : tx.withoutSetPiece,
+    settings.format === 'cup' ? tx.cup(CUP_SIZE) : tx.league(DRAFT_LIMITS.leagueSize),
     tx.maxTeams(settings.maxTeams),
     settings.order === 'random' ? tx.orderRandom : tx.orderHost,
     settings.snake ? tx.snake : tx.fixedOrder,

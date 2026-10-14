@@ -167,7 +167,9 @@ es auto-picken; ein abwesender Host gibt die Rolle nach 30 s (Lobby: 5 min) ab. 
 rechnet der Server die Saison einmal und alle sehen sie gleichzeitig im Ticker. Die Saison spielt immer mit
 18 Teams (`DRAFT_LIMITS.leagueSize`, 34 Spieltage): Freie Plätze füllen Teams echter Spieler aus der
 Allzeit-Rangliste der 34–0 Challenge (Teamname, Spielername, ihre Elf – `server/fill.ts`, Auswahl per
-Liga-Seed in `fillTeams`), fehlen welche, Vereine.
+Liga-Seed in `fillTeams`), fehlen welche, Vereine. Statt der Liga geht auch ein **KO-Turnier** (`settings.format = 'cup'`,
+`src/lib/cup.ts`): 16 Teams im Baum, gesetzt nach Team-Score, ein Spiel pro Runde, bei Remis Elfmeterschießen;
+als „Tabelle" speichert der Server das Endklassement, dazu den Baum (`league.cup`).
 Öffentliche Lobbys: `GET /api/drafts/public`. Ligen werden nach 14 Tagen gelöscht. Vertrag und Limits:
 `src/lib/api/draftContract.ts`.
 

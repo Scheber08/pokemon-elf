@@ -805,3 +805,79 @@
   margin-left: 6px;
   font-weight: 400;
 }
+
+/* KO-Turnier: Elfmeterschießen unter dem Ergebnis */
+.league-fixture__mid {
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.league-fixture__pens {
+  font-size: 11px;
+  white-space: nowrap;
+  color: var(--text-dim);
+}
+
+/* KO-Turnier: Runden mit Paarungen */
+.cup-bracket {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+.cup-bracket__stage {
+  margin: 0 0 6px;
+  font-family: var(--font-head);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.cup-bracket__ties {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.cup-bracket__tie {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  font-size: 14px;
+}
+.cup-bracket__tie.is-own {
+  box-shadow: inset 3px 0 0 var(--yellow);
+}
+.cup-bracket__team {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: right;
+  color: var(--text-dim);
+}
+.cup-bracket__team--away {
+  text-align: left;
+}
+.cup-bracket__team.is-winner {
+  color: var(--text);
+  font-weight: 700;
+}
+.cup-bracket__score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  min-width: 3.4em;
+}
+.cup-bracket__pens {
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
