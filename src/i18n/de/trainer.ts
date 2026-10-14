@@ -135,6 +135,8 @@ const trainer = {
       lava: 'Vulkan',
       pokeball: 'Pokéball',
       space: 'Weltall',
+      arena: 'Arena',
+      center: 'Pokémon-Center',
       gold: 'Gold',
     },
     color: {

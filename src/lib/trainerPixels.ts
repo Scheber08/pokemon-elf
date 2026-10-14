@@ -95,6 +95,14 @@ function background(c: Canvas, id: string, color: string) {
         case 'space':
           col = '#0b0b1e';
           break;
+        case 'arena':
+          // Arena: Steinwand mit Fugen oben, Kampffeld mit weißer Linie unten
+          col = y < 16 ? ((y % 4 === 3 || (x + (Math.floor(y / 4) % 2) * 3) % 6 === 0) ? '#5a5f6b' : '#7b808c') : y === 22 ? '#eceff3' : '#b58b4c';
+          break;
+        case 'center':
+          // Pokémon-Center: rosa Wand, Theke, heller Boden
+          col = y < 18 ? (x % 8 === 0 ? '#f6b7c8' : '#f9cdd8') : y < 21 ? '#d8342a' : (x + y) % 4 < 2 ? '#f3f3f3' : '#e3e6ea';
+          break;
         case 'stadium':
           col = y < 12 ? ((x * 5 + y * 3) % 7 < 2 ? '#d8342a' : (x * 3 + y) % 5 === 0 ? '#f2c230' : '#3a4152') : y < 14 ? '#c9ced6' : Math.floor(x / 4) % 2 ? '#2f8a3e' : '#2a7f39';
           break;

@@ -136,6 +136,8 @@ const trainer: Messages['trainer'] = {
       lava: 'Volcano',
       pokeball: 'Poké Ball',
       space: 'Space',
+      arena: 'Gym',
+      center: 'Pokémon Center',
       gold: 'Gold',
     },
     color: {

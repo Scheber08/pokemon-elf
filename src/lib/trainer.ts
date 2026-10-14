@@ -155,6 +155,8 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   item('background', 'lava', 400, '#7a2414'),
   item('background', 'pokeball', 500, '#d8342a'),
   item('background', 'space', 600, '#0b0b1e'),
+  item('background', 'arena', 450, '#7b808c'),
+  item('background', 'center', 350, '#f9cdd8'),
   item('background', 'gold', 1000, '#d4a72c'),
   // Begleiter (Pokémon-ID; Sprite wie im Rest der App)
   item('companion', 'none', 0),
