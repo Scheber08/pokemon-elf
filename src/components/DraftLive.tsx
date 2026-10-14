@@ -522,7 +522,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                   if (block === 'mega_limit') return t.online.blockedMegas(maxMegas ?? 0);
                   return null;
                 }}
-                className="pgrid-wrap--compact"
+                className="pgrid-wrap--compact pgrid-wrap--scroll"
               />
             </section>
           ) : readOnly ? (

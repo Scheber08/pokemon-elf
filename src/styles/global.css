@@ -2704,3 +2704,12 @@ button.sheet__row:hover {
   flex-basis: 100%;
   margin: 0;
 }
+
+/* Draft: die Auswahl scrollt für sich – die Teams darunter bleiben ohne langes Scrollen erreichbar */
+.pgrid-wrap--scroll {
+  max-height: min(62vh, 620px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px 4px 2px 2px;
+  border-radius: 10px;
+}

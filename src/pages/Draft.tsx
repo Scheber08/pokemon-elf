@@ -642,7 +642,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     setTimeout(() => pitchRef.current?.scrollIntoView({ behavior: 'smooth' }), 60);
                   }
                 }}
-                className="pgrid-wrap--compact"
+                className="pgrid-wrap--compact pgrid-wrap--scroll"
               />
             </section>
           )}
