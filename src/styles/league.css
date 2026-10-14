@@ -1146,3 +1146,83 @@
   height: 100%;
   background: var(--yellow);
 }
+
+/* 2D-Ansicht von oben */
+.match-report__tabs {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+.match-pitch__board {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0;
+}
+.match-pitch__team {
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.match-pitch__team--away {
+  text-align: left;
+}
+.match-pitch__score {
+  font-family: var(--font-head);
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+.match-pitch__clock {
+  grid-column: 1 / -1;
+  justify-self: center;
+  font-size: 12px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.match-pitch__field {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  background: #24722f;
+}
+.match-pitch__player circle {
+  stroke-width: 0.35;
+}
+.match-pitch__player.is-home circle {
+  fill: #ffcb05;
+  stroke: #7a5a00;
+}
+.match-pitch__player.is-away circle {
+  fill: #e9eef5;
+  stroke: #2f62c9;
+}
+.match-pitch__player.is-shooter circle {
+  stroke: #e3350d;
+  stroke-width: 0.7;
+}
+.match-pitch__ball {
+  fill: #fff;
+  stroke: #111;
+  stroke-width: 0.25;
+}
+.match-pitch__event {
+  min-height: 1.4em;
+  margin: 6px 0 0;
+  text-align: center;
+  font-weight: 600;
+}
+.match-pitch__controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+.match-pitch__slider {
+  flex: 1;
+  accent-color: var(--yellow);
+}

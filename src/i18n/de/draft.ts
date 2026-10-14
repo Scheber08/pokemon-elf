@@ -419,6 +419,20 @@ const draft = {
     empty: 'Noch keine Einträge.',
   },
 
+  // ---------------------------------------------------------------- 2D-Ansicht
+  replay: {
+    tab: '2D-Ansicht',
+    reportTab: 'Bericht',
+    aria: 'Spielfeld von oben mit den Spielern beider Teams und dem Ball',
+    play: 'Abspielen',
+    pause: 'Pause',
+    again: 'Nochmal',
+    seek: 'Spielminute',
+    goal: (scorer: string, assist: string | null) => (assist ? `⚽ Tor! ${scorer} (Vorlage ${assist})` : `⚽ Tor! ${scorer}`),
+    shot: (team: string) => `Abschluss ${team}`,
+    note: 'Nachgestellt aus Ergebnis, Torminuten und Statistik – die Tore fallen wie im echten Spiel.',
+  },
+
   // ---------------------------------------------------------------- Spielbericht
   report: {
     title: 'Spielbericht',

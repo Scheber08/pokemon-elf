@@ -384,6 +384,19 @@ const draft: Messages['draft'] = {
     empty: 'No entries yet.',
   },
 
+  replay: {
+    tab: '2D view',
+    reportTab: 'Report',
+    aria: 'Top-down pitch with both teams’ players and the ball',
+    play: 'Play',
+    pause: 'Pause',
+    again: 'Replay',
+    seek: 'Match minute',
+    goal: (scorer, assist) => (assist ? `⚽ Goal! ${scorer} (assist ${assist})` : `⚽ Goal! ${scorer}`),
+    shot: (team) => `Shot ${team}`,
+    note: 'Recreated from score, goal minutes and stats – the goals happen as in the real match.',
+  },
+
   report: {
     title: 'Match report',
     open: (home, away, score) => `Open match report ${home} vs ${away} (${score})`,

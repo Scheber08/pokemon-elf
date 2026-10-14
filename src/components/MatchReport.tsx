@@ -1,7 +1,10 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useT } from '../i18n';
 import { formatMinute, type Goal, type Match } from '../lib/season';
+import type { ReplayLineup } from '../lib/matchReplay';
+import { MatchPitch } from './MatchPitch';
 import { Modal } from './Modal';
+import { Segmented } from './Segmented';
 
 interface Props {
   match: Match;
@@ -11,6 +14,8 @@ interface Props {
   label?: string;
   /** KO-Turnier: Elfmeterschießen */
   pens?: { home: number; away: number } | null;
+  /** Aufstellung eines Teams für die 2D-Ansicht (fehlt: allgemeine Formation) */
+  lineupOf?: (team: number) => ReplayLineup | null;
   onClose: () => void;
 }
 
@@ -27,7 +32,51 @@ const eventsOf = (scorers: Goal[], goals: number, home: boolean): Event[] => [
 ];
 
 /** Spielbericht: Tore mit Minute und Vorlage, dazu Ballbesitz, Schüsse, aufs Tor und xG. */
-export function MatchReport({ match, nameOf, pokemonName, label, pens, onClose }: Props) {
+export function MatchReport({ match, nameOf, pokemonName, label, pens, lineupOf, onClose }: Props) {
+  const t = useT();
+  const tx = t.draft.report;
+  const [view, setView] = useState<'pitch' | 'report'>('pitch');
+  const lineups = useMemo<[ReplayLineup | null, ReplayLineup | null]>(
+    () => [lineupOf?.(match.home) ?? null, lineupOf?.(match.away) ?? null],
+    [match, lineupOf],
+  );
+  return (
+    <Modal title={tx.title} onClose={onClose} className="match-report" labelId="match-report-title">
+      {label && <p className="kicker match-report__label">{label}</p>}
+      <div className="match-report__score">
+        <span className="match-report__team">{nameOf(match.home)}</span>
+        <strong className="match-report__result">
+          {match.hg}:{match.ag}
+        </strong>
+        <span className="match-report__team match-report__team--away">{nameOf(match.away)}</span>
+      </div>
+      {pens && <p className="match-report__pens">{t.draft.cup.pens(pens.home, pens.away)}</p>}
+      <div className="match-report__tabs">
+        <Segmented<'pitch' | 'report'>
+          label={tx.title}
+          hideLabel
+          value={view}
+          onChange={setView}
+          options={[
+            { value: 'pitch', label: t.draft.replay.tab },
+            { value: 'report', label: t.draft.replay.reportTab },
+          ]}
+        />
+      </div>
+      {view === 'pitch' ? (
+        <>
+          <MatchPitch match={match} lineups={lineups} nameOf={nameOf} pokemonName={pokemonName} />
+          <p className="muted small">{t.draft.replay.note}</p>
+        </>
+      ) : (
+        <ReportBody match={match} nameOf={nameOf} pokemonName={pokemonName} />
+      )}
+    </Modal>
+  );
+}
+
+/** Tore und Statistik des Berichts */
+function ReportBody({ match, nameOf, pokemonName }: Pick<Props, 'match' | 'nameOf' | 'pokemonName'>) {
   const t = useT();
   const tx = t.draft.report;
   const events: Event[] = [...eventsOf(match.homeScorers, match.hg, true), ...eventsOf(match.awayScorers, match.ag, false)].sort(
@@ -43,16 +92,7 @@ export function MatchReport({ match, nameOf, pokemonName, label, pens, onClose }
       ]
     : [];
   return (
-    <Modal title={tx.title} onClose={onClose} className="match-report" labelId="match-report-title">
-      {label && <p className="kicker match-report__label">{label}</p>}
-      <div className="match-report__score">
-        <span className="match-report__team">{nameOf(match.home)}</span>
-        <strong className="match-report__result">
-          {match.hg}:{match.ag}
-        </strong>
-        <span className="match-report__team match-report__team--away">{nameOf(match.away)}</span>
-      </div>
-      {pens && <p className="match-report__pens">{t.draft.cup.pens(pens.home, pens.away)}</p>}
+    <>
       <h3 className="match-report__heading">{tx.goals}</h3>
       {events.length ? (
         <ol className="match-report__events">
@@ -104,7 +144,7 @@ export function MatchReport({ match, nameOf, pokemonName, label, pens, onClose }
       ) : (
         <p className="muted small">{tx.noStats}</p>
       )}
-    </Modal>
+    </>
   );
 }
 
@@ -114,6 +154,7 @@ export function useMatchReport(
   pokemonName: (id: number) => string,
   labelOf?: (m: Match) => string,
   pensOf?: (m: Match) => { home: number; away: number } | null,
+  lineupOf?: (team: number) => ReplayLineup | null,
 ): { open: (m: Match) => void; element: ReactNode } {
   const [match, setMatch] = useState<Match | null>(null);
   const element = match ? (
@@ -123,6 +164,7 @@ export function useMatchReport(
       pokemonName={pokemonName}
       label={labelOf?.(match)}
       pens={pensOf?.(match) ?? null}
+      lineupOf={lineupOf}
       onClose={() => setMatch(null)}
     />
   ) : null;
