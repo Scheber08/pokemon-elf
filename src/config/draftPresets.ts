@@ -1,11 +1,12 @@
 /**
  * Schnellstart-Vorlagen für neue Online-Ligen: ein Klick setzt passende Pool- und Draft-Einstellungen
- * (Liganame, Teams, Sichtbarkeit bleiben). Reine Daten – geprüft wird wie bei jeder Änderung.
+ * (Liganame, Teams, Sichtbarkeit bleiben; den Spielmodus setzt nur „KO-Turnier"). Reine Daten – geprüft
+ * wird wie bei jeder Änderung.
  */
 import { DRAFT_ALL_GENS, type DraftSettings } from '../lib/api/draftContract';
 import { TYPE_KEYS } from './pokemonTypes';
 
-export type DraftPresetId = 'classic' | 'allRegions' | 'megaChaos' | 'blitz';
+export type DraftPresetId = 'classic' | 'allRegions' | 'megaChaos' | 'blitz' | 'cup';
 
 export const DRAFT_PRESETS: Record<DraftPresetId, Partial<DraftSettings>> = {
   classic: {
@@ -66,6 +67,22 @@ export const DRAFT_PRESETS: Record<DraftPresetId, Partial<DraftSettings>> = {
     rerolls: { type: 0, region: 0 },
     pickSeconds: 30,
     snake: true,
+  },
+  cup: {
+    gens: [1, 2, 3],
+    types: [...TYPE_KEYS],
+    legendary: true,
+    mythical: false,
+    maxLegends: 1,
+    ultraBeasts: true,
+    maxUltraBeasts: 1,
+    forms: false,
+    megas: false,
+    roll: 'off',
+    pickSeconds: 60,
+    snake: true,
+    format: 'cup',
+    cupGroups: true,
   },
 };
 

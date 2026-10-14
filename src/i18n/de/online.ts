@@ -1,4 +1,6 @@
 /** Texte: Online-Liga – Fantasy-Draft mit Lobby, Live-Draft und Verbindung (Deutsch – Quelle). */
+import type { DraftPresetId } from '../../config/draftPresets';
+
 const online = {
   soundOn: 'Ton an',
   soundOff: 'Ton aus',
@@ -217,8 +219,8 @@ const online = {
   hintRoll: (region: string, type: string) => ` Gesucht: ${region} + ${type}.`,
   /** Schnellstart-Vorlagen beim Erstellen */
   presets: 'Schnellstart',
-  presetName: { classic: 'Klassisch', allRegions: 'Alle Regionen', megaChaos: 'Mega-Chaos', blitz: 'Blitz' } as Record<
-    'classic' | 'allRegions' | 'megaChaos' | 'blitz',
+  presetName: { classic: 'Klassisch', allRegions: 'Alle Regionen', megaChaos: 'Mega-Chaos', blitz: 'Blitz', cup: 'KO-Turnier' } as Record<
+    DraftPresetId,
     string
   >,
   presetNote: {
@@ -226,7 +228,8 @@ const online = {
     allRegions: 'Alle Generationen mit Formen, je ein Legendäres und eine Ultrabestie pro Team',
     megaChaos: 'Alle Generationen, Megas (2 pro Team) und Formen, jeder Pick gewürfelt',
     blitz: 'Kanto und Johto, ein Wurf pro Runde ohne Rerolls, 30 s pro Pick',
-  } as Record<'classic' | 'allRegions' | 'megaChaos' | 'blitz', string>,
+    cup: 'Gen. 1–3, ein Legendäres pro Team – danach KO-Turnier mit Gruppenphase',
+  } as Record<DraftPresetId, string>,
   /** Emoji-Reaktionen */
   reactLabel: 'Reaktion an alle',
   reactSend: (emoji: string) => `${emoji} an alle senden`,
