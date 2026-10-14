@@ -505,6 +505,7 @@ const draft: Messages['draft'] = {
     marketFit: (pos, fit) => `${pos} ${fit}`,
     marketNone: 'No matching free Pokémon.',
     transfersTitle: (n) => `Transfers before matchday ${n}`,
+    transfersAll: (n) => `All earlier transfers this season (${n})`,
     transferLine: (team, inn, out) => `${team}: ${inn} in, ${out} out`,
     tradeLine: (a, aGives, b, bGives) => `Trade: ${a} gives ${aGives} to ${b} for ${bGives}`,
     tradeTitle: 'Trade with other teams',

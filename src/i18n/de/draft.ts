@@ -548,6 +548,7 @@ const draft = {
     marketFit: (pos: string, fit: number) => `${pos} ${fit}`,
     marketNone: 'Kein passendes freies Pokémon.',
     transfersTitle: (n: number) => `Transfers vor Spieltag ${n}`,
+    transfersAll: (n: number) => `Alle früheren Transfers der Saison (${n})`,
     transferLine: (team: string, inn: string, out: string) => `${team}: ${inn} kommt, ${out} geht`,
     tradeLine: (a: string, aGives: string, b: string, bGives: string) => `Tausch: ${a} gibt ${aGives} an ${b} für ${bGives}`,
     tradeTitle: 'Tausch mit anderen Teams',

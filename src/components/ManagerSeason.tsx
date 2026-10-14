@@ -164,6 +164,19 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
   const last = m.played > 0 ? league.matches.filter((x) => x.round === m.played) : [];
   const lastTransfers = (m.transfers ?? []).filter((x) => x.matchday === m.played);
   const star = playerOfRound(last);
+  // Ein Tausch steht zweimal im Protokoll (je Team) – angezeigt wird er einmal
+  const shownOnce = (x: ManagerTransfer) => !x.with || x.teamId < x.with;
+  const teamName = (id: string) => {
+    const tm = s.teams.find((y) => y.id === id);
+    return tm ? teamLabel(tm, t) : '?';
+  };
+  const transferItem = (x: ManagerTransfer) => (
+    <li key={`${x.matchday}-${x.teamId}-${x.in}`}>
+      {x.with
+        ? tx.tradeLine(teamName(x.teamId), pokemonName(x.out), teamName(x.with), pokemonName(x.in))
+        : tx.transferLine(teamName(x.teamId), pokemonName(x.in), pokemonName(x.out))}
+    </li>
+  );
   // Nächster Gegner: Tabellenplatz und Form (letzte fünf Spiele)
   const myNext = you != null ? upcoming.find((x) => x.home === you || x.away === you) : undefined;
   const rival = myNext ? (myNext.home === you ? myNext.away : myNext.home) : null;
@@ -262,26 +275,27 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           <h2 id="manager-transfers" className="section-title">
             {tx.transfersTitle(m.played)}
           </h2>
-          <ul className="manager__transfers">
-            {lastTransfers
-              // Ein Tausch steht zweimal im Protokoll (je Team) – angezeigt wird er einmal
-              .filter((x) => !x.with || x.teamId < x.with)
-              .map((x) => {
-                const label = (id: string) => {
-                  const tm = s.teams.find((y) => y.id === id);
-                  return tm ? teamLabel(tm, t) : '?';
-                };
-                return (
-                  <li key={`${x.teamId}-${x.in}`}>
-                    {x.with
-                      ? tx.tradeLine(label(x.teamId), pokemonName(x.out), label(x.with), pokemonName(x.in))
-                      : tx.transferLine(label(x.teamId), pokemonName(x.in), pokemonName(x.out))}
-                  </li>
-                );
-              })}
-          </ul>
+          <ul className="manager__transfers">{lastTransfers.filter(shownOnce).map(transferItem)}</ul>
         </section>
       )}
+
+      {/* Alle Transfers der Saison (ohne die schon oben gezeigten), neueste zuerst */}
+      {(() => {
+        const earlier = (m.transfers ?? []).filter((x) => x.matchday < m.played).filter(shownOnce);
+        if (!earlier.length) return null;
+        const days = [...new Set(earlier.map((x) => x.matchday))].sort((a, b) => b - a);
+        return (
+          <details className="card details manager__history">
+            <summary>{tx.transfersAll(earlier.length)}</summary>
+            {days.map((d) => (
+              <div key={d}>
+                <h3 className="small muted">{tx.transfersTitle(d)}</h3>
+                <ul className="manager__transfers">{earlier.filter((x) => x.matchday === d).map(transferItem)}</ul>
+              </div>
+            ))}
+          </details>
+        );
+      })()}
 
       {upcoming.length > 0 && (
         <section className="card" aria-labelledby="manager-next">
