@@ -85,6 +85,10 @@ const scouting = {
       a: 'Seine Positionspassung zählt im Team-Score doppelt. Ein gut passender Kapitän hebt das Team, ein schlecht passender zieht es runter – nimm also einen, der auf seiner Position glänzt. Der Standardschütze kann nicht Kapitän sein.',
     },
     {
+      q: 'Was sind Shinys im Draft?',
+      a: 'Jeder Pick im Draft schillert mit 2 % Chance. Ein Shiny spielt selbst besser und hebt das ganze Team im Team-Score – je schwächer das Pokémon, desto mehr: Ein Shiny-Karpador bringt bis zu +40, ein Shiny-Mewtu nur rund +4. So lohnt sich auch ein schwaches Pokémon.',
+    },
+    {
       q: 'Was macht der Standardschütze?',
       a: 'Er zählt nicht zum Team-Score. In der Saison verwandelt er einen Teil der Tore aus Standards und gibt einen kleinen Bonus auf die Torerwartung – je besser Sp.-Angriff und Angriff, desto mehr.',
     },

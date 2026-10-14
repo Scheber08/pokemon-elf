@@ -68,6 +68,10 @@ const scouting: Messages['scouting'] = {
       a: 'Their position fit counts double in the team score. A well-fitting captain lifts the team, a poorly fitting one drags it down – so pick one who shines in their position. The set-piece taker cannot be captain.',
     },
     {
+      q: 'What are shinies in the draft?',
+      a: 'Every draft pick has a 2% chance to be shiny. A shiny plays better itself and lifts the whole team’s score – the weaker the Pokémon, the more: a shiny Magikarp adds up to +40, a shiny Mewtwo only about +4. So even a weak Pokémon can pay off.',
+    },
+    {
       q: 'What does the set-piece taker do?',
       a: 'He doesn’t count towards the team score. In the season he converts some of the goals from set pieces and gives a small bonus to expected goals – the better his Sp. Atk and Attack, the bigger it is.',
     },
