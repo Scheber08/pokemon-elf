@@ -15,6 +15,7 @@ import { PosBadge } from './Badges';
 import { BenchRow } from './BenchRow';
 import { FixtureList, FormDots, Trend } from './LeagueTicker';
 import { ReplayToggle, useMatchReport } from './MatchReport';
+import { JerseyEditor } from './JerseyEditor';
 import { PlaceChart } from './PlaceChart';
 import { SeasonStats } from './SeasonStats';
 import { Sprite } from './Sprite';
@@ -159,7 +160,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
     const team = s.teams[i];
     if (!team) return null;
     const l = m?.playedLineups?.[match.round]?.[team.id] ?? m?.lineups[team.id];
-    return l ? { formation: l.formation, ids: l.slots } : null;
+    return l ? { formation: l.formation, ids: l.slots, jerseys: team.jerseys } : null;
   });
 
   if (!m || !league) {
@@ -286,6 +287,17 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
         />
       ) : (
         <p className="notice">{tx.spectator}</p>
+      )}
+
+      {room.me && !readOnly && m.lineups[room.me.id] && meIndex >= 0 && (
+        <JerseyEditor
+          formation={m.lineups[room.me.id].formation}
+          slots={m.lineups[room.me.id].slots}
+          ss={s.settings.setPiece ? m.lineups[room.me.id].ss : null}
+          bench={rosterOf(s.teams[meIndex])}
+          jerseys={s.teams[meIndex].jerseys ?? {}}
+          onChange={(j) => room.setJerseys(j)}
+        />
       )}
 
       {room.me && !readOnly && m.nextAt != null && meIndex >= 0 && (
@@ -531,6 +543,7 @@ function LineupEditor({
           onSlotClick={onSlot}
           onSwap={swapSlots}
           ariaLabel={tx.lineupTitle}
+          jerseys={team.jerseys}
         />
         <BenchRow
           bench={bench}

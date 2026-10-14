@@ -495,6 +495,7 @@ function fakeRoom(s: DraftSnapshot, over: Partial<DraftRoom> = {}): DraftRoom {
     setLineup: vi.fn(() => true),
     setTransfer: vi.fn(() => true),
     offerTrade: vi.fn(() => true),
+    setJerseys: vi.fn(() => true),
     answerOffer: vi.fn(() => true),
     react: vi.fn(() => true),
     reactions: [],

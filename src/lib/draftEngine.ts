@@ -19,6 +19,7 @@
  * deterministisch über alle Kombinationen). Gibt es gar keine, ist roll = null: freie Wahl
  * aus dem Rest des Pools – der Draft bleibt nie hängen.
  */
+import { cleanJerseys } from './jerseys';
 import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { TYPE_KEYS } from '../config/pokemonTypes';
 import { POSITIONS } from '../config/positions';
@@ -691,6 +692,28 @@ export function leaveDraft(state: DraftState, deviceId: string): DraftState {
   let hostTeamId = state.hostTeamId;
   if (hostTeamId === teamId) hostTeamId = teams.find((t) => !t.cpu)?.id ?? null;
   return { ...state, teams, owners, hostTeamId };
+}
+
+/**
+ * Eigene Trikotnummern setzen (ab dem Draft, auch in Saison und Ergebnis). Bereinigt: 1–99, je Nummer
+ * ein Pokémon, nur Pokémon aus dem eigenen Kader; leer = zurück zur Vorgabe. Fehler: not_joined, not_allowed.
+ */
+export function setTeamJerseys(state: DraftState, deviceId: string, raw: unknown): DraftState {
+  const teamId = teamOfDevice(state, deviceId) ?? fail('not_joined', 'Du bist in dieser Liga nicht dabei');
+  if (state.phase === 'lobby') fail('not_allowed', 'Trikotnummern gibt es ab dem Draft');
+  const team = state.teams.find((t) => t.id === teamId)!;
+  const jerseys = cleanJerseys(raw, new Set(rosterOf(team)));
+  return {
+    ...state,
+    teams: state.teams.map((t) => {
+      if (t.id !== teamId) return t;
+      if (!Object.keys(jerseys).length) {
+        const { jerseys: _drop, ...rest } = t;
+        return rest;
+      }
+      return { ...t, jerseys };
+    }),
+  };
 }
 
 export function updateTeam(

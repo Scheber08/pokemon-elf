@@ -14,6 +14,7 @@ import {
   rounds,
   snapshotOf,
   startDraft,
+  setTeamJerseys,
   totalPicks,
   upgradeSettings,
   type DraftState,
@@ -484,3 +485,25 @@ describe('Draft-Raum: Manager-Saison', () => {
     expect(end.league!.table.findIndex((r) => r.team === end.teams.findIndex((t) => !t.cpu)) + 1).toBe(rows[0].rank);
   });
 });
+
+describe('Trikotnummern im Online-Draft', () => {
+  it('eigene Nummern setzen: bereinigt, nur eigener Kader, für alle im Schnappschuss; leer = Vorgabe', () => {
+    const s = startManagerSeason(drafted(), ALL, SCALE);
+    const own = rosterOf(s.teams.find((t) => t.id === 'h')!);
+    const other = rosterOf(s.teams.find((t) => t.id === 'c1')!);
+    const next = setTeamJerseys(s, 'dev-h', { [own[0]]: 7, [own[1]]: 7, [own[2]]: 150, [other[0]]: 9 });
+    // Doppelte 7: genau eine bleibt (kleinere ID – Schlüssel laufen numerisch aufsteigend); 150 und fremde fallen weg
+    const keep = String(Math.min(own[0], own[1]));
+    expect(next.teams.find((t) => t.id === 'h')!.jerseys).toEqual({ [keep]: 7 });
+    expect(snapshotOf(next, 'c1', 0).teams.find((t) => t.id === 'h')!.jerseys).toEqual({ [keep]: 7 });
+    expect(setTeamJerseys(next, 'dev-h', {}).teams.find((t) => t.id === 'h')).not.toHaveProperty('jerseys');
+    expect(() => setTeamJerseys(s, 'fremd', { [own[0]]: 7 })).toThrow(/nicht dabei/);
+  });
+
+  it('Nachricht jerseys: nur ein Objekt mit Zahlen', () => {
+    expect(parseClientMessage(JSON.stringify({ type: 'jerseys', jerseys: { '6': 9 } }))).toMatchObject({ ok: true });
+    expect(parseClientMessage(JSON.stringify({ type: 'jerseys', jerseys: { '6': '9' } })).ok).toBe(false);
+    expect(parseClientMessage(JSON.stringify({ type: 'jerseys', jerseys: [9] })).ok).toBe(false);
+  });
+});
+

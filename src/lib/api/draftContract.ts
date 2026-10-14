@@ -254,6 +254,8 @@ export interface DraftTeam {
   bench?: (number | null)[];
   /** Selbst gestalteter Trainer des Menschen (beim Anmelden aus D1 geladen) – fehlt sonst */
   trainer?: TrainerLook;
+  /** Eigene Trikotnummern (Pokémon-ID → Nummer, src/lib/jerseys.ts) – fehlt: Vorgabe nach Position */
+  jerseys?: Record<string, number>;
 }
 
 /** Draft-Slot des ersten Bankplatzes (Manager-Saison): Bankplatz i = DRAFT_BENCH_SLOT + i */
@@ -501,6 +503,7 @@ export type DraftClientMessage =
    */
   | { type: 'transfer'; in: number | null; out: number | null }
   | { type: 'offer'; to: string; give: number; get: number }
+  | { type: 'jerseys'; jerseys: Record<string, number> }
   | { type: 'offer-reply'; id: number; accept: boolean }
   /** Emoji-Reaktion an alle (nur Mitglieder; wird nicht gespeichert) */
   | { type: 'react'; emoji: DraftReaction }

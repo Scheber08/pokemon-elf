@@ -15,6 +15,7 @@ import { requestAchievementCheck } from './AchievementWatcher';
 import { cupStatusText } from './CupBracket';
 import { DraftResults } from './DraftResults';
 import { DraftSquads } from './DraftSquads';
+import { JerseyEditor } from './JerseyEditor';
 import { EternalTable } from './EternalTable';
 import { LeagueTicker } from './LeagueTicker';
 import '../styles/draft.css';
@@ -99,7 +100,7 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           startsAt={season.startsAt}
           stepMs={season.stepMs}
           clockOffset={room.clockOffset}
-          lineups={s.teams.map((tm) => ({ formation: tm.formation, ids: tm.slots }))}
+          lineups={s.teams.map((tm) => ({ formation: tm.formation, ids: tm.slots, jerseys: tm.jerseys }))}
           onDone={() => {
             setTicker(false);
             // Tab im Hintergrund: Saisonende melden (wie „Du bist dran" – nur mit Erlaubnis)
@@ -133,6 +134,15 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           leagueName={s.settings.name}
           picks={s.picks}
           transfers={s.manager?.transfers}
+        />
+      )}
+      {meIndex >= 0 && (
+        <JerseyEditor
+          formation={s.teams[meIndex].formation}
+          slots={s.teams[meIndex].slots}
+          ss={s.settings.setPiece ? s.teams[meIndex].ss : null}
+          jerseys={s.teams[meIndex].jerseys ?? {}}
+          onChange={(j) => room.setJerseys(j)}
         />
       )}
       {!ticker && entries.length > 1 && <EternalTable entries={entries} youTeamId={room.me?.id ?? null} />}
