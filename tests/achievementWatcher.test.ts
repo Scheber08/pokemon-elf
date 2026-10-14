@@ -43,6 +43,8 @@ describe('AchievementWatcher', () => {
     await act(async () => requestAchievementCheck());
     await settle();
     expect(doc.body.textContent).toContain('Erfolg freigeschaltet: 34–0! (+50 ◎)');
+    // Punkt „neue Erfolge" am Menü ist gesetzt
+    expect(localStorage.getItem('pokemon-elf:achievements-new')).toBe('true');
     expect(doc.body.textContent).not.toContain('Anpfiff');
     await act(async () => root.unmount());
   });

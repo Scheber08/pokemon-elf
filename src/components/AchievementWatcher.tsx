@@ -49,7 +49,8 @@ export function AchievementWatcher() {
         save(STORAGE_KEYS.seenAchievements, done.map((a) => a.id));
         if (!Array.isArray(seen)) return;
         const all = done.filter((a) => !seen.includes(a.id));
-        if (all.length && !location.pathname.startsWith('/trainer')) setAchievementBadge(true);
+        const onTrainer = typeof location !== 'undefined' && location.pathname.startsWith('/trainer');
+        if (all.length && !onTrainer) setAchievementBadge(true);
         const fresh = all.slice(0, MAX_TOASTS);
         for (const a of fresh) {
           const name = t.trainer.list[a.id]?.name ?? a.id;
