@@ -33,6 +33,8 @@ export interface LeagueTeam {
 export interface Goal {
   pokemonId: number;
   pos: PosCode;
+  /** Spielminute (1–90, 91–95 = Nachspielzeit 90+1 … 90+5) – nur im Online-Draft (DRAFT_MODEL) */
+  minute?: number;
 }
 
 export interface Match {
@@ -123,6 +125,8 @@ export interface MatchModel {
    * auf Dauer mit Standardabweichung sd, dazwischen Serien. null = keine.
    */
   form: { sd: number; keep: number } | null;
+  /** Jedes Tor bekommt eine Spielminute (Goal.minute) */
+  minutes: boolean;
 }
 
 export const CLASSIC_MODEL: MatchModel = {
@@ -131,6 +135,7 @@ export const CLASSIC_MODEL: MatchModel = {
   maxLambda: SEASON.maxLambda,
   jitter: SEASON.jitter,
   form: null,
+  minutes: false,
 };
 
 /**
@@ -143,7 +148,23 @@ export const DRAFT_MODEL: MatchModel = {
   maxLambda: 4.2,
   jitter: 0.15,
   form: { sd: 35, keep: 0.8 },
+  minutes: true,
 };
+
+/**
+ * Spielminuten für die Tore eines Teams (aufsteigend): gleichmäßig über 90 Minuten, ein kleiner
+ * Teil in der Nachspielzeit (91–95 = 90+1 … 90+5).
+ */
+export function goalMinutes(rng: Rng, count: number): number[] {
+  const out: number[] = [];
+  for (let i = 0; i < count; i++) out.push(rng() < 0.06 ? 91 + Math.floor(rng() * 5) : 1 + Math.floor(rng() * 90));
+  return out.sort((a, b) => a - b);
+}
+
+/** Minute als Text: „23'", „90+2'" */
+export function formatMinute(minute: number): string {
+  return minute > 90 ? `90+${minute - 90}'` : `${minute}'`;
+}
 
 function lambdaWithJitter(rng: Rng, own: number, opp: number, home: boolean, bonus = 0, model: MatchModel = CLASSIC_MODEL): number {
   const jitter = Math.exp(gaussian(rng) * model.jitter);
@@ -239,7 +260,7 @@ export function playMatch(
   const ra = ta.rating + (form?.[away] ?? 0);
   const hg = poisson(rng, lambdaWithJitter(rng, rh, ra, !neutral, setPieceBonus(th), model));
   const ag = poisson(rng, lambdaWithJitter(rng, ra, rh, false, setPieceBonus(ta), model));
-  return {
+  const match: Match = {
     round,
     home,
     away,
@@ -248,6 +269,16 @@ export function playMatch(
     homeScorers: pickScorers(rng, th, hg),
     awayScorers: pickScorers(rng, ta, ag),
   };
+  if (model.minutes) {
+    // Nur Tore mit Schützen (Teams ohne Kader haben keine) bekommen eine Minute
+    const withMinutes = (goals: Goal[]) => {
+      const minutes = goalMinutes(rng, goals.length);
+      return goals.map((g, i) => ({ ...g, minute: minutes[i] }));
+    };
+    match.homeScorers = withMinutes(match.homeScorers);
+    match.awayScorers = withMinutes(match.awayScorers);
+  }
+  return match;
 }
 
 /** Simuliert eine komplette Liga (jeder gegen jeden, Hin- und Rückrunde). */

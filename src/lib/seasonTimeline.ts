@@ -6,7 +6,7 @@
 import { SEASON } from '../config/season';
 import { messages } from '../i18n';
 import type { Record3 } from '../types';
-import { buildTable, type Goal, type Match, type SeasonResult, type TableRow, type UserMatch } from './season';
+import { buildTable, formatMinute, type Goal, type Match, type SeasonResult, type TableRow, type UserMatch } from './season';
 
 export interface Matchday {
   /** Spieltag (1-basiert) */
@@ -124,7 +124,13 @@ export function tickerStep(step: number, total: number): TickerStep {
 /** Torschützen eines Spiels als Text: „Glurak 2×, Pikachu (Standard)". */
 export function scorerSummary(scorers: Goal[], nameOf: (pokemonId: number) => string): string {
   return scorerGroups(scorers, nameOf)
-    .map((g) => (g.goals > 1 ? `${g.label} ${g.goals}×` : g.label))
+    .map((g) =>
+      g.minutes.length === g.goals
+        ? `${g.label} ${g.minutes.map(formatMinute).join(', ')}`
+        : g.goals > 1
+          ? `${g.label} ${g.goals}×`
+          : g.label,
+    )
     .join(', ');
 }
 
@@ -134,6 +140,8 @@ export interface ScorerGroup {
   label: string;
   goals: number;
   setPiece: boolean;
+  /** Spielminuten der Tore (nur wenn bekannt – Online-Draft) */
+  minutes: number[];
 }
 
 /** Fasst die Tore eines Spiels je Schütze zusammen (Reihenfolge des ersten Treffers). */
@@ -145,8 +153,11 @@ export function scorerGroups(scorers: Goal[], nameOf: (pokemonId: number) => str
     const name = nameOf(g.pokemonId);
     const label = setPiece ? t.setPiece(name) : name;
     const cur = groups.get(label);
-    if (cur) cur.goals++;
-    else groups.set(label, { pokemonId: g.pokemonId, label, goals: 1, setPiece });
+    const minutes = g.minute != null ? [g.minute] : [];
+    if (cur) {
+      cur.goals++;
+      cur.minutes.push(...minutes);
+    } else groups.set(label, { pokemonId: g.pokemonId, label, goals: 1, setPiece, minutes });
   }
   return [...groups.values()];
 }

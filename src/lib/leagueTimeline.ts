@@ -167,7 +167,9 @@ function goalsOf(v: unknown, goals: number): Goal[] | null {
   const out: Goal[] = [];
   for (const g of v) {
     if (!isObj(g) || !isInt(g.pokemonId, 1) || typeof g.pos !== 'string') return null;
-    out.push({ pokemonId: g.pokemonId, pos: g.pos as Goal['pos'] });
+    const goal: Goal = { pokemonId: g.pokemonId, pos: g.pos as Goal['pos'] };
+    if (isInt(g.minute, 1) && g.minute <= 120) goal.minute = g.minute;
+    out.push(goal);
   }
   return out;
 }
