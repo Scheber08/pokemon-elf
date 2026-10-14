@@ -11,6 +11,7 @@ import type { ChallengeKey, Pokemon } from '../types';
 import { ApiRequestError, apiAvailable, finishRun as apiFinishRun, renamePlayer } from './api/client';
 import { cleanPlayerName, isDefaultPlayerName, LIMITS } from './api/contract';
 import { recordRun as recordStats, type ChallengeStats } from './challengeStats';
+import { recordDailyDay } from './dailyHistory';
 import type { RunState } from './challengeEngine';
 import { dailySeasonSeed } from './daily';
 import { getDevice } from './device';
@@ -302,6 +303,16 @@ export async function finishRun(o: FinishOptions): Promise<FinishOutcome> {
   }
 
   const stats = recordStats(challenge, computed.evaluation.score, computed.season.record);
+  const playedDay = ranking.day ?? o.day;
+  if (challenge === 'daily' && playedDay) {
+    recordDailyDay({
+      day: playedDay,
+      record: computed.season.record,
+      points: computed.season.points,
+      score: computed.evaluation.score,
+      position: computed.season.position,
+    });
+  }
   let localEntryId: string | null = null;
   try {
     const entry = await leaderboard.submit({

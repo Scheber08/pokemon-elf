@@ -24,6 +24,16 @@ const daily = {
   playedTitle: 'Heute schon gespielt',
   playedText: (n: number) =>
     `Dein gewerteter Versuch für die Tägliche Elf #${n} ist verbraucht. Morgen gibt es neue Würfe – wieder für alle dieselben.`,
+  /** Serie und Archiv (nur dieses Gerät) */
+  streak: 'Serie',
+  streakDays: (n: number) => (n === 1 ? '1 Tag' : `${n} Tage`),
+  bestStreak: 'Beste Serie',
+  played: 'Gespielt',
+  streakHint: 'Spiel heute, sonst reißt deine Serie.',
+  archive: 'Deine letzten Tage',
+  archiveNote: 'Gespeichert auf diesem Gerät.',
+  archiveRow: (n: number) => `#${n}`,
+  archivePlace: (n: number) => `Platz ${n}`,
   factRank: 'Platz',
   factRecord: 'Bilanz',
   factPoints: 'Punkte',

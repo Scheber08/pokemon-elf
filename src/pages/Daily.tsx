@@ -1,6 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { HowItWorks, RunNamesPrompt, RunSetup, StatCards } from '../components/ChallengeParts';
+import { DailyStreak } from '../components/DailyStreak';
 import { RunBoard, RunModeBadge, RunNotice } from '../components/RunBoard';
 import { SeasonResultView } from '../components/SeasonResultView';
 import { fetchLeaderboard } from '../lib/api/client';
@@ -314,7 +315,12 @@ export function Daily() {
           reveal={result.reveal}
           onNewRun={reset}
           newRunLabel={null}
-          extra={(computed) => <DailyShare day={day} run={computed} />}
+          extra={(computed) => (
+            <>
+              <DailyShare day={day} run={computed} />
+              <DailyStreak />
+            </>
+          )}
           stats={run.stats}
         />
       </div>
@@ -389,6 +395,7 @@ export function Daily() {
           <div>
             <HowItWorks>{t.daily.howTo}</HowItWorks>
             <StatCards stats={run.stats} />
+            <DailyStreak />
           </div>
           {entry ? (
             <PlayedToday entry={entry} message={run.error} />
