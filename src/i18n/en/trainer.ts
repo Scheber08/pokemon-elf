@@ -120,6 +120,8 @@ const trainer: Messages['trainer'] = {
       scarf: 'Fan scarf',
       bandana: 'Neckerchief',
       whistle: 'Whistle',
+      bowtie: 'Bow tie',
+      headphones: 'Headphones',
       sunglasses: 'Sunglasses',
       eyepatch: 'Eyepatch',
       medal: 'Medal',

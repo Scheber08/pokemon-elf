@@ -395,6 +395,18 @@ function accessory(c: Canvas, id: string, cloth: string) {
     case 'freckles':
       c.dots([[11, 16], [12, 17], [10, 17], [19, 17], [20, 16], [21, 17]], '#b8714a');
       break;
+    case 'bowtie':
+      // Dunkel, damit sie auf jeder Kleidungsfarbe zu sehen ist
+      c.fill(union(ellipse(13.5, 24, 1.8, 1.4), ellipse(17.5, 24, 1.8, 1.4)), '#26282e', '#0d0e11');
+      c.rect(15, 23, 2, 2, '#f2c230');
+      break;
+    case 'headphones':
+      // Bügel über den Kopf, Muscheln an den Ohren
+      c.fill((x, y) => y >= 4 && y <= 5 && Math.abs(x - HEAD_CX) <= 7 && Math.abs(x - HEAD_CX) >= 5 - (y - 4) * 3, '#26282e');
+      c.fill((x, y) => y === 3 && Math.abs(x - HEAD_CX) <= 5, '#26282e');
+      for (const cx of [7.5, 23.5]) c.fill(ellipse(cx, 13, 1.6, 2.6), '#2f62c9', '#1b3a7a');
+      c.fill((x, y) => (x === 7 || x === 24) && y >= 5 && y <= 10, '#26282e');
+      break;
     case 'whistle':
       c.dots([[12, 24], [13, 25], [14, 26], [19, 24], [18, 25], [17, 26]], '#26282e');
       c.rect(15, 27, 3, 2, '#c9ced6');

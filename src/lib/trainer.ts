@@ -140,6 +140,8 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   item('accessory', 'scarf', 150),
   item('accessory', 'bandana', 150),
   item('accessory', 'whistle', 150),
+  item('accessory', 'bowtie', 150),
+  item('accessory', 'headphones', 300),
   item('accessory', 'sunglasses', 200),
   item('accessory', 'eyepatch', 250),
   item('accessory', 'medal', 400),

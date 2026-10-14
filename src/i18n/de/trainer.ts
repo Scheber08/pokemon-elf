@@ -119,6 +119,8 @@ const trainer = {
       scarf: 'Fanschal',
       bandana: 'Halstuch',
       whistle: 'Trillerpfeife',
+      bowtie: 'Fliege',
+      headphones: 'Kopfhörer',
       sunglasses: 'Sonnenbrille',
       eyepatch: 'Augenklappe',
       medal: 'Medaille',
