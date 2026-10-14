@@ -28,6 +28,8 @@ import '../styles/league.css';
 import { cleanKit } from '../lib/kits';
 import { cleanCrest } from '../lib/crest';
 import { Crest } from './Crest';
+import { shinyTeamBoost } from '../lib/shiny';
+import { rosterOf } from '../lib/draftEngine';
 
 interface Props {
   /** Shinys der Liga */
@@ -583,6 +585,16 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                   </span>
                 </header>
                 <p className="draft-results__roster-meta muted small">{tx.rosterMeta(team.formation, r.pts, r.gf, r.ga)}</p>
+                {(() => {
+                  // Shinys dieses Teams mit ihrem Team-Bonus
+                  const own = rosterOf(team).filter((id) => shinies?.includes(id));
+                  if (!own.length) return null;
+                  const parts = own.flatMap((id) => {
+                    const p = byId.get(id);
+                    return p ? [`${t.game.pokemon(p)} +${shinyTeamBoost(p)}`] : [];
+                  });
+                  return <p className="draft-results__roster-meta small">✨ {parts.join(', ')}</p>;
+                })()}
                 {teamTopScorer.has(r.team) && (
                   <p className="draft-results__roster-meta small">
                     {tx.teamTopScorer(pokemonName(teamTopScorer.get(r.team)!.pokemonId), teamTopScorer.get(r.team)!.goals)}
