@@ -532,6 +532,8 @@ const draft = {
     notifySoonHeading: (league: string, n: number) => `${league}: gleich Spieltag ${n}`,
     notifySoon: (min: number) => `Anpfiff in ${min} Min. – Aufstellung und Transfers noch prüfen?`,
     marketTitle: 'Transfermarkt',
+    marketTip: (inn: string, out: string) => `Tipp: ${inn} holen, ${out} abgeben`,
+    marketTipTake: 'Als Wunsch setzen',
     marketNote: (n: number) =>
       `Ein Tausch pro Spieltag: ein freies Pokémon gegen eins aus deinem Kader. Vergeben wird zum Anpfiff von Spieltag ${n} – wollen mehrere dasselbe, bekommt es der Tabellenschlechtere.`,
     marketOut: 'Abgeben',

@@ -5,7 +5,7 @@ import type { DraftSnapshot, DraftTeam, ManagerClaim, ManagerLineup, ManagerOffe
 import { rosterOf } from '../lib/draftEngine';
 import { matchFor, playerOfRound, recentForm, storedLeague } from '../lib/leagueTimeline';
 import { showNotify } from '../lib/notify';
-import { bestLineup, FORM_FIT, formFit, freeAgents, lineupScore, managerSchedule, squadStrength } from '../lib/manager';
+import { bestLineup, claimError, FORM_FIT, formFit, freeAgents, lineupScore, managerSchedule, squadStrength } from '../lib/manager';
 import { positionFit } from '../lib/fit';
 import type { Match } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -548,6 +548,20 @@ function TransferMarket({
     () => freeAgents(state, list).map((p) => ({ p, ...best(p) })).sort((a, b) => b.fit - a.fit || a.p.id - b.p.id),
     [teamsKey, list, team.formation],
   );
+  // Tipp: der Tausch, der die beste Elf am meisten stärkt (die 40 freien mit dem besten Fit, Limits beachtet)
+  const tip = useMemo(() => {
+    const before = squadStrength(team, byId, sc);
+    let top: { in: number; out: number; gain: number } | null = null;
+    for (const out of roster) {
+      for (const { p } of free.slice(0, 40)) {
+        const swap = (ids: (number | null)[]) => ids.map((id) => (id === out ? p.id : id));
+        const after = { ...team, slots: swap(team.slots), ss: team.ss === out ? p.id : team.ss, ...(team.bench ? { bench: swap(team.bench) as number[] } : {}) };
+        const gain = squadStrength(after, byId, sc) - before;
+        if (gain > 0.5 && (!top || gain > top.gain) && !claimError(state, team.id, { in: p.id, out }, list)) top = { in: p.id, out, gain };
+      }
+    }
+    return top;
+  }, [free, teamsKey, team.formation]);
   const q = query.trim().toLowerCase();
   const shown = (q ? free.filter((x) => t.game.pokemon(x.p).toLowerCase().includes(q)) : free).slice(0, 12);
   const name = (id: number) => {
@@ -561,6 +575,16 @@ function TransferMarket({
         {tx.marketTitle} <small className="muted">{tx.marketFree(free.length)}</small>
       </h2>
       <p className="muted small">{tx.marketNote(matchday)}</p>
+      {tip && !(claim?.in === tip.in && claim.out === tip.out) && (
+        <p className="hint manager__tip">
+          <span>
+            💡 {tx.marketTip(name(tip.in), name(tip.out))} <small className="manager__effect is-up">{tx.effectShort(tip.gain)}</small>
+          </span>
+          <button type="button" className="btn btn--small btn--ghost" onClick={() => onTransfer(tip.in, tip.out)}>
+            {tx.marketTipTake}
+          </button>
+        </p>
+      )}
       {claim && (
         <p className="hint hint--active manager__claim">
           {tx.marketClaim(name(claim.in), name(claim.out), matchday)}{' '}

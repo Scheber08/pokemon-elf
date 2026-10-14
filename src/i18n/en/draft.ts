@@ -490,6 +490,8 @@ const draft: Messages['draft'] = {
     notifySoonHeading: (league, n) => `${league}: matchday ${n} is about to start`,
     notifySoon: (min) => `Kick-off in ${min} min – check your lineup and transfers?`,
     marketTitle: 'Transfer market',
+    marketTip: (inn, out) => `Tip: sign ${inn}, release ${out}`,
+    marketTipTake: 'Set as request',
     marketNote: (n) =>
       `One swap per matchday: a free Pokémon for one from your squad. Assigned at kick-off of matchday ${n} – if several want the same one, the lower-placed team gets it.`,
     marketOut: 'Release',
