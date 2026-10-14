@@ -433,11 +433,13 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               {t.draft.topScorers}
             </h2>
             <ol className="scorers">
-              {league.scorers.map((s) => {
+              {league.scorers.map((s, i) => {
                 const p = byId.get(s.id);
                 return (
                   <li key={s.id}>
-                    {p && <Sprite pokemon={p} style={sprite} className="scorers__sprite" />}
+                    {/* Raster wie überall: Platz, Sprite, Name, Tore */}
+                    <span className="muted">{i + 1}.</span>
+                    {p ? <Sprite pokemon={p} style={sprite} className="scorers__sprite" /> : <span aria-hidden="true" />}
                     <span className="scorers__name">
                       {p && t.game.pokemon(p)} <small className="muted">{teamName(state.teams[s.team].name)}</small>
                     </span>
