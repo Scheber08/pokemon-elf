@@ -45,12 +45,12 @@ Deploy stehen in der README.
 
 ## Offene Ideen (Stand 2026-10-14)
 
-Erledigt: Ultrabestien/Megas/Formen (Builder, Online- und lokaler Draft), Revanche + ewige Tabelle,
-„Du bist dran"-Benachrichtigung, Testspiel gegen Ranglisten-Teams, Spielerprofil (/spieler/:id),
-Tägliche-Elf-Serie/Archiv, OG-Tags (auch je Liga über den Worker), Routen nachladen, PWA.
+Erledigt (siehe README): Ultrabestien/Megas/Formen, Revanche + ewige Tabelle, Benachrichtigung „Du bist
+dran", Testspiel, Spielerprofil, Wochenwertung, Tägliche-Elf-Serie, OG-Tags (auch je Liga), Routen
+nachladen, PWA, Wunschliste und Emoji-Reaktionen im Draft, Rückgängig und Fit-Sortierung im Builder.
 
-1. Wunschliste (Pick-Queue) im Online-Draft für Auto-Picks
-2. Chat bzw. Emoji-Reaktionen im Online-Draft
+1. Wochenwertung rückwirkend für die laufende Woche füllen (einmalige Bereinigung wie cleanupDefaultNames)
+2. Tausch-Angebote zwischen Teams im Online-Draft (nach dem Draft, vor der Saison)
 
 ## Daten
 
