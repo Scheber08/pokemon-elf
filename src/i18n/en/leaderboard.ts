@@ -109,6 +109,7 @@ const leaderboard: Messages['leaderboard'] = {
     since: (date) => `Playing since ${date}`,
     runs: (n) => (n === 1 ? '1 ranked run' : `${n} ranked runs`),
     achievements: (done, total) => `🏅 ${done}/${total} achievements`,
+    online: (titles, leagues) => `🏆 ${titles} ${titles === 1 ? 'title' : 'titles'} in ${leagues} online ${leagues === 1 ? 'league' : 'leagues'}`,
     perChallenge: 'Best runs',
     runsCol: 'Runs',
     perfectTitle: (n) => (n === 1 ? 'One perfect season (wins only)' : `${n} perfect seasons (wins only)`),

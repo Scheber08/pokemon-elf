@@ -226,11 +226,13 @@ describe('Kennzahlen und /api/me', () => {
     const profile = (await (await handleApi(new Request(`http://localhost/api/entries/${board.rows[0].entryId}/player`), { DB: db })).json()) as {
       trainer?: unknown;
       achievements?: { done: number; total: number };
+      online?: { leagues: number; titles: number };
     };
     expect(profile.trainer).toMatchObject({ hat: 'beanie' });
     // Erfolge im Profil: erreichte von allen
     expect(profile.achievements?.total).toBe(ACHIEVEMENTS.length);
     expect(profile.achievements?.done).toBeGreaterThanOrEqual(3);
+    expect(profile.online).toEqual({ leagues: 0, titles: 0 });
   });
 });
 

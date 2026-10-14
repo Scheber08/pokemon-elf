@@ -90,6 +90,7 @@ export function Profile() {
             <p className="page-lead">
               {tp.since(date(p.since))} · {tp.runs(p.runs)}
               {p.achievements && <> · {tp.achievements(p.achievements.done, p.achievements.total)}</>}
+              {p.online && p.online.leagues > 0 && <> · {tp.online(p.online.titles, p.online.leagues)}</>}
             </p>
           </div>
         </div>

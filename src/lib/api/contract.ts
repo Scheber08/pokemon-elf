@@ -213,6 +213,8 @@ export interface PlayerProfile {
   recent: PlayerRun[];
   /** Erreichte Erfolge von allen (fehlt bei älteren Antworten) */
   achievements?: { done: number; total: number };
+  /** Fertige Online-Ligen und Titel darin (Liga, Pokal, Manager-Saison; fehlt bei älteren Antworten) */
+  online?: { leagues: number; titles: number };
 }
 
 /** POST /api/me (Body: DeviceAuth) – Erfolge und Münzen des eigenen Geräts */
