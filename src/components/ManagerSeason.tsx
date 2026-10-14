@@ -631,6 +631,15 @@ function LineupEditor({
         const names = missing.map((id) => (byId.get(id) ? t.game.pokemon(byId.get(id)!) : `#${id}`));
         return <p className="hint manager__formwarn">🚑 {tx.outWarning(names)}</p>;
       })()}
+      {(() => {
+        // Kapitän zählt nur in der Startelf doppelt – auf der Bank oder bei Ausfall verpufft der Bonus
+        const c = team.captain;
+        const p = c != null ? byId.get(c) : undefined;
+        if (!p) return null;
+        if (absent.has(p.id)) return <p className="hint manager__formwarn">©️ {tx.captainOut(t.game.pokemon(p))}</p>;
+        if (!lineup.slots.includes(p.id)) return <p className="hint manager__formwarn">©️ {tx.captainBench(t.game.pokemon(p))}</p>;
+        return null;
+      })()}
       <p className={`hint ${pick ? 'hint--active' : ''}`}>{pickedName ? tx.selected(pickedName) : tx.swapHint}</p>
       <div className="manager__pitch">
         <Pitch

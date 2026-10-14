@@ -729,6 +729,30 @@ describe('ManagerSeason', () => {
     expect(container.querySelectorAll('.manager__squad .manager__out')).toHaveLength(1);
   });
 
+  it('Kapitän: Hinweis, wenn er auf der Bank sitzt oder ausfällt', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason } = await import('../src/lib/manager');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    const me = s.teams.find((t) => t.id === 'h')!;
+    const lineup = s.manager!.lineups.h;
+    const benchId = engine.rosterOf(me).find((id) => !lineup.slots.includes(id) && id !== lineup.ss)!;
+    const withCaptain = (captain: number, out = {}) => ({
+      ...s,
+      teams: s.teams.map((t) => (t.id === 'h' ? { ...t, captain } : t)),
+      manager: { ...s.manager!, out },
+    });
+    const text = async (st: typeof s) => {
+      const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(st, 'h')), readOnly: false })));
+      await settle();
+      return container.querySelector('.manager__lineup')!.textContent;
+    };
+    expect(await text(withCaptain(lineup.slots[0]))).not.toContain('Dein Kapitän');
+    expect(await text(withCaptain(benchId))).toContain('steht nicht in der Startelf');
+    expect(await text(withCaptain(lineup.slots[0], { [lineup.slots[0]]: { kind: 'red', until: 2, since: 0 } }))).toContain('keinen Kapitänsbonus');
+  });
+
   it('Pokal: Auslosung vor der ersten Runde, nach dem Finale der Sieger', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
