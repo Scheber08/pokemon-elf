@@ -58,9 +58,13 @@ Manager-Saison, eigener Menüpunkt „Manager", Spielbericht + 2D-Wiedergabe in 
 Erfolge für die Manager-Saison, Hinweis „Erfolg freigeschaltet" nach Runs und Ligen, Saisonartikel im Shop
 (Halloween, Weihnachten, Frühling/Ostern, Sommer, Neujahr, Valentinstag, Herbst, Fußball-Sommer, Oktoberfest, Karneval), Spieler des Spieltags, Tausch-Angebote zwischen Teams in der Manager-Saison,
 Trikotnummern in allen Modi,
-Kapitän in allen Modi (zählt doppelt; Rangliste dafür einmalig neu gestartet), Trikotfarben, Torjubel und Vereinswappen in allen Modi, Verletzungen, Sperren, Pokal und Karriere (Auf-/Abstieg) und Live-Spieltag in der Manager-Saison, Shinys im Draft, Kapitän im Vorlauf nach dem letzten Pick.
+Kapitän in allen Modi (zählt doppelt; Rangliste dafür einmalig neu gestartet), Trikotfarben, Torjubel und Vereinswappen in allen Modi, Verletzungen, Sperren, Pokal und Karriere (Auf-/Abstieg) und Live-Spieltag in der Manager-Saison, Shinys im Draft (an/aus/Party, auch vom Transfermarkt, Erfolg „Shiny-Sammler“), Kapitän im Vorlauf nach dem letzten
+Pick (automatisch der bestpassende, „Beste Wahl“, Ersatzkapitän der CPU), „Mit CPU auffüllen“ in der Lobby, Vibration bei
+knapper Pick-Zeit, Shinys und Pokalsiege im Profil.
 
 1. Weitere Saisons im Shop (z. B. Muttertag, Schulanfang) – neue Einträge mit `seasonal(...)` in `src/lib/trainer.ts`
+2. Karriere-Verlauf der Manager-Saison (Platzierungen früherer Saisons anzeigen)
+3. Shiny-Party-Badge in der Liste öffentlicher Lobbys (braucht Feld in der Lobby-Zeile – Schema nur additiv)
 
 ## Daten
 
