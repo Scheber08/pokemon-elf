@@ -17,48 +17,13 @@ export const MINOR = 1;
 export const NONE = 0;
 export type Level = typeof KEY | typeof HELPS | typeof MINOR | typeof NONE;
 
-export const LEVEL_LABEL: Record<Level, string> = {
-  3: 'Schlüssel',
-  2: 'Hilft',
-  1: 'Kleiner Anteil',
-  0: 'Zählt nicht',
-};
-
 export const LEVEL_SYMBOL: Record<Level, string> = { 3: '●', 2: '◕', 1: '◔', 0: '○' };
 
 export const FACTORS: FactorKey[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe', 'height', 'weight'];
 
-export const FACTOR_LABEL: Record<FactorKey, string> = {
-  hp: 'KP',
-  atk: 'ANG',
-  def: 'VERT',
-  spa: 'SP.ANG',
-  spd: 'SP.VERT',
-  spe: 'INIT',
-  height: 'GRÖSSE',
-  weight: 'GEWICHT',
-};
-
-export const FACTOR_LONG: Record<FactorKey, string> = {
-  hp: 'KP',
-  atk: 'Angriff',
-  def: 'Verteidigung',
-  spa: 'Sp.-Angriff',
-  spd: 'Sp.-Verteidigung',
-  spe: 'Initiative',
-  height: 'Größe',
-  weight: 'Gewicht',
-};
-
 export interface Profile {
   key: ProfileKey;
-  /** Kurztitel, z. B. „Innenverteidiger" */
-  title: string;
-  /** Rollenbeschreibung für den Scouting-Guide */
-  role: string;
   weights: Record<FactorKey, Level>;
-  /** Kurze Anmerkungen pro Faktor (nur Anzeige im Scouting-Guide) */
-  notes?: Partial<Record<FactorKey, string>>;
   types: TypeKey[];
 }
 
@@ -69,98 +34,70 @@ const w = (
 export const PROFILES: Record<ProfileKey, Profile> = {
   TW: {
     key: 'TW',
-    title: 'Torwart',
-    role: 'Hält Bälle, organisiert die Abwehr.',
     weights: w(HELPS, NONE, HELPS, NONE, KEY, HELPS, KEY, MINOR),
-    notes: { spd: 'Reflexe/Ruhe' },
     // Psycho: Antizipation · Stahl: Nerven · Geist: „Geisterhände" · Gestein: Fels in der Brandung
     types: ['psychic', 'steel', 'ghost', 'rock'],
   },
   IV: {
     key: 'IV',
-    title: 'Innenverteidiger',
-    role: 'Zweikämpfe und Kopfbälle.',
     weights: w(HELPS, MINOR, KEY, NONE, MINOR, MINOR, HELPS, HELPS),
     types: ['rock', 'steel', 'ground', 'fighting'],
   },
   AV: {
     key: 'AV',
-    title: 'Außenverteidiger',
-    role: 'Verteidigen die Flanke und schalten sich ein.',
     weights: w(HELPS, MINOR, HELPS, MINOR, MINOR, KEY, NONE, NONE),
-    notes: { hp: 'Ausdauer' },
     // Gift: giftig im Zweikampf
     types: ['water', 'poison', 'normal'],
   },
   WB: {
     key: 'WB',
-    title: 'Schienenspieler',
-    role: 'Die ganze Seitenlinie rauf und runter.',
     weights: w(KEY, MINOR, MINOR, HELPS, NONE, KEY, NONE, NONE),
     // Käfer: Laufwunder · Pflanze: zäh und ausdauernd
     types: ['flying', 'bug', 'water', 'grass'],
   },
   DM: {
     key: 'DM',
-    title: 'Sechser',
-    role: 'Balleroberer vor der Abwehr.',
     weights: w(HELPS, HELPS, KEY, MINOR, HELPS, MINOR, NONE, MINOR),
     types: ['fighting', 'ground', 'dark', 'poison'],
   },
   ZM: {
     key: 'ZM',
-    title: 'Zentrales Mittelfeld',
-    role: 'Taktgeber und Box-to-Box.',
     weights: w(HELPS, MINOR, MINOR, KEY, HELPS, HELPS, NONE, NONE),
-    notes: { spa: 'Passspiel', spd: 'Spielübersicht' },
     // Pflanze: verwurzelt im Zentrum · Eis: kühler Kopf
     types: ['normal', 'grass', 'psychic', 'ice'],
   },
   OM: {
     key: 'OM',
-    title: 'Zehner',
-    role: 'Kreativspieler hinter den Spitzen.',
     weights: w(NONE, MINOR, NONE, KEY, HELPS, HELPS, NONE, NONE),
     // Fee: Zauberfuß · Feuer: Leidenschaft
     types: ['fairy', 'dragon', 'fire'],
   },
   FM: {
     key: 'FM',
-    title: 'Außenbahn',
-    role: 'Flanken und Tempo.',
     weights: w(HELPS, MINOR, NONE, HELPS, MINOR, KEY, NONE, NONE),
     types: ['electric', 'bug', 'flying'],
   },
   FL: {
     key: 'FL',
-    title: 'Flügelstürmer',
-    role: 'Dribbling und Abschluss von außen.',
     weights: w(NONE, HELPS, NONE, HELPS, NONE, KEY, NONE, NONE),
     // Unlicht: Schlitzohr am Flügel · Geist: taucht plötzlich auf
     types: ['dark', 'ghost', 'electric', 'fairy'],
   },
   ST: {
     key: 'ST',
-    title: 'Stürmer',
-    role: 'Tore schießen, Bälle festmachen.',
     weights: w(MINOR, KEY, MINOR, HELPS, MINOR, HELPS, MINOR, MINOR),
-    notes: { atk: 'Schusskraft', spa: 'Abschluss', height: 'Kopfball' },
     // Eis: eiskalt vor dem Tor
     types: ['fire', 'ice', 'dragon'],
   },
   SS: {
     key: 'SS',
-    title: 'Standardschütze',
-    role: 'Freistöße und Elfmeter. Optional, zählt nicht zum Team-Score.',
     weights: w(NONE, HELPS, NONE, KEY, NONE, NONE, NONE, NONE),
-    notes: { spa: 'Technik', atk: 'Schusskraft' },
     types: [],
   },
 };
 
 export interface PositionDef {
   code: PosCode;
-  name: string;
   profile: ProfileKey;
   line: Line;
   /** Gewicht im Team-Score */
@@ -168,21 +105,21 @@ export interface PositionDef {
 }
 
 export const POSITIONS: Record<PosCode, PositionDef> = {
-  TW: { code: 'TW', name: 'Torwart', profile: 'TW', line: 'gk', teamWeight: 1.6 },
-  IV: { code: 'IV', name: 'Innenverteidiger', profile: 'IV', line: 'def', teamWeight: 1.2 },
-  LV: { code: 'LV', name: 'Linker Verteidiger', profile: 'AV', line: 'def', teamWeight: 1.0 },
-  RV: { code: 'RV', name: 'Rechter Verteidiger', profile: 'AV', line: 'def', teamWeight: 1.0 },
-  LWB: { code: 'LWB', name: 'Linker Schienenspieler', profile: 'WB', line: 'def', teamWeight: 1.0 },
-  RWB: { code: 'RWB', name: 'Rechter Schienenspieler', profile: 'WB', line: 'def', teamWeight: 1.0 },
-  DM: { code: 'DM', name: 'Defensives Mittelfeld', profile: 'DM', line: 'mid', teamWeight: 1.1 },
-  ZM: { code: 'ZM', name: 'Zentrales Mittelfeld', profile: 'ZM', line: 'mid', teamWeight: 1.0 },
-  OM: { code: 'OM', name: 'Offensives Mittelfeld', profile: 'OM', line: 'mid', teamWeight: 1.2 },
-  LM: { code: 'LM', name: 'Linkes Mittelfeld', profile: 'FM', line: 'mid', teamWeight: 1.0 },
-  RM: { code: 'RM', name: 'Rechtes Mittelfeld', profile: 'FM', line: 'mid', teamWeight: 1.0 },
-  LF: { code: 'LF', name: 'Linksaußen', profile: 'FL', line: 'att', teamWeight: 1.0 },
-  RF: { code: 'RF', name: 'Rechtsaußen', profile: 'FL', line: 'att', teamWeight: 1.0 },
-  ST: { code: 'ST', name: 'Stürmer', profile: 'ST', line: 'att', teamWeight: 1.4 },
-  SS: { code: 'SS', name: 'Standardschütze', profile: 'SS', line: 'att', teamWeight: 0 },
+  TW: { code: 'TW', profile: 'TW', line: 'gk', teamWeight: 1.6 },
+  IV: { code: 'IV', profile: 'IV', line: 'def', teamWeight: 1.2 },
+  LV: { code: 'LV', profile: 'AV', line: 'def', teamWeight: 1.0 },
+  RV: { code: 'RV', profile: 'AV', line: 'def', teamWeight: 1.0 },
+  LWB: { code: 'LWB', profile: 'WB', line: 'def', teamWeight: 1.0 },
+  RWB: { code: 'RWB', profile: 'WB', line: 'def', teamWeight: 1.0 },
+  DM: { code: 'DM', profile: 'DM', line: 'mid', teamWeight: 1.1 },
+  ZM: { code: 'ZM', profile: 'ZM', line: 'mid', teamWeight: 1.0 },
+  OM: { code: 'OM', profile: 'OM', line: 'mid', teamWeight: 1.2 },
+  LM: { code: 'LM', profile: 'FM', line: 'mid', teamWeight: 1.0 },
+  RM: { code: 'RM', profile: 'FM', line: 'mid', teamWeight: 1.0 },
+  LF: { code: 'LF', profile: 'FL', line: 'att', teamWeight: 1.0 },
+  RF: { code: 'RF', profile: 'FL', line: 'att', teamWeight: 1.0 },
+  ST: { code: 'ST', profile: 'ST', line: 'att', teamWeight: 1.4 },
+  SS: { code: 'SS', profile: 'SS', line: 'att', teamWeight: 0 },
 };
 
 export type ProfileGroupKey = 'defense' | 'midfield' | 'attack';
