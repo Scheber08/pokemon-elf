@@ -51,6 +51,8 @@ const AUTUMN = ['09-01', '09-30', '🍂'] as const;
 const FOOTBALL = ['06-01', '07-20', '⚽'] as const;
 /** Oktoberfest */
 const OKTOBERFEST = ['09-16', '10-06', '🥨'] as const;
+/** Karneval / Fasching (die tollen Tage liegen jedes Jahr darin) */
+const CARNIVAL = ['02-01', '03-10', '🎭'] as const;
 /** Valentinstag */
 const VALENTINE = ['02-07', '02-14', '💘'] as const;
 
@@ -148,6 +150,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('hat', 'hearts', 200), ...VALENTINE),
   seasonal(item('hat', 'leaves', 250), ...AUTUMN),
   seasonal(item('hat', 'tyrolean', 250), ...OKTOBERFEST),
+  seasonal(item('hat', 'jester', 250), ...CARNIVAL),
   // Accessoire
   item('accessory', 'none', 0),
   item('accessory', 'freckles', 0),
@@ -214,6 +217,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('companion', '370', 300), ...VALENTINE),
   seasonal(item('companion', '585', 350), ...AUTUMN),
   seasonal(item('companion', '813', 400), ...FOOTBALL),
+  seasonal(item('companion', '122', 350), ...CARNIVAL),
   item('companion', '6', 600),
   item('companion', '149', 600),
   item('companion', '448', 600),

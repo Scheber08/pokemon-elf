@@ -374,6 +374,18 @@ function hat(c: Canvas, id: string, cloth: string) {
         c.dots([[cx - 2, 1]], '#f7a1bf');
       }
       break;
+    case 'jester': {
+      // Narrenkappe: zwei Zipfel in Rot und Gelb, die zur Seite fallen, mit Glöckchen an den Spitzen
+      const horn = (sx: number): Mask => (x, y) =>
+        [0, 1, 2, 3, 4].some((i) => ((x - (15.5 + sx * (3 + i * 2))) / (3.2 - i * 0.55)) ** 2 + ((y - (6 - i * 0.6 + (i > 2 ? (i - 2) * 1.4 : 0))) / (3 - i * 0.5)) ** 2 <= 1);
+      const cap = union(horn(-1), horn(1), and(ellipse(15.5, 9.5, 8, 5), above(9)));
+      const inner: Mask = (x, y) => cap(x, y) && cap(x - 1, y) && cap(x + 1, y) && cap(x, y - 1) && cap(x, y + 1);
+      c.fill(cap, '#d8342a', '#5a1a14');
+      c.fill((x, y) => x >= 16 && inner(x, y), '#f2c230', null);
+      c.rect(7, 9, 18, 1, '#26282e');
+      for (const cx of [4, 27]) c.dots([[cx, 8], [cx, 9]], '#f2c230');
+      break;
+    }
     case 'tyrolean':
       // Tirolerhut: grüner Filz mit schmaler Krempe, rotem Band und Feder
       c.fill(and(ellipse(15.5, 9, 6.5, 6), above(9)), '#3f6b3a', '#24401f');
