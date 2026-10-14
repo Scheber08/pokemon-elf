@@ -6,6 +6,7 @@ import { rosterOf } from '../lib/draftEngine';
 import { leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
+import { shinyTeamBoost } from '../lib/shiny';
 import { bestLineup, FORM_FIT, formFit, kickoffAt, lineupScore, managerSchedule, squadStrength } from '../lib/manager';
 import { buildTable, type LeagueResult, type Match } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -248,6 +249,17 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             <strong>{tx.next(nextNo)}</strong> · {tx.kickoffIn(m.nextAt - now)} <span className="muted">{tx.kickoffAt(when)}</span>
           </p>
         )}
+        {/* Eigener Neuzugang des letzten Spieltags schillert */}
+        {lastTransfers
+          .filter((x) => x.shiny && x.teamId === room.me?.id)
+          .map((x) => {
+            const p = byId.get(x.in);
+            return p ? (
+              <p key={x.in} className="hint hint--active manager__shiny">
+                {t.shiny.transferred(t.game.pokemon(p), shinyTeamBoost(p))}
+              </p>
+            ) : null;
+          })}
         {/* Sprungmenü – die Seite ist lang (vor allem auf dem Handy) */}
         <nav className="manager__jump" aria-label={tx.jumpAria}>
           {(

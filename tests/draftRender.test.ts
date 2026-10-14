@@ -764,6 +764,20 @@ describe('ManagerSeason', () => {
     expect(await text(withCaptain(lineup.slots[0], { [lineup.slots[0]]: { kind: 'red', until: 2, since: 0 } }))).toContain('keinen Kapitänsbonus');
   });
 
+  it('Shiny-Neuzugang: Hinweis im Status nur fürs eigene Team', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = playMatchday(startManagerSeason(s, ALL, SCALE), ALL, SCALE);
+    const me = s.teams.find((t) => t.id === 'h')!;
+    const inn = engine.rosterOf(me)[0];
+    const st = { ...s, manager: { ...s.manager!, transfers: [{ matchday: 1, teamId: 'h', in: inn, out: 9999, shiny: true }] } };
+    const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(st, 'h')), readOnly: false })));
+    await settle();
+    expect(container.querySelector('.manager__shiny')!.textContent).toContain(ALL.find((p) => p.id === inn)!.de);
+  });
+
   it('Pokal: Auslosung vor der ersten Runde, nach dem Finale der Sieger', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
