@@ -56,6 +56,13 @@ describe('Trainer-Katalog', () => {
     expect(lockedItem({ ...DEFAULT_LOOK, hat: 'crown' }, new Set())).toBe('hat:crown');
     expect(lockedItem({ ...DEFAULT_LOOK, hat: 'crown' }, new Set(['hat:crown']))).toBeNull();
   });
+
+  it('jeder Titel hat einen Text (DE und EN)', async () => {
+    for (const lang of ['de', 'en'] as const) {
+      const { default: tr } = await import(`../src/i18n/${lang}/trainer.ts`);
+      for (const i of TRAINER_ITEMS.filter((x) => x.slot === 'title')) expect(tr.titles[i.id], `${lang}:${i.id}`).toBeTruthy();
+    }
+  });
 });
 
 describe('Definitionen', () => {
