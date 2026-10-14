@@ -256,6 +256,8 @@ export interface DraftTeam {
   trainer?: TrainerLook;
   /** Eigene Trikotnummern (Pokémon-ID → Nummer, src/lib/jerseys.ts) – fehlt: Vorgabe nach Position */
   jerseys?: Record<string, number>;
+  /** Kapitän (Pokémon-ID aus der Elf) – zählt im Team-Score doppelt; fehlt: keiner */
+  captain?: number;
 }
 
 /** Draft-Slot des ersten Bankplatzes (Manager-Saison): Bankplatz i = DRAFT_BENCH_SLOT + i */

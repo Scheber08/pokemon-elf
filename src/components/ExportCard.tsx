@@ -27,6 +27,8 @@ interface Props {
   watermark: string;
   /** Eigene Trikotnummern */
   jerseys?: Jerseys;
+  /** Kapitän (Pokémon-ID) – Binde „C“ */
+  captain?: number | null;
 }
 
 export const EXPORT_W = 1200;
@@ -34,7 +36,7 @@ export const EXPORT_H = 1500;
 const PITCH_W = 880;
 
 /** Statisches 1200×1500-Bild (Spielfeld, Teamname, ggf. Saisonbilanz) für html2canvas. */
-export function ExportCard({ formation, players, ss, sprite, images, teamName, subtitle, result, watermark, jerseys }: Props) {
+export function ExportCard({ formation, players, ss, sprite, images, teamName, subtitle, result, watermark, jerseys, captain = null }: Props) {
   const t = useT();
   const defs = FORMATIONS[formation].slots;
   // Trikotnummern wie auf dem Feld (eigene bzw. Vorgabe nach Position)
@@ -69,7 +71,7 @@ export function ExportCard({ formation, players, ss, sprite, images, teamName, s
             const p = players[i] ?? null;
             return (
               <div key={i} className={`slot ${p ? 'slot--filled' : 'slot--empty'}`} style={{ left: `${d.x}%`, top: `${d.y}%`, zIndex: Math.round(d.y) }}>
-                <PlayerToken pos={d.pos} pokemon={p} sprite={sprite} source={p ? images.get(p.id) : undefined} number={p ? numbers.get(p.id) : null} />
+                <PlayerToken pos={d.pos} pokemon={p} sprite={sprite} source={p ? images.get(p.id) : undefined} number={p ? numbers.get(p.id) : null} captain={p != null && p.id === captain} />
               </div>
             );
           })}

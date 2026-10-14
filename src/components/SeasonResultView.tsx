@@ -184,6 +184,7 @@ export function SeasonResultView({
       byId,
       teamName,
       jerseys,
+      captain: input.captain ?? null,
       subtitle: `${input.formation} · ${t.game.challenge[challenge]}`,
       result: {
         record,

@@ -15,6 +15,8 @@ interface Options {
   result?: ExportResult;
   /** Eigene Trikotnummern */
   jerseys?: Jerseys;
+  /** Kapitän (Pokémon-ID) */
+  captain?: number | null;
 }
 
 /** Erzeugt das 1200×1500-PNG einer Aufstellung (optional mit Saisonbilanz). */
@@ -35,6 +37,7 @@ export async function lineupImage(o: Options): Promise<Blob> {
       result={o.result}
       watermark={watermark}
       jerseys={o.jerseys}
+      captain={o.captain}
     />,
   );
 }

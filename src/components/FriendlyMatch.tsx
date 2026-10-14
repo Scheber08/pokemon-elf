@@ -19,6 +19,7 @@ interface StoredLineup {
   ssEnabled?: boolean;
   teamName?: string;
   jerseys?: unknown;
+  captain?: unknown;
 }
 
 /** Seite eines Testspiels samt eigenen Trikotnummern (nur für die Wiedergabe) */
@@ -39,7 +40,8 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
       const slots = s.slots.map((id) => (id != null && byId.has(id) ? id : null));
       if (!fullEleven(slots)) return null;
       const ss = s.ssEnabled && s.ss != null && byId.has(s.ss) ? s.ss : null;
-      return { name: s.teamName?.trim() || fallback, formation: s.formation, slots, ss, jerseys: cleanJerseys(s.jerseys) };
+      const captain = typeof s.captain === 'number' && slots.includes(s.captain) ? s.captain : null;
+      return { name: s.teamName?.trim() || fallback, formation: s.formation, slots, ss, captain, jerseys: cleanJerseys(s.jerseys) };
     };
     const current = sideOf(load<StoredLineup | null>(STORAGE_KEYS.lineup, null), tr.friendlyYou);
     const saved = loadSavedTeams<StoredLineup>().map((x) => sideOf(x.state, x.name));

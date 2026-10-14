@@ -239,7 +239,7 @@ export function EntryDialog({ source, onClose, onReloadBoard }: Props) {
         {content}
         {friendly && detail && (
           <FriendlyMatch
-            opponent={{ name: title, formation: detail.formation, slots: detail.slots, ss: detail.ssEnabled ? detail.ss : null }}
+            opponent={{ name: title, formation: detail.formation, slots: detail.slots, ss: detail.ssEnabled ? detail.ss : null, captain: detail.captain ?? null }}
           />
         )}
       </div>

@@ -16,10 +16,11 @@ import { remapFormation } from '../lib/formation';
 import { shuffle } from '../lib/rng';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { cleanJerseys, type Jerseys } from '../lib/jerseys';
+import { CaptainPicker } from '../components/CaptainPicker';
 import { JerseyEditor } from '../components/JerseyEditor';
 import { SPRITE_STYLE_LABEL } from '../lib/sprites';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
-import { decodeJerseys, decodeLineup, JERSEY_PARAM, shareUrl, URL_PARAM } from '../lib/urlState';
+import { CAPTAIN_PARAM, decodeCaptain, decodeJerseys, decodeLineup, JERSEY_PARAM, shareUrl, URL_PARAM } from '../lib/urlState';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import { useToast } from '../state/Toast';
@@ -39,6 +40,8 @@ interface BuilderState {
   teamName: string;
   /** Eigene Trikotnummern (Pokémon-ID → Nummer) */
   jerseys: Jerseys;
+  /** Kapitän (Pokémon-ID aus der Elf) – null = keiner */
+  captain: number | null;
 }
 
 /** So viele Schritte lassen sich rückgängig machen */
@@ -63,6 +66,7 @@ const DEFAULT_STATE: BuilderState = {
   ssEnabled: false,
   teamName: '',
   jerseys: {},
+  captain: null,
 };
 
 function normalize(s: Partial<BuilderState>): BuilderState {
@@ -73,6 +77,7 @@ function normalize(s: Partial<BuilderState>): BuilderState {
   if (!MEGA_OPTIONS.includes(merged.megas)) merged.megas = DEFAULT_STATE.megas;
   merged.forms = merged.forms !== false;
   merged.jerseys = cleanJerseys(merged.jerseys);
+  merged.captain = typeof merged.captain === 'number' && merged.slots.includes(merged.captain) ? merged.captain : null;
   return merged;
 }
 
@@ -110,6 +115,7 @@ export function Builder() {
         normalize({
           ...shared,
           jerseys: decodeJerseys(params.get(JERSEY_PARAM) ?? '', shared.slots, shared.ssEnabled ? shared.ss : null),
+          captain: decodeCaptain(params.get(CAPTAIN_PARAM), shared.slots),
           forms: s.forms || mons.some((p) => p.form && !isMega(p)),
           megas: megas > (megaMax(s.megas) ?? Infinity) ? (megas <= 3 ? megas : MEGAS_UNLIMITED) : s.megas,
         }),
@@ -253,6 +259,7 @@ export function Builder() {
         teamName: state.teamName,
         subtitle: `${state.formation} · ${state.region ? t.game.region[state.region] : t.common.allRegions}`,
         jerseys: state.jerseys,
+        captain,
       });
       downloadBlob(blob, `${slugify(state.teamName || 'pokemon-elf')}.png`);
       toast(t.builder.imageSaved);
@@ -265,9 +272,12 @@ export function Builder() {
   };
 
   const copyLink = async () => {
-    const url = shareUrl({ ...state, sprite, ss: state.ssEnabled ? state.ss : null });
+    const url = shareUrl({ ...state, sprite, ss: state.ssEnabled ? state.ss : null, captain });
     toast((await copyText(url)) ? t.common.linkCopied : t.common.copyFailed);
   };
+
+  // Kapitän nur, solange er auf dem Feld steht (nach Tauschen/Entfernen sonst keiner)
+  const captain = state.captain != null && state.slots.includes(state.captain) ? state.captain : null;
 
   const description = t.builder.description(regionPhrase(state.region, t), state.legends);
   const pickingPos: PosCode | null =
@@ -290,6 +300,7 @@ export function Builder() {
           onSwap={swap}
           ariaLabel={t.builder.pitchAria(state.formation)}
           jerseys={state.jerseys}
+          captain={captain}
         />
         <div className="actionbar" role="toolbar" aria-label={t.builder.actions}>
           <button type="button" className="btn btn--primary" onClick={saveImage} disabled={busy}>
@@ -335,6 +346,15 @@ export function Builder() {
           sprite={sprite}
           onRowClick={setPicking}
         />
+
+        <section className="card">
+          <CaptainPicker
+            formation={state.formation}
+            slots={state.slots}
+            captain={captain}
+            onChange={(c) => change((s) => ({ ...s, captain: c }))}
+          />
+        </section>
 
         <JerseyEditor
           formation={state.formation}

@@ -8,7 +8,7 @@
  * Byte 27…    Teamname (UTF-8, alle restlichen Bytes; der Builder schreibt max. 40 Bytes)
  *
  * Eigene Trikotnummern stehen in einem zweiten Parameter (`nr`, 12 Bytes je Platz, 0 = Vorgabe) –
- * so bleiben alte Links und der Code selbst unverändert.
+ * so bleiben alte Links und der Code selbst unverändert. Ebenso der Kapitän (`k`, Platz 0–10).
  */
 import { FORMATION_IDS } from '../config/formations';
 import { cleanJerseys, isJerseyNumber, type Jerseys } from './jerseys';
@@ -16,6 +16,7 @@ import type { FormationId, RegionFilter, Slots, SpriteStyle } from '../types';
 
 export const URL_PARAM = 'elf';
 export const JERSEY_PARAM = 'nr';
+export const CAPTAIN_PARAM = 'k';
 const VERSION = 1;
 const SPRITE_ORDER: SpriteStyle[] = ['pixel', 'retro', 'artwork'];
 const MAX_NAME_BYTES = 40;
@@ -31,6 +32,8 @@ export interface SharedLineup {
   teamName: string;
   /** Eigene Trikotnummern (Pokémon-ID → Nummer) – nur im Parameter `nr` */
   jerseys?: Jerseys;
+  /** Kapitän (Pokémon-ID aus der Elf) – nur im Parameter `k` (als Platz) */
+  captain?: number | null;
 }
 
 function toBase64Url(bytes: Uint8Array): string {
@@ -143,6 +146,12 @@ export function decodeJerseys(str: string, slots: Slots, ss: number | null): Jer
   }
 }
 
+/** Kapitän aus dem Parameter `k` (Platz 0–10) – null, wenn er fehlt oder der Platz leer ist. */
+export function decodeCaptain(raw: string | null, slots: Slots): number | null {
+  if (raw == null || !/^\d{1,2}$/.test(raw)) return null;
+  return slots[Number(raw)] ?? null;
+}
+
 export function shareUrl(state: SharedLineup): string {
   const url = new URL(window.location.href);
   url.pathname = import.meta.env.BASE_URL || '/';
@@ -151,5 +160,7 @@ export function shareUrl(state: SharedLineup): string {
   url.searchParams.set(URL_PARAM, encodeLineup(state));
   const nr = encodeJerseys(state.slots, state.ss, state.jerseys);
   if (nr) url.searchParams.set(JERSEY_PARAM, nr);
+  const k = state.captain != null ? state.slots.indexOf(state.captain) : -1;
+  if (k >= 0) url.searchParams.set(CAPTAIN_PARAM, String(k));
   return url.toString();
 }

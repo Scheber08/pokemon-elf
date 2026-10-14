@@ -1443,7 +1443,7 @@ export function autoPickChoice(
 export function leagueTeams(state: Pick<DraftState, 'teams' | 'settings'>, byId: Map<number, Pokemon>, scale: Scale): LeagueTeam[] {
   return state.teams.map((t) => {
     const players = t.slots.map((id) => (id != null ? byId.get(id) ?? null : null));
-    const ev = evaluateTeam(t.formation, players, scale);
+    const ev = evaluateTeam(t.formation, players, scale, t.captain);
     const defs = FORMATIONS[t.formation].slots;
     const ss = t.ss != null ? byId.get(t.ss) : undefined;
     return {

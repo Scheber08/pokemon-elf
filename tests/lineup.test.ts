@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FORMATION_IDS, FORMATIONS } from '../src/config/formations';
 import { remapFormation } from '../src/lib/formation';
-import { decodeJerseys, decodeLineup, encodeJerseys, encodeLineup, type SharedLineup } from '../src/lib/urlState';
+import { decodeCaptain, decodeJerseys, decodeLineup, encodeJerseys, encodeLineup, type SharedLineup } from '../src/lib/urlState';
 
 const DEFAULT: SharedLineup = {
   formation: '4-2-3-1',
@@ -15,6 +15,14 @@ const DEFAULT: SharedLineup = {
 };
 
 describe('URL-Kodierung', () => {
+  it('Kapitän im Parameter k: Platz der Elf, sonst keiner', () => {
+    expect(decodeCaptain('0', DEFAULT.slots)).toBe(143);
+    expect(decodeCaptain('10', DEFAULT.slots)).toBe(135);
+    expect(decodeCaptain('11', DEFAULT.slots)).toBeNull();
+    expect(decodeCaptain('x', DEFAULT.slots)).toBeNull();
+    expect(decodeCaptain(null, DEFAULT.slots)).toBeNull();
+  });
+
   it('Trikotnummern im eigenen Parameter: nur eigene Nummern, Roundtrip über die Plätze', () => {
     expect(encodeJerseys(DEFAULT.slots, DEFAULT.ss, {})).toBeNull();
     expect(encodeJerseys(DEFAULT.slots, DEFAULT.ss, { '999': 7 })).toBeNull();

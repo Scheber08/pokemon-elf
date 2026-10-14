@@ -165,6 +165,7 @@ export function SavedTeams<T extends Playable>({ current, onLoad }: Props<T>) {
                 slots: opp.state.slots,
                 ss: opp.state.ssEnabled ? (opp.state.ss ?? null) : null,
                 jerseys: cleanJerseys((opp.state as { jerseys?: unknown }).jerseys),
+                captain: typeof (opp.state as { captain?: unknown }).captain === 'number' ? ((opp.state as { captain?: number }).captain ?? null) : null,
               }}
             />
           </Suspense>

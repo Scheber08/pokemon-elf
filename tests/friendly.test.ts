@@ -45,4 +45,12 @@ describe('Testspiel', () => {
     expect(fullEleven([...strong.slots.slice(0, 10), null])).toBe(false);
     expect(fullEleven(strong.slots.slice(0, 10))).toBe(false);
   });
+
+  it('Kapitän verändert das Rating der eigenen Elf; einer außerhalb der Elf zählt nicht', () => {
+    const base = friendlyMatch(strong, weak, byId, scale, 42).ratings[0];
+    const ratings = strong.slots.map((id) => friendlyMatch({ ...strong, captain: id }, weak, byId, scale, 42).ratings[0]);
+    expect(Math.max(...ratings)).toBeGreaterThan(base);
+    expect(Math.min(...ratings)).toBeLessThan(base);
+    expect(friendlyMatch({ ...strong, captain: 999 }, weak, byId, scale, 42).ratings[0]).toBe(base);
+  });
 });

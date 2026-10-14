@@ -16,6 +16,8 @@ export interface FriendlySide {
   slots: (number | null)[];
   /** Standardschütze (null = keiner) */
   ss: number | null;
+  /** Kapitän (Pokémon-ID aus der Elf) – zählt doppelt */
+  captain?: number | null;
 }
 
 export interface FriendlyResult {
@@ -35,6 +37,7 @@ const asTeam = (s: FriendlySide, id: string): DraftTeam => ({
   online: true,
   slots: s.slots,
   ss: s.ss,
+  ...(s.captain != null && s.slots.includes(s.captain) ? { captain: s.captain } : {}),
 });
 
 export function friendlyMatch(own: FriendlySide, opp: FriendlySide, byId: Map<number, Pokemon>, scale: Scale, seed: number): FriendlyResult {
