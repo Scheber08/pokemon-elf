@@ -54,6 +54,9 @@ const builder = {
     emptySlot: 'Leerer Slot',
     onField: (pos: string) => `auf dem Feld: ${pos}`,
     megaLimit: (max: number) => (max === 1 ? 'Limit: ein Mega' : `Limit: ${max} Megas`),
+    sort: 'Sortierung',
+    sortDex: 'Nummer',
+    sortFit: 'Beste für die Position',
   },
   filter: {
     searchLabel: 'Pokémon suchen',

@@ -57,6 +57,9 @@ const builder: Messages['builder'] = {
     emptySlot: 'Empty slot',
     onField: (pos) => `on the pitch: ${pos}`,
     megaLimit: (max) => (max === 1 ? 'Limit: one Mega' : `Limit: ${max} Megas`),
+    sort: 'Sort by',
+    sortDex: 'Number',
+    sortFit: 'Best for the position',
   },
   filter: {
     searchLabel: 'Search Pokémon',
