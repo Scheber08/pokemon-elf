@@ -11,8 +11,10 @@ interface Props {
   pokemonName: (id: number) => string;
 }
 
-/** Spielminuten pro Sekunde Wiedergabe (90 Minuten ≈ 45 s) */
+/** Spielminuten pro Sekunde Wiedergabe bei 1× (90 Minuten ≈ 45 s) */
 const SPEED = 2;
+/** Wählbare Tempi (Knopf schaltet weiter) */
+const RATES = [1, 2, 4] as const;
 
 /** 2D-Ansicht von oben: das Spiel als Animation – Formationen, Ballwege, Schüsse und die echten Tore. */
 export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
@@ -22,6 +24,7 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
   const reduced = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const [time, setTime] = useState(0);
   const [playing, setPlaying] = useState(!reduced);
+  const [rate, setRate] = useState<(typeof RATES)[number]>(1);
   const last = useRef<number | null>(null);
   // Sprites, die nicht laden (z. B. offline) – dann bleibt der Punkt allein
   const [broken, setBroken] = useState<ReadonlySet<number>>(() => new Set());
@@ -36,7 +39,7 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
       const dt = last.current == null ? 0 : (now - last.current) / 1000;
       last.current = now;
       setTime((x) => {
-        const next = Math.min(replay.end, x + dt * SPEED);
+        const next = Math.min(replay.end, x + dt * SPEED * rate);
         if (next >= replay.end) setPlaying(false);
         return next;
       });
@@ -44,7 +47,7 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [playing, replay.end]);
+  }, [playing, replay.end, rate]);
 
   const ball = ballAt(replay.keys, time);
   const goals = replay.events.filter((e) => e.kind === 'goal' && e.t <= time);
@@ -139,6 +142,15 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
             setTime(Number(e.target.value));
           }}
         />
+        <button
+          type="button"
+          className="btn btn--small btn--ghost match-pitch__rate"
+          aria-label={tx.speed(rate)}
+          title={tx.speed(rate)}
+          onClick={() => setRate((r) => RATES[(RATES.indexOf(r) + 1) % RATES.length])}
+        >
+          {rate}×
+        </button>
       </div>
     </div>
   );

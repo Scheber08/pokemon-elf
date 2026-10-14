@@ -434,6 +434,13 @@ describe('Saisonbilanz und Ticker', () => {
     await act(async () => (buttons()[0] as unknown as { click(): void }).click());
     await settle();
     expect(allText(document.body as never)).toContain('Spielbericht');
+    // 2D-Ansicht: Tempo schaltet 1× → 2× → 4× → 1×
+    const rate = () => document.body.querySelector('.match-pitch__rate') as unknown as { click(): void; textContent: string };
+    expect(rate().textContent).toBe('1×');
+    for (const next of ['2×', '4×', '1×']) {
+      await act(async () => rate().click());
+      expect(rate().textContent).toBe(next);
+    }
     // Dialog zu, Wiedergabe ausschalten
     const close = document.body.querySelector('.modal .icon-btn') as unknown as { click(): void };
     await act(async () => close.click());

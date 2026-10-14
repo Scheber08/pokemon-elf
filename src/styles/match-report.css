@@ -176,6 +176,10 @@
   gap: 10px;
   margin-top: 6px;
 }
+.match-pitch__rate {
+  min-width: 3.2em;
+  font-variant-numeric: tabular-nums;
+}
 .match-pitch__slider {
   flex: 1;
   accent-color: var(--yellow);
