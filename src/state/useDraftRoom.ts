@@ -241,6 +241,8 @@ export interface FeedItem {
   auto: boolean;
   /** Wurf, unter dem gewählt wurde (Zufallsmodus) – Regionsname und Typ in der Sprache von t */
   roll?: { region: string; type: TypeKey };
+  /** Shiny-Pick */
+  shiny?: boolean;
 }
 
 /**
@@ -268,6 +270,7 @@ export function pickFeed(s: DraftSnapshot, byId: Map<number, Pokemon>, limit = 8
         auto: p.auto,
       };
       if (p.roll) item.roll = { region: t.game.region[p.roll.gen] ?? '?', type: p.roll.type };
+      if (p.shiny) item.shiny = true;
       return item;
     });
 }

@@ -158,7 +158,11 @@ export function DraftPickFeed({ items, you }: { items: FeedItem[]; you: string |
           <li key={f.key} className={`${i === 0 ? 'is-latest' : ''} ${f.teamId === you ? 'is-mine' : ''}`}>
             <span className="draft-feed__no">#{f.no}</span>
             <span className="draft-feed__text">
-              <strong>{f.pokemon}</strong> → {f.team}
+              <strong>
+                {f.shiny && <span title={t.shiny.title}>✨ </span>}
+                {f.pokemon}
+              </strong>{' '}
+              → {f.team}
               {f.auto && <span className="draft-feed__auto">{tx.auto}</span>}
             </span>
             {f.roll && (

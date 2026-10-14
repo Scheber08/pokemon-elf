@@ -38,6 +38,7 @@ import { hashSeed, shuffle } from './rng';
 import { CUP_SIZE, playTie, type CupRound, type CupStage, type CupTie } from './cup';
 import { buildTable, DRAFT_MODEL, nextForm, playMatch, roundRobin, type LeagueResult, type LeagueTeam, type Match, type SquadPlayer } from './season';
 import { captainWeights, teamScoreFromFits } from './teamScore';
+import { SHINY_FIT_BONUS, shinyBonus } from './shiny';
 
 /** Fit-Punkte je Formstufe */
 export const FORM_FIT = 5;
@@ -232,14 +233,16 @@ export function lineupScore(
   formOf: (id: number) => number,
   /** Kapitän (Pokémon-ID) – zählt doppelt, wenn er in der Aufstellung steht */
   captain?: number | null,
+  /** Shinys der Liga – bessere Passung und Team-Bonus */
+  shinies?: ReadonlySet<number>,
 ): number {
-  const fits = squad.map(({ p, pos }) => formFit(p, pos, scale, formOf(p.id)));
+  const fits = squad.map(({ p, pos }) => Math.min(100, formFit(p, pos, scale, formOf(p.id)) + (shinies?.has(p.id) ? SHINY_FIT_BONUS : 0)));
   const weights = captainWeights(
     squad.map(({ pos }) => POSITIONS[pos].teamWeight),
     squad.map(({ p }) => p.id),
     captain,
   );
-  return Math.round(teamScoreFromFits(fits, weights).exact);
+  return Math.min(1000, Math.round(teamScoreFromFits(fits, weights).exact) + shinyBonus(squad.map(({ p }) => p), shinies));
 }
 
 /** Beste Elf aus dem Kader in einer Formation – mit Tagesform. */
@@ -383,6 +386,7 @@ const squadPlayer = (p: Pokemon, pos: PosCode): SquadPlayer => ({ pokemonId: p.i
 
 /** Liga-Teams eines Spieltags: gedraftete nach Aufstellung, Auffüllteams fest – jeweils mit Tagesform. */
 function matchdayTeams(state: DraftState, m: ManagerState, matchday: number, byId: ById, scale: Scale): LeagueTeam[] {
+  const shinySet = state.shinies?.length ? new Set(state.shinies) : undefined;
   const formOf = formsOf(state.seed, matchday);
   const setPiece = upgradeSettings(state.settings).setPiece;
   const drafted = state.teams.map((t): LeagueTeam => {
@@ -395,7 +399,7 @@ function matchdayTeams(state: DraftState, m: ManagerState, matchday: number, byI
     const ss = setPiece && l.ss != null ? byId.get(l.ss) : undefined;
     return {
       name: t.name,
-      rating: lineupScore(squad, scale, formOf, t.captain),
+      rating: lineupScore(squad, scale, formOf, t.captain, shinySet),
       squad: squad.map(({ p, pos }) => squadPlayer(p, pos)),
       setPieceTaker: ss ? squadPlayer(ss, 'SS') : null,
       setPieceFit: ss ? formFit(ss, 'SS', scale, formOf(ss.id)) : undefined,

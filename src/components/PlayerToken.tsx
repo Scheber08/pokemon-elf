@@ -13,10 +13,12 @@ interface Props {
   number?: number | null;
   /** Kapitänsbinde („C“) */
   captain?: boolean;
+  /** Shiny: schillerndes Sprite und ✨ */
+  shiny?: boolean;
 }
 
 /** Spieler auf dem Feld: Sprite über einem Namensschild – oder ein leerer, gestrichelter Slot. */
-export function PlayerToken({ pos, pokemon, sprite, source, number, captain = false }: Props) {
+export function PlayerToken({ pos, pokemon, sprite, source, number, captain = false, shiny = false }: Props) {
   const t = useT();
   if (!pokemon) {
     return (
@@ -30,7 +32,12 @@ export function PlayerToken({ pos, pokemon, sprite, source, number, captain = fa
   return (
     <span className="token">
       <span className="token__sprite-wrap">
-        <Sprite pokemon={pokemon} style={sprite} className="token__sprite" loading="eager" source={source} />
+        <Sprite pokemon={pokemon} style={sprite} className="token__sprite" loading="eager" source={source} shiny={shiny} />
+        {shiny && (
+          <span className="token__shiny" title={t.shiny.title}>
+            ✨<span className="sr-only"> – {t.shiny.title}</span>
+          </span>
+        )}
         {number != null && (
           <span className="token__number" aria-hidden="true">
             {number}

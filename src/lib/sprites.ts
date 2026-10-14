@@ -20,8 +20,14 @@ function pixelUrls(p: SpriteLike): string[] {
  * - Retro: Gen I (Rot/Blau) bzw. Gen II (Kristall), sonst Pixel
  * - Artwork: Official Artwork, sonst Pixel
  */
-export function spriteUrls(p: SpriteLike, style: SpriteStyle): string[] {
+export function spriteUrls(p: SpriteLike, style: SpriteStyle, shiny = false): string[] {
   const urls: string[] = [];
+  // Shiny: schillernde Varianten zuerst (fehlt eine, folgt die normale)
+  if (shiny) {
+    if (style === 'artwork' && p.s & SPRITE_FLAG.ARTWORK) urls.push(`${SPRITE_BASE}other/official-artwork/shiny/${p.id}.png`);
+    if (p.s & SPRITE_FLAG.BW_ANIMATED) urls.push(`${SPRITE_BASE}versions/generation-v/black-white/animated/shiny/${p.id}.gif`);
+    if (p.s & SPRITE_FLAG.DEFAULT) urls.push(`${SPRITE_BASE}shiny/${p.id}.png`);
+  }
   if (style === 'retro') {
     if (p.s & SPRITE_FLAG.GEN1) urls.push(`${SPRITE_BASE}versions/generation-i/red-blue/transparent/${p.id}.png`);
     if (p.s & SPRITE_FLAG.GEN2) urls.push(`${SPRITE_BASE}versions/generation-ii/crystal/transparent/${p.id}.png`);

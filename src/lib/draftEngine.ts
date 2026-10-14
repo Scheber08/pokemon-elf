@@ -63,6 +63,7 @@ import { cleanKit } from './kits';
 import { cleanCheer } from './cheer';
 import { cleanCrest } from './crest';
 import { bestEleven } from './bestEleven';
+import { SHINY_FIT_BONUS, shinyBonus, shinyRoll } from './shiny';
 
 /** Slot-Index des Standardschützen */
 export const DRAFT_SS_SLOT = 11;
@@ -111,6 +112,8 @@ export interface DraftState {
   manager?: ManagerState;
   /** Karriere: nächste Saison mit den Kadern der Vorsaison (ohne Draft) – fehlt sonst */
   career?: DraftCareer;
+  /** Shinys der Liga (Pokémon-IDs, beim Pick ausgelost) – fehlt bei Ligen davor */
+  shinies?: number[];
 }
 
 /** Lesende Sicht – passt auf den Server-Zustand und auf Client-Schnappschüsse. */
@@ -1523,12 +1526,23 @@ export function applyPick(
           : { ...t, slots: t.slots.map((v, i) => (i === slot ? pokemonId : v)) },
   );
   const log: DraftPickLog = { pick: state.pickIndex, teamId, pokemonId, slot, auto, at: now };
+  // Shiny? Aus dem geheimen Liga-Seed – erst beim Pick bekannt
+  const shiny = shinyRoll(leagueSeed(state.seed, 'shiny'), pokemonId);
+  if (shiny) log.shiny = true;
   // Vergeben → von allen Wunschlisten streichen
   const queues = state.queues && withoutQueued(state.queues, pokemonId);
   if (roll) log.roll = { gen: roll.gen, type: roll.type };
   const picks = [...state.picks, log];
   const pickIndex = state.pickIndex + 1;
-  const next: DraftState = { ...state, teams, picks, pickIndex, turnStartedAt: now, ...(queues ? { queues } : {}) };
+  const next: DraftState = {
+    ...state,
+    teams,
+    picks,
+    pickIndex,
+    turnStartedAt: now,
+    ...(queues ? { queues } : {}),
+    ...(shiny ? { shinies: [...(state.shinies ?? []), pokemonId] } : {}),
+  };
   if (pickIndex >= totalPicks(next)) {
     // Manager-Saison: Spieltage im eingestellten Takt, der erste nach höchstens managerLeadMs
     const settings = upgradeSettings(state.settings);
@@ -1605,10 +1619,18 @@ export function autoPickChoice(
 // ---------------------------------------------------------------- Saison & Ausgabe
 
 /** Liga-Teams mit Rating (Team-Score) und Kader für die Saison-Simulation. */
-export function leagueTeams(state: Pick<DraftState, 'teams' | 'settings'>, byId: Map<number, Pokemon>, scale: Scale): LeagueTeam[] {
+export function leagueTeams(
+  state: Pick<DraftState, 'teams' | 'settings'> & { shinies?: readonly number[] },
+  byId: Map<number, Pokemon>,
+  scale: Scale,
+): LeagueTeam[] {
+  const shinies = state.shinies?.length ? new Set(state.shinies) : undefined;
+  const fitBonus = shinies ? (id: number) => (shinies.has(id) ? SHINY_FIT_BONUS : 0) : undefined;
   return state.teams.map((t) => {
     const players = t.slots.map((id) => (id != null ? byId.get(id) ?? null : null));
-    const ev = evaluateTeam(t.formation, players, scale, t.captain);
+    const evBase = evaluateTeam(t.formation, players, scale, t.captain, fitBonus);
+    // Shinys heben das ganze Team (je schwächer das Pokémon, desto mehr)
+    const ev = shinies ? { ...evBase, score: Math.min(1000, evBase.score + shinyBonus(players, shinies)) } : evBase;
     const defs = FORMATIONS[t.formation].slots;
     const ss = t.ss != null ? byId.get(t.ss) : undefined;
     return {
@@ -1791,6 +1813,7 @@ export function snapshotOf(state: DraftState, you: string | null, now: number): 
     ...(state.history?.length ? { history: state.history } : {}),
     ...(state.rematch ? { rematch: state.rematch } : {}),
     ...(state.career ? { career: state.career } : {}),
+    ...(state.shinies?.length ? { shinies: state.shinies } : {}),
     ...(you && state.queues?.[you]?.length ? { queue: state.queues[you] } : {}),
     ...(state.manager ? { manager: managerView(state.manager, state.season, you) } : {}),
   };
@@ -1856,7 +1879,7 @@ export function rematchTemplate(
       ...(career ? carryTeam(t) : makeTeam(t.id, t.name, t.formation, t.cpu)),
       ...(t.cpu ? {} : { offlineSince: now }),
     })),
-    ...(career ? { career } : {}),
+    ...(career ? { career, ...(state.shinies?.length ? { shinies: [...state.shinies] } : {}) } : {}),
     owners: { ...state.owners },
     hostTeamId: state.hostTeamId,
     pickIndex: 0,

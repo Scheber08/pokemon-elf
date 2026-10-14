@@ -11,6 +11,8 @@ export interface SpriteSource {
 }
 
 interface Props {
+  /** Schillernde Variante (Shiny) */
+  shiny?: boolean;
   pokemon: Pokemon;
   style: SpriteStyle;
   className?: string;
@@ -25,9 +27,9 @@ interface Props {
  * Die natürliche Größe landet als --nw/--nh am Element, damit Pixel-Sprites
  * ihre relative Größe behalten (ein Wattzapf bleibt kleiner als ein Wailord).
  */
-export function Sprite({ pokemon, style, className = '', loading = 'lazy', source }: Props) {
+export function Sprite({ pokemon, style, className = '', loading = 'lazy', source, shiny = false }: Props) {
   const t = useT();
-  const urls = useMemo(() => spriteUrls(pokemon, style), [pokemon, style]);
+  const urls = useMemo(() => spriteUrls(pokemon, style, shiny), [pokemon, style, shiny]);
   const [index, setIndex] = useState(0);
   useEffect(() => setIndex(0), [urls]);
 

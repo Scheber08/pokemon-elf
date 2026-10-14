@@ -36,6 +36,7 @@ import { cleanCrest, type Crest as CrestData } from '../lib/crest';
 import { Crest } from '../components/Crest';
 import { CrestEditor } from '../components/CrestEditor';
 import { cpuCaptain } from '../lib/draftEngine';
+import { SHINY_FIT_BONUS, shinyBonus, shinyRoll } from '../lib/shiny';
 
 const ROUNDS = 11;
 
@@ -78,6 +79,10 @@ interface DraftState {
   model?: 'draft';
   /** CPU-Teams mit Kapitän (Ligen ab dessen Einführung – ältere gespeicherte bleiben gleich) */
   cpuCaptains?: true;
+  /** Zufallswert je Draft für die Shiny-Auslosung (fehlt bei älteren Drafts – dort keine Shinys) */
+  shinySalt?: number;
+  /** Shinys dieses Drafts (Pokémon-IDs) */
+  shinies?: number[];
 }
 
 function defaultTeams(n: number): DraftTeam[] {
@@ -167,10 +172,12 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
         i === teamIdx ? { ...tm, slots: tm.slots.map((v, j) => (j === slot ? pokemonId : v)) } : tm,
       );
       const pick = s.pick + 1;
+      const shiny = s.shinySalt != null && shinyRoll(s.shinySalt, pokemonId);
       return {
         ...s,
         teams,
         pick,
+        ...(shiny ? { shinies: [...(s.shinies ?? []), pokemonId] } : {}),
         selected: null,
         phase: pick >= s.teams.length * ROUNDS ? 'league' : 'drafting',
         seed: pick >= s.teams.length * ROUNDS ? randomSeed() : s.seed,
@@ -209,6 +216,8 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
       pick: 0,
       selected: null,
       seed: null,
+      shinySalt: randomSeed(),
+      shinies: [],
       teams: s.teams.map((tm) => ({ ...tm, slots: emptySlots(tm.formation) })),
     }));
     setFilters({ query: '', type: null, region: state.region });
@@ -249,11 +258,12 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     const sc = scale('all');
     const leagueTeams: LeagueTeam[] = state.teams.map((tm) => {
       const players = tm.slots.map((id) => (id != null ? byId.get(id) ?? null : null));
-      const ev = evaluateTeam(tm.formation, players, sc, captainOf(tm));
+      const shinies = state.shinies?.length ? new Set(state.shinies) : undefined;
+      const ev = evaluateTeam(tm.formation, players, sc, captainOf(tm), shinies ? (id) => (shinies.has(id) ? SHINY_FIT_BONUS : 0) : undefined);
       const defs = FORMATIONS[tm.formation].slots;
       return {
         name: tm.name,
-        rating: ev.score,
+        rating: Math.min(1000, ev.score + shinyBonus(players, shinies)),
         isUser: !tm.cpu,
         squad: players.flatMap((p, i) => (p ? [{ pokemonId: p.id, pos: defs[i].pos, atk: p.atk, spa: p.spa }] : [])),
       };
@@ -273,7 +283,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
       }
     }
     return { ...result, scorers: [...scorers.values()].sort((a, b) => b.goals - a.goals).slice(0, 10) };
-  }, [state.phase, state.seed, state.model, state.teams, byId, scale]);
+  }, [state.phase, state.seed, state.model, state.teams, state.shinies, state.cpuCaptains, byId, scale]);
 
   // Spielwiedergabe (2D/Bericht) der lokalen Liga – jedes Team mit seiner gedrafteten Elf
   const report = useMatchReport(
@@ -546,6 +556,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 ariaLabel={tx.squadAria(teamName(tm.name))}
                 jerseys={tm.jerseys}
                 captain={captainOf(tm)}
+                shinies={state.shinies}
               />
               {!tm.cpu && (
                 <KitPicker
@@ -680,6 +691,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 sprite={sprite}
                 jerseys={team.jerseys}
                 captain={team.captain ?? null}
+                shinies={state.shinies}
                 slotState={slotState}
                 positionTips
                 onSlotClick={(i) => {

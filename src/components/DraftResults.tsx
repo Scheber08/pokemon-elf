@@ -30,6 +30,8 @@ import { cleanCrest } from '../lib/crest';
 import { Crest } from './Crest';
 
 interface Props {
+  /** Shinys der Liga */
+  shinies?: readonly number[];
   league: LeagueResult;
   /** Draft-Teams in derselben Reihenfolge wie league.teams */
   teams: DraftTeam[];
@@ -56,7 +58,7 @@ const TOP_SCORERS = 10;
  * entschieden wurde. „Ergebnis teilen" (mit Link zur Liga) nutzt das Teilen-Menü oder die
  * Zwischenablage.
  */
-export function DraftResults({ league, teams, ratings, highlight, sprite, code, leagueName, picks = [], transfers = [] }: Props) {
+export function DraftResults({ league, teams, ratings, highlight, sprite, code, leagueName, picks = [], transfers = [], shinies }: Props) {
   const t = useT();
   const tx = t.draft.results;
   const c = t.draft.col;
@@ -594,6 +596,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                   ariaLabel={tx.lineupAria(nameOf(r.team))}
                   jerseys={team.jerseys}
                   captain={team.captain ?? null}
+                  shinies={shinies}
                 />
               </article>
             );

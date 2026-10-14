@@ -39,6 +39,8 @@ interface Props {
   jerseys?: Jerseys | false;
   /** Kapitän (Pokémon-ID) – bekommt die Binde „C“ */
   captain?: number | null;
+  /** Shinys (Pokémon-IDs) */
+  shinies?: readonly number[];
 }
 
 interface Press {
@@ -76,6 +78,7 @@ export function Pitch({
   className = '',
   jerseys,
   captain = null,
+  shinies,
 }: Props) {
   const { byId } = usePokemonData();
   const t = useT();
@@ -247,7 +250,7 @@ export function Pitch({
       ? t.builder.pitch.filled(t.game.posName[pos], t.game.pokemon(pokemon), !!onSlotClick)
       : t.builder.pitch.empty(t.game.posName[pos], !!onSlotClick);
     const number = pokemon && numbers ? (numbers.get(pokemon.id) ?? null) : null;
-    const content = <PlayerToken key={`${index}-${id ?? 'x'}`} pos={pos} pokemon={pokemon} sprite={sprite} number={number} captain={captain != null && index !== SS_INDEX && id === captain} />;
+    const content = <PlayerToken key={`${index}-${id ?? 'x'}`} pos={pos} pokemon={pokemon} sprite={sprite} number={number} captain={captain != null && index !== SS_INDEX && id === captain} shiny={id != null && !!shinies?.includes(id)} />;
     if (!interactive) {
       return (
         <div

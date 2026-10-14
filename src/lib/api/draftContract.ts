@@ -351,6 +351,8 @@ export interface DraftPickLog {
   at: number;
   /** Wurf, unter dem gewählt wurde (nur im Zufallsmodus und wenn es einen gab) */
   roll?: DraftRoll;
+  /** Der Pick schillert (Shiny, src/lib/shiny.ts) */
+  shiny?: true;
 }
 
 export interface DraftSeason {
@@ -382,6 +384,8 @@ export interface DraftSnapshot {
   phase: DraftPhase;
   /** Karriere-Saison (Manager): Kader aus der Vorsaison, kein Draft – fehlt sonst */
   career?: DraftCareer;
+  /** Shinys der Liga (Pokémon-IDs) – bessere Werte und Team-Bonus; fehlt = keine */
+  shinies?: number[];
   settings: DraftSnapshotSettings;
   /** Teams; ab dem Start in Draft-Reihenfolge (Runde 1) */
   teams: DraftTeam[];

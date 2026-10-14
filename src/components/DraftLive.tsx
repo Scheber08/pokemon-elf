@@ -52,6 +52,7 @@ import { cleanKit } from '../lib/kits';
 import { CrestEditor } from './CrestEditor';
 import { cleanCrest } from '../lib/crest';
 import { rosterOf } from '../lib/draftEngine';
+import { shinyTeamBoost } from '../lib/shiny';
 
 /** Draft-Slot schon besetzt? Feld, Standardschütze oder Bank (Manager-Saison). */
 function slotFilled(team: DraftTeam, i: number): boolean {
@@ -270,6 +271,17 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   const legendLimit = maxLegends != null && poolHasLegends(s.settings) ? maxLegends : null;
   const ultraBeastLimit = maxUltraBeasts != null && ultraBeasts ? maxUltraBeasts : null;
   const megaLimit = maxMegas != null && megas ? maxMegas : null;
+
+  // Eigener Pick schillert: kurz feiern (einmal je Pick)
+  const newestPick = s.picks[s.picks.length - 1];
+  const shinySeen = useRef(s.picks.length);
+  useEffect(() => {
+    if (s.picks.length <= shinySeen.current) return;
+    shinySeen.current = s.picks.length;
+    if (!newestPick?.shiny || newestPick.teamId !== me?.id) return;
+    const mon = byId.get(newestPick.pokemonId);
+    if (mon) setInfo(t.shiny.picked(t.game.pokemon(mon), shinyTeamBoost(mon)));
+  }, [s.picks.length]);
 
   // Vorgemerktes Pokémon ist vergeben → Auswahl aufheben (bei fremdem Pick mit Hinweis)
   useEffect(() => {
@@ -548,6 +560,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                 ariaLabel={t.online.pitchAria(teamLabel(pitchTeam, t), pitchTeam.formation)}
                 jerseys={pitchTeam.jerseys}
                 captain={pitchTeam.captain ?? null}
+                shinies={s.shinies}
               />
               {pitchTeam.bench && (
                 <BenchRow

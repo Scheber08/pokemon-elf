@@ -50,11 +50,15 @@ export function evaluateTeam(
   scale: Scale,
   /** Pokémon-ID des Kapitäns (null/undefined = keiner) */
   captain?: number | null,
+  /** Zusätzliche Passung je Pokémon (z. B. Shinys) – Ergebnis auf 0–100 begrenzt */
+  fitBonus?: (pokemonId: number) => number,
 ): TeamEvaluation {
   const slots = FORMATIONS[formation].slots;
   const fits = slots.map((s, i) => {
     const p = players[i];
-    return p ? positionFit(p, s.pos, scale) : 0;
+    if (!p) return 0;
+    const f = positionFit(p, s.pos, scale);
+    return fitBonus ? Math.min(100, f + fitBonus(p.id)) : f;
   });
   const weights = captainWeights(
     slots.map((s) => POSITIONS[s.pos].teamWeight),

@@ -143,6 +143,7 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
               highlight={highlight}
               sprite={sprite}
               setPiece={s.settings.setPiece}
+              shinies={s.shinies}
             />
           }
         />
@@ -157,6 +158,7 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           leagueName={s.settings.name}
           picks={s.picks}
           transfers={s.manager?.transfers}
+          shinies={s.shinies}
         />
       )}
       {s.manager?.cup && league && (

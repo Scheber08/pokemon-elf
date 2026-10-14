@@ -320,6 +320,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           onChange={(l) => room.setLineup(l)}
           out={m.out ?? {}}
           next={m.played + 1}
+          shinies={s.shinies}
         />
       ) : (
         <p className="notice">{tx.spectator}</p>
@@ -485,6 +486,7 @@ function LineupEditor({
   onChange,
   out,
   next,
+  shinies,
 }: {
   team: DraftTeam;
   lineup: ManagerLineup;
@@ -495,6 +497,8 @@ function LineupEditor({
   out: Record<string, ManagerAbsence>;
   /** Nächster Spieltag */
   next: number;
+  /** Shinys der Liga */
+  shinies?: readonly number[];
 }) {
   const t = useT();
   const tx = t.draft.manager;
@@ -511,14 +515,15 @@ function LineupEditor({
       const p = byId.get(id);
       return p ? [{ p, pos: FORMATIONS[l.formation].slots[i].pos }] : [];
     });
-  const strength = lineupScore(squadOf(lineup), sc, formOf);
+  const shinySet = useMemo(() => (shinies?.length ? new Set(shinies) : undefined), [shinies]);
+  const strength = lineupScore(squadOf(lineup), sc, formOf, team.captain, shinySet);
   const absent = absentAt({ out }, next);
   const outText = (id: number): string | null => {
     const a = absent.has(id) ? out[id] : undefined;
     return a ? (a.kind === 'red' ? tx.outRed(a.until) : tx.outInjury(a.until)) : null;
   };
   const best = bestLineup(team, lineup.formation, byId, sc, form, setPiece, absent);
-  const bestStrength = lineupScore(squadOf(best), sc, formOf);
+  const bestStrength = lineupScore(squadOf(best), sc, formOf, team.captain, shinySet);
 
   const manual = (l: Omit<ManagerLineup, 'auto'>) => {
     setPick(null);
@@ -639,6 +644,7 @@ function LineupEditor({
           ariaLabel={tx.lineupTitle}
           jerseys={team.jerseys}
           captain={team.captain ?? null}
+          shinies={shinies}
         />
         <BenchRow
           bench={bench}

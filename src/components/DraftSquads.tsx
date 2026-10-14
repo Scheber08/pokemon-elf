@@ -4,6 +4,8 @@ import type { SpriteStyle } from '../types';
 import { Pitch } from './Pitch';
 
 interface Props {
+  /** Shinys der Liga */
+  shinies?: readonly number[];
   teams: DraftTeam[];
   /** Team-Score je Team (Reihenfolge wie teams) */
   ratings: number[];
@@ -20,7 +22,7 @@ interface Props {
  * Die fertigen Kader vor dem Anpfiff der gemeinsamen Saison: eigenes Team zuerst, dann nach
  * Team-Score. So bleibt nach dem letzten Pick Zeit, sich das Draft-Ergebnis anzusehen.
  */
-export function DraftSquads({ teams, ratings, names, highlight, sprite, setPiece }: Props) {
+export function DraftSquads({ teams, ratings, names, highlight, sprite, setPiece, shinies }: Props) {
   const t = useT();
   const order = teams
     .map((team, i) => ({ team, i, rating: ratings[i] ?? 0 }))
@@ -52,6 +54,7 @@ export function DraftSquads({ teams, ratings, names, highlight, sprite, setPiece
               ariaLabel={t.draft.local.squadAria(names[i])}
               jerseys={team.jerseys}
               captain={team.captain ?? null}
+              shinies={shinies}
             />
           </article>
         ))}
