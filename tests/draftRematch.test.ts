@@ -102,6 +102,18 @@ describe('Revanche', () => {
     expect(db.query('SELECT code FROM draft_lobbies WHERE code = ?', next)).toHaveLength(1);
   });
 
+  it('Kapitän im Vorlauf nach dem letzten Pick: Saison wird mit ihm neu berechnet und gespeichert', async () => {
+    const { room, host } = await finishedLeague();
+    const before = room.stored!.state;
+    const me = before.teams.find((t) => t.id === host.state!.you)!;
+    const pick = me.slots.find((x) => x != null)!;
+    await room.send(host, { type: 'captain', pokemonId: pick });
+    const after = room.stored!.state;
+    expect(after.teams.find((t) => t.id === me.id)!.captain).toBe(pick);
+    expect(after.league).toBeTruthy();
+    expect(db.query('SELECT * FROM draft_results WHERE code = ?', before.code).length).toBeGreaterThan(0);
+  });
+
   it('Karriere nur nach einer Manager-Saison – nach einer normalen Liga 409', async () => {
     const { code, hostDev } = await finishedLeague();
     const res = await call<ApiErrorBody>('POST', `/api/drafts/${code}/rematch`, { ...hostDev, career: true });

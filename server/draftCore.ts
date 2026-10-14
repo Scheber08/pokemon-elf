@@ -1212,7 +1212,9 @@ export class DraftRoomCore {
     const rates = this.changeRates(now);
     if (rates) rec.rates = rates;
     // Liga gerade fertig geworden: Abschlüsse für die Erfolge speichern (sonst später erneut)
-    const finished = next.phase === 'done' && !!next.league && !!prev && prev.phase !== 'done';
+    // Auch nach einer Neuberechnung (Kapitän im Vorlauf geändert) – Plätze können sich verschoben haben
+    const recomputed = !!prev && prev.phase === 'done' && hosted.phase === 'done' && hosted.league == null && !!next.league;
+    const finished = next.phase === 'done' && !!next.league && !!prev && (prev.phase !== 'done' || recomputed);
     if (finished) rec.resultsAt = now;
     else if (this.rec?.resultsAt != null) rec.resultsAt = this.rec.resultsAt;
     await this.persist(rec);
@@ -1602,7 +1604,7 @@ export class DraftRoomCore {
         return setTeamCrest(state, deviceId, msg.crest);
       case 'captain':
         // Manager-Saison: Überfälliges erst spielen – der Kapitän gilt ab dem nächsten Anpfiff
-        return setTeamCaptain(state.manager ? playDueMatchdays(state, now, list, scale) : state, deviceId, msg.pokemonId);
+        return setTeamCaptain(state.manager ? playDueMatchdays(state, now, list, scale) : state, deviceId, msg.pokemonId, now);
       case 'offer':
         // Tausch sofort (CPU) bzw. als Angebot – Überfälliges erst spielen, wie beim Transfer
         return makeOffer(playDueMatchdays(state, now, list, scale), deviceId, { to: msg.to, give: msg.give, get: msg.get }, list, scale);

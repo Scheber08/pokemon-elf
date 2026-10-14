@@ -9,6 +9,8 @@ const captain: Messages['captain'] = {
   effect: (diff) => `Effect on the team score: ${diff}`,
   managerNote: 'The captain’s fit counts double – on every matchday they are in your lineup. A change applies from the next kickoff.',
   draftNote: 'The captain’s fit counts double. You can only choose them during the draft – after that the season is fixed.',
+  windowTitle: (s) => `Choose your captain – ${s} s to kickoff`,
+  windowNote: 'Their fit counts double. Choose now and the server plays the season with your captain.',
   missing: 'No captain chosen yet – their fit would count double.',
 };
 

@@ -554,6 +554,12 @@ describe('Kapitän im Online-Draft', () => {
     expect(done.phase).toBe('done');
     const doneOwn = done.teams.find((t) => t.id === 'h')!.slots[0]!;
     expect(() => setTeamCaptain(done, 'dev-h', doneOwn)).toThrow(/Ergebnis fest/);
+    // Vorlauf bis zum Anpfiff: noch wählbar, das Ergebnis wird neu berechnet (league fällt weg)
+    const lead = { ...done, league: { teams: [], matches: [], table: [] } };
+    const reopened = setTeamCaptain(lead, 'dev-h', doneOwn, done.season!.startsAt - 1);
+    expect(reopened.teams.find((t) => t.id === 'h')!.captain).toBe(doneOwn);
+    expect(reopened.league).toBeNull();
+    expect(() => setTeamCaptain(lead, 'dev-h', doneOwn, done.season!.startsAt)).toThrow(/Ergebnis fest/);
 
     const season = startManagerSeason(drafted(), ALL, SCALE);
     const bench = season.teams.find((t) => t.id === 'h')!.bench!.find((x) => x != null)!;

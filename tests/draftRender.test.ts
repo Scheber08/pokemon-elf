@@ -798,5 +798,29 @@ describe('ManagerSeason', () => {
     await settle();
     expect(container.querySelector('.manager__rival-out')!.textContent).toContain(ALL.find((p) => p.id === hurt)!.de);
   });
+
+  it('Nach dem letzten Pick: Kapitän bis zum Anpfiff wählbar (mit Countdown), danach nicht mehr', async () => {
+    const { DraftSeasonStage } = await import('../src/components/DraftSeasonStage');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = engine.withLeague(s, ALL, SCALE);
+    const open = { ...s, season: { ...s.season!, startsAt: Date.now() + 20_000 } };
+    const room = fakeRoom(snap(open, 'h'));
+    const a = await render(app(h(DraftSeasonStage, { room })));
+    await settle();
+    const card = a.container.querySelector('.draft-captain-window')!;
+    expect(card.textContent).toMatch(/Kapitän wählen – noch \d+ s bis zum Anpfiff/);
+    const select = card.querySelector('select') as MiniElement;
+    const id = s.teams.find((t) => t.id === 'h')!.slots[4]!;
+    await act(async () => {
+      select.value = String(id);
+      select.dispatchEvent(new MiniEvent('change', { bubbles: true }));
+    });
+    expect(room.setCaptain).toHaveBeenCalledWith(id);
+    const closed = { ...s, season: { ...s.season!, startsAt: Date.now() - 1000 } };
+    const b = await render(app(h(DraftSeasonStage, { room: fakeRoom(snap(closed, 'h')) })));
+    await settle();
+    expect(b.container.querySelector('.draft-captain-window')).toBeNull();
+  });
 });
 

@@ -24,8 +24,9 @@ import { cleanKit } from '../lib/kits';
 import { CrestEditor } from './CrestEditor';
 import { cleanCrest } from '../lib/crest';
 import { rosterOf } from '../lib/draftEngine';
-import { ManagerCupView } from './ManagerSeason';
-import { nextCareer } from '../lib/draftEngine';
+import { ManagerCupView, useServerNow } from './ManagerSeason';
+import { CaptainPicker } from './CaptainPicker';
+import { captainWindowOpen, nextCareer } from '../lib/draftEngine';
 
 /**
  * Nach dem letzten Pick: Das Ergebnis der Saison kommt vom Server (im Schnappschuss
@@ -96,9 +97,24 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
 
   const meIndex = room.me ? s.teams.findIndex((tm) => tm.id === room.me!.id) : -1;
   const highlight = meIndex >= 0 ? meIndex : null;
+  // Nach dem letzten Pick: Kapitän bis zum Anpfiff noch wählbar (Server rechnet neu)
+  const now = useServerNow(room.clockOffset);
+  const captainOpen = room.live && captainWindowOpen(s, now);
 
   return (
     <div className="draft-season">
+      {meIndex >= 0 && captainOpen && (
+        <section className="card draft-captain-window" aria-live="polite">
+          <p className="kicker">⏱ {t.captain.windowTitle(Math.max(0, Math.ceil((season!.startsAt - now) / 1000)))}</p>
+          <CaptainPicker
+            formation={s.teams[meIndex].formation}
+            slots={s.teams[meIndex].slots}
+            captain={s.teams[meIndex].captain ?? null}
+            onChange={(c) => room.setCaptain(c)}
+            hint={t.captain.windowNote}
+          />
+        </section>
+      )}
       {ticker ? (
         <LeagueTicker
           league={league}

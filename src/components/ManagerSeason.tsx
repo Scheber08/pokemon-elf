@@ -50,7 +50,7 @@ function FormMark({ value }: { value: number }) {
 const KICKOFF_REMINDER_MS = 5 * 60_000;
 
 /** Uhrzeit (Serverzeit) im Sekundentakt – für den Countdown bis zum Anpfiff. */
-function useServerNow(clockOffset: number): number {
+export function useServerNow(clockOffset: number): number {
   const [now, setNow] = useState(() => Date.now() + clockOffset);
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now() + clockOffset), 1000);

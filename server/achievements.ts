@@ -194,8 +194,11 @@ export async function saveDraftResults(
     return [
       db
         .prepare(
-          `INSERT OR IGNORE INTO draft_results (code, device_id, format, rank, teams, wins, draws, losses, points, finished_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          // Neu berechnetes Ergebnis (Kapitän im Vorlauf) überschreibt den ersten Stand
+          `INSERT INTO draft_results (code, device_id, format, rank, teams, wins, draws, losses, points, finished_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT (code, device_id) DO UPDATE SET rank = excluded.rank, teams = excluded.teams, wins = excluded.wins,
+             draws = excluded.draws, losses = excluded.losses, points = excluded.points`,
         )
         .bind(state.code, device, format, i + 1, league.teams.length, r.w, r.d, r.l, r.pts, now),
     ];

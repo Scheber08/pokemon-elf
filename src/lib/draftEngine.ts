@@ -780,10 +780,12 @@ export function setTeamKit(state: DraftState, deviceId: string, raw: unknown): D
  * Drafts steht das Ergebnis fest, danach nicht mehr; in der Manager-Saison jeder aus dem Kader
  * (zählt an Spieltagen, an denen er in der Aufstellung steht).
  */
-export function setTeamCaptain(state: DraftState, deviceId: string, pokemonId: number | null): DraftState {
+export function setTeamCaptain(state: DraftState, deviceId: string, pokemonId: number | null, now = Number.POSITIVE_INFINITY): DraftState {
   const teamId = teamOfDevice(state, deviceId) ?? fail('not_joined', 'Du bist in dieser Liga nicht dabei');
   const manager = state.phase === 'season' && !!state.manager;
-  if (state.phase !== 'drafting' && !manager) fail('not_allowed', 'Den Kapitän wählst du im Draft – jetzt steht das Ergebnis fest');
+  // Nach dem letzten Pick bleibt bis zum Anpfiff Zeit (Saison-Vorlauf) – das Ergebnis wird dann neu berechnet
+  const window_ = captainWindowOpen(state, now);
+  if (state.phase !== 'drafting' && !manager && !window_) fail('not_allowed', 'Den Kapitän wählst du im Draft – jetzt steht das Ergebnis fest');
   const team = state.teams.find((t) => t.id === teamId)!;
   const allowed = manager ? rosterOf(team) : team.slots.filter((id): id is number => id != null);
   if (pokemonId != null && !allowed.includes(pokemonId)) fail('not_allowed', 'Der Kapitän muss in deinem Team stehen');
@@ -797,7 +799,14 @@ export function setTeamCaptain(state: DraftState, deviceId: string, pokemonId: n
       }
       return { ...t, captain: pokemonId };
     }),
+    // Ergebnis mit dem neuen Kapitän neu berechnen (gleicher Saison-Seed; withLeague beim Speichern)
+    ...(window_ ? { league: null } : {}),
   };
+}
+
+/** Kapitän nach dem letzten Pick noch wählbar? (Liga/Turnier, bis zum Anpfiff) */
+export function captainWindowOpen(state: Pick<DraftState, 'phase' | 'season' | 'settings'>, now: number): boolean {
+  return state.phase === 'done' && !!state.season && now < state.season.startsAt && upgradeSettings(state.settings).format !== 'manager';
 }
 
 export function updateTeam(
