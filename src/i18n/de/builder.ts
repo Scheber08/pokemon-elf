@@ -25,6 +25,7 @@ const builder = {
     updated: (name: string) => `„${name}" aktualisiert`,
     loaded: (name: string) => `„${name}" geladen`,
     friendly: 'Testspiel',
+    loadingFriendly: 'Testspiel wird geladen …',
     friendlyTitle: (name: string) => `Aktuelle Elf gegen ${name} (Hin- und Rückspiel)`,
   },
   best: 'Beste Elf',

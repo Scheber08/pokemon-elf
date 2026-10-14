@@ -1,9 +1,13 @@
-import { useState } from 'react';
-import { FriendlyMatch } from './FriendlyMatch';
-import type { FormationId } from '../types';
-import { useT } from '../i18n';
-import { load, save, STORAGE_KEYS } from '../lib/storage';
-import { useToast } from '../state/Toast';
+import { lazy, Suspense, useState } from "react";
+import type { FormationId } from "../types";
+import { useT } from "../i18n";
+import { load, save, STORAGE_KEYS } from "../lib/storage";
+import { useToast } from "../state/Toast";
+
+/** Testspiel erst beim Öffnen laden – es zieht die Draft-Engine mit, die der Builder sonst nicht braucht */
+const FriendlyMatch = lazy(() =>
+  import("./FriendlyMatch").then((m) => ({ default: m.FriendlyMatch })),
+);
 
 /** Gespeicherte Elf im Builder (nur dieses Gerät) */
 export interface SavedTeam<T> {
@@ -25,7 +29,12 @@ export function loadSavedTeams<T>(): SavedTeam<T>[] {
   return raw
     .filter(
       (x): x is SavedTeam<T> =>
-        !!x && typeof x === 'object' && typeof x.id === 'string' && typeof x.name === 'string' && typeof x.formation === 'string' && !!x.state,
+        !!x &&
+        typeof x === "object" &&
+        typeof x.id === "string" &&
+        typeof x.name === "string" &&
+        typeof x.formation === "string" &&
+        !!x.state,
     )
     .slice(0, SAVED_TEAMS_MAX);
 }
@@ -34,7 +43,10 @@ export function loadSavedTeams<T>(): SavedTeam<T>[] {
  * Elf speichern: gleicher Name (ohne Groß/klein) ersetzt den Eintrag, neue kommen nach vorn;
  * ist die Liste voll, fällt die älteste weg. Liefert die neue Liste.
  */
-export function withSavedTeam<T>(list: SavedTeam<T>[], entry: SavedTeam<T>): SavedTeam<T>[] {
+export function withSavedTeam<T>(
+  list: SavedTeam<T>[],
+  entry: SavedTeam<T>,
+): SavedTeam<T>[] {
   const key = entry.name.trim().toLowerCase();
   const rest = list.filter((x) => x.name.trim().toLowerCase() !== key);
   return [entry, ...rest].slice(0, SAVED_TEAMS_MAX);
@@ -69,9 +81,19 @@ export function SavedTeams<T extends Playable>({ current, onLoad }: Props<T>) {
 
   const store = () => {
     const name = current.teamName.trim() || tx.unnamed(list.length + 1);
-    const replaced = list.some((x) => x.name.trim().toLowerCase() === name.toLowerCase());
+    const replaced = list.some(
+      (x) => x.name.trim().toLowerCase() === name.toLowerCase(),
+    );
     const now = Date.now();
-    persist(withSavedTeam(list, { id: `${now}`, name, formation: current.formation, at: now, state: current }));
+    persist(
+      withSavedTeam(list, {
+        id: `${now}`,
+        name,
+        formation: current.formation,
+        at: now,
+        state: current,
+      }),
+    );
     toast(replaced ? tx.updated(name) : tx.saved(name));
   };
 
@@ -123,15 +145,19 @@ export function SavedTeams<T extends Playable>({ current, onLoad }: Props<T>) {
         const opp = list.find((x) => x.id === vs);
         if (!opp?.state.slots) return null;
         return (
-          <FriendlyMatch
-            key={opp.id}
-            opponent={{
-              name: opp.name,
-              formation: opp.formation as FormationId,
-              slots: opp.state.slots,
-              ss: opp.state.ssEnabled ? (opp.state.ss ?? null) : null,
-            }}
-          />
+          <Suspense
+            fallback={<p className="muted small">{tx.loadingFriendly}</p>}
+          >
+            <FriendlyMatch
+              key={opp.id}
+              opponent={{
+                name: opp.name,
+                formation: opp.formation as FormationId,
+                slots: opp.state.slots,
+                ss: opp.state.ssEnabled ? (opp.state.ss ?? null) : null,
+              }}
+            />
+          </Suspense>
         );
       })()}
       <button type="button" className="btn btn--small" onClick={store}>

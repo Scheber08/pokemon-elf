@@ -29,6 +29,7 @@ const builder: Messages['builder'] = {
     updated: (name) => `“${name}” updated`,
     loaded: (name) => `“${name}” loaded`,
     friendly: 'Friendly',
+    loadingFriendly: 'Loading friendly …',
     friendlyTitle: (name) => `Current XI against ${name} (home and away)`,
   },
   best: 'Best XI',
