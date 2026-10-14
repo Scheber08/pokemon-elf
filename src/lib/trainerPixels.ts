@@ -261,6 +261,20 @@ function face(c: Canvas, id: string, skin: string) {
       c.rect(19, 13, 1, 2, eye);
       c.dots([[15, 17], [16, 17], [15, 18], [16, 18]], mouth);
       break;
+    case 'sleepy':
+      // Halb geschlossene Augen, kleines „z"
+      c.rect(11, 14, 3, 1, eye);
+      c.rect(18, 14, 3, 1, eye);
+      c.rect(15, 18, 2, 1, mouth);
+      c.dots([[23, 8], [24, 8], [24, 9], [23, 10], [24, 10]], '#c9ced6');
+      break;
+    case 'grin':
+      // Breites Grinsen mit Zähnen
+      c.rect(12, 13, 1, 2, eye);
+      c.rect(19, 13, 1, 2, eye);
+      c.rect(12, 17, 8, 2, mouth);
+      c.rect(13, 17, 6, 1, '#ffffff');
+      break;
     case 'determined':
       c.rect(12, 13, 1, 2, eye);
       c.rect(19, 13, 1, 2, eye);

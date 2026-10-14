@@ -72,7 +72,7 @@ const trainer: Messages['trainer'] = {
     title: 'Title',
   },
   items: {
-    face: { smile: 'Smile', happy: 'Happy', determined: 'Determined', cool: 'Cool', wink: 'Wink', surprised: 'Surprised' },
+    face: { smile: 'Smile', happy: 'Happy', determined: 'Determined', cool: 'Cool', wink: 'Wink', surprised: 'Surprised', sleepy: 'Sleepy', grin: 'Grin' },
     hair: {
       short: 'Short',
       long: 'Long',

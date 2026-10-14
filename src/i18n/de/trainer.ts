@@ -71,7 +71,7 @@ const trainer = {
     title: 'Titel',
   },
   items: {
-    face: { smile: 'Lächeln', happy: 'Fröhlich', determined: 'Entschlossen', cool: 'Lässig', wink: 'Zwinkern', surprised: 'Staunen' },
+    face: { smile: 'Lächeln', happy: 'Fröhlich', determined: 'Entschlossen', cool: 'Lässig', wink: 'Zwinkern', surprised: 'Staunen', sleepy: 'Müde', grin: 'Grinsen' },
     hair: {
       short: 'Kurz',
       long: 'Lang',

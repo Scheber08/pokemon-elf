@@ -69,6 +69,8 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   item('face', 'cool', 100),
   item('face', 'wink', 100),
   item('face', 'surprised', 100),
+  item('face', 'sleepy', 100),
+  item('face', 'grin', 150),
   // Frisur
   item('hair', 'short', 0),
   item('hair', 'long', 0),
