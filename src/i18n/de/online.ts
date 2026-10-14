@@ -106,6 +106,12 @@ const online = {
   shareTitle: 'Pokémon Elf – Fantasy-Draft',
   shareText: (code: string) => `Komm in meine Draft-Liga! Code: ${code}`,
   share: 'Teilen',
+  /** QR-Code des Liga-Links */
+  qrShow: 'QR-Code zeigen',
+  qrHide: 'QR-Code ausblenden',
+  qrAria: 'QR-Code mit dem Link zur Liga',
+  qrLoading: 'QR-Code wird erstellt …',
+  qrFailed: 'QR-Code konnte nicht erstellt werden',
   codeCardHint: 'Freunde öffnen den Link oder geben den Code unter „Mit Code beitreten" ein.',
   playAlong: 'Mitspielen',
   leagueFull: (n: number, max: number) =>

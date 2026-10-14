@@ -380,6 +380,15 @@
   overflow-wrap: anywhere;
   user-select: all;
 }
+.draft-code__qr {
+  flex-basis: 100%;
+}
+.draft-code__qr svg {
+  display: block;
+  width: min(240px, 100%);
+  height: auto;
+  border-radius: 8px;
+}
 .draft-lobby__teams {
   list-style: none;
   padding: 0;

@@ -4,6 +4,7 @@ import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftSettings } from '../lib/api/draftContract';
 import { copyText } from '../lib/exportImage';
+import { qrPath, type QrPath } from '../lib/qr';
 import { usePokemonData } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
 import {
@@ -21,6 +22,48 @@ import { DraftPresets } from './DraftPresets';
 import { DraftSettingsForm, DraftSettingsSummary, DraftTeamFields } from './DraftSettingsForm';
 import { EternalTable } from './EternalTable';
 import '../styles/draft.css';
+
+/** QR-Code des Liga-Links – zum Scannen, wenn alle im selben Raum sitzen. */
+function DraftQr({ link }: { link: string }) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const [qr, setQr] = useState<QrPath | null>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    if (!open || qr) return;
+    let alive = true;
+    qrPath(link).then(
+      (q) => alive && setQr(q),
+      () => alive && setFailed(true),
+    );
+    return () => {
+      alive = false;
+    };
+  }, [open, link, qr]);
+  // Ruhezone: 4 Module rundum (QR-Standard)
+  const q = 4;
+  return (
+    <>
+      <button type="button" className="btn" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        {open ? t.online.qrHide : t.online.qrShow}
+      </button>
+      {open && (
+        <div className="draft-code__qr">
+          {qr ? (
+            <svg viewBox={`${-q} ${-q} ${qr.size + 2 * q} ${qr.size + 2 * q}`} role="img" aria-label={t.online.qrAria} shapeRendering="crispEdges">
+              <rect x={-q} y={-q} width={qr.size + 2 * q} height={qr.size + 2 * q} fill="#fff" />
+              <path d={qr.d} fill="#000" />
+            </svg>
+          ) : (
+            <p className="muted small" role="status">
+              {failed ? t.online.qrFailed : t.online.qrLoading}
+            </p>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
 
 /** Liga-Code groß + Link kopieren / Teilen. */
 function DraftCodeCard({ code }: { code: string }) {
@@ -60,6 +103,7 @@ function DraftCodeCard({ code }: { code: string }) {
             {t.online.share}
           </button>
         )}
+        <DraftQr link={link} />
       </div>
       <p className="muted small draft-code__link">{link}</p>
       <p className="muted small">{t.online.codeCardHint}</p>
