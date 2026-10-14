@@ -495,7 +495,10 @@ describe('Draft-Raum: Manager-Saison', () => {
     expect(end.league!.matches).toHaveLength(153);
     expect(room.alarmAt).toBe(expiresAt(end));
     // Abschluss des menschlichen Teams für die Erfolge gespeichert
-    const rows = db.query<{ device_id: string; format: string; rank: number; teams: number }>('SELECT * FROM draft_results');
+    // Nur die Liga-Zeile – Pokalsieg und Shinys stehen (je nach Seed) in eigenen Zeilen
+    const rows = db.query<{ device_id: string; format: string; rank: number; teams: number }>(
+      "SELECT * FROM draft_results WHERE format = 'manager'",
+    );
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ device_id: dev.deviceId, format: 'manager', teams: 18 });
     expect(end.league!.table.findIndex((r) => r.team === end.teams.findIndex((t) => !t.cpu)) + 1).toBe(rows[0].rank);
