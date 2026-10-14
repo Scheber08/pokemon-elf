@@ -92,11 +92,17 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
   return (
     <div className="match-pitch">
       <div className="match-pitch__board" aria-live="polite">
-        <span className="match-pitch__team">{nameOf(match.home)}</span>
+        <span className="match-pitch__team">
+          <span className="match-pitch__kit is-home" aria-hidden="true" />
+          {nameOf(match.home)}
+        </span>
         <strong className="match-pitch__score">
           {score[0]}:{score[1]}
         </strong>
-        <span className="match-pitch__team match-pitch__team--away">{nameOf(match.away)}</span>
+        <span className="match-pitch__team match-pitch__team--away">
+          {nameOf(match.away)}
+          <span className="match-pitch__kit is-away" aria-hidden="true" />
+        </span>
         <span className="match-pitch__clock">{formatMinute(minute)}</span>
       </div>
       <svg className="match-pitch__field" viewBox={`-3 -1 ${PITCH_W + 6} ${PITCH_H + 2}`} role="img" aria-label={tx.aria}>

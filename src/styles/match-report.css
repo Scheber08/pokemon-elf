@@ -241,3 +241,21 @@
   justify-content: flex-end;
   margin-top: 10px;
 }
+
+/* Trikotfarbe der Teams in der Anzeigetafel (wie die Punkte auf dem Feld) */
+.match-pitch__kit {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-inline: 5px;
+  vertical-align: 0;
+}
+.match-pitch__kit.is-home {
+  background: #ffcb05;
+  box-shadow: inset 0 0 0 1.5px #7a5a00;
+}
+.match-pitch__kit.is-away {
+  background: #e9eef5;
+  box-shadow: inset 0 0 0 1.5px #2f62c9;
+}
