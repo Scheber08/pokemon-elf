@@ -41,6 +41,7 @@ import { normalizeIp } from '../server/auth';
 import { ALL_TIME_SCOPE, deleteStaleTokens, UPSERT_BEST_SQL } from '../server/db';
 import { ORPHAN_GRACE_MS, STALE_TOKEN_MS } from '../server/endpoints';
 import { handleApi, type Env } from '../server/handler';
+import { profilePageMeta, profilePreview } from '../server/preview';
 import { cleanText, MAX_BODY_BYTES, parsePlayerName, parseTeamName } from '../server/validate';
 import { D1Shim } from './d1shim';
 import { ALL } from './helpers';
@@ -1536,6 +1537,13 @@ describe('Spielerprofil (GET /api/entries/:id/player)', () => {
     expect([a.finish.body.entryId, b.finish.body.entryId]).toContain(best340.entryId);
     expect(res.body.recent.map((r) => r.teamName)).toEqual(['Retro Elf', 'Zweite Elf', 'Erste Elf']);
     expect(JSON.stringify(res.body)).not.toContain(dev.deviceId.toLowerCase());
+    // Link-Vorschau des Profils (worker/index.ts): Name, Runs, bester Platz
+    const preview = await profilePreview(db, c.finish.body.entryId, Date.now());
+    expect(preview).toEqual({ player: TEST_PLAYER, runs: 3, best: { challenge: 'c340', place: 1, players: 1 } });
+    const meta = profilePageMeta(c.finish.body.entryId, preview, 'https://elf.example');
+    expect(meta.title).toBe(`Profil von ${TEST_PLAYER} · Pokémon Elf`);
+    expect(meta.description).toContain('3 gewertete Runs · bester Platz: 1 von 1 (34–0 Challenge)');
+    expect(await profilePreview(db, crypto.randomUUID(), Date.now())).toBeNull();
     // Aktueller Allzeit-Platz je Wertung (einziger Spieler → Platz 1 von 1)
     expect(res.body.challenges.map((x) => [x.place, x.players])).toEqual([
       [1, 1],

@@ -175,7 +175,8 @@ Lobby; Taste „/" springt ins Suchfeld. Das Ergebnis zeigt Draft-Noten, das „
 (bester später Pick) und „Deine Duelle" (Bilanz gegen jeden Gegner). Nach der Saison legt
 `POST /api/drafts/:code/rematch` eine **Revanche** an (gleiche Teams und Einstellungen); jede Revanche
 trägt die Ergebnisse ihrer Vorgänger mit – daraus die **ewige Tabelle**. Für `/draft/:code` liefert der
-Worker eigene Open-Graph-Tags (Link-Vorschau mit Liganame, Host und Teams, `server/preview.ts`).
+Worker eigene Open-Graph-Tags (Link-Vorschau mit Liganame, Host und Teams, `server/preview.ts`) – ebenso für
+Spielerprofile `/spieler/:id` (Name, gewertete Runs, bester Allzeit-Platz).
 
 ## Deploy auf Cloudflare
 

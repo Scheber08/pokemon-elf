@@ -1,6 +1,6 @@
 /** Link-Vorschau einer Online-Liga: Pfad → Code, Meta-Angaben je Phase. */
 import { describe, expect, it } from 'vitest';
-import { draftPageCode, draftPageMeta } from '../server/preview';
+import { draftPageCode, draftPageMeta, profilePageId, profilePageMeta } from '../server/preview';
 
 const row = (phase: string, name = 'Pokal') => ({ name, host_name: 'Ash', teams: 3, max_teams: 6, phase });
 
@@ -25,5 +25,26 @@ describe('Liga-Vorschau', () => {
     expect(draftPageMeta('ABC234', row('lobby', ' '), o).title).toBe('Online-Liga ABC234 · Pokémon Elf');
     expect(draftPageMeta('ABC234', null, o).title).toBe('Online-Liga ABC234 · Pokémon Elf');
     expect(draftPageMeta('ABC234', row('closed'), o).description).not.toContain('Ash');
+  });
+});
+
+describe('Profil-Vorschau', () => {
+  const id = '0f8c6a3e-1b2d-4c5e-8f90-123456789abc';
+  it('erkennt nur Profil-Pfade mit gültiger Eintrags-ID', () => {
+    expect(profilePageId(`/spieler/${id}`)).toBe(id);
+    expect(profilePageId(`/spieler/${id}/`)).toBe(id);
+    for (const p of ['/spieler', '/spieler/', '/spieler/abc', `/spieler/${id}/x`, `/api/entries/${id}/player`]) {
+      expect(profilePageId(p), p).toBeNull();
+    }
+  });
+
+  it('Name, Runs und bester Platz – ohne Profil allgemein', () => {
+    const o = 'https://elf.example';
+    const m = profilePageMeta(id, { player: 'Misty', runs: 1, best: null }, o);
+    expect(m.title).toBe('Profil von Misty · Pokémon Elf');
+    expect(m.description.startsWith('1 gewerteter Run. ')).toBe(true);
+    expect(m.url).toBe(`${o}/spieler/${id}`);
+    const g = profilePageMeta(id, null, o);
+    expect(g.title).toBe('Spielerprofil · Pokémon Elf');
   });
 });

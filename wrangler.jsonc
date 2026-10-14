@@ -11,9 +11,9 @@
     "binding": "ASSETS",
     // Deep-Links wie /taeglich liefern index.html (React Router übernimmt)
     "not_found_handling": "single-page-application",
-    // Nur API-Aufrufe und Liga-Seiten (Link-Vorschau, server/preview.ts) wecken den Worker –
-    // alles andere kommt direkt aus dem Cache
-    "run_worker_first": ["/api/*", "/draft/*"]
+    // Nur API-Aufrufe, Liga-Seiten und Spielerprofile (Link-Vorschau, server/preview.ts) wecken
+    // den Worker – alles andere kommt direkt aus dem Cache
+    "run_worker_first": ["/api/*", "/draft/*", "/spieler/*"]
   },
   // Ohne database_id legt Wrangler die D1-Datenbank beim ersten Deploy selbst an.
   // Die Tabellen erstellt der Server beim ersten Aufruf (server/schema.ts).
