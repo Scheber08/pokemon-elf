@@ -304,6 +304,8 @@ export interface ManagerSnapshot {
   claim?: ManagerClaim | null;
   /** Vollzogene Transfers, älteste zuerst (fehlt bei älteren Ständen) */
   transfers?: ManagerTransfer[];
+  /** Gespielte Aufstellungen je Spieltag („1", …) und Team-ID (fehlt bei älteren Ständen) */
+  playedLineups?: Record<string, Record<string, Pick<ManagerLineup, 'formation' | 'slots'>>>;
 }
 
 export interface DraftPickLog {

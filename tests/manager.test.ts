@@ -173,6 +173,9 @@ describe('Saison', () => {
     const after = playMatchday(next, ALL, SCALE);
     expect(after.manager!.lineups.h.slots[0]).toBe(sub);
     expect(after.manager!.lineups.h.auto).toBe(false);
+    // Gespielte Aufstellung des Spieltags bleibt gespeichert (2D-Ansicht)
+    expect(after.manager!.playedLineups!['1'].h.slots[0]).toBe(sub);
+    expect(snapshotOf(after, 'h', 0).manager!.playedLineups!['1'].h.formation).toBe('4-3-3');
     // Andere Formation automatisch
     const auto = setLineup(s, 'dev-h', { formation: '3-5-2' as never, slots: [], ss: null, auto: true }, ALL, SCALE);
     expect(auto.manager!.lineups.h.formation).toBe('3-5-2');

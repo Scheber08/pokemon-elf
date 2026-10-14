@@ -1618,6 +1618,7 @@ function managerView(m: ManagerState, season: DraftSeason | null, you: string | 
     // Transfer-Wünsche sind privat: nur der eigene
     ...(you ? { claim: m.claims?.[you] ?? null } : {}),
     transfers: m.transfers ?? [],
+    ...(m.playedLineups ? { playedLineups: m.playedLineups } : {}),
   };
 }
 

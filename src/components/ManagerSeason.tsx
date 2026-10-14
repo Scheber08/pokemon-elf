@@ -75,10 +75,11 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
     return p ? t.game.pokemon(p) : `#${id}`;
   }, [byId, t]);
 
-  // 2D-Ansicht mit der aktuellen Aufstellung (gespielte Aufstellungen speichert die Saison nicht)
-  const report = useMatchReport(nameOf, pokemonName, (x) => tx.next(x.round), undefined, (i) => {
+  // 2D-Ansicht mit der Aufstellung dieses Spieltags (ältere Stände: die aktuelle)
+  const report = useMatchReport(nameOf, pokemonName, (x) => tx.next(x.round), undefined, (i, match) => {
     const team = s.teams[i];
-    const l = team ? m?.lineups[team.id] : undefined;
+    if (!team) return null;
+    const l = m?.playedLineups?.[match.round]?.[team.id] ?? m?.lineups[team.id];
     return l ? { formation: l.formation, ids: l.slots } : null;
   });
 

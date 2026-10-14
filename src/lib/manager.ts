@@ -68,7 +68,12 @@ export interface ManagerState {
   claims?: Record<string, ManagerClaim>;
   /** Vollzogene Transfers, älteste zuerst */
   transfers?: ManagerTransfer[];
+  /** Gespielte Aufstellungen je Spieltag („1", „2", …) und Team-ID – für die 2D-Ansicht */
+  playedLineups?: Record<string, Record<string, ManagerPlayedLineup>>;
 }
+
+/** Aufstellung, mit der ein Team an einem Spieltag gespielt hat */
+export type ManagerPlayedLineup = Pick<ManagerLineup, 'formation' | 'slots'>;
 
 /** So viele vollzogene Transfers bleiben gespeichert */
 export const TRANSFERS_KEPT = 60;
@@ -301,7 +306,8 @@ export function playMatchday(before: DraftState, list: Pokemon[], scale: Scale):
   const k = m.played + 1;
   // Zum Anpfiff gilt die Form dieses Spieltags (auto-Aufstellungen sind schon darauf gestellt)
   const lineups = refreshAuto(state, m.lineups, rosterForm(state, k), byId, scale);
-  const cur: ManagerState = { ...m, lineups };
+  const playedNow = Object.fromEntries(Object.entries(lineups).map(([id, l]) => [id, { formation: l.formation, slots: [...l.slots] }]));
+  const cur: ManagerState = { ...m, lineups, playedLineups: { ...(m.playedLineups ?? {}), [k]: playedNow } };
   const teams = matchdayTeams(state, cur, k, byId, scale);
   const form = teamForm(state.seed, teams.length, k);
   const rng = leagueRng(state.seed, 'md', k);

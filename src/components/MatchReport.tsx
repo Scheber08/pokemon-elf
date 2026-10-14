@@ -15,7 +15,7 @@ interface Props {
   /** KO-Turnier: Elfmeterschießen */
   pens?: { home: number; away: number } | null;
   /** Aufstellung eines Teams für die 2D-Ansicht (fehlt: allgemeine Formation) */
-  lineupOf?: (team: number) => ReplayLineup | null;
+  lineupOf?: (team: number, match: Match) => ReplayLineup | null;
   onClose: () => void;
 }
 
@@ -37,7 +37,7 @@ export function MatchReport({ match, nameOf, pokemonName, label, pens, lineupOf,
   const tx = t.draft.report;
   const [view, setView] = useState<'pitch' | 'report'>('pitch');
   const lineups = useMemo<[ReplayLineup | null, ReplayLineup | null]>(
-    () => [lineupOf?.(match.home) ?? null, lineupOf?.(match.away) ?? null],
+    () => [lineupOf?.(match.home, match) ?? null, lineupOf?.(match.away, match) ?? null],
     [match, lineupOf],
   );
   return (
@@ -154,7 +154,7 @@ export function useMatchReport(
   pokemonName: (id: number) => string,
   labelOf?: (m: Match) => string,
   pensOf?: (m: Match) => { home: number; away: number } | null,
-  lineupOf?: (team: number) => ReplayLineup | null,
+  lineupOf?: (team: number, match: Match) => ReplayLineup | null,
 ): { open: (m: Match) => void; element: ReactNode } {
   const [match, setMatch] = useState<Match | null>(null);
   const element = match ? (
