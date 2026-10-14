@@ -613,13 +613,14 @@ export function freeAgents(state: Pick<DraftState, 'settings' | 'teams'>, list: 
   return poolOf(upgradeSettings(state.settings), list).filter((p) => !taken.has(p.id));
 }
 
-/** Kader nach dem Tausch out → in (Platz bleibt: Feld, Standardschütze oder Bank). */
-function swapRoster<T extends Pick<DraftTeam, 'slots' | 'ss' | 'bench'>>(team: T, out: number, inn: number): T {
+/** Kader nach dem Tausch out → in (Platz bleibt: Feld, Standardschütze oder Bank; geht der Kapitän, übernimmt der Neue die Binde). */
+function swapRoster<T extends Pick<DraftTeam, 'slots' | 'ss' | 'bench'> & { captain?: number }>(team: T, out: number, inn: number): T {
   return {
     ...team,
     slots: team.slots.map((id) => (id === out ? inn : id)),
     ss: team.ss === out ? inn : team.ss,
     ...(team.bench ? { bench: team.bench.map((id) => (id === out ? inn : id)) } : {}),
+    ...(team.captain === out ? { captain: inn } : {}),
   };
 }
 

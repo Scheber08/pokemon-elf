@@ -334,6 +334,16 @@ describe('Transfermarkt', () => {
     expect(off.shinies ?? []).not.toContain(inn);
   });
 
+  it('geht der Kapitän, übernimmt der Neuzugang die Binde', () => {
+    const s = season();
+    const host = s.teams.find((t) => t.id === 'h')!;
+    const out = rosterOf(host)[0];
+    const inn = freeAgents(s, ALL).find((p) => !claimError(s, 'h', { in: p.id, out }, ALL))!.id;
+    const st = { ...s, teams: s.teams.map((t) => (t.id === 'h' ? { ...t, captain: out } : t)), manager: { ...s.manager!, claims: { h: { in: inn, out } } } };
+    const after = processClaims(st, ALL, SCALE);
+    expect(after.teams.find((t) => t.id === 'h')!.captain).toBe(inn);
+  });
+
   it('gleicher Wunsch zweier Teams: der Tabellenschlechtere bekommt ihn, der andere verfällt', () => {
     const s = season();
     const inn = freeAgents(s, ALL)[0].id;
