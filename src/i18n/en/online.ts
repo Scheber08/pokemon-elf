@@ -142,6 +142,7 @@ const online: Messages['online'] = {
   careerStart: 'Start season',
   careerSeason: (n, tier) => `Season ${n} · ${tier}`,
   careerTier: { 1: 'Pokémon League 1', 2: 'Pokémon League 2', 3: 'Pokémon League 3' },
+  careerNext: (tier) => `Next season: ${tier}`,
   careerUp: 'Promoted!',
   careerDown: 'Relegated',
   careerNote: 'Every team keeps its squad from last season – there is no draft, the host starts the season directly. Higher leagues have stronger opponents.',

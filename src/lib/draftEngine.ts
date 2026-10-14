@@ -1880,7 +1880,7 @@ function carryTeam(t: DraftTeam): DraftTeam {
  * Nächste Karriere-Saison: nur nach einer Manager-Saison. Liga-Stufe: Steht ein menschliches Team
  * unter den ersten drei, steigt die Liga auf; stehen alle Menschen auf den letzten drei Plätzen, ab.
  */
-export function nextCareer(state: DraftState): DraftCareer {
+export function nextCareer(state: Pick<DraftState, 'settings' | 'league' | 'teams' | 'career'>): DraftCareer {
   if (upgradeSettings(state.settings).format !== 'manager' || !state.league) fail('not_manager', 'Karriere gibt es nur nach einer Manager-Saison');
   const table = state.league!.table;
   const ranks = state.teams.flatMap((t, i) => (t.cpu ? [] : [table.findIndex((r) => r.team === i) + 1])).filter((r) => r > 0);

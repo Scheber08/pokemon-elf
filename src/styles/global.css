@@ -2699,3 +2699,8 @@ button.sheet__row:hover {
     animation: none;
   }
 }
+
+.draft-career__preview {
+  flex-basis: 100%;
+  margin: 0;
+}

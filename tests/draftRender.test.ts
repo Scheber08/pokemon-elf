@@ -768,5 +768,17 @@ describe('ManagerSeason', () => {
     await settle();
     expect(after.container.querySelector('h2[id="manager-last"]')!.textContent).not.toContain('LIVE');
   });
+
+  it('Saisonende: Vorschau der nächsten Karriere-Saison neben dem Knopf', async () => {
+    const { DraftSeasonStage } = await import('../src/components/DraftSeasonStage');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    while (s.phase === 'season') s = playMatchday(s, ALL, SCALE);
+    const { container } = await render(app(h(DraftSeasonStage, { room: fakeRoom(snap(s, 'h')) })));
+    await settle();
+    expect(container.querySelector('.draft-career__preview')!.textContent).toMatch(/Nächste Saison: \d\. Pokémon-Liga/);
+  });
 });
 

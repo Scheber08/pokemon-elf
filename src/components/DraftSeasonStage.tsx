@@ -25,6 +25,7 @@ import { CrestEditor } from './CrestEditor';
 import { cleanCrest } from '../lib/crest';
 import { rosterOf } from '../lib/draftEngine';
 import { ManagerCupView } from './ManagerSeason';
+import { nextCareer } from '../lib/draftEngine';
 
 /**
  * Nach dem letzten Pick: Das Ergebnis der Saison kommt vom Server (im Schnappschuss
@@ -174,6 +175,21 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           room.me &&
           room.live && (
             <>
+              {s.settings.format === 'manager' && league && (() => {
+                // Vorschau: in welcher Liga die nächste Karriere-Saison spielt
+                try {
+                  const next = nextCareer({ settings: s.settings, league, teams: s.teams, career: s.career });
+                  return (
+                    <p className="draft-career__preview">
+                      {t.online.careerNext(t.online.careerTier[next.tier])}
+                      {next.move === 'up' && <strong> ⬆ {t.online.careerUp}</strong>}
+                      {next.move === 'down' && <strong> ⬇ {t.online.careerDown}</strong>}
+                    </p>
+                  );
+                } catch {
+                  return null;
+                }
+              })()}
               {s.settings.format === 'manager' && (
                 <button
                   type="button"
