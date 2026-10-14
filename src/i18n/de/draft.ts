@@ -564,6 +564,8 @@ const draft = {
     offerOut: (team: string, give: string, get: string) => `Dein Angebot an ${team}: ${give} für ${get}`,
     tradeDone: (out: string, team: string, inn: string) => `Getauscht: ${out} an ${team}, dafür ${inn}`,
     offerCpuExpires: 'gilt bis zum Anpfiff',
+    offerAccepted: (team: string, give: string, get: string) => `${team} hat angenommen: ${get} kommt, ${give} geht.`,
+    offerDeclined: (team: string, give: string, get: string) => `Dein Angebot an ${team} (${give} für ${get}) ist vom Tisch – abgelehnt oder hinfällig.`,
     effect: (d: number) =>
       `Deine beste Elf: ${d > 0.05 ? '+' : d < -0.05 ? '−' : '±'}${Math.abs(d).toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}`,
     effectShort: (d: number) =>

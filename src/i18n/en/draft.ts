@@ -521,6 +521,8 @@ const draft: Messages['draft'] = {
     offerOut: (team, give, get) => `Your offer to ${team}: ${give} for ${get}`,
     tradeDone: (out, team, inn) => `Traded: ${out} to ${team} for ${inn}`,
     offerCpuExpires: 'valid until kick-off',
+    offerAccepted: (team, give, get) => `${team} accepted: ${get} joins, ${give} leaves.`,
+    offerDeclined: (team, give, get) => `Your offer to ${team} (${give} for ${get}) is off the table – declined or no longer possible.`,
     effect: (d) =>
       `Your best eleven: ${d > 0.05 ? '+' : d < -0.05 ? '−' : '±'}${Math.abs(d).toLocaleString('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}`,
     effectShort: (d) =>

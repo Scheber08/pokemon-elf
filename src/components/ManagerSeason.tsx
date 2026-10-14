@@ -134,6 +134,26 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
     );
   }, [incomingIds.join(',')]);
 
+  // Eigenes Angebot beantwortet (Tab im Hintergrund): angenommen, wenn der Tausch im Protokoll steht, sonst abgelehnt
+  const outgoing = (m?.offers ?? []).filter((o) => o.from === myId);
+  const prevOutgoing = useRef<ManagerOffer[] | null>(null);
+  useEffect(() => {
+    const before = prevOutgoing.current;
+    prevOutgoing.current = outgoing;
+    if (!before || !notify || readOnly) return;
+    for (const o of before) {
+      if (outgoing.some((x) => x.id === o.id)) continue;
+      const accepted = (m?.transfers ?? []).some((x) => x.teamId === o.from && x.with === o.to && x.out === o.give && x.in === o.get);
+      const to = s.teams.find((tm) => tm.id === o.to);
+      const p = (id: number) => (byId.get(id) ? t.game.pokemon(byId.get(id)!) : `#${id}`);
+      showNotify(
+        t.draft.manager.notifyOfferHeading(s.settings.name || t.online.leagueFallback(s.code)),
+        (accepted ? t.draft.manager.offerAccepted : t.draft.manager.offerDeclined)(to ? teamLabel(to, t) : '?', p(o.give), p(o.get)),
+        `manager-offer-${s.code}`,
+      );
+    }
+  }, [outgoing.map((o) => o.id).join(',')]);
+
   const report = useMatchReport(nameOf, pokemonName, (x) => tx.next(x.round), undefined, (i, match) => {
     const team = s.teams[i];
     if (!team) return null;
