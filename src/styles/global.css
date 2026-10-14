@@ -612,6 +612,9 @@ select {
 .pos-badge--ss {
   background: #6b4fd6;
 }
+.pos-badge--bench {
+  background: #5b6475;
+}
 
 /* ============================================================
    Ladezustand & Toasts

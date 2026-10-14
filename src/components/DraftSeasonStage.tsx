@@ -52,7 +52,8 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
   const matchdays = useMemo(() => league?.matches.reduce((max, m) => Math.max(max, m.round), 0) ?? 0, [league]);
   const endsAt = season ? season.startsAt + matchdays * season.stepMs : 0;
   // Einmal beim Öffnen entscheiden; danach beendet der Ticker selbst (onDone)
-  const [ticker, setTicker] = useState(() => !!season && Date.now() + room.clockOffset < endsAt);
+  // Manager-Saison: Die Spieltage liefen schon einzeln – gleich das Ergebnis
+  const [ticker, setTicker] = useState(() => !!season && s.settings.format !== 'manager' && Date.now() + room.clockOffset < endsAt);
   // Ewige Tabelle: frühere Ligen der Gruppe plus diese
   const entries = useMemo(() => groupEntries(s), [s.history, s.league, s.code]);
   const navigate = useNavigate();

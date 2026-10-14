@@ -188,6 +188,7 @@ function fakeRoom(s: DraftSnapshot, over: Partial<DraftRoom> = {}): DraftRoom {
     autoPick: vi.fn(() => true),
     reroll: vi.fn(() => true),
     setQueue: vi.fn(() => true),
+    setLineup: vi.fn(() => true),
     react: vi.fn(() => true),
     reactions: [],
     reconnect: vi.fn(),

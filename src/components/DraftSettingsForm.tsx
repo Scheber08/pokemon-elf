@@ -5,6 +5,8 @@ import { useT, type Messages } from '../i18n';
 import {
   DRAFT_ALL_GENS,
   DRAFT_LIMITS,
+  type BenchSize,
+  type MatchdayMinutes,
   type DraftFormat,
   type DraftRollMode,
   type DraftSettings,
@@ -510,9 +512,49 @@ export function DraftSettingsForm({ value, onChange, list, teamsJoined = 0, disa
           options={[
             { value: 'league', label: tx.formatLeague },
             { value: 'cup', label: tx.formatCup },
+            {
+              value: 'manager',
+              label: tx.formatManager,
+              disabled: blocked({ format: 'manager' }),
+              title: blocked({ format: 'manager' }) ? tooSmall : undefined,
+            },
           ]}
-          note={value.format === 'cup' ? tx.formatCupNote(CUP_SIZE) : tx.formatLeagueNote(DRAFT_LIMITS.leagueSize)}
+          note={
+            value.format === 'cup'
+              ? tx.formatCupNote(CUP_SIZE)
+              : value.format === 'manager'
+                ? tx.formatManagerNote(DRAFT_LIMITS.leagueSize)
+                : tx.formatLeagueNote(DRAFT_LIMITS.leagueSize)
+          }
         />
+        {value.format === 'manager' && (
+          <>
+            <DraftChoice<BenchSize>
+              label={tx.bench}
+              value={value.bench}
+              disabled={disabled}
+              busy={busy}
+              onChange={(bench) => change({ bench })}
+              options={DRAFT_LIMITS.benchSizes.map((n) => ({
+                value: n,
+                label: String(n),
+                disabled: blocked({ bench: n }),
+                title: blocked({ bench: n }) ? tooSmall : undefined,
+              }))}
+              note={tx.benchNote(value.bench)}
+            />
+            <DraftChoice<MatchdayMinutes>
+              label={tx.matchdayEvery}
+              wrap
+              value={value.matchdayMinutes}
+              disabled={disabled}
+              busy={busy}
+              onChange={(matchdayMinutes) => change({ matchdayMinutes })}
+              options={DRAFT_LIMITS.matchdayMinutes.map((m) => ({ value: m, label: tx.every(m) }))}
+              note={tx.matchdayNote((DRAFT_LIMITS.leagueSize - 1) * value.matchdayMinutes)}
+            />
+          </>
+        )}
         {value.format === 'cup' && (
           <DraftChoice
             label={tx.cupGroups}
@@ -668,7 +710,13 @@ export function DraftSettingsSummary({ settings }: { settings: DraftSettings }) 
     settings.forms ? tx.withForms : null,
     poolHasMegas(settings) ? (settings.maxMegas != null ? tx.maxMegas(settings.maxMegas) : tx.withMegas) : null,
     settings.setPiece ? tx.withSetPiece : tx.withoutSetPiece,
-    settings.format === 'cup' ? (settings.cupGroups ? tx.cupWithGroups(CUP_SIZE) : tx.cup(CUP_SIZE)) : tx.league(DRAFT_LIMITS.leagueSize),
+    settings.format === 'cup'
+      ? settings.cupGroups
+        ? tx.cupWithGroups(CUP_SIZE)
+        : tx.cup(CUP_SIZE)
+      : settings.format === 'manager'
+        ? tx.manager(DRAFT_LIMITS.leagueSize, t.draft.settings.every(settings.matchdayMinutes), settings.bench)
+        : tx.league(DRAFT_LIMITS.leagueSize),
     tx.maxTeams(settings.maxTeams),
     settings.order === 'random' ? tx.orderRandom : tx.orderHost,
     settings.snake ? tx.snake : tx.fixedOrder,

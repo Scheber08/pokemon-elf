@@ -1,9 +1,9 @@
 import { FORMATIONS } from '../config/formations';
 import { useT } from '../i18n';
-import type { DraftSnapshot, DraftTeam } from '../lib/api/draftContract';
+import { DRAFT_BENCH_SLOT, type DraftSnapshot, type DraftTeam } from '../lib/api/draftContract';
 import { DRAFT_SS_SLOT, hasKind, isLegend, poolHasLegends, poolHasMegas, poolHasUltraBeasts } from '../lib/draftEngine';
 import { teamLabel, type FeedItem } from '../state/useDraftRoom';
-import type { Pokemon } from '../types';
+import type { Pokemon, PosCode } from '../types';
 import { PosBadge, TypeBadge } from './Badges';
 import '../styles/draft.css';
 
@@ -48,8 +48,10 @@ export function DraftBoard({ state, byId, currentId }: Props) {
     <section className="draft__board draft-board" aria-label={t.draft.draftBoard}>
       {state.teams.map((team, i) => {
         const defs = FORMATIONS[team.formation].slots;
-        const rows = defs.map((d, j) => ({ slot: j, pos: d.pos, id: team.slots[j] }));
+        const rows: { slot: number; pos: PosCode | null; id: number | null }[] = defs.map((d, j) => ({ slot: j, pos: d.pos, id: team.slots[j] }));
         if (state.settings.setPiece) rows.push({ slot: DRAFT_SS_SLOT, pos: 'SS', id: team.ss });
+        // Manager-Saison: Bank (ohne feste Position)
+        (team.bench ?? []).forEach((id, j) => rows.push({ slot: DRAFT_BENCH_SLOT + j, pos: null, id }));
         const filled = rows.filter((r) => r.id != null).length;
         const legends = rows.filter((r) => {
           const p = r.id != null ? byId.get(r.id) : undefined;
@@ -118,7 +120,13 @@ export function DraftBoard({ state, byId, currentId }: Props) {
                 const latest = !!last && last.teamId === team.id && last.slot === r.slot;
                 return (
                   <li key={r.slot} className={`${latest ? 'is-latest' : ''} ${p ? '' : 'is-empty'}`}>
-                    <PosBadge pos={r.pos} />
+                    {r.pos ? (
+                      <PosBadge pos={r.pos} />
+                    ) : (
+                      <span className="pos-badge pos-badge--bench" title={t.draft.bench.label}>
+                        {t.draft.bench.short}
+                      </span>
+                    )}
                     <span>{p ? t.game.pokemon(p) : '–'}</span>
                   </li>
                 );

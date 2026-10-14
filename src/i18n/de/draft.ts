@@ -160,6 +160,17 @@ const draft = {
     format: 'Spielmodus',
     formatLeague: 'Liga',
     formatCup: 'KO-Turnier',
+    formatManager: 'Manager-Saison',
+    formatManagerNote: (teams: number) =>
+      `Hinrunde mit ${teams} Teams, ein Spieltag im eingestellten Takt – davor stellt jeder seine Elf aus Kader und Bank auf (Tagesform beachten).`,
+    bench: 'Bank',
+    benchNote: (n: number) => `${n} Pokémon zusätzlich – werden nach der Elf gedraftet.`,
+    matchdayEvery: 'Spieltag alle',
+    /** Takt als kurzer Text: „10 Min.", „1 Std.", „24 Std." */
+    every: (minutes: number) => (minutes < 60 ? `${minutes} Min.` : `${minutes / 60} Std.`),
+    /** Dauer der ganzen Saison (Minuten) */
+    matchdayNote: (minutes: number) =>
+      minutes < 48 * 60 ? `Die Saison dauert etwa ${Math.max(1, Math.round(minutes / 60))} Stunden.` : `Die Saison dauert etwa ${Math.round(minutes / 1440)} Tage.`,
     cupGroups: 'Gruppenphase',
     cupGroupsNote: '4 Gruppen à 4 Teams mit Hin- und Rückspiel – die ersten zwei kommen ins Viertelfinale.',
     cupNoGroupsNote: 'Direkt los mit dem Achtelfinale.',
@@ -188,6 +199,7 @@ const draft = {
   summary: {
     league: (teams: number) => `Liga mit ${teams} Teams`,
     cup: (teams: number) => `KO-Turnier mit ${teams} Teams`,
+    manager: (teams: number, every: string, bench: number) => `Manager-Saison mit ${teams} Teams, Spieltag alle ${every}, ${bench} Bankplätze`,
     cupWithGroups: (teams: number) => `KO-Turnier mit ${teams} Teams und Gruppenphase`,
     pool: (region: string) => `Pool: ${region}`,
     /** Mehr als drei Generationen (aber nicht alle) */
@@ -389,6 +401,59 @@ const draft = {
     level: (names: string) => `Punktgleich mit ${names}`,
   },
   /** KO-Turnier (Ticker und Ergebnis) */
+  // ---------------------------------------------------------------- Manager-Saison: Bank
+  bench: {
+    label: 'Bank',
+    /** Kürzel statt Positionsabzeichen */
+    short: 'BK',
+    empty: (n: number) => `Bank ${n}`,
+    emptyAria: (n: number) => `Bankplatz ${n}, frei`,
+    filledAria: (n: number, name: string) => `Bankplatz ${n}: ${name}`,
+  },
+
+  // ---------------------------------------------------------------- Manager-Saison
+  manager: {
+    kicker: 'Manager-Saison',
+    played: (played: number, total: number) => `Spieltag ${played} von ${total} gespielt`,
+    next: (n: number) => `Spieltag ${n}`,
+    /** Countdown bis zum Anpfiff (ms) */
+    kickoffIn: (ms: number) => {
+      if (ms <= 0) return 'Anpfiff läuft …';
+      const s = Math.floor(ms / 1000);
+      const d = Math.floor(s / 86400);
+      const h = Math.floor((s % 86400) / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      if (d > 0) return `Anpfiff in ${d} T. ${h} Std.`;
+      if (h > 0) return `Anpfiff in ${h} Std. ${m} Min.`;
+      return `Anpfiff in ${m}:${String(s % 60).padStart(2, '0')}`;
+    },
+    kickoffAt: (when: string) => `(${when})`,
+    lineupTitle: 'Deine Aufstellung',
+    formation: 'Formation',
+    auto: 'Automatisch aufstellen',
+    autoNote: 'Vor jedem Spieltag stellt der Server die beste Elf zur Tagesform auf – in deiner Formation.',
+    manualNote: 'Deine Aufstellung gilt, bis du sie änderst – auch über mehrere Spieltage.',
+    best: 'Beste Elf aufstellen',
+    strength: (n: number) => `Stärke ${n}`,
+    bestStrength: (n: number) => `bestmöglich ${n}`,
+    strengthTitle: 'Team-Score dieser Elf samt Tagesform',
+    swapHint: 'Tippe zwei Spieler an, um sie zu tauschen – auf dem Feld, mit dem Standardschützen oder mit der Bank.',
+    selected: (name: string) => `${name} ausgewählt – jetzt den Tauschpartner antippen.`,
+    squadTitle: 'Kader und Tagesform',
+    colPokemon: 'Pokémon',
+    colRole: 'Rolle',
+    colFit: 'Fit',
+    fitTitle: 'Fit auf seiner Position samt Tagesform (Bank: beste Position der Formation)',
+    colForm: 'Form',
+    formTitle: (n: number) => (n > 0 ? `Tagesform +${n}` : n < 0 ? `Tagesform ${n}` : 'Tagesform normal'),
+    formNote: (fit: number) => `Jede Formstufe verschiebt den Fit um ${fit} Punkte. Die Form gilt für den nächsten Spieltag.`,
+    lastResults: (n: number) => `Ergebnisse Spieltag ${n}`,
+    upcoming: (n: number) => `Spieltag ${n} – die Paarungen`,
+    tableTitle: 'Tabelle',
+    spectator: 'Du schaust zu – Aufstellungen stellen nur die Teams dieser Liga.',
+    sending: 'Wird gespeichert …',
+  },
+
   cup: {
     stage: { r16: 'Achtelfinale', qf: 'Viertelfinale', sf: 'Halbfinale', final: 'Finale', group: 'Gruppenphase' },
     roundLabel: 'Runde',

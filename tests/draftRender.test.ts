@@ -11,9 +11,20 @@ import type { DraftSettingsPatch, DraftSnapshot } from '../src/lib/api/draftCont
 import type { DraftRoom } from '../src/state/useDraftRoom';
 import type { DraftState } from '../src/lib/draftEngine';
 import { ALL } from './helpers';
-import { FakeObserver, installMiniDom, MiniEvent, type MiniElement } from './miniDom';
+import { FakeObserver, installMiniDom, MiniElement, MiniEvent } from './miniDom';
 
 const doc = installMiniDom();
+// <select> (Formation der Manager-Saison): React liest select.options – im Mini-DOM nachgerüstet
+Object.defineProperty(MiniElement.prototype, 'options', {
+  configurable: true,
+  get(this: MiniElement) {
+    if (this.localName !== 'select') return undefined;
+    return this.querySelectorAll('option').map((o) => {
+      if (o.value == null) o.value = o.getAttribute('value') ?? o.textContent;
+      return o;
+    });
+  },
+});
 // React-DOM und alles mit UI erst nach dem Mini-DOM laden (React prüft beim Laden, ob es ein DOM gibt)
 const React = await import('react');
 const { createRoot } = await import('react-dom/client');
@@ -481,6 +492,7 @@ function fakeRoom(s: DraftSnapshot, over: Partial<DraftRoom> = {}): DraftRoom {
     autoPick: vi.fn(() => true),
     reroll: vi.fn(() => true),
     setQueue: vi.fn(() => true),
+    setLineup: vi.fn(() => true),
     react: vi.fn(() => true),
     reactions: [],
     reconnect: vi.fn(),
@@ -642,5 +654,37 @@ describe('DraftLobby', () => {
     await act(async () => johto.click());
     // Generationen sind eine Mehrfachauswahl: Johto kommt zu Kanto dazu
     expect(room.updateSettings).toHaveBeenCalledWith(expect.objectContaining({ gens: [1, 2] }));
+  });
+});
+
+// ---------------------------------------------------------------- Manager-Saison
+
+describe('ManagerSeason', () => {
+  beforeEach(() => {
+    stubFetch();
+  });
+
+  it('Bankspieler antippen, dann einen Feldspieler: Tausch wird als eigene Aufstellung gesendet (nicht automatisch)', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason } = await import('../src/lib/manager');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    const room = fakeRoom(snap(s, 'h'));
+    const { container } = await render(app(h(ManagerSeason, { room, readOnly: false })));
+    await settle();
+    const lineup = s.manager!.lineups.h;
+    const bench = container.querySelectorAll('.manager__lineup .draft-bench__slot');
+    expect(bench).toHaveLength(engine.rosterOf(s.teams.find((t) => t.id === 'h')!).length - 11);
+    expect(container.textContent).toContain('Spieltag 0 von 17 gespielt');
+    expect(container.textContent).toContain('Spieltag 1 – die Paarungen');
+    await act(async () => (bench[0] as MiniElement).click());
+    const first = container.querySelector('.manager__lineup .pitch .slot') as MiniElement;
+    await act(async () => first.click());
+    expect(room.setLineup).toHaveBeenCalledTimes(1);
+    const sent = (room.setLineup as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(sent.auto).toBe(false);
+    expect(sent.slots.slice(1)).toEqual(lineup.slots.slice(1));
+    expect(lineup.slots).not.toContain(sent.slots[0]);
   });
 });

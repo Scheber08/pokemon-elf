@@ -151,6 +151,15 @@ const draft: Messages['draft'] = {
     format: 'Format',
     formatLeague: 'League',
     formatCup: 'Knockout cup',
+    formatManager: 'Manager season',
+    formatManagerNote: (teams) =>
+      `Single round robin with ${teams} teams, one matchday at the set interval – before each, everyone picks their eleven from squad and bench (watch the daily form).`,
+    bench: 'Bench',
+    benchNote: (n) => `${n} extra Pokémon – drafted after the eleven.`,
+    matchdayEvery: 'Matchday every',
+    every: (minutes) => (minutes < 60 ? `${minutes} min` : `${minutes / 60} h`),
+    matchdayNote: (minutes) =>
+      minutes < 48 * 60 ? `The season lasts about ${Math.max(1, Math.round(minutes / 60))} hours.` : `The season lasts about ${Math.round(minutes / 1440)} days.`,
     cupGroups: 'Group stage',
     cupGroupsNote: '4 groups of 4 teams, home and away – the top two reach the quarter-finals.',
     cupNoGroupsNote: 'Straight into the round of 16.',
@@ -177,6 +186,7 @@ const draft: Messages['draft'] = {
   summary: {
     league: (teams) => `League with ${teams} teams`,
     cup: (teams) => `Knockout cup with ${teams} teams`,
+    manager: (teams, every, bench) => `Manager season with ${teams} teams, matchday every ${every}, ${bench} bench spots`,
     cupWithGroups: (teams) => `Knockout cup with ${teams} teams and group stage`,
     pool: (region) => `Pool: ${region}`,
     gensCount: (n) => `${n} generations`,
@@ -357,6 +367,55 @@ const draft: Messages['draft'] = {
       `Level on points with ${names}, same goal difference and goals scored – decided on ${label}`,
     level: (names) => `Level on points with ${names}`,
   },
+  bench: {
+    label: 'Bench',
+    short: 'BN',
+    empty: (n) => `Bench ${n}`,
+    emptyAria: (n) => `Bench spot ${n}, empty`,
+    filledAria: (n, name) => `Bench spot ${n}: ${name}`,
+  },
+
+  manager: {
+    kicker: 'Manager season',
+    played: (played, total) => `Matchday ${played} of ${total} played`,
+    next: (n) => `Matchday ${n}`,
+    kickoffIn: (ms) => {
+      if (ms <= 0) return 'Kick-off in progress …';
+      const s = Math.floor(ms / 1000);
+      const d = Math.floor(s / 86400);
+      const h = Math.floor((s % 86400) / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      if (d > 0) return `Kick-off in ${d} d ${h} h`;
+      if (h > 0) return `Kick-off in ${h} h ${m} min`;
+      return `Kick-off in ${m}:${String(s % 60).padStart(2, '0')}`;
+    },
+    kickoffAt: (when) => `(${when})`,
+    lineupTitle: 'Your lineup',
+    formation: 'Formation',
+    auto: 'Pick automatically',
+    autoNote: 'Before every matchday the server fields the best eleven for the daily form – in your formation.',
+    manualNote: 'Your lineup stays until you change it – across matchdays.',
+    best: 'Field the best eleven',
+    strength: (n) => `Strength ${n}`,
+    bestStrength: (n) => `best possible ${n}`,
+    strengthTitle: 'Team score of this eleven including daily form',
+    swapHint: 'Tap two players to swap them – on the pitch, with the set-piece taker or with the bench.',
+    selected: (name) => `${name} selected – now tap the player to swap with.`,
+    squadTitle: 'Squad and daily form',
+    colPokemon: 'Pokémon',
+    colRole: 'Role',
+    colFit: 'Fit',
+    fitTitle: 'Fit at their position including daily form (bench: best position in the formation)',
+    colForm: 'Form',
+    formTitle: (n) => (n > 0 ? `Daily form +${n}` : n < 0 ? `Daily form ${n}` : 'Daily form normal'),
+    formNote: (fit) => `Each form step shifts the fit by ${fit} points. The form applies to the next matchday.`,
+    lastResults: (n) => `Results matchday ${n}`,
+    upcoming: (n) => `Matchday ${n} – fixtures`,
+    tableTitle: 'Table',
+    spectator: 'You’re watching – only the teams of this league set lineups.',
+    sending: 'Saving …',
+  },
+
   cup: {
     stage: { r16: 'Round of 16', qf: 'Quarter-final', sf: 'Semi-final', final: 'Final', group: 'Group stage' },
     roundLabel: 'Round',

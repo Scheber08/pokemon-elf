@@ -176,6 +176,13 @@ Liga-Seed in `fillTeams`), fehlen welche, Vereine. Statt der Liga geht auch ein 
 als „Tabelle" speichert der Server das Endklassement, dazu den Baum (`league.cup`). Optional (`cupGroups`, Standard an)
 vorher eine Gruppenphase: 4 Gruppen à 4 aus Lostöpfen nach Team-Score, Hin- und Rückspiel, die ersten zwei ins
 Viertelfinale (A1–B2, C1–D2, B1–A2, D1–C2).
+Dritter Modus: die **Manager-Saison** (`format = 'manager'`, `src/lib/manager.ts`). Gedraftet wird zusätzlich
+eine Bank (`bench`: 3 oder 5), danach läuft Phase `season`: eine Hinrunde mit 18 Teams (17 Spieltage) im Takt
+`matchdayMinutes` (10 min bis 24 h); der Server spielt jeden Spieltag per Alarm zum Anpfiff. Davor stellt jedes
+Team seine Elf aus dem Kader auf (Nachricht `lineup`: Formation, Positionen, Standardschütze – oder `auto`:
+beste Elf zur Tagesform). Jedes Pokémon hat je Spieltag eine Tagesform von −2 bis +2 (aus dem geheimen
+Liga-Seed, vorher sichtbar), die seinen Fit um 5 Punkte je Stufe verschiebt. Löschung erst 14 Tage nach dem
+letzten Spieltag.
 Öffentliche Lobbys: `GET /api/drafts/public`. Ligen werden nach 14 Tagen gelöscht. Vertrag und Limits:
 `src/lib/api/draftContract.ts`.
 

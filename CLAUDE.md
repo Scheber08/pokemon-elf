@@ -51,10 +51,12 @@ nachladen, PWA, Wunschliste, Emoji-Reaktionen, Vorlagen und Draft-Noten im Draft
 Fit-Sortierung und „Beste Elf" im Builder, Wochenwertung rückwirkend gefüllt, Schnäppchen des Drafts,
 „Deine Duelle", Allzeit-Platz im Profil, Taste „/" im Draft, Noten in der lokalen Liga, QR-Code in der Lobby,
 Saison auf 18 Teams mit Ranglisten-Teams aufgefüllt, KO-Turnier mit optionaler Gruppenphase, Draft-Spielmodell
-(Tagesform, Torminuten), Formkurve, Saisonrekorde, Saisonverlauf, „Meine Teams" im Builder.
+(Tagesform, Torminuten), Formkurve, Saisonrekorde, Saisonverlauf, „Meine Teams" im Builder, Manager-Saison
+(Bank, Spieltage im Takt, Aufstellung, Tagesform je Pokémon).
 
-1. Tausch-Angebote zwischen Teams im Online-Draft (nach dem Draft, vor der Saison) – braucht eine neue
-   Phase (DraftPhase, upgradeState, ältere Clients); erst mit dem Besitzer abstimmen
+1. Manager-Saison weiter ausbauen (mit dem Besitzer abgestimmt): Transfermarkt (freie Pokémon gegen eigene,
+   Tabellenletzter zuerst), Tausch-Angebote zwischen Teams, Benachrichtigung vor dem Anpfiff
+2. Achievement-System; damit Cosmetics für einen selbst erstellten Trainer kaufen (Wunsch des Besitzers)
 
 ## Daten
 

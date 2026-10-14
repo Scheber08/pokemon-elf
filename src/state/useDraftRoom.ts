@@ -22,6 +22,7 @@ import {
   type DraftSettings,
   type DraftSnapshot,
   type DraftTeam,
+  type ManagerLineup,
 } from '../lib/api/draftContract';
 import {
   applyReroll,
@@ -274,6 +275,7 @@ export function ownerOfPicks(s: Pick<DraftSnapshot, 'teams'>): Map<number, Draft
   for (const t of s.teams) {
     for (const id of t.slots) if (id != null) out.set(id, t);
     if (t.ss != null) out.set(t.ss, t);
+    for (const id of t.bench ?? []) if (id != null) out.set(id, t);
   }
   return out;
 }
@@ -283,7 +285,7 @@ export function ownerOfPicks(s: Pick<DraftSnapshot, 'teams'>): Map<number, Draft
  * nicht bei jedem Schnappschuss (z. B. Online-Wechsel eines Teams).
  */
 export function draftedKey(s: Pick<DraftSnapshot, 'teams'>): string {
-  return s.teams.map((t) => `${t.id}:${t.name}:${t.slots.join(',')}:${t.ss ?? ''}`).join('|');
+  return s.teams.map((t) => `${t.id}:${t.name}:${t.slots.join(',')}:${t.ss ?? ''}:${t.bench?.join(',') ?? ''}`).join('|');
 }
 
 /** Teamname säubern: Leerraum zusammenfassen, auf die Höchstlänge kürzen. */
@@ -543,6 +545,8 @@ export interface DraftRoom extends DraftRoomView {
   reroll(kind: DraftRerollKind): boolean;
   /** Wunschliste des eigenen Teams ersetzen (Reihenfolge = Vorrang) */
   setQueue(ids: number[]): boolean;
+  /** Manager-Saison: eigene Aufstellung für den nächsten Spieltag (auto: Server stellt die beste Elf) */
+  setLineup(lineup: ManagerLineup): boolean;
   /** Emoji-Reaktion an alle (nur Mitglieder) */
   react(emoji: DraftReaction): boolean;
   /** Reaktionen der letzten Sekunden, älteste zuerst */
@@ -924,6 +928,7 @@ export function useDraftRoom(code: string): DraftRoom {
     autoPick,
     reroll,
     setQueue: useCallback((ids: number[]) => send({ type: 'queue', ids }), [send]),
+    setLineup: useCallback((l: ManagerLineup) => send({ type: 'lineup', formation: l.formation, slots: l.slots, ss: l.ss, auto: l.auto }), [send]),
     react: useCallback((emoji: DraftReaction) => send({ type: 'react', emoji }), [send]),
     reactions,
     reconnect: useCallback(() => {

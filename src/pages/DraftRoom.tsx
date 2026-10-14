@@ -4,6 +4,7 @@ import { DraftLive } from '../components/DraftLive';
 import { DraftLobby } from '../components/DraftLobby';
 import { DraftReactions } from '../components/DraftReactions';
 import { DraftSeasonStage } from '../components/DraftSeasonStage';
+import { ManagerSeason } from '../components/ManagerSeason';
 import { RunNotice } from '../components/RunBoard';
 import { useT } from '../i18n';
 import { isDraftCode, normalizeDraftCode } from '../lib/api/draftClient';
@@ -245,6 +246,8 @@ function DraftRoomPage({ raw }: { raw: string }) {
         <DraftLobby room={room} readOnly={readOnly} />
       ) : s!.phase === 'drafting' ? (
         <DraftLive room={room} readOnly={readOnly} />
+      ) : s!.phase === 'season' ? (
+        <ManagerSeason room={room} readOnly={readOnly} />
       ) : (
         <DraftSeasonStage key={s!.season?.seed ?? 0} room={room} />
       )}

@@ -2,7 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { FORMATIONS } from '../config/formations';
 import { POSITIONS } from '../config/positions';
 import { useT } from '../i18n';
-import { DRAFT_REROLL_KINDS, type DraftRerollKind, type DraftSnapshot, type DraftTeam } from '../lib/api/draftContract';
+import { DRAFT_BENCH_SLOT, DRAFT_REROLL_KINDS, type DraftRerollKind, type DraftSnapshot, type DraftTeam } from '../lib/api/draftContract';
 import {
   allowedPicks,
   autoPickChoice,
@@ -36,6 +36,7 @@ import {
 } from '../state/useDraftRoom';
 import type { Pokemon } from '../types';
 import { TypeBadge } from './Badges';
+import { BenchRow } from './BenchRow';
 import { DraftBoard, DraftPickFeed } from './DraftBoard';
 import { DraftQueue } from './DraftQueue';
 import { DraftCountdown } from './DraftCountdown';
@@ -44,6 +45,13 @@ import { Pitch, type SlotState } from './Pitch';
 import { PokemonGrid } from './PokemonGrid';
 import { RunNotice } from './RunBoard';
 import '../styles/draft.css';
+
+/** Draft-Slot schon besetzt? Feld, Standardschütze oder Bank (Manager-Saison). */
+function slotFilled(team: DraftTeam, i: number): boolean {
+  if (i === DRAFT_SS_SLOT) return team.ss != null;
+  if (i >= DRAFT_BENCH_SLOT) return team.bench?.[i - DRAFT_BENCH_SLOT] != null;
+  return team.slots[i] != null;
+}
 
 /** Schlüssel des aktuellen Wurfs (leer ohne Wurf) – ändert sich mit jedem neuen Wurf bzw. Reroll. */
 function rollKeyOf(s: Pick<DraftSnapshot, 'roll'>): string {
@@ -314,8 +322,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
 
   const onSlotClick = (i: number) => {
     if (!me) return;
-    const filled = i === DRAFT_SS_SLOT ? me.ss != null : me.slots[i] != null;
-    if (filled) return;
+    if (slotFilled(me, i)) return;
     if (selected == null) {
       setInfo(t.online.chooseFirst);
       return;
@@ -331,22 +338,26 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
 
   const slotState = (i: number): SlotState => {
     if (!pitchTeam) return undefined;
-    const filled = i === DRAFT_SS_SLOT ? pitchTeam.ss != null : pitchTeam.slots[i] != null;
-    if (filled) return 'locked';
+    if (slotFilled(pitchTeam, i)) return 'locked';
     if (pitchTeam !== me) return undefined;
     if (selected != null && i === suggestSlot) return 'selected';
     return myTurn && selected != null && !pending && !room.busy.reroll ? 'target' : undefined;
   };
 
   const suggestPos =
-    suggestSlot != null && me ? (suggestSlot === DRAFT_SS_SLOT ? 'SS' : FORMATIONS[me.formation].slots[suggestSlot]?.pos) : null;
+    suggestSlot != null && me && suggestSlot < DRAFT_BENCH_SLOT
+      ? suggestSlot === DRAFT_SS_SLOT
+        ? 'SS'
+        : FORMATIONS[me.formation].slots[suggestSlot]?.pos
+      : null;
+  const suggestLabel = suggestPos ? t.game.posName[suggestPos] : suggestSlot != null && suggestSlot >= DRAFT_BENCH_SLOT ? t.draft.bench.label : null;
 
   const hint = !me ? null : myTurn ? (
     selectedMon ? (
       <>
         <strong>{t.game.pokemon(selectedMon)}</strong>
         {t.online.hintChosen}
-        {suggestPos ? t.online.hintSuggestion(t.game.posName[suggestPos]) : null}
+        {suggestLabel ? t.online.hintSuggestion(suggestLabel) : null}
         {t.online.hintClickSlot}
       </>
     ) : (
@@ -529,6 +540,17 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                 onSlotClick={pitchTeam === me ? onSlotClick : undefined}
                 ariaLabel={t.online.pitchAria(teamLabel(pitchTeam, t), pitchTeam.formation)}
               />
+              {pitchTeam.bench && (
+                <BenchRow
+                  bench={pitchTeam.bench}
+                  sprite={sprite}
+                  onClick={pitchTeam === me ? (i) => onSlotClick(DRAFT_BENCH_SLOT + i) : undefined}
+                  state={(i) => {
+                    const st = slotState(DRAFT_BENCH_SLOT + i);
+                    return st === 'target' || st === 'selected' ? st : undefined;
+                  }}
+                />
+              )}
               {pending && <p className="hint draft-pending">{t.online.pickSending}</p>}
             </>
           )}
