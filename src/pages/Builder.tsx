@@ -5,6 +5,7 @@ import { DEFAULT_FORMATION, FORMATION_IDS, FORMATIONS } from '../config/formatio
 import { REGIONS, regionPhrase } from '../config/regions';
 import { Pitch, SS_INDEX } from '../components/Pitch';
 import { PickerModal } from '../components/PickerModal';
+import { RandomNameButton } from '../components/RandomNameButton';
 import { Segmented } from '../components/Segmented';
 import { TeamSheet } from '../components/TeamSheet';
 import { useT } from '../i18n';
@@ -371,14 +372,17 @@ export function Builder() {
             <label className="field__label" htmlFor="team-name">
               {t.builder.teamName} <small>{t.builder.teamNameNote}</small>
             </label>
-            <input
-              id="team-name"
-              className="input"
-              maxLength={32}
-              placeholder={t.builder.teamNamePlaceholder}
-              value={state.teamName}
-              onChange={(e) => setState((s) => ({ ...s, teamName: e.target.value }))}
-            />
+            <div className="input-row">
+              <input
+                id="team-name"
+                className="input"
+                maxLength={32}
+                placeholder={t.builder.teamNamePlaceholder}
+                value={state.teamName}
+                onChange={(e) => setState((s) => ({ ...s, teamName: e.target.value }))}
+              />
+              <RandomNameButton current={state.teamName} onPick={(teamName) => setState((s) => ({ ...s, teamName: teamName.slice(0, 32) }))} />
+            </div>
           </div>
         </section>
       </aside>

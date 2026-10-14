@@ -2379,3 +2379,19 @@ button.sheet__row:hover {
   font-size: 13px;
   letter-spacing: 0.06em;
 }
+
+/* Eingabefeld mit 🎲 daneben */
+.input-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.input-row .input {
+  flex: 1;
+  min-width: 0;
+}
+.random-name {
+  padding-inline: 12px;
+  font-size: 18px;
+  line-height: 1;
+}

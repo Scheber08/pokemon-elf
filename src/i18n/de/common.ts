@@ -2,6 +2,7 @@
 const common = {
   close: 'Schließen',
   retry: 'Erneut versuchen',
+  randomName: 'Zufälliger Vereinsname',
   settings: 'Einstellungen',
   copyLink: 'Link kopieren',
   linkCopied: 'Link kopiert!',

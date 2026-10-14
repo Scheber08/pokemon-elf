@@ -12,6 +12,7 @@ import {
 import { poolHasLegends, poolHasMegas, poolHasUltraBeasts, poolOf, rerollUsable } from '../lib/draftEngine';
 import { fitSettingsPatch, poolCapacity } from '../state/useDraftRoom';
 import type { FormationId, Pokemon, TypeKey } from '../types';
+import { RandomNameButton } from './RandomNameButton';
 import { Segmented } from './Segmented';
 import '../styles/draft.css';
 
@@ -664,7 +665,8 @@ interface TeamFieldsProps {
   onName: (name: string) => void;
   onFormation: (formation: FormationId) => void;
   /** Eingabe abschließen (Enter / Fokus weg) */
-  onCommit?: () => void;
+  /** Name übernehmen (Lobby) – mit Wert: genau diesen (z. B. nach 🎲), sonst den getippten */
+  onCommit?: (name?: string) => void;
   disabled?: boolean;
 }
 
@@ -678,20 +680,32 @@ export function DraftTeamFields({ name, formation, onName, onFormation, onCommit
         <label className="field__label" htmlFor={id}>
           {t.draft.settings.teamName}
         </label>
-        <input
-          id={id}
-          className="input"
-          value={name}
-          maxLength={DRAFT_LIMITS.teamNameMax}
-          placeholder={t.draft.settings.teamNamePlaceholder}
-          autoComplete="off"
-          disabled={disabled}
-          onChange={(e) => onName(e.target.value)}
-          onBlur={onCommit}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') onCommit?.();
-          }}
-        />
+        <div className="input-row">
+          <input
+            id={id}
+            className="input"
+            value={name}
+            maxLength={DRAFT_LIMITS.teamNameMax}
+            placeholder={t.draft.settings.teamNamePlaceholder}
+            autoComplete="off"
+            disabled={disabled}
+            onChange={(e) => onName(e.target.value)}
+            onBlur={() => onCommit?.()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') onCommit?.();
+            }}
+          />
+          <RandomNameButton
+            current={name}
+            disabled={disabled}
+            onPick={(n) => {
+              const short = Array.from(n).slice(0, DRAFT_LIMITS.teamNameMax).join('');
+              onName(short);
+              // In der Lobby sofort übernehmen (wie Enter)
+              onCommit?.(short);
+            }}
+          />
+        </div>
       </div>
       <Segmented
         label={t.draft.formation}

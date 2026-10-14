@@ -122,9 +122,9 @@ function MyTeamCard({ room }: { room: DraftRoom }) {
     if (nameDraft != null && cleanTeamName(nameDraft) === me.name) setNameDraft(null);
   }, [me.name]);
 
-  const commit = () => {
-    if (nameDraft == null) return;
-    const clean = cleanTeamName(nameDraft);
+  const commit = (value: string | null = nameDraft) => {
+    if (value == null) return;
+    const clean = cleanTeamName(value);
     if (!clean || clean === me.name) {
       setNameDraft(null);
       return;
@@ -152,7 +152,7 @@ function MyTeamCard({ room }: { room: DraftRoom }) {
         name={nameDraft ?? me.name}
         formation={me.formation}
         onName={setNameDraft}
-        onCommit={commit}
+        onCommit={(value) => commit(value ?? nameDraft)}
         onFormation={(formation) => {
           if (formation !== me.formation && room.updateTeam({ formation })) saveTeamPrefs({ name: me.name, formation });
         }}

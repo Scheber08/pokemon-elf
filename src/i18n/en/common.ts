@@ -4,6 +4,7 @@ import type { Messages } from '../de';
 const common: Messages['common'] = {
   close: 'Close',
   retry: 'Try again',
+  randomName: 'Random club name',
   settings: 'Settings',
   copyLink: 'Copy link',
   linkCopied: 'Link copied!',
