@@ -38,14 +38,15 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
       .bind(deviceId, today),
     db
       .prepare(
-        `SELECT COUNT(*) AS leagues,
+        `SELECT SUM(CASE WHEN format != 'manager_cup' THEN 1 ELSE 0 END) AS leagues,
            SUM(CASE WHEN rank = 1 AND format = 'league' THEN 1 ELSE 0 END) AS titles,
+           SUM(CASE WHEN rank = 1 AND format = 'manager_cup' THEN 1 ELSE 0 END) AS manager_cups,
            SUM(CASE WHEN rank = 1 AND format = 'cup' THEN 1 ELSE 0 END) AS cups,
            SUM(CASE WHEN rank = 1 AND format = 'manager' THEN 1 ELSE 0 END) AS manager,
-           SUM(CASE WHEN rank <= 3 THEN 1 ELSE 0 END) AS podiums,
+           SUM(CASE WHEN rank <= 3 AND format != 'manager_cup' THEN 1 ELSE 0 END) AS podiums,
            SUM(CASE WHEN format = 'manager' THEN 1 ELSE 0 END) AS seasons,
            SUM(CASE WHEN format = 'manager' AND rank <= 3 THEN 1 ELSE 0 END) AS manager_podiums,
-           SUM(CASE WHEN losses = 0 AND format != 'cup' AND wins + draws > 0 THEN 1 ELSE 0 END) AS unbeaten
+           SUM(CASE WHEN losses = 0 AND format NOT IN ('cup', 'manager_cup') AND wins + draws > 0 THEN 1 ELSE 0 END) AS unbeaten
          FROM draft_results WHERE device_id = ?`,
       )
       .bind(deviceId),
@@ -80,6 +81,7 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
       unbeaten: num(d.unbeaten),
       seasons: num(d.seasons),
       managerPodiums: num(d.manager_podiums),
+      managerCups: num(d.manager_cups),
     },
   };
 }
@@ -177,7 +179,11 @@ export async function buyItem(request: Request, env: Env): Promise<Response> {
  * Am Ende einer Online-Liga: Abschluss jedes menschlichen Teams speichern (einmal je Liga und
  * Gerät – INSERT OR IGNORE). Wirft bei Datenbankfehlern (der Raum versucht es später erneut).
  */
-export async function saveDraftResults(db: Db, state: Pick<DraftState, 'code' | 'settings' | 'teams' | 'owners' | 'league'>, now: number): Promise<number> {
+export async function saveDraftResults(
+  db: Db,
+  state: Pick<DraftState, 'code' | 'settings' | 'teams' | 'owners' | 'league' | 'manager'>,
+  now: number,
+): Promise<number> {
   const league = state.league;
   if (!league) return 0;
   const format = state.settings.format ?? 'league';
@@ -194,6 +200,23 @@ export async function saveDraftResults(db: Db, state: Pick<DraftState, 'code' | 
         .bind(state.code, device, format, i + 1, league.teams.length, r.w, r.d, r.l, r.pts, now),
     ];
   });
+  // Pokalsieg der Manager-Saison: eigene Zeile (Code „…#cup“, Format manager_cup) – zählt nur für den Pokal-Erfolg
+  const cup = state.manager?.cup;
+  const last = cup?.rounds[cup.rounds.length - 1];
+  const winner = last?.stage === 'final' ? state.teams[last.ties[0].winner] : undefined;
+  const winnerDevice = winner && !winner.cpu ? state.owners[winner.id] : undefined;
+  if (winnerDevice && cup) {
+    const idx = state.teams.indexOf(winner!);
+    const games = cup.matches.filter((m) => m.home === idx || m.away === idx);
+    stmts.push(
+      db
+        .prepare(
+          `INSERT OR IGNORE INTO draft_results (code, device_id, format, rank, teams, wins, draws, losses, points, finished_at)
+           VALUES (?, ?, 'manager_cup', 1, ?, ?, 0, 0, 0, ?)`,
+        )
+        .bind(`${state.code}#cup`, winnerDevice, cup.bracket.length, games.length, now),
+    );
+  }
   if (!stmts.length) return 0;
   await ensureSchema(db);
   await db.batch(stmts);

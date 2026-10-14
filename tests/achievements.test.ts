@@ -130,7 +130,7 @@ describe('Kennzahlen und /api/me', () => {
     expect(s.dailyStreak).toBe(3);
     expect(s.dailyWins).toBe(1);
     expect(s.bestPlace).toBe(1);
-    expect(s.draft).toEqual({ leagues: 1, titles: 0, cups: 1, manager: 0, podiums: 1, unbeaten: 0, seasons: 0, managerPodiums: 0 });
+    expect(s.draft).toEqual({ leagues: 1, titles: 0, cups: 1, manager: 0, podiums: 1, unbeaten: 0, seasons: 0, managerPodiums: 0, managerCups: 0 });
     // Doppelt gespeichert (Neuversuch) zählt nicht doppelt
     expect(db.query('SELECT * FROM draft_results')).toHaveLength(1);
     // Manager-Saison als Zweiter: zählt als Saison, nicht als Titel
@@ -151,6 +151,32 @@ describe('Kennzahlen und /api/me', () => {
     const m = await achievementStats(db, dev, '2026-10-14');
     expect(m.draft).toMatchObject({ leagues: 2, manager: 0, seasons: 1, managerPodiums: 1 });
     expect(achievementStates(m).find((a) => a.id === 'manager_first')?.done).toBe(true);
+    expect(achievementStates(m).find((a) => a.id === 'manager_cup')?.done).toBe(false);
+    // Pokalsieg (Manager-Saison): eigene Zeile, zählt nur für den Pokal – nicht als Liga oder Treppchen
+    await saveDraftResults(
+      db,
+      {
+        code: 'CUP234',
+        settings: { format: 'manager' } as never,
+        teams: [{ id: 'c', cpu: true } as never, { id: 'h', cpu: false } as never],
+        owners: { h: dev },
+        league: { teams: [{ name: 'C', rating: 1 }, { name: 'H', rating: 1 }], matches: [], table: [
+          { team: 0, name: 'C', rating: 1, isUser: false, played: 2, w: 2, d: 0, l: 0, gf: 4, ga: 1, gd: 3, pts: 6 },
+          { team: 1, name: 'H', rating: 1, isUser: false, played: 2, w: 0, d: 0, l: 2, gf: 1, ga: 4, gd: -3, pts: 0 },
+        ] },
+        manager: {
+          cup: {
+            bracket: [0, 1],
+            rounds: [{ stage: 'final', round: 16, ties: [{ home: 0, away: 1, winner: 1, pens: null }] }],
+            matches: [{ round: 16, home: 0, away: 1, hg: 0, ag: 1, homeScorers: [], awayScorers: [] }],
+          },
+        } as never,
+      },
+      3,
+    );
+    const c = await achievementStats(db, dev, '2026-10-14');
+    expect(c.draft).toMatchObject({ leagues: 3, seasons: 2, managerPodiums: 2, managerCups: 1, podiums: 3 });
+    expect(achievementStates(c).find((a) => a.id === 'manager_cup')?.done).toBe(true);
   });
 
   it('POST /api/me: Erfolge und Münzen des eigenen Geräts (neues Gerät: alles offen)', async () => {
