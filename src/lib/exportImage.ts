@@ -79,6 +79,13 @@ export async function nodeToPng(node: HTMLElement, options: { scale?: number; ba
     backgroundColor: options.background ?? null,
     scale: options.scale ?? 1,
     logging: false,
+    // html2canvas setzt Ziffern mit tabular-nums an „:" und „-" leicht versetzt („74 :33") –
+    // nur in der Kopie fürs Bild normale Ziffern (die Seite selbst bleibt unverändert)
+    onclone: (doc) => {
+      const style = doc.createElement('style');
+      style.textContent = '* { font-variant-numeric: normal !important; }';
+      doc.head.appendChild(style);
+    },
   });
   return new Promise((resolve, reject) =>
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Export fehlgeschlagen'))), 'image/png'),
