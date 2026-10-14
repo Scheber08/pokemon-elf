@@ -34,6 +34,10 @@
   font-size: 13px;
   color: var(--text-dim);
 }
+/* Hinweis unter einem Paar (Ultrabestien, Megas): nah am Paar, mit Abstand zum nächsten Feld */
+.draft-settings__pair + .draft-field-note {
+  margin: -8px 0 16px;
+}
 .segmented__btn.draft-choice--off {
   opacity: 0.38;
   cursor: not-allowed;
