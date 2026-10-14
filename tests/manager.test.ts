@@ -798,10 +798,15 @@ describe('Karriere', () => {
       table.splice(rank - 1, 0, row);
       return { ...done, league: { ...done.league!, table } };
     };
-    expect(nextCareer(place(1))).toEqual({ season: 2, tier: 1, move: 'up' });
-    expect(nextCareer(place(10))).toEqual({ season: 2, tier: 2 });
-    expect(nextCareer(place(18))).toEqual({ season: 2, tier: 3, move: 'down' });
-    expect(nextCareer({ ...place(1), career: { season: 4, tier: 1 } })).toEqual({ season: 5, tier: 1 });
+    expect(nextCareer(place(1))).toMatchObject({ season: 2, tier: 1, move: 'up' });
+    expect(nextCareer(place(10))).toEqual({ season: 2, tier: 2, history: [{ season: 1, tier: 2, places: { h: 10 } }] });
+    expect(nextCareer(place(18))).toMatchObject({ season: 2, tier: 3, move: 'down' });
+    // Verlauf wächst mit (höchstens CAREER_HISTORY_MAX Saisons)
+    const old = Array.from({ length: 10 }, (_, i) => ({ season: i + 1, tier: 2 as const, places: { h: 5 } }));
+    const later = nextCareer({ ...place(1), career: { season: 11, tier: 1, history: old } });
+    expect(later).toMatchObject({ season: 12, tier: 1 });
+    expect(later.history).toHaveLength(10);
+    expect(later.history!.at(-1)).toEqual({ season: 11, tier: 1, places: { h: 1 } });
     expect(() => nextCareer(drafted({ format: 'league' }))).toThrow(/Manager/);
   });
 });

@@ -1921,6 +1921,9 @@ function carryTeam(t: DraftTeam): DraftTeam {
  * Nächste Karriere-Saison: nur nach einer Manager-Saison. Liga-Stufe: Steht ein menschliches Team
  * unter den ersten drei, steigt die Liga auf; stehen alle Menschen auf den letzten drei Plätzen, ab.
  */
+/** So viele frühere Saisons merkt sich eine Karriere */
+export const CAREER_HISTORY_MAX = 10;
+
 export function nextCareer(state: Pick<DraftState, 'settings' | 'league' | 'teams' | 'career'>): DraftCareer {
   if (upgradeSettings(state.settings).format !== 'manager' || !state.league) fail('not_manager', 'Karriere gibt es nur nach einer Manager-Saison');
   const table = state.league!.table;
@@ -1929,7 +1932,15 @@ export function nextCareer(state: Pick<DraftState, 'settings' | 'league' | 'team
   const up = ranks.some((r) => r <= 3);
   const down = !up && ranks.length > 0 && ranks.every((r) => r > table.length - 3);
   const next = (up ? Math.max(1, tier - 1) : down ? Math.min(3, tier + 1) : tier) as 1 | 2 | 3;
-  return { season: (state.career?.season ?? 1) + 1, tier: next, ...(next < tier ? { move: 'up' as const } : next > tier ? { move: 'down' as const } : {}) };
+  const season = state.career?.season ?? 1;
+  const places = Object.fromEntries(
+    state.teams.flatMap((t, i) => {
+      const at = table.findIndex((r) => r.team === i);
+      return t.cpu || at < 0 ? [] : [[t.id, at + 1]];
+    }),
+  );
+  const history = [...(state.career?.history ?? []), { season, tier, places }].slice(-CAREER_HISTORY_MAX);
+  return { season: season + 1, tier: next, ...(next < tier ? { move: 'up' as const } : next > tier ? { move: 'down' as const } : {}), history };
 }
 
 /** Zeile der ewigen Tabelle (je Team-ID über alle Ligen der Gruppe) */

@@ -764,6 +764,18 @@ describe('ManagerSeason', () => {
     expect(await text(withCaptain(lineup.slots[0], { [lineup.slots[0]]: { kind: 'red', until: 2, since: 0 } }))).toContain('keinen Kapitänsbonus');
   });
 
+  it('Karriere: frühere Saisons des eigenen Teams im Status', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason } = await import('../src/lib/manager');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    const st = { ...s, career: { season: 3, tier: 1 as const, history: [{ season: 1, tier: 2 as const, places: { h: 2 } as Record<string, number> }, { season: 2, tier: 1 as const, places: { h: 7, x: 1 } as Record<string, number> }] } };
+    const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(st, 'h')), readOnly: false })));
+    await settle();
+    expect(container.querySelector('.manager__career')!.textContent).toBe('Bisher: S1 Liga 2: Platz 2 · S2 Liga 1: Platz 7');
+  });
+
   it('Shiny-Neuzugang: Hinweis im Status nur fürs eigene Team', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');

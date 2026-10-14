@@ -152,6 +152,8 @@ const online = {
   careerTitle: 'Karriere',
   careerStart: 'Saison starten',
   careerSeason: (n: number, tier: string) => `Saison ${n} · ${tier}`,
+  careerHistory: 'Bisher:',
+  careerPlace: (season: number, tier: number, place: number) => `S${season} Liga ${tier}: Platz ${place}`,
   careerTier: { 1: '1. Pokémon-Liga', 2: '2. Pokémon-Liga', 3: '3. Pokémon-Liga' } as Record<number, string>,
   careerNext: (tier: string) => `Nächste Saison: ${tier}`,
   careerUp: 'Aufgestiegen!',

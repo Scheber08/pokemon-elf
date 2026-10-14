@@ -142,6 +142,8 @@ const online: Messages['online'] = {
   careerTitle: 'Career',
   careerStart: 'Start season',
   careerSeason: (n, tier) => `Season ${n} · ${tier}`,
+  careerHistory: 'So far:',
+  careerPlace: (season, tier, place) => `S${season} tier ${tier}: place ${place}`,
   careerTier: { 1: 'Pokémon League 1', 2: 'Pokémon League 2', 3: 'Pokémon League 3' },
   careerNext: (tier) => `Next season: ${tier}`,
   careerUp: 'Promoted!',

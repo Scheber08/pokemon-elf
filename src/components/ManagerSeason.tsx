@@ -244,6 +244,17 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           {s.career && ` · ${t.online.careerSeason(s.career.season, t.online.careerTier[s.career.tier])}`}
         </span>
         <h2 className="section-title">{tx.played(m.played, m.total)}</h2>
+        {/* Karriere: frühere Saisons des eigenen Teams */}
+        {(() => {
+          const mine = room.me ? (s.career?.history ?? []).filter((h) => h.places[room.me!.id] != null) : [];
+          if (!mine.length) return null;
+          return (
+            <p className="muted small manager__career">
+              {t.online.careerHistory}{' '}
+              {mine.map((h) => t.online.careerPlace(h.season, h.tier, h.places[room.me!.id])).join(' · ')}
+            </p>
+          );
+        })()}
         {m.nextAt != null && (
           <p className="manager__kickoff">
             <strong>{tx.next(nextNo)}</strong> · {tx.kickoffIn(m.nextAt - now)} <span className="muted">{tx.kickoffAt(when)}</span>

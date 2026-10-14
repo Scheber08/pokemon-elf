@@ -385,6 +385,8 @@ export interface DraftCareer {
   season: number;
   tier: 1 | 2 | 3;
   move?: 'up' | 'down';
+  /** Frühere Saisons dieser Karriere (älteste zuerst, höchstens 10): Liga-Stufe und Platz je menschlichem Team */
+  history?: { season: number; tier: 1 | 2 | 3; places: Record<string, number> }[];
 }
 
 export interface DraftSnapshot {
