@@ -5,6 +5,8 @@ interface Props {
   places: number[];
   /** Zahl der Teams (unterster Platz) */
   teams: number;
+  /** Saison läuft noch: „aktuell" statt „am Ende" */
+  running?: boolean;
 }
 
 const W = 600;
@@ -12,7 +14,7 @@ const H = 180;
 const PAD = { left: 34, right: 12, top: 12, bottom: 26 };
 
 /** Platzverlauf als Linie (Platz 1 oben) mit Achsen für Platz und Spieltag. */
-export function PlaceChart({ places, teams }: Props) {
+export function PlaceChart({ places, teams, running = false }: Props) {
   const t = useT();
   if (places.length < 2 || teams < 2) return null;
   const x = (i: number) => PAD.left + (i / (places.length - 1)) * (W - PAD.left - PAD.right);
@@ -26,7 +28,7 @@ export function PlaceChart({ places, teams }: Props) {
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="img"
-        aria-label={t.draft.results.placeChartAria(places.length, best, last)}
+        aria-label={t.draft.results.placeChartAria(places.length, best, last, running)}
       >
         {ticks.map((p) => (
           <g key={p}>
@@ -45,7 +47,7 @@ export function PlaceChart({ places, teams }: Props) {
         <polyline points={points} className="place-chart__line" />
         <circle cx={x(places.length - 1)} cy={y(last)} r={4} className="place-chart__dot" />
       </svg>
-      <figcaption className="muted small">{t.draft.results.placeChartCaption(best, last)}</figcaption>
+      <figcaption className="muted small">{t.draft.results.placeChartCaption(best, last, running)}</figcaption>
     </figure>
   );
 }

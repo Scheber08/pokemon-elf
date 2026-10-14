@@ -288,8 +288,9 @@ const draft = {
     timeTravelDay: (day: number, total: number) => `Tabelle nach dem ${day}. Spieltag (von ${total})`,
     /** Platzverlauf des eigenen Teams */
     placeChart: 'Dein Saisonverlauf',
-    placeChartAria: (days: number, best: number, last: number) => `Tabellenplatz über ${days} Spieltage – bester Platz ${best}, am Ende ${last}`,
-    placeChartCaption: (best: number, last: number) => `Bester Platz: ${best} · am Ende: ${last}`,
+    placeChartAria: (days: number, best: number, last: number, running = false) =>
+      `Tabellenplatz über ${days} Spieltage – bester Platz ${best}, ${running ? 'aktuell' : 'am Ende'} ${last}`,
+    placeChartCaption: (best: number, last: number, running = false) => `Bester Platz: ${best} · ${running ? 'aktuell' : 'am Ende'}: ${last}`,
     /** Saisonrekorde (Liga) */
     records: 'Saisonrekorde',
     recordAttack: 'Bester Angriff',

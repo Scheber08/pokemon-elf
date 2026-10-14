@@ -15,6 +15,7 @@ import { PosBadge } from './Badges';
 import { BenchRow } from './BenchRow';
 import { FixtureList, FormDots, Trend } from './LeagueTicker';
 import { ReplayToggle, useMatchReport } from './MatchReport';
+import { PlaceChart } from './PlaceChart';
 import { SeasonStats } from './SeasonStats';
 import { Sprite } from './Sprite';
 import { Pitch, SS_INDEX, type SlotState } from './Pitch';
@@ -349,6 +350,15 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
       )}
 
       {m.played > 0 && <SeasonStats league={league} you={you} nameOf={nameOf} />}
+
+      {you != null && m.played >= 2 && (
+        <section className="card" aria-labelledby="manager-places">
+          <h2 id="manager-places" className="section-title">
+            {t.draft.results.placeChart}
+          </h2>
+          <PlaceChart places={leagueTimeline(league).map((d) => d.places[you])} teams={league.teams.length} running />
+        </section>
+      )}
 
       <section className="card" aria-labelledby="manager-table">
         <h2 id="manager-table" className="section-title">
