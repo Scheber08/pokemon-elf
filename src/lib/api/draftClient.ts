@@ -237,6 +237,8 @@ export interface DraftConnectionHandlers {
   onStatus?(status: DraftSocketStatus): void;
   /** Neuer Uhren-Offset (Serverzeit − Date.now()) – kommt vor onState */
   onClockOffset?(offset: number): void;
+  /** Emoji-Reaktion eines Teams */
+  onReaction?(reaction: { teamId: string; emoji: string; at: number }): void;
 }
 
 export interface DraftConnectionOptions {
@@ -445,6 +447,10 @@ export function connectDraft(
       else clock.addOneWay(msg.serverNow, now());
       pingSentAt = null;
       handlers.onClockOffset?.(clock.offset);
+    } else if (msg.type === 'reaction') {
+      if (typeof msg.teamId === 'string' && typeof msg.emoji === 'string') {
+        handlers.onReaction?.({ teamId: msg.teamId, emoji: msg.emoji, at: Number(msg.at) || 0 });
+      }
     } else if (msg.type === 'error') {
       const error: DraftConnectionError = { code: String(msg.code), message: String(msg.message) };
       if (typeof msg.for === 'string') error.for = msg.for;

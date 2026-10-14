@@ -205,6 +205,9 @@ const online = {
   favouriteNoMatch: (name: string) => `${name} passt nicht zu deinem Wurf – such dir ein passendes Pokémon.`,
   /** Hinweis unter „Pool", wenn ein Wurf gilt (mit Leerzeichen vorn) */
   hintRoll: (region: string, type: string) => ` Gesucht: ${region} + ${type}.`,
+  /** Emoji-Reaktionen */
+  reactLabel: 'Reaktion an alle',
+  reactSend: (emoji: string) => `${emoji} an alle senden`,
   /** Wunschliste (Auto-Pick nimmt die erste erlaubte) */
   queueTitle: 'Wunschliste',
   queueCount: (n: number, max: number) => `${n}/${max}`,

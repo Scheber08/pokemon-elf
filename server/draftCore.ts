@@ -21,9 +21,12 @@ import type { DeviceAuth } from '../src/lib/api/contract';
 import {
   DRAFT_ALL_GENS,
   DRAFT_LIMITS,
+  DRAFT_REACTION_RATE,
+  DRAFT_REACTIONS,
   DRAFT_REROLL_KINDS,
   type DraftClientMessage,
   type DraftPhase,
+  type DraftReaction,
   type DraftRerollKind,
   type DraftServerMessage,
   type DraftSettings,
@@ -378,6 +381,8 @@ export function parseClientMessage(raw: unknown): ParsedMessage {
         ...(d.teamId !== undefined ? { teamId: d.teamId as string } : {}),
         ...(d.pickIndex !== undefined ? { pickIndex: d.pickIndex as number } : {}),
       });
+    case 'react':
+      return (DRAFT_REACTIONS as readonly unknown[]).includes(d.emoji) ? ok({ type: 'react', emoji: d.emoji as DraftReaction }) : badMessage();
     case 'queue':
       return Array.isArray(d.ids) && d.ids.length <= DRAFT_LIMITS.queueMax && d.ids.every(isInt)
         ? ok({ type: 'queue', ids: d.ids as number[] })
@@ -1257,6 +1262,7 @@ export class DraftRoomCore {
     const rec = await this.load();
     if (!rec) return this.sendError(conn, 'not_found', 'Diese Liga gibt es nicht (mehr)', msg.type);
     const now = this.ports.now();
+    if (msg.type === 'react') return this.react(conn, rec.state, att.deviceId, msg.emoji, now);
     if (LOBBY_CHANGES.has(msg.type) && !this.allowChange(att.deviceId, now)) {
       return this.sendError(conn, 'rate_limited', 'Zu viele Änderungen – bitte kurz warten', msg.type);
     }
@@ -1265,6 +1271,17 @@ export class DraftRoomCore {
     if (sameState(next, rec.state)) return this.sendState(conn, rec.state, att.deviceId, now);
     if (msg.type === 'leave' && next.phase === 'lobby' && !next.teams.some((t) => !t.cpu)) return this.closeEmpty(now);
     await this.commit(rec.state, next, now);
+  }
+
+  /** Reaktion eines Mitglieds an alle angemeldeten Verbindungen – ohne Speichern, mit eigenem Limit. */
+  private react(conn: DraftConn, state: DraftState, deviceId: string, emoji: DraftReaction, now: number): void {
+    const teamId = teamOfDevice(state, deviceId);
+    if (!teamId) return this.sendError(conn, 'not_joined', 'Du bist in dieser Liga nicht dabei', 'react');
+    const b = this.bucket(`r:${deviceId}`, DRAFT_REACTION_RATE, now);
+    if (b.tokens < 1) return;
+    b.tokens -= 1;
+    const data = JSON.stringify({ type: 'reaction', teamId, emoji, at: now } satisfies DraftServerMessage);
+    for (const c of this.openConns()) if (attachmentOf(c)?.authed) safeSend(c, data);
   }
 
   /**
@@ -1398,7 +1415,7 @@ export class DraftRoomCore {
   }
 
   /** Wendet eine Nachricht mit der Engine an (wirft DraftError bei Unerlaubtem). */
-  private apply(state: DraftState, deviceId: string, msg: Exclude<DraftClientMessage, { type: 'hello' | 'ping' }>, now: number): DraftState {
+  private apply(state: DraftState, deviceId: string, msg: Exclude<DraftClientMessage, { type: 'hello' | 'ping' | 'react' }>, now: number): DraftState {
     const { list, scale } = this.ports;
     switch (msg.type) {
       case 'join': {

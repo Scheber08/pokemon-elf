@@ -17,6 +17,7 @@ import {
   type DraftActiveRoll,
   type DraftClientMessage,
   type DraftPickLog,
+  type DraftReaction,
   type DraftRerollKind,
   type DraftSettings,
   type DraftSnapshot,
@@ -540,11 +541,30 @@ export interface DraftRoom extends DraftRoomView {
   reroll(kind: DraftRerollKind): boolean;
   /** Wunschliste des eigenen Teams ersetzen (Reihenfolge = Vorrang) */
   setQueue(ids: number[]): boolean;
+  /** Emoji-Reaktion an alle (nur Mitglieder) */
+  react(emoji: DraftReaction): boolean;
+  /** Reaktionen der letzten Sekunden, älteste zuerst */
+  reactions: RoomReaction[];
   reconnect(): void;
 }
 
+/** Eine empfangene Reaktion (id nur lokal, für die Anzeige) */
+export interface RoomReaction {
+  id: number;
+  teamId: string;
+  emoji: string;
+  at: number;
+}
+
+/** So lange bleibt eine Reaktion zu sehen (ms) … */
+export const REACTION_MS = 4000;
+/** … und höchstens so viele gleichzeitig */
+const REACTIONS_SHOWN = 6;
+
 export function useDraftRoom(code: string): DraftRoom {
   const { all: list } = usePokemonData();
+  const [reactions, setReactions] = useState<RoomReaction[]>([]);
+  const reactionSeq = useRef(0);
   const valid = isDraftCode(code);
   const [status, setStatus] = useState<DraftRoomStatus>(valid ? 'connecting' : 'not_found');
   const [state, setState] = useState<DraftSnapshot | null>(null);
@@ -685,6 +705,12 @@ export function useDraftRoom(code: string): DraftRoom {
       },
       onClockOffset(offset) {
         if (alive) setClockOffset(offset);
+      },
+      onReaction(r) {
+        if (!alive) return;
+        const id = ++reactionSeq.current;
+        setReactions((list) => [...list.slice(-(REACTIONS_SHOWN - 1)), { id, ...r }]);
+        window.setTimeout(() => setReactions((list) => list.filter((x) => x.id !== id)), REACTION_MS);
       },
     });
     conn.current = connection;
@@ -896,6 +922,8 @@ export function useDraftRoom(code: string): DraftRoom {
     autoPick,
     reroll,
     setQueue: useCallback((ids: number[]) => send({ type: 'queue', ids }), [send]),
+    react: useCallback((emoji: DraftReaction) => send({ type: 'react', emoji }), [send]),
+    reactions,
     reconnect: useCallback(() => {
       if (!conn.current?.reconnectNow()) setGeneration((g) => g + 1);
     }, []),

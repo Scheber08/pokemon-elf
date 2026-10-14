@@ -194,6 +194,8 @@ const online: Messages['online'] = {
   blockedMegas: (max) => `Limit: ${plural(max, 'Mega', 'Megas')}`,
   favouriteNoMatch: (name) => `${name} doesn’t match your roll – pick one that does.`,
   hintRoll: (region, type) => ` Wanted: ${region} + ${type}.`,
+  reactLabel: 'Reaction to everyone',
+  reactSend: (emoji) => `Send ${emoji} to everyone`,
   queueTitle: 'Wishlist',
   queueCount: (n, max) => `${n}/${max}`,
   queueAdd: '★ Add to wishlist',

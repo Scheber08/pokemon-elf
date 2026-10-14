@@ -71,6 +71,13 @@ export const DRAFT_LIMITS = {
 
 export type PickSeconds = (typeof DRAFT_LIMITS.pickSeconds)[number];
 
+/** Emoji-Reaktionen (feste Auswahl – kein Freitext) */
+export const DRAFT_REACTIONS = ['👏', '🔥', '😂', '😱', '👀', '💀'] as const;
+export type DraftReaction = (typeof DRAFT_REACTIONS)[number];
+
+/** Höchstens so viele Reaktionen am Stück pro Gerät, danach eine pro Sekunde */
+export const DRAFT_REACTION_RATE = { burst: 5, perSecond: 1 } as const;
+
 /** Alle Generationen (1–9) – Pool-Auswahl „Alle" */
 export const DRAFT_ALL_GENS: readonly number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -375,10 +382,14 @@ export type DraftClientMessage =
   | { type: 'reroll'; kind: DraftRerollKind; pickIndex?: number; roll?: DraftRoll }
   /** Wunschliste des eigenen Teams ersetzen (Reihenfolge = Vorrang, höchstens queueMax) */
   | { type: 'queue'; ids: number[] }
+  /** Emoji-Reaktion an alle (nur Mitglieder; wird nicht gespeichert) */
+  | { type: 'react'; emoji: DraftReaction }
   | { type: 'ping' };
 
 export type DraftServerMessage =
   | { type: 'state'; state: DraftSnapshot }
   /** for: Typ der Client-Nachricht, die abgelehnt wurde (fehlt, wenn unbekannt – z. B. beim Nachrichtenlimit) */
   | { type: 'error'; code: string; message: string; for?: DraftClientMessage['type'] }
-  | { type: 'pong'; serverNow: number };
+  | { type: 'pong'; serverNow: number }
+  /** Reaktion eines Teams (an alle Verbindungen, nicht im Zustand) */
+  | { type: 'reaction'; teamId: string; emoji: DraftReaction; at: number };

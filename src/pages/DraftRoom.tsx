@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { DraftLive } from '../components/DraftLive';
 import { DraftLobby } from '../components/DraftLobby';
+import { DraftReactions } from '../components/DraftReactions';
 import { DraftSeasonStage } from '../components/DraftSeasonStage';
 import { RunNotice } from '../components/RunBoard';
 import { useT } from '../i18n';
@@ -180,6 +181,7 @@ function DraftRoomPage({ raw }: { raw: string }) {
           )}
         </div>
         <div className="draft-room__tools">
+          {ready && <DraftReactions room={room} />}
           <SoundToggle />
           <NotifyToggle />
           <ConnectionPill status={room.status} failed={failed} onReconnect={room.reconnect} />
