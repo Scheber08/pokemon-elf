@@ -43,10 +43,17 @@ Deploy stehen in der README.
 - Lokal mit echtem Worker: `npm run dev:cf` (Port 8788). Nach `npm run build` den Dev-Server neu starten,
   sonst liefert er alte Asset-Hashes aus.
 
-## Offene Ideen (Stand 2026-10-13, Besitzer hat noch nicht gewählt)
+## Offene Ideen (Stand 2026-10-14)
 
-1. Testspiel gegen ein Ranglisten-Team (Knopf im Team-Dialog der Rangliste)
-2. Revanche im Online-Draft + „ewige Tabelle“ einer Gruppe
-3. Browser-Benachrichtigung „Du bist dran“ (zusätzlich zum Gong)
-4. Kleinere: Tägliche-Elf-Serie/Archiv, Spielerprofil, Link-Vorschau (OG-Tags), Routen nachladen
-   (Bundle ~600 kB), PWA, ungenutzte deutsche Labels in `src/config/positions.ts` entfernen
+Erledigt: Ultrabestien/Megas/Formen, Revanche + ewige Tabelle, „Du bist dran"-Benachrichtigung,
+Testspiel gegen Ranglisten-Teams, Tägliche-Elf-Serie/Archiv, OG-Tags, Routen nachladen, PWA.
+
+1. Spielerprofil (alle Runs/Bestwerte eines Spielers)
+2. Formen/Megas auch im lokalen Draft (`src/pages/Draft.tsx`)
+3. Link-Vorschau je Liga (Worker müsste HTML für `/draft/:code` umschreiben)
+
+## Daten
+
+- `public/data/pokemon.json` (1.025, `npm run data`) ist Basis aller Challenges und der Skala – nicht ändern.
+- `public/data/forms.json` (`npm run data:forms`, aus den PokeAPI-CSV auf GitHub): Megas, Regional- und
+  Sonderformen mit IDs ab 10001, `base` = Art. Nur Builder und Online-Draft (`DRAFT_LIST`) nutzen sie.
