@@ -69,6 +69,15 @@ describe('fillTeams', () => {
     expect(fill[0].squad!.map((p) => p.pos)).toEqual(FORMATIONS[t0.formation].slots.map((d) => d.pos));
   });
 
+  it('Standardschütze nur, wenn die Liga mit Standardschützen spielt', () => {
+    const s = twoTeams();
+    const cand = [candidate(0, { ss: ALL[200].id })];
+    const off = fillTeams({ ...s, settings: { ...s.settings, setPiece: false } }, cand, BY_ID, SCALE);
+    expect(off[0].setPieceTaker).toBeNull();
+    const on = fillTeams({ ...s, settings: { ...s.settings, setPiece: true } }, cand, BY_ID, SCALE);
+    expect(on[0].setPieceTaker?.pokemonId).toBe(ALL[200].id);
+  });
+
   it('zu wenige Kandidaten: der Rest sind Vereine mit Ratings wie die Challenge-Gegner', () => {
     const s = twoTeams();
     const fill = fillTeams(s, [candidate(0), candidate(1)], BY_ID, SCALE);

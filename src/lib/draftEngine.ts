@@ -1386,7 +1386,7 @@ export interface FillCandidate {
  * ihrer Elf; reichen sie nicht, Vereine mit Ratings wie die Challenge-Gegner (ohne Kader).
  */
 export function fillTeams(
-  state: Pick<DraftState, 'seed' | 'teams'>,
+  state: Pick<DraftState, 'seed' | 'teams'> & Partial<Pick<DraftState, 'settings'>>,
   candidates: readonly FillCandidate[],
   byId: Map<number, Pokemon>,
   scale: Scale,
@@ -1406,7 +1406,9 @@ export function fillTeams(
     if (players.some((p) => !p)) continue;
     taken.add(name.toLowerCase());
     const ev = evaluateTeam(c.formation, players, scale);
-    const ss = c.ss != null ? byId.get(c.ss) : undefined;
+    // Ohne Standardschützen in der Liga spielen auch die Auffüllteams ohne (gleiche Regeln für alle)
+    const setPiece = state.settings ? upgradeSettings(state.settings).setPiece : true;
+    const ss = setPiece && c.ss != null ? byId.get(c.ss) : undefined;
     out.push({
       name,
       player: c.player.trim(),
