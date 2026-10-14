@@ -224,7 +224,8 @@ Einstellungen bzw. per Umschalter: 2D, Bericht oder aus. In der Manager-Saison z
 **Shinys im Draft** (`src/lib/shiny.ts`): Jeder Pick schillert mit 2 % Chance (online aus dem geheimen Liga-Seed,
 lokal aus einem Zufallswert je Draft). Ein Shiny spielt besser (+10 Passung) und hebt das ganze Team um bis zu
 40 Team-Score-Punkte – je schwächer das Pokémon (Summe der Basiswerte), desto mehr. Online in `DraftState.shinies`
-(wandert bei Tausch mit), ✨ und Shiny-Sprite auf dem Feld, im Pick-Verlauf und als Hinweis beim eigenen Pick.
+(wandert bei Tausch mit), ✨ und Shiny-Sprite auf dem Feld, im Pick-Verlauf und als Hinweis beim eigenen Pick. In der
+Manager-Saison kann auch ein Neuzugang vom Transfermarkt schillern (gleiche Chance, `ManagerTransfer.shiny`).
 
 **Ausfälle in der Manager-Saison** (`src/lib/manager.ts`: `rollAbsences`, `coverAbsences`): Nach jedem Spieltag
 kann sich ein eingesetztes Pokémon verletzen (3 %, 1–3 Spieltage) oder Rot sehen (1 %, 1 Spieltag gesperrt) –

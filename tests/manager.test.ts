@@ -29,6 +29,8 @@ import {
   type DraftState,
 } from '../src/lib/draftEngine';
 import { FORMATIONS } from '../src/config/formations';
+import { shinyRoll } from '../src/lib/shiny';
+import { leagueSeed } from '../src/lib/draftEngine';
 import { buildScale } from '../src/lib/fit';
 import {
   bestLineup,
@@ -44,6 +46,7 @@ import {
   freeAgents,
   setClaim,
   processClaims,
+  claimError,
   makeOffer,
   answerOffer,
   tradeError,
@@ -316,6 +319,19 @@ describe('Transfermarkt', () => {
     expect(after.manager!.transfers).toContainEqual({ matchday: 1, teamId: 'h', in: inn, out });
     expect(after.manager!.claims).toBeUndefined();
     expect(freeAgents(after, ALL).some((p) => p.id === out)).toBe(true);
+  });
+
+  it('Neuzugang kann schillern: Shiny-Chance wie beim Pick (fest je Liga), aus mit shinies: false', () => {
+    const s = season();
+    const out = rosterOf(s.teams.find((t) => t.id === 'h')!)[0];
+    const seed = leagueSeed(s.seed, 'shiny');
+    const inn = freeAgents(s, ALL).find((p) => shinyRoll(seed, p.id) && !claimError(s, 'h', { in: p.id, out }, ALL))!.id;
+    const st = { ...s, manager: { ...s.manager!, claims: { h: { in: inn, out } } } };
+    const after = processClaims(st, ALL, SCALE);
+    expect(after.shinies).toContain(inn);
+    expect(after.manager!.transfers).toContainEqual({ matchday: 1, teamId: 'h', in: inn, out, shiny: true });
+    const off = processClaims({ ...st, settings: { ...st.settings, shinies: false } }, ALL, SCALE);
+    expect(off.shinies ?? []).not.toContain(inn);
   });
 
   it('gleicher Wunsch zweier Teams: der Tabellenschlechtere bekommt ihn, der andere verfällt', () => {

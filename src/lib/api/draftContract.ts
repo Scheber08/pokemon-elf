@@ -301,6 +301,8 @@ export interface ManagerTransfer {
   out: number;
   /** Tausch mit diesem Team (fehlt: freies Pokémon vom Transfermarkt) */
   with?: string;
+  /** Neuzugang schillert (Shiny-Chance beim Transfer) */
+  shiny?: boolean;
 }
 
 /** Tausch-Angebot zwischen zwei gedrafteten Teams: `from` gibt `give` und bekommt `get` von `to` */

@@ -220,6 +220,12 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
       {x.with
         ? tx.tradeLine(teamName(x.teamId), pokemonName(x.out), teamName(x.with), pokemonName(x.in))
         : tx.transferLine(teamName(x.teamId), pokemonName(x.in), pokemonName(x.out))}
+      {x.shiny && (
+        <span title={t.shiny.title}>
+          {' '}
+          ✨<span className="sr-only">{t.shiny.title}</span>
+        </span>
+      )}
     </li>
   );
   // Nächster Gegner: Tabellenplatz und Form (letzte fünf Spiele)
