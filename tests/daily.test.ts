@@ -275,3 +275,13 @@ describe('Kalenderwoche (ISO 8601)', () => {
     expect(weekKey('2024-12-30')).toBe('W2025-01'); // Montag → KW 1 des Folgejahrs
   });
 });
+
+describe('Teil-Text mit Serie', () => {
+  it('ab 2 Tagen steht die Serie in der Statistik-Zeile', async () => {
+    const { buildDailyShareText } = await import('../src/lib/dailyShare');
+    const base = { day: '2026-10-14', number: 3, record: { w: 30, d: 2, l: 2 }, points: 92, score: 812, position: 1, outcomes: [], url: 'x' };
+    expect(buildDailyShareText({ ...base, streak: 5 }).split('\n')[1]).toMatch(/· 🔥 5 Tage in Folge$/);
+    expect(buildDailyShareText({ ...base, streak: 1 }).split('\n')[1]).not.toContain('🔥');
+    expect(buildDailyShareText(base).split('\n')[1]).not.toContain('🔥');
+  });
+});

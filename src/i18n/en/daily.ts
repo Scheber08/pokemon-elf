@@ -54,6 +54,7 @@ const daily: Messages['daily'] = {
   playOffline: 'Play offline (unranked – uses today’s attempt)',
   oneAttempt: 'One attempt per day: once started, a run can’t be cancelled or restarted.',
   shareHeader: (n, date) => `Pokémon Elf · Daily XI #${n} (${date})`,
+  shareStreak: (n) => `🔥 ${n} days in a row`,
   shareStats: (record, points, score, position) => `${record} · ${points} pts · Score ${score} · ${ordinal(position)} place`,
 };
 

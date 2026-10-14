@@ -25,6 +25,8 @@ export interface DailyShareInput {
   outcomes: readonly MatchOutcome[];
   /** Link zur Tagesseite, z. B. origin + '/taeglich' */
   url: string;
+  /** Tage am Stück (Serie) – ab 2 steht sie im Text */
+  streak?: number;
 }
 
 /** Ergebnisse als Emoji-Reihe (🟩 Sieg, 🟨 Remis, 🟥 Niederlage). */
@@ -40,7 +42,7 @@ export function isPerfectRecord(r: Record3): boolean {
 /**
  * Teil-Text der Tages-Challenge – fünf Zeilen (Wörter in der Sprache von t, Standard: aktive):
  *   Pokémon Elf · Tägliche Elf #1 (12.10.2026)
- *   30–2–2 · 92 Pkt · Score 812 · Platz 1        (bei 34–0–0 mit „ 🏆")
+ *   30–2–2 · 92 Pkt · Score 812 · Platz 1        (bei 34–0–0 mit „ 🏆", ab 2 Tagen Serie „ · 🔥 5")
  *   Hinrunde (Spiele 1–17) als Emojis
  *   Rückrunde (Spiele 18–34) als Emojis
  *   Link
@@ -49,9 +51,10 @@ export function buildDailyShareText(i: DailyShareInput, t: Messages = messages()
   const { w, d, l } = i.record;
   const half = Math.ceil(i.outcomes.length / 2);
   const trophy = isPerfectRecord(i.record) ? ' 🏆' : '';
+  const streak = i.streak && i.streak >= 2 ? ` · ${t.daily.shareStreak(i.streak)}` : '';
   return [
     t.daily.shareHeader(i.number, t.game.day(i.day)),
-    `${t.daily.shareStats(`${w}–${d}–${l}`, i.points, i.score, i.position)}${trophy}`,
+    `${t.daily.shareStats(`${w}–${d}–${l}`, i.points, i.score, i.position)}${trophy}${streak}`,
     outcomeEmojis(i.outcomes.slice(0, half)),
     outcomeEmojis(i.outcomes.slice(half)),
     i.url,

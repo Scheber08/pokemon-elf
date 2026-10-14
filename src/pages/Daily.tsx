@@ -9,6 +9,7 @@ import type { LeaderboardRow } from '../lib/api/contract';
 import { useT } from '../i18n';
 import { MODE_RULES } from '../lib/challengeEngine';
 import { dailyNumber, dayKey, msUntilNextDay } from '../lib/daily';
+import { dailyStreak, loadDailyHistory } from '../lib/dailyHistory';
 import { keepDailyRun } from '../lib/dailyRun';
 import { buildDailyShareText, formatCountdown, formatDayLong } from '../lib/dailyShare';
 import { copyText } from '../lib/exportImage';
@@ -161,6 +162,10 @@ function DailyShare({ day, run }: { day: string; run: ComputedRun }) {
           position: season.position,
           outcomes: [...season.userMatches].sort((a, b) => a.round - b.round).map((m) => m.outcome),
           url: `${window.location.origin}${import.meta.env.BASE_URL}taeglich`,
+          streak: dailyStreak(
+            loadDailyHistory().map((d) => d.day),
+            day,
+          ).current,
         },
         t,
       ),
