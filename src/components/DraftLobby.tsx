@@ -17,6 +17,7 @@ import {
   type TeamPrefs,
 } from '../state/useDraftRoom';
 import { DraftTeamTags } from './DraftBoard';
+import { DraftPresets } from './DraftPresets';
 import { DraftSettingsForm, DraftSettingsSummary, DraftTeamFields } from './DraftSettingsForm';
 import { EternalTable } from './EternalTable';
 import '../styles/draft.css';
@@ -304,13 +305,16 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
             {t.online.settings}
           </h2>
           {isHost ? (
-            <DraftSettingsForm
-              value={settingsValue}
-              onChange={onSettings}
-              list={list}
-              teamsJoined={s.teams.length}
-              busy={room.busy.settings}
-            />
+            <>
+              <DraftPresets value={settingsValue} list={list} teamsJoined={s.teams.length} onApply={onSettings} disabled={room.busy.settings} />
+              <DraftSettingsForm
+                value={settingsValue}
+                onChange={onSettings}
+                list={list}
+                teamsJoined={s.teams.length}
+                busy={room.busy.settings}
+              />
+            </>
           ) : (
             <>
               <DraftSettingsSummary settings={s.settings} />

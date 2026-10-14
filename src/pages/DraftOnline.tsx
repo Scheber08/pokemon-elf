@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { DraftPresets } from '../components/DraftPresets';
 import { DraftSettingsForm, DraftTeamFields } from '../components/DraftSettingsForm';
-import { DRAFT_PRESET_IDS, DRAFT_PRESETS } from '../config/draftPresets';
 import { useT, type Messages } from '../i18n';
 import { ApiRequestError } from '../lib/api/client';
 import { createDraft, fetchPublicLobbies, isDraftCode, normalizeDraftCode } from '../lib/api/draftClient';
@@ -19,7 +19,6 @@ import { usePokemonData } from '../state/PokemonData';
 import {
   cleanTeamName,
   draftErrorText,
-  fitSettingsPatch,
   loadRecentLeagues,
   loadTeamPrefs,
   saveTeamPrefs,
@@ -91,26 +90,7 @@ function CreateLeague() {
       <h2 id="draft-create-title" className="section-title">
         {t.online.createTitle}
       </h2>
-      <div className="field draft-presets">
-        <span className="field__label">{t.online.presets}</span>
-        <div className="chips">
-          {DRAFT_PRESET_IDS.map((id) => (
-            <button
-              key={id}
-              type="button"
-              className="chip"
-              title={t.online.presetNote[id]}
-              onClick={() => {
-                // Vorlage anwenden; reicht der Pool nicht für die gewählte Teamzahl, sinkt sie mit
-                const fitted = fitSettingsPatch(settings, DRAFT_PRESETS[id], list);
-                if (fitted) setSettings((s) => ({ ...s, ...fitted }));
-              }}
-            >
-              {t.online.presetName[id]}
-            </button>
-          ))}
-        </div>
-      </div>
+      <DraftPresets value={settings} list={list} onApply={(patch) => setSettings((x) => ({ ...x, ...patch }))} />
       <DraftSettingsForm value={settings} onChange={(patch) => setSettings((s) => ({ ...s, ...patch }))} list={list} />
       <h3 className="draft-subtitle">{t.online.yourTeam}</h3>
       <DraftTeamFields
