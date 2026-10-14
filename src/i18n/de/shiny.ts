@@ -2,6 +2,7 @@
 const shiny = {
   title: 'Shiny',
   picked: (name: string, boost: number) => `✨ ${name} ist ein Shiny! Bessere Werte und +${boost} Team-Score fürs ganze Team.`,
+  pickedBy: (name: string, team: string, boost: number) => `✨ ${team} hat ein Shiny gezogen: ${name} (+${boost} Team-Score).`,
   note: 'Mit 2 % Chance schillert ein Pick: Er spielt besser und hebt das ganze Team – je schwächer das Pokémon, desto mehr.',
 };
 

@@ -272,15 +272,21 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   const ultraBeastLimit = maxUltraBeasts != null && ultraBeasts ? maxUltraBeasts : null;
   const megaLimit = maxMegas != null && megas ? maxMegas : null;
 
-  // Eigener Pick schillert: kurz feiern (einmal je Pick)
+  // Pick schillert: kurz ansagen (einmal je Pick) – eigener gefeiert, fremder als Hinweis
   const newestPick = s.picks[s.picks.length - 1];
   const shinySeen = useRef(s.picks.length);
   useEffect(() => {
     if (s.picks.length <= shinySeen.current) return;
     shinySeen.current = s.picks.length;
-    if (!newestPick?.shiny || newestPick.teamId !== me?.id) return;
+    if (!newestPick?.shiny) return;
     const mon = byId.get(newestPick.pokemonId);
-    if (mon) setInfo(t.shiny.picked(t.game.pokemon(mon), shinyTeamBoost(mon)));
+    if (!mon) return;
+    if (newestPick.teamId === me?.id) {
+      setInfo(t.shiny.picked(t.game.pokemon(mon), shinyTeamBoost(mon)));
+      return;
+    }
+    const team = s.teams.find((x) => x.id === newestPick.teamId);
+    if (team) setInfo(t.shiny.pickedBy(t.game.pokemon(mon), teamLabel(team, t), shinyTeamBoost(mon)));
   }, [s.picks.length]);
 
   // Vorgemerktes Pokémon ist vergeben → Auswahl aufheben (bei fremdem Pick mit Hinweis)

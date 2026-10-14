@@ -4,6 +4,7 @@ import type { Messages } from '../de';
 const shiny: Messages['shiny'] = {
   title: 'Shiny',
   picked: (name, boost) => `✨ ${name} is a shiny! Better stats and +${boost} team score for the whole team.`,
+  pickedBy: (name, team, boost) => `✨ ${team} drafted a shiny: ${name} (+${boost} team score).`,
   note: 'Each pick has a 2% chance to be shiny: it plays better and lifts the whole team – the weaker the Pokémon, the more.',
 };
 
