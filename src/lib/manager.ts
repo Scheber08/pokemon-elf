@@ -257,11 +257,30 @@ export function bestLineup(
   absent: ReadonlySet<number> = new Set(),
   /** Shinys der Liga – spielen besser und heben das Team, also möglichst aufstellen */
   shinies?: ReadonlySet<number>,
+  /** Kapitän – zählt in der Startelf doppelt; aufgestellt, wenn die Elf dadurch stärker wird */
+  captain?: number | null,
 ): Omit<ManagerLineup, 'auto'> {
   const pool = rosterOf(team).flatMap((id) => (absent.has(id) ? [] : byId.get(id) ?? []));
   const shinyEdge = (p: Pokemon) => (shinies?.has(p.id) ? SHINY_FIT_BONUS + shinyTeamBoost(p) : 0);
-  const best = bestEleven(formation, pool, scale, { setPiece, bonus: (p) => (form[p.id] ?? 0) * FORM_FIT + shinyEdge(p) });
-  return { formation, slots: best.slots.map((id) => id ?? -1), ss: setPiece ? best.ss : null };
+  const edge = (p: Pokemon) => (form[p.id] ?? 0) * FORM_FIT + shinyEdge(p);
+  const lineupOf = (b: ReturnType<typeof bestEleven>): Omit<ManagerLineup, 'auto'> => ({ formation, slots: b.slots.map((id) => id ?? -1), ss: setPiece ? b.ss : null });
+  const plain = lineupOf(bestEleven(formation, pool, scale, { setPiece, bonus: edge }));
+  if (captain == null || plain.slots.includes(captain) || !pool.some((p) => p.id === captain)) return plain;
+  // Variante mit Kapitän in der Elf (großer Bonus zwingt ihn auf seine beste Position) – die stärkere gewinnt
+  const withCaptain = lineupOf(bestEleven(formation, pool, scale, { setPiece, bonus: (p) => edge(p) + (p.id === captain ? 1000 : 0) }));
+  if (!withCaptain.slots.includes(captain)) return plain;
+  const strength = (l: Omit<ManagerLineup, 'auto'>) =>
+    lineupScore(
+      l.slots.flatMap((id, i) => {
+        const p = byId.get(id);
+        return p ? [{ p, pos: FORMATIONS[formation].slots[i].pos }] : [];
+      }),
+      scale,
+      (id) => form[id] ?? 0,
+      captain,
+      shinies,
+    );
+  return strength(withCaptain) > strength(plain) ? withCaptain : plain;
 }
 
 /** Aufstellung nach dem Draft: so, wie gedraftet. */
@@ -296,7 +315,7 @@ function refreshAuto(
   const out: Record<string, ManagerLineup> = {};
   for (const t of state.teams) {
     const cur = lineups[t.id] ?? { ...draftedLineup(t), auto: true };
-    out[t.id] = t.cpu || cur.auto ? { ...bestLineup(t, cur.formation, byId, scale, form, setPiece, absent, shinies), auto: cur.auto || t.cpu } : cur;
+    out[t.id] = t.cpu || cur.auto ? { ...bestLineup(t, cur.formation, byId, scale, form, setPiece, absent, shinies, t.captain), auto: cur.auto || t.cpu } : cur;
   }
   return out;
 }
@@ -563,7 +582,7 @@ export function setLineup(
   if (input.auto) {
     const byId = new Map(list.map((p) => [p.id, p]));
     lineup = {
-      ...bestLineup(team, input.formation, byId, scale, m.form, setPiece, absentAt(m, m.played + 1), state.shinies?.length ? new Set(state.shinies) : undefined),
+      ...bestLineup(team, input.formation, byId, scale, m.form, setPiece, absentAt(m, m.played + 1), state.shinies?.length ? new Set(state.shinies) : undefined, team.captain),
       auto: true,
     };
   } else {

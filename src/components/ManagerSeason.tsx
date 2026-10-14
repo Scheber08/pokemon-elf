@@ -522,7 +522,7 @@ function LineupEditor({
     const a = absent.has(id) ? out[id] : undefined;
     return a ? (a.kind === 'red' ? tx.outRed(a.until) : tx.outInjury(a.until)) : null;
   };
-  const best = bestLineup(team, lineup.formation, byId, sc, form, setPiece, absent, shinySet);
+  const best = bestLineup(team, lineup.formation, byId, sc, form, setPiece, absent, shinySet, team.captain);
   const bestStrength = lineupScore(squadOf(best), sc, formOf, team.captain, shinySet);
 
   const manual = (l: Omit<ManagerLineup, 'auto'>) => {
@@ -591,7 +591,7 @@ function LineupEditor({
             onChange={(e) => {
               const formation = e.target.value as FormationId;
               setPick(null);
-              onChange({ ...bestLineup(team, formation, byId, sc, form, setPiece, absent, shinySet), auto: lineup.auto });
+              onChange({ ...bestLineup(team, formation, byId, sc, form, setPiece, absent, shinySet, team.captain), auto: lineup.auto });
             }}
           >
             {FORMATION_IDS.map((f) => (

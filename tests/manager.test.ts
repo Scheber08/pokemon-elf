@@ -28,6 +28,7 @@ import {
   upgradeSettings,
   type DraftState,
 } from '../src/lib/draftEngine';
+import { FORMATIONS } from '../src/config/formations';
 import { buildScale } from '../src/lib/fit';
 import {
   bestLineup,
@@ -215,6 +216,29 @@ describe('Saison', () => {
     const b = playMatchday({ ...s, manager: { ...s.manager!, lineups: { ...s.manager!.lineups, h: worst } } }, ALL, SCALE);
     const idx = s.teams.findIndex((t) => t.id === 'h');
     expect(b.league!.teams[idx].rating).toBeLessThan(a.league!.teams[idx].rating);
+  });
+
+  it('Beste Elf mit Kapitän: nie schwächer als ohne, stellt ihn auf, wenn er hilft', () => {
+    const s = startManagerSeason(drafted(), ALL, SCALE);
+    const host = s.teams.find((t) => t.id === 'h')!;
+    const form = s.manager!.form;
+    const plain = bestLineup(host, '4-3-3', BY_ID, SCALE, form, false);
+    const score = (l: { slots: number[] }, captain: number) =>
+      lineupScore(
+        l.slots.map((id, i) => ({ p: BY_ID.get(id)!, pos: FORMATIONS['4-3-3'].slots[i].pos })),
+        SCALE,
+        (id) => form[id] ?? 0,
+        captain,
+      );
+    const benchers = rosterOf(host).filter((id) => !plain.slots.includes(id));
+    expect(benchers.length).toBeGreaterThan(0);
+    for (const c of benchers) {
+      const withC = bestLineup(host, '4-3-3', BY_ID, SCALE, form, false, new Set(), undefined, c);
+      expect(score(withC, c)).toBeGreaterThanOrEqual(score(plain, c));
+      expect(lineupError(host, withC, false)).toBeNull();
+    }
+    // Kapitän schon in der Elf: nichts ändert sich
+    expect(bestLineup(host, '4-3-3', BY_ID, SCALE, form, false, new Set(), undefined, plain.slots[0])).toEqual(plain);
   });
 
   it('Tagesform: −2 … +2, meist 0, fest je Liga, Spieltag und Pokémon', () => {
