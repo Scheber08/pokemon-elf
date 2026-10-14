@@ -101,7 +101,11 @@ Routen: `/` Builder · `/challenge` 34–0 · `/taeglich` Tägliche Elf · `/151
    doppeltem Gewicht.
 5. **Saison:** 18 Teams, Hin- und Rückrunde. Tore ~ Poisson mit
    `λ = 1,4 · exp((eigen − Gegner)/250) + 0,15 (Heim)`, leichte Streuung, λ auf 0,05–5,5 begrenzt.
-   Gegner-Ratings 350–910.
+   Gegner-Ratings 350–910. Das ist `CLASSIC_MODEL` (`src/lib/season.ts`) – der Server rechnet gewertete Runs
+   damit nach, es bleibt unverändert.
+6. **Online-Draft** (`DRAFT_MODEL`): Rating-Unterschied weich gedeckelt (`320 · tanh(Δ/320)`), `divisor` 380,
+   λ höchstens 3,8, etwas mehr Streuung, dazu eine Tagesform je Team (AR(1), σ ≈ 35 Rating-Punkte, trägt über
+   Spieltage) und Torminuten (1–90, selten Nachspielzeit). Beispiel 900 gegen 590: im Schnitt 2,8:0,75.
 
 Für die 151 Challenge und Retro 34–0 wird nur über die Original-151 normalisiert.
 Alle Zahlen sind in `src/config/` änderbar – die Tests prüfen Eigenschaften, keine festen Werte.
