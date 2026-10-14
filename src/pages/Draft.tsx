@@ -36,7 +36,8 @@ import { cleanCrest, type Crest as CrestData } from '../lib/crest';
 import { Crest } from '../components/Crest';
 import { CrestEditor } from '../components/CrestEditor';
 import { cpuCaptain } from '../lib/draftEngine';
-import { SHINY_FIT_BONUS, shinyBonus, shinyRoll } from '../lib/shiny';
+import { SHINY_FIT_BONUS, shinyBonus, shinyRoll, shinyTeamBoost } from '../lib/shiny';
+import { useToast } from '../state/Toast';
 
 const ROUNDS = 11;
 
@@ -124,6 +125,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   const t = useT();
   const tx = t.draft.local;
   const { all, byId, scale } = usePokemonData();
+  const toast = useToast();
   /** Kapitän: Menschen wählen ihn, CPU-Teams nehmen den am besten passenden Spieler */
   const captainOf = (tm: DraftTeam): number | null =>
     tm.cpu ? (state.cpuCaptains ? cpuCaptain(tm, byId, scale('all')) : null) : (tm.captain ?? null);
@@ -185,6 +187,20 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
         ...(pick >= s.teams.length * ROUNDS ? { model: 'draft' as const, cpuCaptains: true as const } : {}),
       };
     });
+
+  // Neuer Shiny: kurz melden (wie im Online-Draft)
+  const shinyCount = state.shinies?.length ?? 0;
+  const shinySeen = useRef(shinyCount);
+  useEffect(() => {
+    if (shinyCount <= shinySeen.current) {
+      shinySeen.current = shinyCount;
+      return;
+    }
+    shinySeen.current = shinyCount;
+    const id = state.shinies![shinyCount - 1];
+    const mon = byId.get(id);
+    if (mon) toast(t.shiny.picked(t.game.pokemon(mon), shinyTeamBoost(mon)));
+  }, [shinyCount]);
 
   // CPU-Picks: beste Kombination aus Pokémon und freiem Slot nach Fit – mit etwas Zufall.
   useEffect(() => {
