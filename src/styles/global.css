@@ -1898,6 +1898,13 @@ button.sheet__row:hover {
   color: var(--text-dim);
   margin-top: -3px;
 }
+/* Lokaler Draft: Spieltag, Paarung, Ergebnis (ohne Ort und Ausgang) */
+.match--league {
+  grid-template-columns: 2.4em minmax(0, 1fr) 3.4em;
+}
+.match--league .match__scorers {
+  grid-column: 2 / -1;
+}
 .explainer {
   color: var(--text-dim);
   max-width: 820px;

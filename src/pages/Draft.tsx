@@ -17,6 +17,7 @@ import { emptySlots } from '../lib/formation';
 import { draftGrades } from '../lib/leagueTimeline';
 import { createRng, gaussian, randomSeed, shuffle } from '../lib/rng';
 import { CLASSIC_MODEL, DRAFT_MODEL, simulateLeague, type LeagueTeam } from '../lib/season';
+import { scorerSummary } from '../lib/seasonTimeline';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
 import { evaluateTeam } from '../lib/teamScore';
 import { usePokemonData } from '../state/PokemonData';
@@ -359,6 +360,10 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
 
   if (state.phase === 'league' && league) {
     const c = t.draft.col;
+    const monName = (id: number) => {
+      const p = byId.get(id);
+      return p ? t.game.pokemon(p) : `#${id}`;
+    };
     const grades = draftGrades(league.teams.map((tm) => tm.rating));
     const champion = league.table[0];
     return (
@@ -447,7 +452,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           <summary>{tx.allMatches}</summary>
           <ol className="matches">
             {league.matches.map((m, i) => (
-              <li key={i} className="match">
+              <li key={i} className="match match--league">
                 <span className="match__round">{tx.roundNo(m.round)}</span>
                 <span className="match__opp">
                   {teamName(state.teams[m.home].name)} – {teamName(state.teams[m.away].name)}
@@ -455,6 +460,11 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 <span className="match__score">
                   {m.hg}:{m.ag}
                 </span>
+                {(m.homeScorers.length > 0 || m.awayScorers.length > 0) && (
+                  <span className="match__scorers">
+                    {[scorerSummary(m.homeScorers, monName), scorerSummary(m.awayScorers, monName)].filter(Boolean).join(' · ')}
+                  </span>
+                )}
               </li>
             ))}
           </ol>
