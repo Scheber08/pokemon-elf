@@ -497,3 +497,31 @@ export function recentForm(matches: readonly Match[], team: number, upTo: number
     return gf > ga ? 'S' : gf < ga ? 'N' : 'U';
   });
 }
+
+/** Längste Siegesserie der Saison: Team (Index), Länge und Spieltage – null ohne Sieg. */
+export interface WinStreak {
+  team: number;
+  length: number;
+  from: number;
+  to: number;
+}
+
+/** Längste Serie aufeinanderfolgender Siege eines Teams (bei Gleichstand die zuerst erreichte). */
+export function longestWinStreak(league: Pick<LeagueResult, 'matches' | 'teams'>): WinStreak | null {
+  let best: WinStreak | null = null;
+  for (let team = 0; team < league.teams.length; team++) {
+    const own = league.matches.filter((m) => m.home === team || m.away === team).sort((a, b) => a.round - b.round);
+    let run = 0;
+    let from = 0;
+    for (const m of own) {
+      const gf = m.home === team ? m.hg : m.ag;
+      const ga = m.home === team ? m.ag : m.hg;
+      if (gf > ga) {
+        if (run === 0) from = m.round;
+        run++;
+        if (!best || run > best.length || (run === best.length && m.round < best.to)) best = { team, length: run, from, to: m.round };
+      } else run = 0;
+    }
+  }
+  return best;
+}

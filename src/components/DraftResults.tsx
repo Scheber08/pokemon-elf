@@ -3,7 +3,7 @@ import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftTeam } from '../lib/api/draftContract';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { draftGrades, draftShareText, draftSteal, headToHead, leagueTimeline, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { draftGrades, draftShareText, draftSteal, headToHead, leagueTimeline, longestWinStreak, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { formatRecord, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -63,6 +63,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
   const table = league.table;
   const you = highlight != null && highlight >= 0 && highlight < league.teams.length ? highlight : null;
   const duels = useMemo(() => (you != null ? headToHead(league, you) : []), [league, you]);
+  const streak = useMemo(() => (league.cup ? null : longestWinStreak(league)), [league]);
 
   // Vereinsnamen der CPU-Teams erst bei der Anzeige übersetzen – gespeichert bleibt der deutsche Name
   const nameOf = useCallback(
@@ -198,6 +199,9 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
           <p className="draft-results__steal">
             {tx.steal(t.game.pokemon(stealMon), steal.pick + 1, nameOf(stealTeam), t.game.posName[steal.pos])}
           </p>
+        )}
+        {streak && streak.length >= 3 && (
+          <p className="draft-results__steal">{tx.streak(nameOf(streak.team), streak.length, streak.from, streak.to)}</p>
         )}
         {ownRow && (
           <p className="draft-results__you">

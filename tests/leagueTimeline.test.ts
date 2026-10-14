@@ -12,7 +12,7 @@ import {
   startDraft,
 } from '../src/lib/draftEngine';
 import { buildScale } from '../src/lib/fit';
-import { recentForm,
+import { longestWinStreak, recentForm,
   currentMatchday,
   FINALE_MS,
   leagueTimeline,
@@ -275,5 +275,15 @@ describe('Formkurve', () => {
     expect(recentForm(matches, 0, 6)).toEqual(['U', 'N', 'S', 'S', 'N']);
     expect(recentForm(matches, 0, 6, 2)).toEqual(['S', 'N']);
     expect(recentForm(matches, 0, 0)).toEqual([]);
+  });
+});
+
+describe('Längste Siegesserie', () => {
+  const m = (round: number, home: number, away: number, hg: number, ag: number) => ({ round, home, away, hg, ag, homeScorers: [], awayScorers: [] });
+  it('findet die längste Serie mit Spieltagen, Remis unterbricht', () => {
+    const teams = [{ name: 'A', rating: 1 }, { name: 'B', rating: 1 }];
+    const matches = [m(1, 0, 1, 1, 0), m(2, 1, 0, 0, 2), m(3, 0, 1, 1, 1), m(4, 1, 0, 2, 0), m(5, 0, 1, 0, 3), m(6, 1, 0, 1, 0)];
+    expect(longestWinStreak({ teams, matches })).toEqual({ team: 1, length: 3, from: 4, to: 6 });
+    expect(longestWinStreak({ teams, matches: [m(1, 0, 1, 0, 0)] })).toBeNull();
   });
 });

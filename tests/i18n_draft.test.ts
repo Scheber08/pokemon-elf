@@ -411,6 +411,7 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     expect(container.querySelectorAll('.draft-results__table tbody tr')).toHaveLength(18);
     expect(all).toContain('Share result');
     expect(all).toMatch(/⚽ Top scorer: [^|]+ \(\d+ goals?\)/);
+    expect(all).toMatch(/Longest winning run: [^|]+, \d+ wins in a row \(matchdays \d+–\d+\)/);
     // Duelle des eigenen Teams
     expect(all).toContain('Your head-to-heads');
     expect(all).toContain('New league');
