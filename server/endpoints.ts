@@ -20,6 +20,7 @@ import type { ChallengeKey, FormationId } from '../src/types';
 import { authenticate, HOUR_MS, IP_HASH_TTL_MS, rateLimited } from './auth';
 import { newId, randomHex, randomSeed31 } from './crypto';
 import {
+  allTimePlaces,
   ALL_TIME_SCOPE,
   claimToken,
   countFinishes,
@@ -411,7 +412,9 @@ export async function playerProfile(rawId: string, env: Env): Promise<Response> 
   const device = await rankedEntryDevice(env.DB, id, Date.now());
   if (!device || isDefaultPlayerName(device.player)) throw entryNotFound();
   const rows = await playerRows(env.DB, device.device_id, PROFILE_RECENT);
-  const challenges = CHALLENGE_KEYS.flatMap((challenge) => {
+  const played = CHALLENGE_KEYS.filter((challenge) => rows.counts.some((c) => c.challenge === challenge));
+  const places = await allTimePlaces(env.DB, device.device_id, played);
+  const challenges = played.flatMap((challenge, i) => {
     const count = rows.counts.find((c) => c.challenge === challenge);
     if (!count) return [];
     const best = rows.bests.find((b) => b.challenge === challenge);
@@ -422,6 +425,8 @@ export async function playerProfile(rawId: string, env: Env): Promise<Response> 
         challenge,
         runs: count.runs,
         perfect: Number(count.perfect) || 0,
+        place: places[i].place,
+        players: places[i].players,
         best:
           best && run && formation && FORMATION_IDS.includes(formation)
             ? { entryId: best.id, teamName: run.teamName, formation, day: run.day, record: run.record, points: run.points, score: run.score }

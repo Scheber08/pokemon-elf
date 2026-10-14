@@ -170,6 +170,10 @@ export interface PlayerChallengeStats {
   runs: number;
   /** Davon perfekte Saisons (nur Siege, z. B. 34–0) */
   perfect: number;
+  /** Aktueller Platz in der Allzeit-Rangliste (null = nicht gelistet; fehlt bei älteren Antworten) */
+  place?: number | null;
+  /** Spieler in der Allzeit-Rangliste dieser Wertung */
+  players?: number;
   best: PlayerBest | null;
 }
 

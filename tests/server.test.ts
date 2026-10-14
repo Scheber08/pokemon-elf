@@ -1536,6 +1536,11 @@ describe('Spielerprofil (GET /api/entries/:id/player)', () => {
     expect([a.finish.body.entryId, b.finish.body.entryId]).toContain(best340.entryId);
     expect(res.body.recent.map((r) => r.teamName)).toEqual(['Retro Elf', 'Zweite Elf', 'Erste Elf']);
     expect(JSON.stringify(res.body)).not.toContain(dev.deviceId.toLowerCase());
+    // Aktueller Allzeit-Platz je Wertung (einziger Spieler → Platz 1 von 1)
+    expect(res.body.challenges.map((x) => [x.place, x.players])).toEqual([
+      [1, 1],
+      [1, 1],
+    ]);
     // Der Bestwert ist selbst ein Ranglisten-Eintrag
     expect((await get(`/api/entries/${best340.entryId}`)).status).toBe(200);
     // Perfekte Saisons je Wertung

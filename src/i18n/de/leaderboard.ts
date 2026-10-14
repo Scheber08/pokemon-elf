@@ -122,6 +122,9 @@ const leaderboard = {
     toBoard: 'Zur Rangliste',
     pts: (n: number) => `${n} Pkt`,
     score: (n: number) => `Score ${n}`,
+    /** Aktueller Allzeit-Platz in dieser Wertung */
+    place: (place: number, players: number) => `Platz ${place} von ${players}`,
+    placeTitle: 'Aktueller Platz in der Allzeit-Rangliste',
   },
 };
 

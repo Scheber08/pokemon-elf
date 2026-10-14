@@ -80,6 +80,13 @@ export function Profile() {
                     {t.game.challenge[c.challenge]}
                   </th>
                   <td>
+                    {c.place != null && !!c.players && (
+                      <span className="profile__place" title={tp.placeTitle}>
+                        {tp.place(c.place, c.players)}
+                      </span>
+                    )}
+                  </td>
+                  <td>
                     {c.runs} {tp.runsCol}
                     {c.perfect > 0 && (
                       <span className="profile__perfect" title={tp.perfectTitle(c.perfect)}>

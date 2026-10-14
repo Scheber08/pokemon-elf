@@ -118,6 +118,8 @@ const leaderboard: Messages['leaderboard'] = {
     toBoard: 'To the leaderboard',
     pts: (n) => `${n} pts`,
     score: (n) => `Score ${n}`,
+    place: (place, players) => `Rank ${place} of ${players}`,
+    placeTitle: 'Current all-time leaderboard rank',
   },
 };
 

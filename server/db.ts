@@ -512,6 +512,30 @@ export async function deviceRanks(
   return results.map((r) => r.results[0]?.pos ?? null);
 }
 
+/**
+ * Allzeit-Platz eines Geräts je Wertung samt Spielerzahl (eine Runde) – Platz null, wo es
+ * keinen Eintrag hat oder nicht in der Liste steht.
+ */
+export async function allTimePlaces(
+  db: Db,
+  deviceId: string,
+  challenges: ChallengeKey[],
+): Promise<{ place: number | null; players: number }[]> {
+  if (!challenges.length) return [];
+  const sql = `SELECT ${RANK_EXPR} AS pos FROM best_entries b JOIN devices d ON d.id = b.device_id
+    WHERE b.challenge = ? AND b.scope = ? AND b.device_id = ? AND ${ROW_VISIBLE}`;
+  const results = await db.batch<{ pos?: number; n?: number }>(
+    challenges.flatMap((c) => [
+      db.prepare(sql).bind(c, ALL_TIME_SCOPE, deviceId),
+      db.prepare('SELECT COUNT(*) AS n FROM best_entries WHERE challenge = ? AND scope = ?').bind(c, ALL_TIME_SCOPE),
+    ]),
+  );
+  return challenges.map((_, i) => ({
+    place: results[2 * i].results[0]?.pos ?? null,
+    players: Number(results[2 * i + 1].results[0]?.n) || 0,
+  }));
+}
+
 // ---------------------------------------------------------------- Einmalige Bereinigungen
 
 /** meta-Schlüssel der Bereinigung „Ranglisten-Daten von Geräten mit Standardnamen löschen" (gesetzt = erledigt). */

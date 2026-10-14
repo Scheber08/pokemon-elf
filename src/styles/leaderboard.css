@@ -199,3 +199,9 @@
 .lb-who__link:focus-visible {
   text-decoration: underline;
 }
+
+/* Spielerprofil: aktueller Allzeit-Platz je Wertung */
+.profile__place {
+  white-space: nowrap;
+  font-weight: 700;
+}
