@@ -854,7 +854,8 @@
   font-size: 14px;
 }
 .cup-bracket__tie.is-own {
-  box-shadow: inset 3px 0 0 var(--yellow);
+  /* Rand statt inset-Schatten – den zeichnet html2canvas (Bild speichern) als Fläche */
+  border-left: 3px solid var(--yellow);
 }
 .cup-bracket__team {
   min-width: 0;
@@ -873,7 +874,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-variant-numeric: tabular-nums;
   font-weight: 700;
   min-width: 3.4em;
 }

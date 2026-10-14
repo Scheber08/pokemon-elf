@@ -2,7 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftTeam } from '../lib/api/draftContract';
-import { copyText, downloadBlob, nodeToPng } from '../lib/exportImage';
+import { copyText, downloadBlob } from '../lib/exportImage';
 import { draftGrades, draftShareText, biggestWin, draftSteal, headToHead, leagueTimeline, longestWinStreak, recentForm, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { formatRecord, type LeagueResult } from '../lib/season';
@@ -16,6 +16,7 @@ import { CupBracket, CupGroups, cupStatusText } from './CupBracket';
 import { FixtureList, FormDots } from './LeagueTicker';
 import { Pitch } from './Pitch';
 import { PlaceChart } from './PlaceChart';
+import { SaveImageButton } from './SaveImageButton';
 import { TableTimeTravel } from './TableTimeTravel';
 import { Sprite } from './Sprite';
 import '../styles/league.css';
@@ -52,8 +53,8 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
   const { byId, scale } = usePokemonData();
   const toast = useToast();
   const [saving, setSaving] = useState(false);
-  const [savingTable, setSavingTable] = useState(false);
   const tableRef = useRef<HTMLElement>(null);
+  const bracketRef = useRef<HTMLElement>(null);
   const days = useMemo(() => leagueTimeline(league), [league]);
   const allScorers = useMemo(() => topScorers(league), [league]);
   const scorers = allScorers.slice(0, TOP_SCORERS);
@@ -169,21 +170,6 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
     }
   };
 
-  /** Abschlusstabelle als Bild (Hintergrund wie die Seite, Knopf selbst nicht im Bild) */
-  const onSaveTable = async () => {
-    if (!tableRef.current) return;
-    setSavingTable(true);
-    try {
-      const bg = getComputedStyle(document.body).backgroundColor;
-      downloadBlob(await nodeToPng(tableRef.current, { scale: 2, background: bg }), `${slugify(leagueName || code)}-tabelle.png`);
-    } catch (e) {
-      console.error(e);
-      toast(t.builder.imageFailed);
-    } finally {
-      setSavingTable(false);
-    }
-  };
-
   const onShare = async () => {
     if (typeof navigator.share === 'function') {
       try {
@@ -244,10 +230,18 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
       </section>
 
       {cup && (
-        <section className="card" aria-labelledby="draft-results-bracket">
-          <h2 id="draft-results-bracket" className="section-title">
-            {t.draft.cup.bracket}
-          </h2>
+        <section className="card" aria-labelledby="draft-results-bracket" ref={bracketRef}>
+          <div className="draft-results__table-head">
+            <h2 id="draft-results-bracket" className="section-title">
+              {t.draft.cup.bracket}
+            </h2>
+            <SaveImageButton
+              target={bracketRef}
+              filename={`${slugify(leagueName || code)}-turnierbaum.png`}
+              label={tx.saveTable}
+              aria={tx.saveBracketAria}
+            />
+          </div>
           <CupBracket cup={cup} matches={league.matches} you={you} nameOf={nameOf} />
         </section>
       )}
@@ -266,17 +260,12 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
             <h2 id="draft-results-table" className="section-title">
               {cup ? t.draft.cup.standings : tx.finalTable}
             </h2>
-            <button
-              type="button"
-              className="btn btn--small btn--ghost"
-              onClick={onSaveTable}
-              disabled={savingTable}
-              aria-label={tx.saveTableAria}
-              title={tx.saveTableAria}
-              data-html2canvas-ignore
-            >
-              {savingTable ? t.builder.savingImage : tx.saveTable}
-            </button>
+            <SaveImageButton
+              target={tableRef}
+              filename={`${slugify(leagueName || code)}-tabelle.png`}
+              label={tx.saveTable}
+              aria={tx.saveTableAria}
+            />
           </div>
           <div className="table-scroll">
             <table className="league-table draft-results__table">

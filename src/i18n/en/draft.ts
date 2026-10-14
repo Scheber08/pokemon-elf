@@ -240,6 +240,7 @@ const draft: Messages['draft'] = {
     saveOwnImage: 'My XI as image',
     saveTable: 'As image',
     saveTableAria: 'Save the table as an image',
+    saveBracketAria: 'Save the bracket as an image',
     grade: 'Grade',
     duels: 'Your head-to-heads',
     duelsOpponent: 'Opponent',

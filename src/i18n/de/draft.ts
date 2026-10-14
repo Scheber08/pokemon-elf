@@ -259,6 +259,7 @@ const draft = {
     saveOwnImage: 'Meine Elf als Bild',
     saveTable: 'Als Bild',
     saveTableAria: 'Tabelle als Bild speichern',
+    saveBracketAria: 'Turnierbaum als Bild speichern',
     grade: 'Note',
     /** Direkte Duelle des eigenen Teams */
     duels: 'Deine Duelle',
