@@ -14,6 +14,7 @@ import { useT } from '../i18n';
 import { draftsSupported } from '../lib/api/draftClient';
 import { positionFit } from '../lib/fit';
 import { emptySlots } from '../lib/formation';
+import { draftGrades } from '../lib/leagueTimeline';
 import { createRng, gaussian, randomSeed, shuffle } from '../lib/rng';
 import { simulateLeague, type LeagueTeam } from '../lib/season';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
@@ -352,12 +353,21 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
 
   if (state.phase === 'league' && league) {
     const c = t.draft.col;
+    const grades = draftGrades(league.teams.map((tm) => tm.rating));
+    const champion = league.table[0];
     return (
       <div className="page draft">
         {modeSwitch}
         <header className="page-head">
           <h1 className="page-title">{tx.leagueTitle}</h1>
           <p className="page-lead">{tx.leagueLead(league.matches.length)}</p>
+          {champion && (
+            <p className="draft__champion">
+              <span aria-hidden="true">★ </span>
+              {t.draft.results.championLabel}
+              <strong>{teamName(champion.name)}</strong> · {t.draft.results.heroLine(champion, champion.rating)}
+            </p>
+          )}
         </header>
         <div className="result-grid">
           <section className="card" aria-labelledby="draft-table">
@@ -371,6 +381,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     <th>{c.place}</th>
                     <th className="left">{c.team}</th>
                     <th>{c.score}</th>
+                    <th title={t.draft.results.gradeTitle}>{t.draft.results.grade}</th>
                     <th>{c.played}</th>
                     <th>{c.won}</th>
                     <th>{c.drawn}</th>
@@ -388,6 +399,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                         {teamName(r.name)} {state.teams[r.team].cpu && <span className="rating">{t.draft.cpu}</span>}
                       </td>
                       <td>{r.rating}</td>
+                      <td className="draft__grade">{grades[r.team]}</td>
                       <td>{r.played}</td>
                       <td>{r.w}</td>
                       <td>{r.d}</td>

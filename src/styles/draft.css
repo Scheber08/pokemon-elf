@@ -1056,3 +1056,16 @@
     animation: none;
   }
 }
+
+/* Lokale Liga: Meister-Zeile und Draft-Note */
+.draft__champion {
+  margin: 8px 0 0;
+  font-size: 1.05rem;
+}
+.draft__champion span {
+  color: var(--yellow);
+}
+.draft__grade {
+  font-family: var(--font-head);
+  font-weight: 700;
+}

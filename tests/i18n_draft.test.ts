@@ -320,6 +320,9 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(all).toContain(clubEn(CLUB_NAMES[1]));
     expect(all).toContain('Replay league');
     expect(all).toContain('Pts');
+    // Meister-Zeile und Draft-Note
+    expect(all).toMatch(/Champions: \| [^|]+ \| · \| \d+ pts/);
+    expect(all).toContain('Grade');
     expect(germanLeft(container)).toEqual([]);
   });
 });
