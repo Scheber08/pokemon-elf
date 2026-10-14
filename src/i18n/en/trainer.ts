@@ -47,6 +47,10 @@ const trainer: Messages['trainer'] = {
   price: (n) => `${n} ◎`,
   seasonal: (to) => `Seasonal item – only until ${new Date(`2000-${to}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })}`,
   nearTitle: 'Almost there',
+  filter: 'Show',
+  filterAll: 'All',
+  filterOwned: 'Unlocked',
+  filterAffordable: 'Affordable',
   record: {
     title: 'Your record',
     runs: 'Ranked runs',

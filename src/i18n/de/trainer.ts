@@ -46,6 +46,10 @@ const trainer = {
   /** Saisonartikel: Ende der Saison (MM-DD) */
   seasonal: (to: string) => `Saisonartikel – nur bis ${Number(to.slice(3))}.${Number(to.slice(0, 2))}.`,
   nearTitle: 'Fast geschafft',
+  filter: 'Anzeigen',
+  filterAll: 'Alle',
+  filterOwned: 'Freigeschaltet',
+  filterAffordable: 'Leistbar',
   record: {
     title: 'Deine Bilanz',
     runs: 'Gewertete Runs',
