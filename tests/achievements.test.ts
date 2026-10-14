@@ -196,6 +196,8 @@ describe('Kennzahlen und /api/me', () => {
     const sh = await achievementStats(db, dev, '2026-10-14');
     expect(sh.draft).toMatchObject({ leagues: 4, shinies: 1, podiums: 4 });
     expect(achievementStates(sh).find((a) => a.id === 'shiny_first')?.done).toBe(true);
+    const collector = achievementStates(sh).find((a) => a.id === 'shiny_5');
+    expect(collector).toMatchObject({ done: false, value: 1, goal: 5 });
   });
 
   it('POST /api/me: Erfolge und Münzen des eigenen Geräts (neues Gerät: alles offen)', async () => {
