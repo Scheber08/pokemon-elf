@@ -5,6 +5,8 @@ import type { ReplayLineup } from '../lib/matchReplay';
 import { MatchPitch } from './MatchPitch';
 import { Modal } from './Modal';
 import { Segmented } from './Segmented';
+import { useSettings, type ReplayMode } from '../state/Settings';
+import '../styles/match-report.css';
 
 interface Props {
   match: Match;
@@ -35,7 +37,10 @@ const eventsOf = (scorers: Goal[], goals: number, home: boolean): Event[] => [
 export function MatchReport({ match, nameOf, pokemonName, label, pens, lineupOf, onClose }: Props) {
   const t = useT();
   const tx = t.draft.report;
-  const [view, setView] = useState<'pitch' | 'report'>('pitch');
+  const { replay, setReplay } = useSettings();
+  // Startansicht wie eingestellt; ein Wechsel im Dialog wird zur neuen Einstellung
+  const view = replay === 'report' ? 'report' : 'pitch';
+  const setView = (v: 'pitch' | 'report') => setReplay(v);
   const lineups = useMemo<[ReplayLineup | null, ReplayLineup | null]>(
     () => [lineupOf?.(match.home, match) ?? null, lineupOf?.(match.away, match) ?? null],
     [match, lineupOf],
@@ -155,8 +160,9 @@ export function useMatchReport(
   labelOf?: (m: Match) => string,
   pensOf?: (m: Match) => { home: number; away: number } | null,
   lineupOf?: (team: number, match: Match) => ReplayLineup | null,
-): { open: (m: Match) => void; element: ReactNode } {
+): { open: ((m: Match) => void) | undefined; element: ReactNode } {
   const [match, setMatch] = useState<Match | null>(null);
+  const { replay } = useSettings();
   const element = match ? (
     <MatchReport
       match={match}
@@ -168,5 +174,26 @@ export function useMatchReport(
       onClose={() => setMatch(null)}
     />
   ) : null;
-  return { open: setMatch, element };
+  // Spielwiedergabe aus: Ergebnisse bleiben reiner Text
+  return { open: replay === 'off' ? undefined : setMatch, element };
+}
+
+/** Schalter „Spielwiedergabe: 2D · Bericht · Aus" (gilt überall, wird gespeichert) */
+export function ReplayToggle() {
+  const t = useT();
+  const { replay, setReplay } = useSettings();
+  return (
+    <div className="replay-toggle">
+      <Segmented<ReplayMode>
+        label={t.draft.replay.setting}
+        value={replay}
+        onChange={setReplay}
+        options={[
+          { value: 'pitch', label: t.draft.replay.tab, title: t.draft.replay.settingPitch },
+          { value: 'report', label: t.draft.replay.reportTab, title: t.draft.replay.settingReport },
+          { value: 'off', label: t.draft.replay.off, title: t.draft.replay.settingOff },
+        ]}
+      />
+    </div>
+  );
 }

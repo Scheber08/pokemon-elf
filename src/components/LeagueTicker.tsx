@@ -15,7 +15,7 @@ import {
 } from '../lib/leagueTimeline';
 import { cupPens, cupStageOf, cupStatus, cupWinner, type CupInfo } from '../lib/cup';
 import { buildTable, type LeagueResult, type Match, type TableRow } from '../lib/season';
-import { useMatchReport } from './MatchReport';
+import { ReplayToggle, useMatchReport } from './MatchReport';
 import type { ReplayLineup } from '../lib/matchReplay';
 import { scorerSummary } from '../lib/seasonTimeline';
 import { usePokemonData } from '../state/PokemonData';
@@ -350,6 +350,7 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
                 pensOf={pensOf}
                 onOpen={report.open}
               />
+              <ReplayToggle />
               {!cup && day.byes.length > 0 && (
                 <p className="league-board__byes">{t.draft.byes(day.byes.map(nameOf).join(', '))}</p>
               )}

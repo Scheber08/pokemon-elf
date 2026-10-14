@@ -13,7 +13,12 @@ interface GlobalSettings {
   sound: boolean;
   /** Browser-Benachrichtigung, wenn man im Online-Draft dran ist (Tab im Hintergrund) */
   notify: boolean;
+  /** Spielwiedergabe beim Klick aufs Ergebnis: 2D-Ansicht, Bericht oder aus */
+  replay: ReplayMode;
 }
+
+export type ReplayMode = 'pitch' | 'report' | 'off';
+const isReplayMode = (v: unknown): v is ReplayMode => v === 'pitch' || v === 'report' || v === 'off';
 
 interface SettingsCtx extends GlobalSettings {
   setSprite(s: SpriteStyle): void;
@@ -21,6 +26,7 @@ interface SettingsCtx extends GlobalSettings {
   setLang(l: Lang): void;
   setSound(on: boolean): void;
   setNotify(on: boolean): void;
+  setReplay(mode: ReplayMode): void;
 }
 
 const Ctx = createContext<SettingsCtx | null>(null);
@@ -33,6 +39,7 @@ function initialSettings(): GlobalSettings {
     ...stored,
     sound: stored.sound !== false,
     notify: stored.notify === true,
+    replay: isReplayMode(stored.replay) ? stored.replay : 'pitch',
     // Ohne gespeicherte Wahl: Browsersprache (Deutsch → de, sonst en)
     lang: isLang(stored.lang) ? stored.lang : detectLang(),
   };
@@ -63,10 +70,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   }, []);
   const setSound = useCallback((sound: boolean) => setSettings((s) => ({ ...s, sound })), []);
   const setNotify = useCallback((notify: boolean) => setSettings((s) => ({ ...s, notify })), []);
+  const setReplay = useCallback((replay: ReplayMode) => setSettings((s) => ({ ...s, replay })), []);
 
   const value = useMemo(
-    () => ({ ...settings, setSprite, setTheme, setLang, setSound, setNotify }),
-    [settings, setSprite, setTheme, setLang, setSound, setNotify],
+    () => ({ ...settings, setSprite, setTheme, setLang, setSound, setNotify, setReplay }),
+    [settings, setSprite, setTheme, setLang, setSound, setNotify, setReplay],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
@@ -85,11 +93,13 @@ function fallbackSettings(): SettingsCtx {
     lang: currentLang(),
     sound: stored.sound ?? true,
     notify: stored.notify === true,
+    replay: isReplayMode(stored.replay) ? stored.replay : 'pitch',
     setSprite: noop,
     setTheme: noop,
     setLang: noop,
     setSound: noop,
     setNotify: noop,
+    setReplay: noop,
   };
 }
 

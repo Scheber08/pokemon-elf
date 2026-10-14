@@ -6,6 +6,7 @@ import { formatMinute, type Goal } from '../lib/season';
 import { load, STORAGE_KEYS } from '../lib/storage';
 import { loadSavedTeams } from './SavedTeams';
 import { usePokemonData } from '../state/PokemonData';
+import { ReplayToggle, useMatchReport } from './MatchReport';
 import type { FormationId } from '../types';
 import '../styles/friendly.css';
 
@@ -42,6 +43,20 @@ export function FriendlyMatch({ opponent }: { opponent: FriendlySide }) {
   const [choice, setChoice] = useState(0);
   const own = sides[Math.min(choice, sides.length - 1)] ?? null;
   const result = useMemo(() => (own ? friendlyMatch(own, opponent, byId, scale('all'), seed) : null), [own, opponent, byId, scale, seed]);
+  // Spielwiedergabe (2D/Bericht) – beide Elfen mit ihren Pokémon
+  const report = useMatchReport(
+    (i) => (i === 0 ? (own?.name ?? '') : opponent.name),
+    (id) => {
+      const p = byId.get(id);
+      return p ? t.game.pokemon(p) : `#${id}`;
+    },
+    (m) => (m.home === 0 ? tr.friendlyFirst : tr.friendlySecond),
+    undefined,
+    (i) => {
+      const side = i === 0 ? own : opponent;
+      return side ? { formation: side.formation, ids: side.slots } : null;
+    },
+  );
 
   if (!own || !result) {
     return (
@@ -93,6 +108,11 @@ export function FriendlyMatch({ opponent }: { opponent: FriendlySide }) {
               <strong>{i === 0 ? tr.friendlyFirst : tr.friendlySecond}:</strong>{' '}
               {ownHome ? `${own.name} ${ownGoals}:${oppGoals} ${opponent.name}` : `${opponent.name} ${oppGoals}:${ownGoals} ${own.name}`}
               {ownScorers && <small className="muted friendly__scorers"> · {tr.friendlyScorers(ownScorers)}</small>}
+              {report.open && (
+                <button type="button" className="btn btn--small btn--ghost friendly__report" onClick={() => report.open?.(m)}>
+                  {t.draft.report.title}
+                </button>
+              )}
             </li>
           );
         })}
@@ -104,6 +124,8 @@ export function FriendlyMatch({ opponent }: { opponent: FriendlySide }) {
         – {verdict}
       </p>
       <p className="muted small">{tr.friendlyNote}</p>
+      <ReplayToggle />
+      {report.element}
       <button type="button" className="btn btn--small" onClick={() => setSeed(newSeed())}>
         {tr.friendlyAgain}
       </button>

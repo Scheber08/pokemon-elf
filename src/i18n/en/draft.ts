@@ -387,6 +387,11 @@ const draft: Messages['draft'] = {
   replay: {
     tab: '2D view',
     reportTab: 'Report',
+    off: 'Off',
+    setting: 'Match replay',
+    settingPitch: 'Clicking a score shows the match as a top-down 2D view',
+    settingReport: 'Clicking a score shows the match report (goals, stats)',
+    settingOff: 'Scores without match replay',
     aria: 'Top-down pitch with both teams’ players and the ball',
     play: 'Play',
     pause: 'Pause',

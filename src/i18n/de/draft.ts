@@ -423,6 +423,11 @@ const draft = {
   replay: {
     tab: '2D-Ansicht',
     reportTab: 'Bericht',
+    off: 'Aus',
+    setting: 'Spielwiedergabe',
+    settingPitch: 'Klick aufs Ergebnis zeigt das Spiel als 2D-Ansicht von oben',
+    settingReport: 'Klick aufs Ergebnis zeigt den Spielbericht (Tore, Statistik)',
+    settingOff: 'Ergebnisse ohne Spielwiedergabe',
     aria: 'Spielfeld von oben mit den Spielern beider Teams und dem Ball',
     play: 'Abspielen',
     pause: 'Pause',

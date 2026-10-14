@@ -27,6 +27,7 @@ import { StatCards } from './ChallengeParts';
 import { Confetti } from './Confetti';
 import { Pitch } from './Pitch';
 import { SeasonTicker } from './SeasonTicker';
+import { ReplayToggle, useMatchReport } from './MatchReport';
 import { Sprite } from './Sprite';
 import '../styles/ticker.css';
 
@@ -161,6 +162,15 @@ export function SeasonResultView({
   };
   /** Vereinsnamen sind intern deutsch – das eigene Team heißt immer teamName */
   const teamLabel = (r: { name: string; isUser: boolean }) => (r.isUser ? teamName : t.game.club(r.name));
+  // Spielwiedergabe (2D/Bericht): das eigene Team (Index 0) mit seiner Elf, die Gegner allgemein
+  const report = useMatchReport(
+    (i) => (i === 0 ? teamName : t.game.club(season.league.teams[i]?.name ?? '')),
+    nameOf,
+    (m) => t.draft.matchday(m.round),
+    undefined,
+    (i) => (i === 0 ? { formation: input.formation, ids: input.slots } : null),
+  );
+  const leagueMatch = (round: number) => season.league.matches.find((x) => x.round === round && (x.home === 0 || x.away === 0));
 
   const makeImage = () =>
     lineupImage({
@@ -431,6 +441,8 @@ export function SeasonResultView({
 
         <details className="card details">
           <summary>{tr.details(season.userMatches.length)}</summary>
+          <ReplayToggle />
+          {report.element}
           <ol className="matches">
             {season.userMatches.map((m) => (
               <li key={m.round} className={`match match--${m.outcome}`}>
@@ -439,9 +451,21 @@ export function SeasonResultView({
                 <span className="match__opp">
                   {m.isHome ? tr.vsHome : tr.vsAway} {t.game.club(m.opponent)}
                 </span>
-                <span className="match__score">
-                  {m.gf}:{m.ga}
-                </span>
+                {report.open && leagueMatch(m.round) ? (
+                  <button
+                    type="button"
+                    className="match__score match__score--btn"
+                    aria-label={t.draft.report.open(teamName, t.game.club(m.opponent), `${m.gf}:${m.ga}`)}
+                    title={t.draft.report.title}
+                    onClick={() => report.open?.(leagueMatch(m.round)!)}
+                  >
+                    {m.gf}:{m.ga}
+                  </button>
+                ) : (
+                  <span className="match__score">
+                    {m.gf}:{m.ga}
+                  </span>
+                )}
                 <span className={`match__outcome match__outcome--${m.outcome}`}>{tr.outcomeShort[m.outcome]}</span>
                 {m.scorers.length > 0 && (
                   <span className="match__scorers">{scorerSummary(m.scorers, nameOf)}</span>

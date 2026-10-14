@@ -15,7 +15,7 @@ import { cupPath, cupPens, cupStageOf, cupStatus, cupWinner } from '../lib/cup';
 import { Confetti } from './Confetti';
 import { CupBracket, CupGroups, cupStatusText } from './CupBracket';
 import { FixtureList, FormDots } from './LeagueTicker';
-import { useMatchReport } from './MatchReport';
+import { ReplayToggle, useMatchReport } from './MatchReport';
 import { SeasonStats } from './SeasonStats';
 import { TrainerAvatar } from './TrainerAvatar';
 import { parseLook } from '../lib/trainer';
@@ -581,6 +581,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
 
       <details className="card details draft-results__days">
         <summary>{tx.allMatchdays}</summary>
+        <ReplayToggle />
         <ol className="draft-results__daylist">
           {days.map((d) => (
             <li key={d.round} className="draft-results__day">

@@ -2427,3 +2427,26 @@ button.sheet__row:hover {
 .saved-teams__remove {
   min-width: 2.2em;
 }
+
+/* Ergebnis als Knopf (Spielwiedergabe) in den Spiellisten der Challenges und des lokalen Drafts */
+.match__score--btn {
+  padding: 0 6px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--surface-2, rgba(255, 255, 255, 0.06));
+  color: inherit;
+  cursor: pointer;
+}
+.match__score--btn:hover,
+.match__score--btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--yellow);
+}
+.replay-toggle {
+  margin: 8px 0;
+}
+.replay-toggle .field {
+  margin: 0;
+}
+.friendly__report {
+  margin-left: 6px;
+}

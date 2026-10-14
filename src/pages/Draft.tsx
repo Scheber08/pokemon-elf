@@ -24,6 +24,7 @@ import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import type { FormationId, Pokemon, RegionFilter, Slots } from '../types';
 import { DraftOnline } from './DraftOnline';
+import { ReplayToggle, useMatchReport } from '../components/MatchReport';
 import '../styles/draft.css';
 
 const ROUNDS = 11;
@@ -249,6 +250,18 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     return { ...result, scorers: [...scorers.values()].sort((a, b) => b.goals - a.goals).slice(0, 10) };
   }, [state.phase, state.seed, state.model, state.teams, byId, scale]);
 
+  // Spielwiedergabe (2D/Bericht) der lokalen Liga – jedes Team mit seiner gedrafteten Elf
+  const report = useMatchReport(
+    (i) => teamName(state.teams[i]?.name ?? ''),
+    (id) => {
+      const p = byId.get(id);
+      return p ? t.game.pokemon(p) : `#${id}`;
+    },
+    (m) => tx.roundNo(m.round),
+    undefined,
+    (i) => (state.teams[i] ? { formation: state.teams[i].formation, ids: state.teams[i].slots } : null),
+  );
+
   if (state.phase === 'setup') {
     return (
       <div className="page draft">
@@ -452,6 +465,8 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
         </div>
         <details className="card details">
           <summary>{tx.allMatches}</summary>
+          <ReplayToggle />
+          {report.element}
           <ol className="matches">
             {league.matches.map((m, i) => (
               <li key={i} className="match match--league">
@@ -459,9 +474,21 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 <span className="match__opp">
                   {teamName(state.teams[m.home].name)} – {teamName(state.teams[m.away].name)}
                 </span>
-                <span className="match__score">
-                  {m.hg}:{m.ag}
-                </span>
+                {report.open ? (
+                  <button
+                    type="button"
+                    className="match__score match__score--btn"
+                    aria-label={t.draft.report.open(teamName(state.teams[m.home].name), teamName(state.teams[m.away].name), `${m.hg}:${m.ag}`)}
+                    title={t.draft.report.title}
+                    onClick={() => report.open?.(m)}
+                  >
+                    {m.hg}:{m.ag}
+                  </button>
+                ) : (
+                  <span className="match__score">
+                    {m.hg}:{m.ag}
+                  </span>
+                )}
                 {(m.homeScorers.length > 0 || m.awayScorers.length > 0) && (
                   <span className="match__scorers">
                     {[scorerSummary(m.homeScorers, monName), scorerSummary(m.awayScorers, monName)].filter(Boolean).join(' · ')}

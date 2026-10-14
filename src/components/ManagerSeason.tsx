@@ -15,7 +15,7 @@ import type { FormationId, Pokemon, PosCode } from '../types';
 import { PosBadge } from './Badges';
 import { BenchRow } from './BenchRow';
 import { FixtureList } from './LeagueTicker';
-import { useMatchReport } from './MatchReport';
+import { ReplayToggle, useMatchReport } from './MatchReport';
 import { SeasonStats } from './SeasonStats';
 import { Pitch, SS_INDEX, type SlotState } from './Pitch';
 import '../styles/draft.css';
@@ -194,6 +194,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           <h2 id="manager-last" className="section-title">
             {tx.lastResults(m.played)}
           </h2>
+          <ReplayToggle />
           <FixtureList matches={last} you={you} nameOf={nameOf} pokemonName={pokemonName} onOpen={report.open} />
         </section>
       )}
