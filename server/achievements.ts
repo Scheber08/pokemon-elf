@@ -103,6 +103,7 @@ async function meBody(db: Db, deviceId: string, name: string, now: number): Prom
     achievements: achievementStates(stats),
     trainer: parseLook(raw),
     owned: items.results.map((r) => String(r.item)),
+    stats,
   };
 }
 

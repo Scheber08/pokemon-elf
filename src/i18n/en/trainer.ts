@@ -47,6 +47,15 @@ const trainer: Messages['trainer'] = {
   price: (n) => `${n} ◎`,
   seasonal: (to) => `Seasonal item – only until ${new Date(`2000-${to}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })}`,
   nearTitle: 'Almost there',
+  record: {
+    title: 'Your record',
+    runs: 'Ranked runs',
+    streak: 'Longest daily streak',
+    dailyWins: 'Daily wins',
+    bestPlace: 'Best all-time rank',
+    leagues: 'Online leagues',
+    titles: 'Titles',
+  },
   seasonNow: (to) => `Seasonal items in the shop – only until ${new Date(`2000-${to}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })}`,
   previewing: (name) => `Preview: ${name}`,
   slots: {

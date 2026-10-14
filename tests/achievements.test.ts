@@ -168,6 +168,8 @@ describe('Kennzahlen und /api/me', () => {
     const again = (await (await call()).json()) as MeResponse;
     expect(again.achievements.filter((a) => a.done).map((a) => a.id).sort()).toEqual(['c151_30', 'first_run']);
     expect(again.coins.balance).toBe(250);
+    // Bilanz: Kennzahlen hinter den Erfolgen
+    expect(again.stats).toMatchObject({ runs: 1, dailyStreak: 0, draft: { leagues: 0 } });
     // Falscher Schlüssel → 401
     const bad = await handleApi(
       new Request('http://localhost/api/me', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...auth, deviceSecret: hex(32) }) }),

@@ -1,7 +1,7 @@
 import { setAchievementBadge } from '../components/AchievementWatcher';
 import { useCallback, useEffect, useState } from 'react';
 import { useT } from '../i18n';
-import { ACHIEVEMENT_CATEGORIES, ACHIEVEMENTS } from '../lib/achievements';
+import { ACHIEVEMENT_CATEGORIES, ACHIEVEMENTS, type AchievementStats } from '../lib/achievements';
 import { fetchMe } from '../lib/api/client';
 import type { MeResponse } from '../lib/api/contract';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
@@ -65,6 +65,7 @@ export function Trainer() {
       ) : (
         <>
           <Wallet me={state.me} />
+          {state.me.stats && <RecordCard stats={state.me.stats} />}
           <TrainerEditor me={state.me} onMe={(me) => setState({ status: 'ready', me })} />
           <Achievements me={state.me} seen={seen} />
         </>
@@ -102,6 +103,35 @@ export function closest(me: MeResponse): MeResponse['achievements'] {
     .filter((a) => !a.done && a.goal > 1 && a.value > 0)
     .sort((a, b) => b.value / b.goal - a.value / a.goal || a.goal - a.value - (b.goal - b.value))
     .slice(0, 3);
+}
+
+/** Bilanz: die Kennzahlen hinter den Erfolgen auf einen Blick */
+function RecordCard({ stats }: { stats: AchievementStats }) {
+  const tx = useT().trainer.record;
+  const d = stats.draft;
+  const items: [string, string | number][] = [
+    [tx.runs, stats.runs],
+    [tx.streak, stats.dailyStreak],
+    [tx.dailyWins, stats.dailyWins],
+    [tx.bestPlace, stats.bestPlace != null ? `${stats.bestPlace}.` : '–'],
+    [tx.leagues, d.leagues],
+    [tx.titles, d.titles + d.cups + d.manager],
+  ];
+  return (
+    <section className="card trainer__record" aria-labelledby="trainer-record">
+      <h2 id="trainer-record" className="section-title">
+        {tx.title}
+      </h2>
+      <dl className="trainer__record-grid">
+        {items.map(([label, value]) => (
+          <div key={label}>
+            <dt className="muted small">{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
 }
 
 function Achievements({ me, seen }: { me: MeResponse; seen: Set<string> }) {

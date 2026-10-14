@@ -34,7 +34,7 @@
  * 409 token_used gibt es nur noch, solange eine parallele Anfrage den Run gerade speichert.
  */
 import type { ChallengeKey, FormationId, Record3 } from '../../types';
-import type { AchievementState } from '../achievements';
+import type { AchievementState, AchievementStats } from '../achievements';
 import type { PickLog } from '../challengeEngine';
 import type { TrainerLook } from '../trainer';
 
@@ -226,6 +226,8 @@ export interface MeResponse {
   trainer: TrainerLook;
   /** Gekaufte Cosmetics (itemKey: „hat:crown") */
   owned: string[];
+  /** Kennzahlen hinter den Erfolgen (fehlt bei älteren Antworten) */
+  stats?: AchievementStats;
 }
 
 /** POST /api/me/trainer – Aussehen speichern (nur Freies und Gekauftes, sonst 400 locked_item) → MeResponse */

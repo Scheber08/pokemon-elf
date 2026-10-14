@@ -283,3 +283,16 @@
   border: 1px solid rgba(232, 119, 42, 0.45);
   font-size: 14px;
 }
+
+/* Bilanz */
+.trainer__record-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px 16px;
+  margin: 0;
+}
+.trainer__record-grid dd {
+  margin: 2px 0 0;
+  font-family: var(--font-head);
+  font-size: 22px;
+}
