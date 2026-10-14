@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FORMATION_IDS, FORMATIONS } from '../src/config/formations';
 import { remapFormation } from '../src/lib/formation';
-import { decodeLineup, encodeLineup, type SharedLineup } from '../src/lib/urlState';
+import { decodeJerseys, decodeLineup, encodeJerseys, encodeLineup, type SharedLineup } from '../src/lib/urlState';
 
 const DEFAULT: SharedLineup = {
   formation: '4-2-3-1',
@@ -15,6 +15,17 @@ const DEFAULT: SharedLineup = {
 };
 
 describe('URL-Kodierung', () => {
+  it('Trikotnummern im eigenen Parameter: nur eigene Nummern, Roundtrip über die Plätze', () => {
+    expect(encodeJerseys(DEFAULT.slots, DEFAULT.ss, {})).toBeNull();
+    expect(encodeJerseys(DEFAULT.slots, DEFAULT.ss, { '999': 7 })).toBeNull();
+    const nr = encodeJerseys(DEFAULT.slots, DEFAULT.ss, { '143': 33, '59': 99, '25': 0 });
+    expect(nr).toMatch(/^[A-Za-z0-9_-]+$/);
+    expect(decodeJerseys(nr!, DEFAULT.slots, DEFAULT.ss)).toEqual({ '59': 99, '143': 33 });
+    // Code ohne Nummern-Parameter bleibt gleich, kaputter Parameter = keine Nummern
+    expect(encodeLineup({ ...DEFAULT, jerseys: { '143': 33 } })).toBe(encodeLineup(DEFAULT));
+    expect(decodeJerseys('%%%', DEFAULT.slots, DEFAULT.ss)).toEqual({});
+  });
+
   it('Roundtrip: Formation, 11 IDs, SS, Einstellungen und Teamname', () => {
     const code = encodeLineup(DEFAULT);
     expect(code).toMatch(/^[A-Za-z0-9_-]+$/);

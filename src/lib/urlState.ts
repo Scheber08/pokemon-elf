@@ -6,11 +6,16 @@
  * Byte 2      Flags: Bit 0 Legendäre, Bit 1 Standardschütze, Bit 2–3 Sprite-Stil, Bit 4–7 Region
  * Byte 3–26   12 × uint16 (11 Slots + SS), 0 = leer
  * Byte 27…    Teamname (UTF-8, alle restlichen Bytes; der Builder schreibt max. 40 Bytes)
+ *
+ * Eigene Trikotnummern stehen in einem zweiten Parameter (`nr`, 12 Bytes je Platz, 0 = Vorgabe) –
+ * so bleiben alte Links und der Code selbst unverändert.
  */
 import { FORMATION_IDS } from '../config/formations';
+import { cleanJerseys, isJerseyNumber, type Jerseys } from './jerseys';
 import type { FormationId, RegionFilter, Slots, SpriteStyle } from '../types';
 
 export const URL_PARAM = 'elf';
+export const JERSEY_PARAM = 'nr';
 const VERSION = 1;
 const SPRITE_ORDER: SpriteStyle[] = ['pixel', 'retro', 'artwork'];
 const MAX_NAME_BYTES = 40;
@@ -24,6 +29,8 @@ export interface SharedLineup {
   ssEnabled: boolean;
   sprite: SpriteStyle;
   teamName: string;
+  /** Eigene Trikotnummern (Pokémon-ID → Nummer) – nur im Parameter `nr` */
+  jerseys?: Jerseys;
 }
 
 function toBase64Url(bytes: Uint8Array): string {
@@ -111,11 +118,38 @@ export function decodeLineup(str: string, known: number | ((id: number) => boole
   }
 }
 
+/** Trikotnummern je Platz (11 Slots + SS) kodieren; null, wenn keine eigene Nummer vergeben ist. */
+export function encodeJerseys(slots: Slots, ss: number | null, jerseys: Jerseys | undefined): string | null {
+  const ids = [...Array.from({ length: 11 }, (_, i) => slots[i] ?? null), ss];
+  const bytes = Uint8Array.from(ids, (id) => {
+    const n = id != null ? jerseys?.[String(id)] : undefined;
+    return isJerseyNumber(n) ? n : 0;
+  });
+  return bytes.some((b) => b > 0) ? toBase64Url(bytes) : null;
+}
+
+/** Gegenstück zu encodeJerseys – ungültige oder doppelte Nummern fallen weg. */
+export function decodeJerseys(str: string, slots: Slots, ss: number | null): Jerseys {
+  try {
+    const bytes = fromBase64Url(str.trim());
+    const ids = [...Array.from({ length: 11 }, (_, i) => slots[i] ?? null), ss];
+    const raw: Record<string, number> = {};
+    ids.forEach((id, i) => {
+      if (id != null && bytes[i] && raw[String(id)] == null) raw[String(id)] = bytes[i];
+    });
+    return cleanJerseys(raw);
+  } catch {
+    return {};
+  }
+}
+
 export function shareUrl(state: SharedLineup): string {
   const url = new URL(window.location.href);
   url.pathname = import.meta.env.BASE_URL || '/';
   url.search = '';
   url.hash = '';
   url.searchParams.set(URL_PARAM, encodeLineup(state));
+  const nr = encodeJerseys(state.slots, state.ss, state.jerseys);
+  if (nr) url.searchParams.set(JERSEY_PARAM, nr);
   return url.toString();
 }

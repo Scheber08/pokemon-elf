@@ -19,7 +19,7 @@ import { cleanJerseys, type Jerseys } from '../lib/jerseys';
 import { JerseyEditor } from '../components/JerseyEditor';
 import { SPRITE_STYLE_LABEL } from '../lib/sprites';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
-import { decodeLineup, shareUrl, URL_PARAM } from '../lib/urlState';
+import { decodeJerseys, decodeLineup, JERSEY_PARAM, shareUrl, URL_PARAM } from '../lib/urlState';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import { useToast } from '../state/Toast';
@@ -109,6 +109,7 @@ export function Builder() {
       setState((s) =>
         normalize({
           ...shared,
+          jerseys: decodeJerseys(params.get(JERSEY_PARAM) ?? '', shared.slots, shared.ssEnabled ? shared.ss : null),
           forms: s.forms || mons.some((p) => p.form && !isMega(p)),
           megas: megas > (megaMax(s.megas) ?? Infinity) ? (megas <= 3 ? megas : MEGAS_UNLIMITED) : s.megas,
         }),
