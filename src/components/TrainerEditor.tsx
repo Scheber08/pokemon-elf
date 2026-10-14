@@ -199,7 +199,7 @@ export function TrainerEditor({ me, onMe }: Props) {
                       {!have && <span className="trainer-option__price">{tx.price(it.price)}</span>}
                       {it.season && (
                         <span className="trainer-option__season" aria-hidden="true">
-                          🎃
+                          {it.season.icon}
                         </span>
                       )}
                     </button>

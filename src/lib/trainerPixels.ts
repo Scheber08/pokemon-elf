@@ -317,6 +317,12 @@ function hat(c: Canvas, id: string, cloth: string) {
       c.rect(15, 0, 2, 2, '#3f7a2e');
       c.dots([[17, 1], [18, 0]], '#4f9a3a');
       break;
+    case 'santa':
+      // Zipfel nach rechts mit Bommel, weißer Rand
+      c.fill(union(and(ellipse(15.5, 9, 8.4, 6), above(9)), (x, y) => y >= 3 && y <= 6 && x >= 20 && x <= 25 - (6 - y)), '#d8342a', '#8f1f18');
+      c.fill(ellipse(26, 7, 1.6, 1.6), '#f3f3f3', '#c9ced6');
+      c.rect(7, 8, 18, 2, '#f3f3f3');
+      break;
     case 'wizard':
       c.fill((x, y) => y <= 9 && y >= 0 && Math.abs(x - 15.5) <= 1 + y * 0.9, '#5b3fb0');
       c.rect(6, 9, 20, 2, '#4a3191');

@@ -231,12 +231,12 @@ describe('Kennzahlen und /api/me', () => {
 describe('Saisonartikel', () => {
   it('nur in ihrem Zeitraum (auch über den Jahreswechsel)', () => {
     const at = (d: string) => Date.parse(`${d}T12:00:00Z`);
-    const spooky = { slot: 'hat' as const, id: 'x', price: 1, season: { from: '10-01', to: '11-07' } };
+    const spooky = { slot: 'hat' as const, id: 'x', price: 1, season: { from: '10-01', to: '11-07', icon: '🎃' } };
     expect(itemOnSale(spooky, at('2026-10-01'))).toBe(true);
     expect(itemOnSale(spooky, at('2026-11-07'))).toBe(true);
     expect(itemOnSale(spooky, at('2026-11-08'))).toBe(false);
     expect(itemOnSale(spooky, at('2026-09-30'))).toBe(false);
-    const winter = { ...spooky, season: { from: '12-01', to: '01-06' } };
+    const winter = { ...spooky, season: { from: '12-01', to: '01-06', icon: '🎄' } };
     expect(itemOnSale(winter, at('2026-12-24'))).toBe(true);
     expect(itemOnSale(winter, at('2027-01-03'))).toBe(true);
     expect(itemOnSale(winter, at('2027-02-01'))).toBe(false);

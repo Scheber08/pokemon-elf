@@ -96,6 +96,7 @@ const trainer = {
       wizard: 'Zauberhut',
       crown: 'Krone',
       pumpkin: 'Kürbis',
+      santa: 'Weihnachtsmütze',
     },
     accessory: {
       none: 'Ohne',

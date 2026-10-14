@@ -30,13 +30,15 @@ export interface TrainerItem {
   /** Farbe (Haut, Haare, Kleidung) bzw. Hintergrund-Grundton */
   color?: string;
   /** Saisonartikel: nur in diesem Zeitraum (MM-DD, UTC, beide einschließlich) zu kaufen; Gekauftes bleibt */
-  season?: { from: string; to: string };
+  season?: { from: string; to: string; icon: string };
 }
 
 const item = (slot: TrainerSlot, id: string, price: number, color?: string): TrainerItem => ({ slot, id, price, ...(color ? { color } : {}) });
-const seasonal = (it: TrainerItem, from: string, to: string): TrainerItem => ({ ...it, season: { from, to } });
+const seasonal = (it: TrainerItem, from: string, to: string, icon: string): TrainerItem => ({ ...it, season: { from, to, icon } });
 /** Halloween-Zeit */
-const SPOOKY = ['10-01', '11-07'] as const;
+const SPOOKY = ['10-01', '11-07', '🎃'] as const;
+/** Weihnachtszeit (über den Jahreswechsel) */
+const XMAS = ['12-01', '01-06', '🎄'] as const;
 
 /** Ist ein Artikel zum Zeitpunkt `now` (ms) im Shop? Saisonartikel nur in ihrem Zeitraum (auch über den Jahreswechsel). */
 export function itemOnSale(it: TrainerItem, now: number): boolean {
@@ -123,6 +125,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   item('hat', 'wizard', 800),
   item('hat', 'crown', 1500),
   seasonal(item('hat', 'pumpkin', 300), ...SPOOKY),
+  seasonal(item('hat', 'santa', 300), ...XMAS),
   // Accessoire
   item('accessory', 'none', 0),
   item('accessory', 'freckles', 0),
@@ -172,6 +175,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   item('companion', '658', 600),
   item('companion', '445', 900),
   seasonal(item('companion', '711', 400), ...SPOOKY),
+  seasonal(item('companion', '225', 400), ...XMAS),
   item('companion', '6', 600),
   item('companion', '149', 600),
   item('companion', '448', 600),
