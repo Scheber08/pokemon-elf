@@ -310,6 +310,8 @@ const draft = {
     recordWinLine: (home: string, score: string, away: string, round: number) => `${home} ${score} ${away} (${round}. Spieltag)`,
     streak: (team: string, n: number, from: number, to: number) => `${team}, ${n} Siege am Stück (${from}.–${to}. Spieltag)`,
     /** Bester später Pick */
+    topCaptain: (pokemon: string, team: string, goals: number) =>
+      `Bester Kapitän: ${pokemon} (${team}) mit ${goals === 1 ? '1 Tor' : `${goals} Toren`}`,
     steal: (pokemon: string, pick: number, team: string, pos: string) => `Schnäppchen des Drafts: ${pokemon} (Pick ${pick}) für ${team} als ${pos}`,
     signing: (pokemon: string, team: string, matchday: number, line: string) =>
       `Transfer der Saison: ${pokemon} zu ${team} (vor Spieltag ${matchday}) – danach ${line}`,

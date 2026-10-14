@@ -414,6 +414,8 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     expect(container.querySelectorAll('.draft-results__table tbody tr')).toHaveLength(18);
     expect(all).toContain('Share result');
     expect(all).toMatch(/⚽ Top scorer: [^|]+ \(\d+ goals?\)/);
+    // Kapitäne gibt es nach dem Draft immer (automatisch) – der torgefährlichste steht oben
+    expect(all).toMatch(/Top captain: [^|]+ \([^|]+\) with \d+ goals?/);
     expect(all).toContain('Season records');
     expect(all).toContain('Your season');
     expect(all).toContain('Time travel');

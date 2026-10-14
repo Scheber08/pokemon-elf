@@ -173,6 +173,9 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
     return stage ? t.draft.cup.stage[stage] : t.draft.matchday(round);
   };
   const stealMon = steal ? byId.get(steal.pokemonId) : undefined;
+  // Kapitän mit den meisten Toren (Gleichstand: wie die Torjägerliste)
+  const topCaptain = allScorers.find((sc) => sc.goals > 0 && teams[sc.teamIndex]?.captain === sc.pokemonId);
+  const topCaptainMon = topCaptain ? byId.get(topCaptain.pokemonId) : undefined;
   const stealTeam = steal ? teams.findIndex((tm) => tm.id === steal.teamId) : -1;
   const shareText = draftShareText({
     code,
@@ -259,6 +262,11 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
         {steal && stealMon && stealTeam >= 0 && (
           <p className="draft-results__steal">
             {tx.steal(t.game.pokemon(stealMon), steal.pick + 1, nameOf(stealTeam), t.game.posName[steal.pos])}
+          </p>
+        )}
+        {topCaptain && topCaptainMon && (
+          <p className="draft-results__steal">
+            {tx.topCaptain(t.game.pokemon(topCaptainMon), nameOf(topCaptain.teamIndex), topCaptain.goals)}
           </p>
         )}
         {signing && byId.get(signing.pokemonId) && (
