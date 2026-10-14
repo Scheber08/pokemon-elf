@@ -16,6 +16,7 @@ import {
 import { cupPens, cupStageOf, cupStatus, cupWinner, type CupInfo } from '../lib/cup';
 import { buildTable, type LeagueResult, type Match, type TableRow } from '../lib/season';
 import { useMatchReport } from './MatchReport';
+import type { ReplayLineup } from '../lib/matchReplay';
 import { scorerSummary } from '../lib/seasonTimeline';
 import { usePokemonData } from '../state/PokemonData';
 import { CupBracket, CupGroups, cupStatusText } from './CupBracket';
@@ -37,6 +38,8 @@ interface Props {
   preKickoff?: ReactNode;
   /** Ticker vorbei oder übersprungen → Ergebnis zeigen */
   onDone: () => void;
+  /** Aufstellungen je Team (Index) für die 2D-Ansicht im Spielbericht – fehlt: allgemeine Formation */
+  lineups?: (ReplayLineup | null)[];
 }
 
 /** So viele Torjäger zeigt der Ticker */
@@ -59,7 +62,7 @@ function formatCountdown(secs: number): string {
  * (bei Punktgleichheit an der Spitze mit der Titelentscheidung), dann onDone (genau
  * einmal). „Überspringen" wirkt nur lokal.
  */
-export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, clockOffset, onDone, preKickoff }: Props) {
+export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, clockOffset, onDone, preKickoff, lineups }: Props) {
   const t = useT();
   const tx = t.draft.ticker;
   const { byId } = usePokemonData();
@@ -138,7 +141,7 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
   /** Gruppenphase läuft (oder steht bevor) → Gruppentabellen statt Baum */
   const groupsPhase = !!cup?.groups && (!day || cupStageOf(cup, day.round) === 'group');
   const pensOf = useCallback((m: Match) => (cup ? cupPens(cup, m) : null), [cup]);
-  const report = useMatchReport(nameOf, pokemonName, (m) => dayLabel(m.round), pensOf);
+  const report = useMatchReport(nameOf, pokemonName, (m) => dayLabel(m.round), pensOf, (i) => lineups?.[i] ?? null);
   /** Überraschung des Spieltags (Außenseitersieg, Rating-Rückstand ≥ 100) */
   const upset = useMemo(
     () => (day ? biggestUpset(day.matches, league.teams.map((tm) => tm.rating)) : null),
