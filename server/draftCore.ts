@@ -799,6 +799,22 @@ export class DraftRoomCore {
     });
   }
 
+  /**
+   * Revanche, die gegen eine gleichzeitige Anfrage verloren hat: Speicher und Alarm löschen (die
+   * Lobby-Zeile löscht der Endpunkt). Niemand ist verbunden – den Code kennt nur der Server.
+   */
+  discard(): Promise<void> {
+    return this.exclusive(async () => {
+      await this.ports.alarm.clear();
+      this.alarmAt = null;
+      await this.ports.storage.clear();
+      this.rec = null;
+      this.tomb = null;
+      this.loaded = true;
+      this.closeAll('Diese Liga gibt es nicht');
+    });
+  }
+
   /** Revanche merken und verteilen – der erste Code gilt (gleichzeitige Anfragen). null ohne Liga. */
   setRematch(code: string, dead: string | null = null): Promise<string | null> {
     return this.exclusive(async () => {

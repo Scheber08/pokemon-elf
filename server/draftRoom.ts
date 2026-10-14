@@ -126,4 +126,8 @@ export class DraftRoom extends DurableObject<Env> {
   async setRematch(code: string, dead: string | null = null): Promise<string | null> {
     return this.core.setRematch(code, dead);
   }
+
+  async discard(): Promise<void> {
+    return this.core.discard();
+  }
 }

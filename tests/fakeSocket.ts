@@ -212,6 +212,7 @@ export class FakeNamespace implements DraftNamespace {
       rematchTemplate: async (deviceId, dead) => structuredClone(await room.core.rematchTemplate(deviceId, dead)),
       createFrom: (state) => room.core.createFrom(structuredClone(state)),
       setRematch: (code, dead) => room.core.setRematch(code, dead),
+      discard: () => room.core.discard(),
       fetch: async (request) => {
         this.forwarded.push(request);
         return new Response('weitergereicht', { status: 200 });

@@ -67,6 +67,8 @@ export interface DraftRoomStub {
   createFrom(state: DraftState): Promise<CreateRoomResult>;
   /** Revanche merken (der erste Code gilt) – liefert den gültigen Code bzw. null ohne Liga */
   setRematch(code: string, dead?: string | null): Promise<string | null>;
+  /** Revanche, die eine gleichzeitige Anfrage verloren hat, ganz löschen */
+  discard(): Promise<void>;
 }
 
 /** ID eines Durable Objects (undurchsichtig). */

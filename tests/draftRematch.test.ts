@@ -111,6 +111,28 @@ describe('Revanche', () => {
     expect(db.query('SELECT code FROM draft_lobbies')).toHaveLength(2);
   });
 
+  it('gleichzeitige Klicks: wer verliert, dessen Raum und Lobby-Zeile verschwinden ganz', async () => {
+    const { code, hostDev } = await finishedLeague();
+    // Eine andere Anfrage ist schneller: Während unsere Revanche angelegt wird, setzt sie ihren Code
+    const get = drafts.get.bind(drafts);
+    drafts.get = (id) => {
+      const stub = get(id);
+      return {
+        ...stub,
+        createFrom: async (state) => {
+          await drafts.room(code).core.setRematch('WINNER');
+          return stub.createFrom(state);
+        },
+      };
+    };
+    const res = await call<CreateDraftResponse>('POST', `/api/drafts/${code}/rematch`, hostDev);
+    expect(res.body.code).toBe('WINNER');
+    const losers = [...drafts.rooms.keys()].filter((c) => c !== code);
+    expect(losers).toHaveLength(1);
+    expect(drafts.room(losers[0]).stored).toBeNull();
+    expect(db.query('SELECT code FROM draft_lobbies WHERE code = ?', losers[0])).toEqual([]);
+  });
+
   it('haben alle die Revanche verlassen, gibt es beim nächsten Klick eine neue', async () => {
     const { code, hostDev } = await finishedLeague();
     const first = await call<CreateDraftResponse>('POST', `/api/drafts/${code}/rematch`, hostDev);

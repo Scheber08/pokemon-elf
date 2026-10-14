@@ -227,8 +227,13 @@ export async function rematchEndpoint(request: Request, env: Env, rawCode: strin
     throw new Error(`Revanche ${next}: ${result.message}`);
   }
   const winner = await old.setRematch(next, dead);
-  // Eine gleichzeitige Anfrage war schneller: deren Liga gilt, unsere Zeile verschwindet wieder
-  if (winner !== next) await deleteLobby(db, next).catch(() => undefined);
+  // Eine gleichzeitige Anfrage war schneller: deren Liga gilt, unsere verschwindet wieder ganz
+  if (winner !== next) {
+    await deleteLobby(db, next).catch(() => undefined);
+    await roomOf(ns, next)
+      .discard()
+      .catch((err: unknown) => console.error(`Revanche ${next}: verwaister Raum nicht gelöscht`, err));
+  }
   return json({ code: winner ?? next } satisfies CreateDraftResponse);
 }
 
