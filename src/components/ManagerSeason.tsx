@@ -22,7 +22,9 @@ import { SeasonStats } from './SeasonStats';
 import { Sprite } from './Sprite';
 import { Pitch, SS_INDEX, type SlotState } from './Pitch';
 import { TradePanel, TransferMarket } from './ManagerMarket';
+import { KitPicker } from './KitPicker';
 import '../styles/draft.css';
+import { cleanKit } from '../lib/kits';
 
 /** Auswahl beim Tauschen: ein Feld-/SS-Platz oder ein Bankspieler */
 type Selection = { kind: 'slot'; index: number } | { kind: 'bench'; id: number } | null;
@@ -161,7 +163,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
     const team = s.teams[i];
     if (!team) return null;
     const l = m?.playedLineups?.[match.round]?.[team.id] ?? m?.lineups[team.id];
-    return l ? { formation: l.formation, ids: l.slots, jerseys: team.jerseys, captain: team.captain } : null;
+    return l ? { formation: l.formation, ids: l.slots, jerseys: team.jerseys, captain: team.captain, kit: cleanKit(team.kit) } : null;
   });
 
   if (!m || !league) {
@@ -301,6 +303,8 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           />
         </section>
       )}
+
+      {room.me && !readOnly && meIndex >= 0 && <KitPicker kit={cleanKit(s.teams[meIndex].kit)} onChange={(kit) => room.setKit(kit)} />}
 
       {room.me && !readOnly && m.lineups[room.me.id] && meIndex >= 0 && (
         <JerseyEditor

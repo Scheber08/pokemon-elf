@@ -25,6 +25,7 @@ import { SaveImageButton } from './SaveImageButton';
 import { TableTimeTravel } from './TableTimeTravel';
 import { Sprite } from './Sprite';
 import '../styles/league.css';
+import { cleanKit } from '../lib/kits';
 
 interface Props {
   league: LeagueResult;
@@ -112,7 +113,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
     },
     (m) => (league.cup ? cupPens(league.cup, m) : null),
     // 2D-Ansicht: gedraftete Teams mit ihrer Elf, Auffüllteams allgemein
-    (i) => (teams[i] ? { formation: teams[i].formation, ids: teams[i].slots, jerseys: teams[i].jerseys, captain: teams[i].captain } : null),
+    (i) => (teams[i] ? { formation: teams[i].formation, ids: teams[i].slots, jerseys: teams[i].jerseys, captain: teams[i].captain, kit: cleanKit(teams[i].kit) } : null),
   );
   const ratingOf = (i: number) => ratings[i] ?? league.teams[i]?.rating ?? 0;
   // Noten nur für gedraftete Teams (die Auffüllteams dahinter haben nicht gedraftet)

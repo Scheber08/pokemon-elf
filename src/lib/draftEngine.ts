@@ -58,6 +58,7 @@ import type { ManagerState } from './manager';
 import type { TrainerLook } from './trainer';
 import { DRAFT_MODEL, opponentRatings, simulateLeague, type LeagueResult, type LeagueTeam } from './season';
 import { evaluateTeam } from './teamScore';
+import { cleanKit } from './kits';
 
 /** Slot-Index des Standardschützen */
 export const DRAFT_SS_SLOT = 11;
@@ -712,6 +713,23 @@ export function setTeamJerseys(state: DraftState, deviceId: string, raw: unknown
         return rest;
       }
       return { ...t, jerseys };
+    }),
+  };
+}
+
+/** Trikotfarben des eigenen Teams (null = Standard) – jederzeit, reine Optik. */
+export function setTeamKit(state: DraftState, deviceId: string, raw: unknown): DraftState {
+  const teamId = teamOfDevice(state, deviceId) ?? fail('not_joined', 'Du bist in dieser Liga nicht dabei');
+  const kit = raw == null ? null : cleanKit(raw) ?? fail('not_allowed', 'Unbekannte Trikotfarbe');
+  return {
+    ...state,
+    teams: state.teams.map((t) => {
+      if (t.id !== teamId) return t;
+      if (!kit) {
+        const { kit: _drop, ...rest } = t;
+        return rest;
+      }
+      return { ...t, kit };
     }),
   };
 }

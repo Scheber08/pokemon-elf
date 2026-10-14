@@ -46,7 +46,9 @@ import { FilterBar, useFilteredPokemon, type PokemonFilters } from './FilterBar'
 import { Pitch, type SlotState } from './Pitch';
 import { PokemonGrid } from './PokemonGrid';
 import { RunNotice } from './RunBoard';
+import { KitPicker } from './KitPicker';
 import '../styles/draft.css';
+import { cleanKit } from '../lib/kits';
 
 /** Draft-Slot schon besetzt? Feld, Standardschütze oder Bank (Manager-Saison). */
 function slotFilled(team: DraftTeam, i: number): boolean {
@@ -565,6 +567,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                   hint={s.settings.format === 'manager' ? t.captain.managerNote : t.captain.draftNote}
                 />
               )}
+              {pitchTeam === me && me && !readOnly && <KitPicker kit={cleanKit(me.kit)} onChange={(kit) => room.setKit(kit)} />}
               {pitchTeam === me && me && !readOnly && (
                 <JerseyEditor
                   formation={me.formation}

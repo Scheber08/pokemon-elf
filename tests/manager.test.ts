@@ -15,6 +15,7 @@ import {
   snapshotOf,
   startDraft,
   setTeamCaptain,
+  setTeamKit,
   setTeamJerseys,
   totalPicks,
   upgradeSettings,
@@ -560,5 +561,20 @@ describe('Kapitän im Online-Draft', () => {
     expect(parseClientMessage(JSON.stringify({ type: 'captain', pokemonId: 25 }))).toMatchObject({ ok: true });
     expect(parseClientMessage(JSON.stringify({ type: 'captain', pokemonId: null }))).toMatchObject({ ok: true });
     expect(parseClientMessage(JSON.stringify({ type: 'captain', pokemonId: '25' })).ok).toBe(false);
+  });
+});
+
+describe('Trikotfarben im Online-Draft', () => {
+  it('jederzeit setzbar, nur bekannte Farben, null = Standard; im Schnappschuss für alle', () => {
+    const s = drafted();
+    const next = setTeamKit(s, 'dev-h', { home: 'red', away: 'black' });
+    expect(next.teams.find((t) => t.id === 'h')!.kit).toEqual({ home: 'red', away: 'black' });
+    expect(snapshotOf(next, 'c1', 0).teams.find((t) => t.id === 'h')!.kit).toEqual({ home: 'red', away: 'black' });
+    expect(setTeamKit(next, 'dev-h', null).teams.find((t) => t.id === 'h')).not.toHaveProperty('kit');
+    expect(() => setTeamKit(s, 'dev-h', { home: 'gold', away: 'red' })).toThrow(/Trikotfarbe/);
+    expect(() => setTeamKit(s, 'fremd', { home: 'red', away: 'blue' })).toThrow(/nicht dabei/);
+    expect(parseClientMessage(JSON.stringify({ type: 'kit', kit: { home: 'red', away: 'blue' } }))).toMatchObject({ ok: true });
+    expect(parseClientMessage(JSON.stringify({ type: 'kit', kit: null }))).toMatchObject({ ok: true });
+    expect(parseClientMessage(JSON.stringify({ type: 'kit', kit: 'red' })).ok).toBe(false);
   });
 });

@@ -62,6 +62,7 @@ import {
   updateSettings,
   updateTeam,
   setTeamCaptain,
+  setTeamKit,
   setTeamJerseys,
   upgradeSettings,
   upgradeState,
@@ -428,6 +429,15 @@ export function parseClientMessage(raw: unknown): ParsedMessage {
       if (!Object.values(j as Record<string, unknown>).every((v) => typeof v === 'number')) return badMessage();
       return ok({ type: 'jerseys', jerseys: j as Record<string, number> });
     }
+    case 'kit': {
+      const k = d.kit;
+      if (k === null) return ok({ type: 'kit', kit: null });
+      if (typeof k !== 'object' || Array.isArray(k)) return badMessage();
+      const { home, away } = k as Record<string, unknown>;
+      return typeof home === 'string' && typeof away === 'string' && home.length <= 20 && away.length <= 20
+        ? ok({ type: 'kit', kit: { home, away } })
+        : badMessage();
+    }
     case 'captain':
       return d.pokemonId === null || isInt(d.pokemonId) ? ok({ type: 'captain', pokemonId: d.pokemonId as number | null }) : badMessage();
     case 'offer-reply':
@@ -744,7 +754,7 @@ const sameState = (a: DraftState, b: DraftState) => a === b || JSON.stringify(a)
  * Lobby-Änderungen – zusätzlich pro Gerät gedrosselt (jede kostet Speichern und ggf. D1). Züge im
  * Draft (pick, auto-pick, reroll) nicht: Sie begrenzt schon die Engine (nur am Zug, Rerolls je Team).
  */
-const LOBBY_CHANGES = new Set<DraftClientMessage['type']>(['join', 'leave', 'update-team', 'settings', 'add-cpu', 'remove-team', 'set-order', 'queue', 'jerseys', 'captain']);
+const LOBBY_CHANGES = new Set<DraftClientMessage['type']>(['join', 'leave', 'update-team', 'settings', 'add-cpu', 'remove-team', 'set-order', 'queue', 'jerseys', 'captain', 'kit']);
 
 interface Bucket {
   tokens: number;
@@ -1573,6 +1583,8 @@ export class DraftRoomCore {
         return setClaim(playDueMatchdays(state, now, list, scale), deviceId, { in: msg.in, out: msg.out }, list);
       case 'jerseys':
         return setTeamJerseys(state, deviceId, msg.jerseys);
+      case 'kit':
+        return setTeamKit(state, deviceId, msg.kit);
       case 'captain':
         // Manager-Saison: Überfälliges erst spielen – der Kapitän gilt ab dem nächsten Anpfiff
         return setTeamCaptain(state.manager ? playDueMatchdays(state, now, list, scale) : state, deviceId, msg.pokemonId);

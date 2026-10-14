@@ -23,8 +23,10 @@ import { DraftPresets } from './DraftPresets';
 import { DraftSettingsForm, DraftSettingsSummary, DraftTeamFields } from './DraftSettingsForm';
 import { EternalTable } from './EternalTable';
 import { TrainerAvatar } from './TrainerAvatar';
+import { KitPicker } from './KitPicker';
 import { parseLook } from '../lib/trainer';
 import '../styles/draft.css';
+import { cleanKit } from '../lib/kits';
 
 /** QR-Code des Liga-Links – zum Scannen, wenn alle im selben Raum sitzen. */
 function DraftQr({ link }: { link: string }) {
@@ -204,6 +206,7 @@ function MyTeamCard({ room }: { room: DraftRoom }) {
           if (formation !== me.formation && room.updateTeam({ formation })) saveTeamPrefs({ name: me.name, formation });
         }}
       />
+      <KitPicker kit={cleanKit(me.kit)} onChange={(kit) => room.setKit(kit)} />
       <button type="button" className="btn btn--ghost btn--small" onClick={leave}>
         {t.online.leave}
       </button>

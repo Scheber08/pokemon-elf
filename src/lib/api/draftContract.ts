@@ -258,6 +258,8 @@ export interface DraftTeam {
   jerseys?: Record<string, number>;
   /** Kapitän (Pokémon-ID aus der Elf) – zählt im Team-Score doppelt; fehlt: keiner */
   captain?: number;
+  /** Trikotfarben (src/lib/kits.ts) – fehlt: Standard */
+  kit?: { home: string; away: string };
 }
 
 /** Draft-Slot des ersten Bankplatzes (Manager-Saison): Bankplatz i = DRAFT_BENCH_SLOT + i */
@@ -508,6 +510,8 @@ export type DraftClientMessage =
   | { type: 'jerseys'; jerseys: Record<string, number> }
   /** Kapitän setzen (null = keiner) – im Draft bzw. in der Manager-Saison */
   | { type: 'captain'; pokemonId: number | null }
+  /** Trikotfarben setzen (null = Standard) – jederzeit, reine Optik */
+  | { type: 'kit'; kit: { home: string; away: string } | null }
   | { type: 'offer-reply'; id: number; accept: boolean }
   /** Emoji-Reaktion an alle (nur Mitglieder; wird nicht gespeichert) */
   | { type: 'react'; emoji: DraftReaction }

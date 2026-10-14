@@ -18,7 +18,9 @@ import { DraftSquads } from './DraftSquads';
 import { JerseyEditor } from './JerseyEditor';
 import { EternalTable } from './EternalTable';
 import { LeagueTicker } from './LeagueTicker';
+import { KitPicker } from './KitPicker';
 import '../styles/draft.css';
+import { cleanKit } from '../lib/kits';
 
 /**
  * Nach dem letzten Pick: Das Ergebnis der Saison kommt vom Server (im Schnappschuss
@@ -100,7 +102,7 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           startsAt={season.startsAt}
           stepMs={season.stepMs}
           clockOffset={room.clockOffset}
-          lineups={s.teams.map((tm) => ({ formation: tm.formation, ids: tm.slots, jerseys: tm.jerseys, captain: tm.captain }))}
+          lineups={s.teams.map((tm) => ({ formation: tm.formation, ids: tm.slots, jerseys: tm.jerseys, captain: tm.captain, kit: cleanKit(tm.kit) }))}
           onDone={() => {
             setTicker(false);
             // Tab im Hintergrund: Saisonende melden (wie „Du bist dran" – nur mit Erlaubnis)
@@ -136,6 +138,7 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           transfers={s.manager?.transfers}
         />
       )}
+      {meIndex >= 0 && <KitPicker kit={cleanKit(s.teams[meIndex].kit)} onChange={(kit) => room.setKit(kit)} />}
       {meIndex >= 0 && (
         <JerseyEditor
           formation={s.teams[meIndex].formation}
