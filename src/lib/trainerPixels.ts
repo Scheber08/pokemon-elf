@@ -323,6 +323,12 @@ function hat(c: Canvas, id: string, cloth: string) {
       c.fill(ellipse(26, 7, 1.6, 1.6), '#f3f3f3', '#c9ced6');
       c.rect(7, 8, 18, 2, '#f3f3f3');
       break;
+    case 'straw':
+      // Breite Krempe, rotes Band
+      c.fill(and(ellipse(15.5, 8, 6.5, 5), above(8)), '#e9c46a', '#a8862e');
+      c.fill((x, y) => y >= 8 && y <= 9 && x >= 3 && x <= 28, '#f2d27a', '#a8862e');
+      c.rect(9, 6, 14, 1, '#d8342a');
+      break;
     case 'wizard':
       c.fill((x, y) => y <= 9 && y >= 0 && Math.abs(x - 15.5) <= 1 + y * 0.9, '#5b3fb0');
       c.rect(6, 9, 20, 2, '#4a3191');

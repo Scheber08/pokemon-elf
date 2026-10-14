@@ -99,6 +99,7 @@ const trainer = {
       crown: 'Krone',
       pumpkin: 'Kürbis',
       santa: 'Weihnachtsmütze',
+      straw: 'Strohhut',
     },
     accessory: {
       none: 'Ohne',

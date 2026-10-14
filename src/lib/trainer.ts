@@ -37,6 +37,8 @@ const item = (slot: TrainerSlot, id: string, price: number, color?: string): Tra
 const seasonal = (it: TrainerItem, from: string, to: string, icon: string): TrainerItem => ({ ...it, season: { from, to, icon } });
 /** Halloween-Zeit */
 const SPOOKY = ['10-01', '11-07', '🎃'] as const;
+/** Sommer */
+const SUMMER = ['06-21', '08-31', '☀️'] as const;
 /** Weihnachtszeit (über den Jahreswechsel) */
 const XMAS = ['12-01', '01-06', '🎄'] as const;
 
@@ -126,6 +128,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   item('hat', 'crown', 1500),
   seasonal(item('hat', 'pumpkin', 300), ...SPOOKY),
   seasonal(item('hat', 'santa', 300), ...XMAS),
+  seasonal(item('hat', 'straw', 250), ...SUMMER),
   // Accessoire
   item('accessory', 'none', 0),
   item('accessory', 'freckles', 0),
@@ -176,6 +179,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   item('companion', '445', 900),
   seasonal(item('companion', '711', 400), ...SPOOKY),
   seasonal(item('companion', '225', 400), ...XMAS),
+  seasonal(item('companion', '278', 300), ...SUMMER),
   item('companion', '6', 600),
   item('companion', '149', 600),
   item('companion', '448', 600),
