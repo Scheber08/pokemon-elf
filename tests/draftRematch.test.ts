@@ -102,6 +102,13 @@ describe('Revanche', () => {
     expect(db.query('SELECT code FROM draft_lobbies WHERE code = ?', next)).toHaveLength(1);
   });
 
+  it('Karriere nur nach einer Manager-Saison – nach einer normalen Liga 409', async () => {
+    const { code, hostDev } = await finishedLeague();
+    const res = await call<ApiErrorBody>('POST', `/api/drafts/${code}/rematch`, { ...hostDev, career: true });
+    expect(res.status).toBe(409);
+    expect(res.body.message).toMatch(/Manager-Saison/);
+  });
+
   it('zweite Anfrage (auch vom Gast) bekommt dieselbe Revanche', async () => {
     const { code, hostDev, guestDev } = await finishedLeague();
     const a = await call<CreateDraftResponse>('POST', `/api/drafts/${code}/rematch`, guestDev);

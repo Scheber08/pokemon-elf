@@ -231,6 +231,13 @@ lassen Ausfälle draußen; eigene Aufstellungen bekommen zum Anpfiff den besten 
 Spieltagen 4, 8, 12 und 16 – gleiche Aufstellungen und Tagesform, Remis → Elfmeterschießen, Finale neutral.
 Nur in Saisons, die nach der Einführung starten.
 
+**Karriere** (`nextCareer`, `rematchTemplate(..., { career: true })`, `POST /api/drafts/:code/rematch` mit
+`career: true`): Nach einer Manager-Saison „Nächste Saison“ – gleiche Teams mit ihren Kadern (inkl. Transfers) und
+ihrer Optik, kein Draft: Der Host startet die Saison direkt (jedes Team stellt seine beste Elf auf). Liga-Stufe 1–3
+(`DraftState.career`): Steht ein Mensch unter den ersten drei, steigt die Liga auf, stehen alle Menschen auf den
+letzten drei Plätzen, ab; die Auffüllteams sind je Stufe stärker bzw. schwächer (`CAREER_TIER_SHIFT`). In der
+Karriere-Lobby kann niemand neu beitreten, und nur Name, Sichtbarkeit und Takt lassen sich ändern.
+
 **Trikotnummern** (alle Modi, `src/lib/jerseys.ts`, `src/components/JerseyEditor.tsx`): Ohne eigene Wahl gilt
 eine Vorgabe nach Position (Torwart 1, Abwehr 2–5, Sechser 6, Zehner 10, Stürmer 9 …). Jedes Team kann seinen
 Pokémon Nummern von 1 bis 99 geben – je Team eindeutig (belegte Nummern tauschen), die Nummer hängt am Pokémon,

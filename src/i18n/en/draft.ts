@@ -299,6 +299,8 @@ const draft: Messages['draft'] = {
     rematch: 'Rematch',
     rematchBusy: 'Setting up the rematch …',
     rematchTitle: 'New league with the same teams and settings – everyone is straight back in',
+    career: 'Next season (career)',
+    careerTitle: 'Same teams with their squads – no new draft. A team in the top three: promotion; all humans in the bottom three: relegation.',
     toRematch: 'Go to rematch',
     rematchFailed: 'The rematch couldn’t be set up',
   },

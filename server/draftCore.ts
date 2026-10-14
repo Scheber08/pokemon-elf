@@ -855,14 +855,14 @@ export class DraftRoomCore {
   }
 
   /** Revanche: Vorlage aus dieser fertigen Liga (RPC von POST /api/drafts/:code/rematch) – oder die schon angelegte. */
-  rematchTemplate(deviceId: string, dead: string | null = null): Promise<RematchTemplateResult> {
+  rematchTemplate(deviceId: string, dead: string | null = null, career = false): Promise<RematchTemplateResult> {
     return this.exclusive(async () => {
       const rec = await this.load();
       if (!rec) return { ok: false, code: 'not_found', message: 'Diese Liga gibt es nicht (mehr)' };
       // Die bisherige Revanche gibt es nicht mehr (alle haben sie verlassen) → neue Vorlage
       if (rec.state.rematch && rec.state.rematch !== dead) return { ok: true, existing: rec.state.rematch };
       try {
-        return { ok: true, template: rematchTemplate(rec.state, deviceId, this.ports.now()) };
+        return { ok: true, template: rematchTemplate(rec.state, deviceId, this.ports.now(), { career }) };
       } catch (err) {
         if (err instanceof DraftError) return { ok: false, code: err.code, message: err.message };
         throw err;
@@ -1586,7 +1586,7 @@ export class DraftRoomCore {
         return next;
       }
       case 'start':
-        return startDraft(state, deviceId, now, list);
+        return startDraft(state, deviceId, now, list, scale);
       case 'queue':
         return setQueue(state, deviceId, msg.ids, list);
       case 'transfer':

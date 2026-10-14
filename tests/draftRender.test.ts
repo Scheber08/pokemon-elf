@@ -649,6 +649,17 @@ describe('DraftLobby', () => {
     expect(room.updateSettings).not.toHaveBeenCalled();
   });
 
+  it('Karriere-Lobby: Saison, Liga-Stufe, Aufstieg und „Saison starten“', async () => {
+    const state = { ...lobby(2), career: { season: 3, tier: 1 as const, move: 'up' as const } };
+    const room = fakeRoom(snap(state, 'h'));
+    const { container } = await render(app(h(DraftLobby, { room })));
+    await settle();
+    const card = container.querySelector('.draft-career')!;
+    expect(card.textContent).toContain('Saison 3 · 1. Pokémon-Liga');
+    expect(card.textContent).toContain('Aufgestiegen!');
+    expect(container.querySelector('.draft-start button')!.textContent).toBe('Saison starten');
+  });
+
   it('ohne laufende Aktion: CPU und Einstellungen senden', async () => {
     const room = fakeRoom(snap(lobby(2), 'h'));
     const { container } = await render(app(h(DraftLobby, { room })));

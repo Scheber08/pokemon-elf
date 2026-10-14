@@ -259,6 +259,17 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
     <div className="draft-lobby">
       <div className="draft-lobby__main">
         <DraftCodeCard code={s.code} />
+        {s.career && (
+          <section className="card draft-career" aria-label={t.online.careerTitle}>
+            <p className="kicker">{t.online.careerTitle}</p>
+            <p className="draft-career__tier">
+              <strong>{t.online.careerSeason(s.career.season, t.online.careerTier[s.career.tier])}</strong>
+              {s.career.move === 'up' && <span className="draft-career__move is-up"> ⬆ {t.online.careerUp}</span>}
+              {s.career.move === 'down' && <span className="draft-career__move is-down"> ⬇ {t.online.careerDown}</span>}
+            </p>
+            <p className="muted small">{t.online.careerNote}</p>
+          </section>
+        )}
         <section className="card" aria-labelledby="draft-teams-title">
           <h2 id="draft-teams-title" className="section-title">
             {t.online.teams}{' '}
@@ -400,7 +411,7 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
               aria-busy={room.busy.start}
               onClick={room.start}
             >
-              {room.busy.start ? t.online.starting : t.online.start}
+              {room.busy.start ? t.online.starting : s.career ? t.online.careerStart : t.online.start}
             </button>
             {blocker ? (
               <p className="hint">{blocker}</p>

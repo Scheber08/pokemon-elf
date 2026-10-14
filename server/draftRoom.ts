@@ -115,8 +115,8 @@ export class DraftRoom extends DurableObject<Env> {
     return this.core.snapshot();
   }
 
-  async rematchTemplate(deviceId: string, dead: string | null = null): Promise<RematchTemplateResult> {
-    return this.core.rematchTemplate(deviceId, dead);
+  async rematchTemplate(deviceId: string, dead: string | null = null, career = false): Promise<RematchTemplateResult> {
+    return this.core.rematchTemplate(deviceId, dead, career);
   }
 
   async createFrom(state: DraftState): Promise<CreateRoomResult> {

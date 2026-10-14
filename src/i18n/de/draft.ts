@@ -329,6 +329,8 @@ const draft = {
     rematch: 'Revanche',
     rematchBusy: 'Revanche wird angelegt …',
     rematchTitle: 'Neue Liga mit denselben Teams und Einstellungen – alle sind sofort wieder dabei',
+    career: 'Nächste Saison (Karriere)',
+    careerTitle: 'Gleiche Teams mit ihren Kadern – ohne neuen Draft. Ein Team unter den ersten drei: Aufstieg; alle Menschen auf den letzten drei Plätzen: Abstieg.',
     toRematch: 'Zur Revanche',
     rematchFailed: 'Die Revanche konnte nicht angelegt werden',
   },

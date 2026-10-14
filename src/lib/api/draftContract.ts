@@ -370,9 +370,18 @@ export interface DraftSeason {
  */
 export type DraftSnapshotSettings = DraftSettings & LegacySettingsPatch;
 
+/** Karriere: Saison-Nummer und Liga-Stufe (1 = oberste) samt Auf-/Abstieg gegenüber der Vorsaison */
+export interface DraftCareer {
+  season: number;
+  tier: 1 | 2 | 3;
+  move?: 'up' | 'down';
+}
+
 export interface DraftSnapshot {
   code: string;
   phase: DraftPhase;
+  /** Karriere-Saison (Manager): Kader aus der Vorsaison, kein Draft – fehlt sonst */
+  career?: DraftCareer;
   settings: DraftSnapshotSettings;
   /** Teams; ab dem Start in Draft-Reihenfolge (Runde 1) */
   teams: DraftTeam[];

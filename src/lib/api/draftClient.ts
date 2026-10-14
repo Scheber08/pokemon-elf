@@ -193,10 +193,10 @@ export function createDraft(req: Omit<CreateDraftRequest, keyof DeviceAuth>): Pr
 }
 
 /** Revanche einer fertigen Liga (nur Mitglieder) – liefert den Code der neuen bzw. schon angelegten Liga. */
-export function requestRematch(code: string): Promise<CreateDraftResponse> {
+export function requestRematch(code: string, career = false): Promise<CreateDraftResponse> {
   return draftRequest<CreateDraftResponse>(`/drafts/${encodeURIComponent(code)}/rematch`, {
     method: 'POST',
-    body: JSON.stringify(getDevice()),
+    body: JSON.stringify({ ...getDevice(), ...(career ? { career: true } : {}) }),
   });
 }
 

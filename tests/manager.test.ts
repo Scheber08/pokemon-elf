@@ -3,6 +3,10 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { DeviceAuth } from '../src/lib/api/contract';
 import { DRAFT_BENCH_SLOT, DRAFT_LIMITS, type CreateDraftResponse, type DraftSnapshot } from '../src/lib/api/draftContract';
 import {
+  rematchTemplate,
+  nextCareer,
+  joinDraft,
+  updateSettings,
   addCpuTeam,
   applyPick,
   autoPickChoice,
@@ -678,5 +682,53 @@ describe('Pokal der Manager-Saison', () => {
     expect(managerCupWinner(done)).toBe(done.rounds[3].ties[0].winner);
     // Ligaspiele bleiben unberührt: 17 Spieltage × 9 Spiele
     expect(s.league!.matches).toHaveLength(17 * 9);
+  });
+});
+
+describe('Karriere', () => {
+  function finished(): DraftState {
+    let s = startManagerSeason(drafted(), ALL, SCALE);
+    while (s.phase === 'season') s = playMatchday(s, ALL, SCALE);
+    return s;
+  }
+
+  it('nächste Saison: Kader und Optik bleiben, kein Draft – Start führt direkt in die Saison', () => {
+    const done = finished();
+    const host = done.teams.find((t) => t.id === 'h')!;
+    const withLook = { ...done, teams: done.teams.map((t) => (t.id === 'h' ? { ...t, kit: { home: 'red', away: 'black' }, captain: t.slots[0]! } : t)) };
+    const tpl = rematchTemplate(withLook, 'dev-h', 5000, { career: true });
+    expect(tpl.career).toMatchObject({ season: 2 });
+    const team = tpl.teams.find((t) => t.id === 'h')!;
+    expect(rosterOf(team).sort()).toEqual(rosterOf(host).sort());
+    expect(team.kit).toEqual({ home: 'red', away: 'black' });
+    let next: DraftState = { ...tpl, code: 'CAR234', seed: 'abc' };
+    expect(() => joinDraft(next, { teamId: 'x', deviceId: 'dev-x', name: 'Neu', formation: '4-3-3' })).toThrow(/Karriere/);
+    expect(() => addCpuTeam(next, 'dev-h', 'c9')).toThrow(/Karriere/);
+    expect(() => updateSettings(next, 'dev-h', { bench: 5 }, ALL)).toThrow(/Karriere/);
+    next = updateSettings(next, 'dev-h', { name: 'Saison 2' }, ALL);
+    const started = startDraft(next, 'dev-h', 6000, ALL);
+    expect(started.phase).toBe('season');
+    const t = started.teams.find((x) => x.id === 'h')!;
+    expect(rosterOf(t).sort()).toEqual(rosterOf(host).sort());
+    expect(t.slots.every((x) => x != null)).toBe(true);
+    const season = startManagerSeason(started, ALL, SCALE);
+    expect(season.manager!.played).toBe(0);
+  });
+
+  it('Auf- und Abstieg nach der Platzierung der Menschen; Stufe 1–3', () => {
+    const done = finished();
+    const human = done.teams.findIndex((t) => t.id === 'h');
+    const place = (rank: number): DraftState => {
+      const table = [...done.league!.table];
+      const i = table.findIndex((r) => r.team === human);
+      const [row] = table.splice(i, 1);
+      table.splice(rank - 1, 0, row);
+      return { ...done, league: { ...done.league!, table } };
+    };
+    expect(nextCareer(place(1))).toEqual({ season: 2, tier: 1, move: 'up' });
+    expect(nextCareer(place(10))).toEqual({ season: 2, tier: 2 });
+    expect(nextCareer(place(18))).toEqual({ season: 2, tier: 3, move: 'down' });
+    expect(nextCareer({ ...place(1), career: { season: 4, tier: 1 } })).toEqual({ season: 5, tier: 1 });
+    expect(() => nextCareer(drafted({ format: 'league' }))).toThrow(/Manager/);
   });
 });

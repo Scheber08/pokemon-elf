@@ -62,7 +62,7 @@ export interface DraftRoomStub {
   snapshot(): Promise<DraftSnapshot | null>;
   /** Revanche: Vorlage aus dieser (fertigen) Liga für das Gerät eines Mitglieds */
   /** dead: Code einer früheren Revanche, die es nicht mehr gibt – sie wird ersetzt */
-  rematchTemplate(deviceId: string, dead?: string | null): Promise<RematchTemplateResult>;
+  rematchTemplate(deviceId: string, dead?: string | null, career?: boolean): Promise<RematchTemplateResult>;
   /** Revanche: neue Liga aus einer Vorlage (mit Code und Seed) anlegen */
   createFrom(state: DraftState): Promise<CreateRoomResult>;
   /** Revanche merken (der erste Code gilt) – liefert den gültigen Code bzw. null ohne Liga */

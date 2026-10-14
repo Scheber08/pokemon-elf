@@ -148,6 +148,13 @@ const online = {
   /** Nach dem Lade-Ball (mit Leerzeichen vorn) */
   waitingHost: ' Warte auf den Host …',
   starting: 'Draft wird gestartet …',
+  careerTitle: 'Karriere',
+  careerStart: 'Saison starten',
+  careerSeason: (n: number, tier: string) => `Saison ${n} · ${tier}`,
+  careerTier: { 1: '1. Pokémon-Liga', 2: '2. Pokémon-Liga', 3: '3. Pokémon-Liga' } as Record<number, string>,
+  careerUp: 'Aufgestiegen!',
+  careerDown: 'Abgestiegen',
+  careerNote: 'Alle Teams behalten ihren Kader aus der Vorsaison – es gibt keinen Draft, der Host startet die Saison direkt. In höheren Ligen sind die Gegner stärker.',
   start: 'Draft starten',
   startInfo: (teams: number, rounds: number, snake = true) =>
     `${teams} Teams · ${snake ? 'Snake-Draft' : 'feste Reihenfolge'} über ${rounds} Runden.`,

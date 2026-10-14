@@ -118,6 +118,8 @@ export function draftRoomView(s: DraftSnapshot | null): DraftRoomView {
 export function startBlocker(s: DraftSnapshot, list: Pokemon[], t: Messages = messages()): string | null {
   if (s.phase !== 'lobby') return t.online.draftRunning;
   if (s.teams.length < DRAFT_LIMITS.minTeams) return t.online.server.fmt.tooFewTeams(DRAFT_LIMITS.minTeams);
+  // Karriere: Die Kader stehen schon – kein Draft, also auch kein Pool nötig
+  if (s.career) return null;
   const needed = s.teams.length * rounds(s.settings);
   const pool = poolOf(s.settings, list).length;
   if (pool < needed) return t.online.server.fmt.poolHas(pool, needed);

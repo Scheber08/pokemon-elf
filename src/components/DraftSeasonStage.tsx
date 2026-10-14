@@ -67,10 +67,10 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
   const navigate = useNavigate();
   const toast = useToast();
   const [rematching, setRematching] = useState(false);
-  const rematch = async () => {
+  const rematch = async (career = false) => {
     setRematching(true);
     try {
-      const { code } = await requestRematch(s.code);
+      const { code } = await requestRematch(s.code, career);
       navigate(`/draft/${code}`);
     } catch (err) {
       setRematching(false);
@@ -173,9 +173,28 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
         ) : (
           room.me &&
           room.live && (
-            <button type="button" className="btn btn--primary" disabled={rematching} title={t.draft.season.rematchTitle} onClick={rematch}>
-              {rematching ? t.draft.season.rematchBusy : t.draft.season.rematch}
-            </button>
+            <>
+              {s.settings.format === 'manager' && (
+                <button
+                  type="button"
+                  className="btn btn--primary"
+                  disabled={rematching}
+                  title={t.draft.season.careerTitle}
+                  onClick={() => void rematch(true)}
+                >
+                  {rematching ? t.draft.season.rematchBusy : t.draft.season.career}
+                </button>
+              )}
+              <button
+                type="button"
+                className={`btn ${s.settings.format === 'manager' ? '' : 'btn--primary'}`}
+                disabled={rematching}
+                title={t.draft.season.rematchTitle}
+                onClick={() => void rematch()}
+              >
+                {rematching ? t.draft.season.rematchBusy : t.draft.season.rematch}
+              </button>
+            </>
           )
         )}
         <Link className="btn" to="/draft">

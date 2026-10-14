@@ -91,6 +91,9 @@ export interface ManagerCup {
   matches: Match[];
 }
 
+/** Karriere: Verschiebung der Auffüllteams je Liga-Stufe (Team-Score-Punkte) */
+export const CAREER_TIER_SHIFT: Record<number, number> = { 1: 60, 2: 0, 3: -60 };
+
 /** An diesen Spieltagen (nach dem Ligaspiel) wird eine Pokalrunde gespielt: Achtel-, Viertel-, Halbfinale, Finale */
 export const CUP_MATCHDAYS = [4, 8, 12, 16] as const;
 
@@ -350,7 +353,11 @@ export function startManagerSeason(
   if (state.phase !== 'season' || state.manager) return state;
   const byId = new Map(list.map((p) => [p.id, p]));
   const drafted = leagueTeams(state, byId, scale);
-  const fill = centerFillRatings(drafted, fillTeams(state, candidates, byId, scale, DRAFT_LIMITS.leagueSize));
+  // Karriere: Die Liga-Stufe verschiebt das Niveau der Auffüllteams (1. Liga stärker, 3. Liga schwächer)
+  const tierShift = CAREER_TIER_SHIFT[state.career?.tier ?? 2] ?? 0;
+  const fill = centerFillRatings(drafted, fillTeams(state, candidates, byId, scale, DRAFT_LIMITS.leagueSize)).map((t) =>
+    tierShift ? { ...t, rating: Math.min(1000, Math.max(0, t.rating + tierShift)) } : t,
+  );
   const fillTeamsStored: ManagerFillTeam[] = fill.map((t) => ({
     name: t.name,
     rating: t.rating,

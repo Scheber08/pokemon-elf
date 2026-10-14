@@ -138,6 +138,13 @@ const online: Messages['online'] = {
   readOnlySettings: 'View only – no live connection.',
   waitingHost: ' Waiting for the host …',
   starting: 'Starting draft …',
+  careerTitle: 'Career',
+  careerStart: 'Start season',
+  careerSeason: (n, tier) => `Season ${n} · ${tier}`,
+  careerTier: { 1: 'Pokémon League 1', 2: 'Pokémon League 2', 3: 'Pokémon League 3' },
+  careerUp: 'Promoted!',
+  careerDown: 'Relegated',
+  careerNote: 'Every team keeps its squad from last season – there is no draft, the host starts the season directly. Higher leagues have stronger opponents.',
   start: 'Start draft',
   startInfo: (teams, rounds, snake = true) =>
     `${plural(teams, 'team', 'teams')} · ${snake ? 'snake draft' : 'fixed order'} over ${plural(rounds, 'round', 'rounds')}.`,

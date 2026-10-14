@@ -216,7 +216,10 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
     <div className="manager">
       {report.element}
       <section className="card manager__status" aria-live="polite">
-        <span className="kicker">{tx.kicker}</span>
+        <span className="kicker">
+          {tx.kicker}
+          {s.career && ` · ${t.online.careerSeason(s.career.season, t.online.careerTier[s.career.tier])}`}
+        </span>
         <h2 className="section-title">{tx.played(m.played, m.total)}</h2>
         {m.nextAt != null && (
           <p className="manager__kickoff">

@@ -36,6 +36,7 @@ import {
   DRAFT_ROLL_MODES,
   LOBBY_REGION_MANY,
   type DraftActiveRoll,
+  type DraftCareer,
   type DraftHistoryEntry,
   type DraftHistoryRow,
   type DraftPhase,
@@ -51,7 +52,7 @@ import {
   type LegacySettingsPatch,
   type LobbyRegion,
 } from './api/draftContract';
-import { positionFit, type Scale } from './fit';
+import { buildScale, positionFit, type Scale } from './fit';
 import { createRng, hashSeed, shuffle, streamRng, type Rng } from './rng';
 import { CUP_SIZE, simulateCup } from './cup';
 import type { ManagerState } from './manager';
@@ -61,6 +62,7 @@ import { evaluateTeam } from './teamScore';
 import { cleanKit } from './kits';
 import { cleanCheer } from './cheer';
 import { cleanCrest } from './crest';
+import { bestEleven } from './bestEleven';
 
 /** Slot-Index des Standardschützen */
 export const DRAFT_SS_SLOT = 11;
@@ -107,6 +109,8 @@ export interface DraftState {
   queues?: Record<string, number[]>;
   /** Manager-Saison (src/lib/manager.ts) – ab dem Ende des Drafts */
   manager?: ManagerState;
+  /** Karriere: nächste Saison mit den Kadern der Vorsaison (ohne Draft) – fehlt sonst */
+  career?: DraftCareer;
 }
 
 /** Lesende Sicht – passt auf den Server-Zustand und auf Client-Schnappschüsse. */
@@ -673,6 +677,7 @@ function requireHost(state: DraftState, deviceId: string) {
 
 export function joinDraft(state: DraftState, t: NewTeam): DraftState {
   requireLobby(state);
+  if (state.career) fail('career', 'Karriere-Saison: Es spielen nur die Teams der Vorsaison');
   assertFormation(t.formation);
   if (teamOfDevice(state, t.deviceId)) fail('already_joined', 'Du bist schon in dieser Liga');
   if (state.banned?.includes(t.deviceId)) fail('banned', 'Der Host hat dich aus dieser Liga entfernt');
@@ -825,6 +830,10 @@ export function updateSettings(
 ): DraftState {
   requireLobby(state);
   requireHost(state, deviceId);
+  // Karriere: Kader stehen schon – nur Name, Sichtbarkeit und Takt lassen sich ändern
+  if (state.career && Object.keys(patch).some((k) => !CAREER_SETTINGS.has(k))) {
+    fail('career', 'Karriere-Saison: Nur Name, Sichtbarkeit und Takt lassen sich ändern');
+  }
   const settings = normalizeSettings(patch, state.settings, list);
   if (settings.maxTeams < state.teams.length) fail('too_many_teams', `Es sind schon ${state.teams.length} Teams dabei`);
   return { ...state, settings };
@@ -837,6 +846,7 @@ export function updateSettings(
 export function addCpuTeam(state: DraftState, deviceId: string, teamId: string): DraftState {
   requireLobby(state);
   requireHost(state, deviceId);
+  if (state.career) fail('career', 'Karriere-Saison: Es spielen nur die Teams der Vorsaison');
   if (state.teams.length >= state.settings.maxTeams) fail('league_full', 'Die Liga ist voll');
   const taken = new Set(state.teams.map((t) => t.name));
   const name = shuffle(streamRng(state.code, 'cpu-names'), CLUB_NAMES).find((n) => !taken.has(n)) ?? `CPU ${state.teams.length + 1}`;
@@ -1362,9 +1372,10 @@ export function applyReroll(state: DraftState, teamId: string, kind: DraftReroll
 
 // ---------------------------------------------------------------- Picks
 
-export function startDraft(state: DraftState, deviceId: string, now: number, list: Pokemon[]): DraftState {
+export function startDraft(state: DraftState, deviceId: string, now: number, list: Pokemon[], scale?: Scale): DraftState {
   requireLobby(state);
   requireHost(state, deviceId);
+  if (state.career) return startCareerSeason(state, now, list, scale ?? draftScaleOf(list));
   if (state.teams.length < DRAFT_LIMITS.minTeams) fail('too_few_teams', `Mindestens ${DRAFT_LIMITS.minTeams} Teams – lade Leute ein oder füge CPU-Teams hinzu`);
   const needed = state.teams.length * rounds(state.settings);
   const pool = poolOf(state.settings, list).length;
@@ -1390,6 +1401,46 @@ export function startDraft(state: DraftState, deviceId: string, now: number, lis
   };
   const rolled: DraftState = { ...next, ...rollsFor(next, list) };
   return { ...rolled, deadline: deadlineFor(rolled, now) };
+}
+
+/** Diese Einstellungen darf der Host in einer Karriere-Lobby noch ändern */
+const CAREER_SETTINGS = new Set(['name', 'visibility', 'matchdayMinutes']);
+
+let scaleCache: { list: Pokemon[]; scale: Scale } | null = null;
+/** Skala aller Pokémon (wie der Server) – für Aufrufe ohne mitgegebene Skala */
+function draftScaleOf(list: Pokemon[]): Scale {
+  if (scaleCache?.list !== list) scaleCache = { list, scale: buildScale(list, 'all') };
+  return scaleCache.scale;
+}
+
+/**
+ * Karriere-Saison starten (statt Draft): Jedes Team behält seinen Kader der Vorsaison und stellt
+ * ihn in seiner Formation auf (beste Elf, Rest auf die Bank). Danach wie am Ende eines Drafts.
+ */
+function startCareerSeason(state: DraftState, now: number, list: Pokemon[], scale: Scale): DraftState {
+  if (state.teams.length < DRAFT_LIMITS.minTeams) fail('too_few_teams', `Mindestens ${DRAFT_LIMITS.minTeams} Teams`);
+  const settings = upgradeSettings(state.settings);
+  const byId = byIdOf(list);
+  const benchSize_ = benchSize(state.settings);
+  const teams = state.teams.map((t) => {
+    const roster = rosterOf(t).flatMap((id) => byId.get(id) ?? []);
+    const best = bestEleven(t.formation, roster, scale, { setPiece: settings.setPiece });
+    const used = new Set([...best.slots, best.ss].filter((x): x is number => x != null));
+    const rest = roster.map((p) => p.id).filter((id) => !used.has(id));
+    const bench = Array.from({ length: benchSize_ }, (_, i) => rest[i] ?? null);
+    return { ...t, slots: best.slots, ss: settings.setPiece ? best.ss : null, ...(benchSize_ ? { bench } : {}) };
+  });
+  const stepMs = settings.matchdayMinutes * 60_000;
+  return {
+    ...state,
+    teams,
+    phase: 'season',
+    deadline: null,
+    turnStartedAt: null,
+    pickIndex: 0,
+    picks: [],
+    season: { seed: leagueSeed(state.seed, 'season'), startsAt: now + Math.min(stepMs, DRAFT_LIMITS.managerLeadMs), stepMs },
+  };
 }
 
 /** Grund, warum dieser Pick nicht geht – oder null. */
@@ -1704,6 +1755,7 @@ export function snapshotOf(state: DraftState, you: string | null, now: number): 
     rerollsUsed: state.rerollsUsed ?? {},
     ...(state.history?.length ? { history: state.history } : {}),
     ...(state.rematch ? { rematch: state.rematch } : {}),
+    ...(state.career ? { career: state.career } : {}),
     ...(you && state.queues?.[you]?.length ? { queue: state.queues[you] } : {}),
     ...(state.manager ? { manager: managerView(state.manager, state.season, you) } : {}),
   };
@@ -1751,15 +1803,25 @@ export function historyEntryOf(
  * Host bleibt Host), leere Kader, Lobby. Der Verlauf bekommt diese Liga dazu. Nur Mitglieder
  * dürfen sie anlegen. Fehler: not_done, not_joined.
  */
-export function rematchTemplate(state: DraftState, deviceId: string, now: number): Omit<DraftState, 'code' | 'seed'> {
+export function rematchTemplate(
+  state: DraftState,
+  deviceId: string,
+  now: number,
+  opts: { career?: boolean } = {},
+): Omit<DraftState, 'code' | 'seed'> {
   if (state.phase !== 'done') fail('not_done', 'Die Liga ist noch nicht fertig');
   if (!teamOfDevice(state, deviceId)) fail('not_joined', 'Du bist in dieser Liga nicht dabei');
   const entry = historyEntryOf(state) ?? fail('not_done', 'Die Liga ist noch nicht fertig');
+  const career = opts.career ? nextCareer(state) : null;
   return {
     phase: 'lobby',
     settings: withoutLegacy(upgradeSettings(state.settings)),
-    // Menschen gelten als offline, bis sie die neue Liga öffnen
-    teams: state.teams.map((t) => ({ ...makeTeam(t.id, t.name, t.formation, t.cpu), ...(t.cpu ? {} : { offlineSince: now }) })),
+    // Menschen gelten als offline, bis sie die neue Liga öffnen; in der Karriere behalten alle ihren Kader samt Optik
+    teams: state.teams.map((t) => ({
+      ...(career ? carryTeam(t) : makeTeam(t.id, t.name, t.formation, t.cpu)),
+      ...(t.cpu ? {} : { offlineSince: now }),
+    })),
+    ...(career ? { career } : {}),
     owners: { ...state.owners },
     hostTeamId: state.hostTeamId,
     pickIndex: 0,
@@ -1770,6 +1832,37 @@ export function rematchTemplate(state: DraftState, deviceId: string, now: number
     ...(state.banned?.length ? { banned: [...state.banned] } : {}),
     history: [...(state.history ?? []), entry].slice(-DRAFT_LIMITS.historyMax),
   };
+}
+
+/** Team in die nächste Karriere-Saison: Kader (Elf, Standardschütze, Bank) und eigene Optik bleiben. */
+function carryTeam(t: DraftTeam): DraftTeam {
+  const base = makeTeam(t.id, t.name, t.formation, t.cpu);
+  return {
+    ...base,
+    slots: [...t.slots],
+    ss: t.ss,
+    ...(t.bench ? { bench: [...t.bench] } : {}),
+    ...(t.jerseys ? { jerseys: t.jerseys } : {}),
+    ...(t.captain != null ? { captain: t.captain } : {}),
+    ...(t.kit ? { kit: t.kit } : {}),
+    ...(t.cheer ? { cheer: t.cheer } : {}),
+    ...(t.crest ? { crest: t.crest } : {}),
+  };
+}
+
+/**
+ * Nächste Karriere-Saison: nur nach einer Manager-Saison. Liga-Stufe: Steht ein menschliches Team
+ * unter den ersten drei, steigt die Liga auf; stehen alle Menschen auf den letzten drei Plätzen, ab.
+ */
+export function nextCareer(state: DraftState): DraftCareer {
+  if (upgradeSettings(state.settings).format !== 'manager' || !state.league) fail('not_manager', 'Karriere gibt es nur nach einer Manager-Saison');
+  const table = state.league!.table;
+  const ranks = state.teams.flatMap((t, i) => (t.cpu ? [] : [table.findIndex((r) => r.team === i) + 1])).filter((r) => r > 0);
+  const tier = state.career?.tier ?? 2;
+  const up = ranks.some((r) => r <= 3);
+  const down = !up && ranks.length > 0 && ranks.every((r) => r > table.length - 3);
+  const next = (up ? Math.max(1, tier - 1) : down ? Math.min(3, tier + 1) : tier) as 1 | 2 | 3;
+  return { season: (state.career?.season ?? 1) + 1, tier: next, ...(next < tier ? { move: 'up' as const } : next > tier ? { move: 'down' as const } : {}) };
 }
 
 /** Zeile der ewigen Tabelle (je Team-ID über alle Ligen der Gruppe) */

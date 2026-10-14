@@ -192,19 +192,22 @@ export async function createDraftEndpoint(request: Request, env: Env): Promise<R
 export async function rematchEndpoint(request: Request, env: Env, rawCode: string): Promise<Response> {
   const ns = namespace(env);
   const code = parseCode(rawCode);
-  const auth = parseDeviceAuth(await readJsonBody(request));
+  const body = await readJsonBody(request);
+  const auth = parseDeviceAuth(body);
+  // Karriere: nächste Saison mit den Kadern der Vorsaison (nur nach einer Manager-Saison)
+  const career = body.career === true;
   const now = Date.now();
   await authenticate(request, env, auth, now);
   await requireLobby(env, code);
   const old = roomOf(ns, code);
-  let tpl = await old.rematchTemplate(auth.deviceId);
+  let tpl = await old.rematchTemplate(auth.deviceId, null, career);
   let dead: string | null = null;
   if (tpl.ok && 'existing' in tpl) {
     // Lebt die Revanche noch? Haben alle sie verlassen, ist ihre Lobby-Zeile weg bzw. geschlossen.
     const lobby = await getLobby(env.DB, tpl.existing);
     if (lobby && lobby.phase !== 'closed') return json({ code: tpl.existing } satisfies CreateDraftResponse);
     dead = tpl.existing;
-    tpl = await old.rematchTemplate(auth.deviceId, dead);
+    tpl = await old.rematchTemplate(auth.deviceId, dead, career);
   }
   if (!tpl.ok) {
     if (tpl.code === 'not_found') throw notFound();
