@@ -85,6 +85,8 @@ interface DraftState {
   shinySalt?: number;
   /** Shinys dieses Drafts (Pokémon-IDs) */
   shinies?: number[];
+  /** Shinys ausgeschaltet (Einstellung vor dem Draft) */
+  noShinies?: true;
 }
 
 function defaultTeams(n: number): DraftTeam[] {
@@ -233,7 +235,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
       pick: 0,
       selected: null,
       seed: null,
-      shinySalt: randomSeed(),
+      shinySalt: s.noShinies ? undefined : randomSeed(),
       shinies: [],
       teams: s.teams.map((tm) => ({ ...tm, slots: emptySlots(tm.formation) })),
     }));
@@ -412,6 +414,15 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     ? { value: m, label: '∞', title: t.builder.megasUnlimited }
                     : { value: m, label: String(m) },
               )}
+            />
+            <Segmented
+              label={t.draft.settings.shinies}
+              value={!state.noShinies}
+              onChange={(on) => setState(({ noShinies: _off, ...s }) => (on ? s : { ...s, noShinies: true }))}
+              options={[
+                { value: false, label: t.common.off },
+                { value: true, label: t.common.on, title: t.draft.settings.shiniesTitle },
+              ]}
             />
             {poolTooSmall && <p className="notice notice--error">{tx.poolTooSmall(poolSize, n, ROUNDS, n * ROUNDS)}</p>}
             <button type="button" className="btn btn--primary btn--big" onClick={start} disabled={poolTooSmall}>
