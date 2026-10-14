@@ -6,6 +6,7 @@ import { REGIONS, regionPhrase } from '../config/regions';
 import { Pitch, SS_INDEX } from '../components/Pitch';
 import { PickerModal } from '../components/PickerModal';
 import { RandomNameButton } from '../components/RandomNameButton';
+import { SavedTeams } from '../components/SavedTeams';
 import { Segmented } from '../components/Segmented';
 import { TeamSheet } from '../components/TeamSheet';
 import { useT } from '../i18n';
@@ -417,6 +418,7 @@ export function Builder() {
               <RandomNameButton current={state.teamName} onPick={(teamName) => setState((s) => ({ ...s, teamName: teamName.slice(0, 32) }))} />
             </div>
           </div>
+          <SavedTeams current={state} onLoad={(saved) => change(() => normalize(saved))} />
         </section>
       </aside>
 

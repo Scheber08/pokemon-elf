@@ -9,6 +9,8 @@ export const STORAGE_KEYS = {
   leaderboard: 'leaderboard',
   playerName: 'player-name',
   draft: 'draft',
+  /** Builder: gespeicherte Elfen (Meine Teams) */
+  savedTeams: 'saved-teams',
 } as const;
 
 export function load<T>(key: string, fallback: T): T {
