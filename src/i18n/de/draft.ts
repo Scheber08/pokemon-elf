@@ -501,6 +501,9 @@ const draft = {
     upcoming: (n: number) => `Spieltag ${n} – die Paarungen`,
     tableTitle: 'Tabelle',
     spectator: 'Du schaust zu – Aufstellungen stellen nur die Teams dieser Liga.',
+    notifyHeading: (league: string, n: number) => `${league}: Spieltag ${n} gespielt`,
+    notifyResult: (outcome: string, gf: number, ga: number, opponent: string) => `${outcome} ${gf}:${ga} gegen ${opponent}.`,
+    notifyPlayed: (n: number) => `Spieltag ${n} ist gespielt.`,
     marketTitle: 'Transfermarkt',
     marketNote: (n: number) =>
       `Ein Tausch pro Spieltag: ein freies Pokémon gegen eins aus deinem Kader. Vergeben wird zum Anpfiff von Spieltag ${n} – wollen mehrere dasselbe, bekommt es der Tabellenschlechtere.`,

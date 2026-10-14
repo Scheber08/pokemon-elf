@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerClaim, ManagerLineup } from '../lib/api/draftContract';
 import { rosterOf } from '../lib/draftEngine';
-import { storedLeague } from '../lib/leagueTimeline';
+import { matchFor, storedLeague } from '../lib/leagueTimeline';
+import { showNotify } from '../lib/notify';
 import { bestLineup, FORM_FIT, formFit, freeAgents, lineupScore, managerSchedule } from '../lib/manager';
 import { positionFit } from '../lib/fit';
 import type { Match } from '../lib/season';
@@ -76,6 +77,24 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
   }, [byId, t]);
 
   // 2D-Ansicht mit der Aufstellung dieses Spieltags (ältere Stände: die aktuelle)
+  // Neuer Spieltag gespielt, während die Seite offen ist (Tab im Hintergrund): Hinweis mit dem eigenen Ergebnis
+  const { notify } = useSettings();
+  const playedNow = m?.played ?? 0;
+  const seenPlayed = useRef(playedNow);
+  useEffect(() => {
+    if (playedNow <= seenPlayed.current) return;
+    seenPlayed.current = playedNow;
+    if (!notify || you == null || !league) return;
+    const r = matchFor(
+      league.matches.filter((x) => x.round === playedNow),
+      you,
+    );
+    const body = r
+      ? t.draft.manager.notifyResult(t.draft.outcome[r.outcome], r.gf, r.ga, nameOf(r.opponent))
+      : t.draft.manager.notifyPlayed(playedNow);
+    showNotify(t.draft.manager.notifyHeading(s.settings.name || t.online.leagueFallback(s.code), playedNow), body, `manager-${s.code}`);
+  }, [playedNow]);
+
   const report = useMatchReport(nameOf, pokemonName, (x) => tx.next(x.round), undefined, (i, match) => {
     const team = s.teams[i];
     if (!team) return null;
