@@ -1,6 +1,6 @@
 /** 2D-Wiedergabe: deterministischer Ablauf aus einem Spiel (Tore zu ihren Minuten, Ball im Tor). */
 import { describe, expect, it } from 'vitest';
-import { ballAt, buildReplay, PITCH_H, PITCH_W, playerAt } from '../src/lib/matchReplay';
+import { ballAt, buildReplay, lineupNumbers, PITCH_H, PITCH_W, playerAt } from '../src/lib/matchReplay';
 import type { Match } from '../src/lib/season';
 
 const match: Match = {
@@ -51,5 +51,13 @@ describe('buildReplay', () => {
 
   it('deterministisch', () => {
     expect(buildReplay(match, [home, null])).toEqual(buildReplay(match, [home, null]));
+  });
+
+  it('Trikotnummern der Aufstellung wie in der 2D-Ansicht (eigene vor Vorgabe)', () => {
+    const numbers = lineupNumbers({ ...home, jerseys: { '6': 77 } });
+    expect(numbers.get(1)).toBe(1);
+    expect(numbers.get(6)).toBe(77);
+    const players = buildReplay(match, [{ ...home, jerseys: { '6': 77 } }, null]).players;
+    expect(players.find((p) => p.pokemonId === 6)?.number).toBe(77);
   });
 });

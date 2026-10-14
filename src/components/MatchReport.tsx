@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { useT } from '../i18n';
 import { formatMinute, type Goal, type Match } from '../lib/season';
-import type { ReplayLineup } from '../lib/matchReplay';
+import { lineupNumbers, type ReplayLineup } from '../lib/matchReplay';
 import { MatchPitch } from './MatchPitch';
 import { Modal } from './Modal';
 import { SaveImageButton } from './SaveImageButton';
@@ -71,7 +71,7 @@ export function MatchReport({ match, nameOf, pokemonName, label, pens, lineupOf,
           <span className="match-report__team match-report__team--away">{nameOf(match.away)}</span>
         </div>
         {pens && <p className="match-report__pens">{t.draft.cup.pens(pens.home, pens.away)}</p>}
-        {view === 'report' && <ReportBody match={match} nameOf={nameOf} pokemonName={pokemonName} />}
+        {view === 'report' && <ReportBody match={match} nameOf={nameOf} pokemonName={pokemonName} lineups={lineups} />}
       </div>
       {view === 'pitch' ? (
         <>
@@ -88,9 +88,20 @@ export function MatchReport({ match, nameOf, pokemonName, label, pens, lineupOf,
 }
 
 /** Tore und Statistik des Berichts */
-function ReportBody({ match, nameOf, pokemonName }: Pick<Props, 'match' | 'nameOf' | 'pokemonName'>) {
+function ReportBody({
+  match,
+  nameOf,
+  pokemonName,
+  lineups,
+}: Pick<Props, 'match' | 'nameOf' | 'pokemonName'> & { lineups: [ReplayLineup | null, ReplayLineup | null] }) {
   const t = useT();
   const tx = t.draft.report;
+  // Trikotnummern je Seite (nur mit bekannter Aufstellung)
+  const numbers = useMemo(() => lineups.map((l) => (l ? lineupNumbers(l) : null)), [lineups]);
+  const who = (id: number, home: boolean) => {
+    const n = numbers[home ? 0 : 1]?.get(id);
+    return n != null ? `${pokemonName(id)} (${n})` : pokemonName(id);
+  };
   const events: Event[] = [...eventsOf(match.homeScorers, match.hg, true), ...eventsOf(match.awayScorers, match.ag, false)].sort(
     (a, b) => (a.goal?.minute ?? 999) - (b.goal?.minute ?? 999),
   );
@@ -115,9 +126,9 @@ function ReportBody({ match, nameOf, pokemonName }: Pick<Props, 'match' | 'nameO
                 <span aria-hidden="true">⚽ </span>
                 {goal ? (
                   <>
-                    <strong>{pokemonName(goal.pokemonId)}</strong>
+                    <strong>{who(goal.pokemonId, home)}</strong>
                     {goal.pos === 'SS' && <small className="muted"> ({tx.setPiece})</small>}
-                    {goal.assist != null && <small className="muted"> · {tx.assist(pokemonName(goal.assist))}</small>}
+                    {goal.assist != null && <small className="muted"> · {tx.assist(who(goal.assist, home))}</small>}
                   </>
                 ) : (
                   <strong>{tx.goalOf(nameOf(home ? match.home : match.away))}</strong>

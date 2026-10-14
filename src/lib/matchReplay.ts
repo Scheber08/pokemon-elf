@@ -70,17 +70,24 @@ function basePos(side: 0 | 1, x: number, y: number): { x: number; y: number } {
   return side === 0 ? { x: bx, y: by } : { x: PITCH_W - bx, y: PITCH_H - by };
 }
 
+const defsOf = (lineup: ReplayLineup) => FORMATIONS[lineup.formation]?.slots ?? FORMATIONS['4-4-2'].slots;
+/** Ohne Pokémon (Vereine): Platzhalter-IDs je Slot, damit jeder eine Vorgabe-Nummer bekommt */
+const keyOf = (lineup: ReplayLineup, slot: number) => lineup.ids[slot] ?? -1 - slot;
+
+/** Trikotnummern einer Aufstellung (Pokémon-ID → Nummer) – wie in der 2D-Ansicht */
+export function lineupNumbers(lineup: ReplayLineup): Map<number, number> {
+  return jerseyNumbers(defsOf(lineup).map((d, slot) => ({ pokemonId: keyOf(lineup, slot), pos: d.pos })), lineup.jerseys ?? {});
+}
+
 function playersOf(side: 0 | 1, lineup: ReplayLineup): ReplayPlayer[] {
-  const defs = FORMATIONS[lineup.formation]?.slots ?? FORMATIONS['4-4-2'].slots;
-  // Ohne Pokémon (Vereine): Platzhalter-IDs je Slot, damit jeder eine Vorgabe-Nummer bekommt
-  const keyOf = (slot: number) => lineup.ids[slot] ?? -1 - slot;
-  const numbers = jerseyNumbers(defs.map((d, slot) => ({ pokemonId: keyOf(slot), pos: d.pos })), lineup.jerseys ?? {});
+  const defs = defsOf(lineup);
+  const numbers = lineupNumbers(lineup);
   return defs.map((d, slot) => ({
     side,
     slot,
     pokemonId: lineup.ids[slot] ?? null,
     pos: d.pos,
-    number: numbers.get(keyOf(slot)) ?? slot + 1,
+    number: numbers.get(keyOf(lineup, slot)) ?? slot + 1,
     ...basePos(side, d.x, d.y),
   }));
 }
