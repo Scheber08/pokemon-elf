@@ -162,6 +162,16 @@ export function parseLook(raw: unknown): TrainerLook {
   return out;
 }
 
+/** Gespeicherter Look aus D1 (JSON-Text) – null ohne bzw. bei kaputtem Eintrag. */
+export function lookFromJson(raw: unknown): TrainerLook | null {
+  if (typeof raw !== 'string' || !raw) return null;
+  try {
+    return parseLook(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
 /** Darf dieser Look getragen werden? Jeder Slot frei oder gekauft – sonst der erste gesperrte Schlüssel. */
 export function lockedItem(look: TrainerLook, owned: ReadonlySet<string>): string | null {
   for (const slot of TRAINER_SLOTS) {

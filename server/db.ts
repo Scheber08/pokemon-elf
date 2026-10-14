@@ -73,6 +73,8 @@ export interface RankedRow {
   created_at: number;
   day: string;
   me: number;
+  /** Look des Trainers (JSON) – null ohne gespeicherten */
+  trainer?: string | null;
 }
 
 /** Wertung: Allzeit oder ein Tag ('YYYY-MM-DD'). */
@@ -283,16 +285,21 @@ export const ENTRY_DETAIL_SQL = `SELECT e.id, e.challenge, e.day, e.formation, e
       AND b.device_id = e.device_id AND b.entry_id = e.id)`;
 
 /** Gerät hinter einem Ranglisten-Eintrag (Sichtbarkeit wie ENTRY_DETAIL_SQL) – null sonst. */
-export function rankedEntryDevice(db: Db, id: string, now: number): Promise<{ device_id: string; player: string } | null> {
+export function rankedEntryDevice(
+  db: Db,
+  id: string,
+  now: number,
+): Promise<{ device_id: string; player: string; trainer: string | null } | null> {
   return db
     .prepare(
-      `SELECT e.device_id, d.name AS player FROM entries e JOIN devices d ON d.id = e.device_id
+      `SELECT e.device_id, d.name AS player, tr.look_json AS trainer FROM entries e JOIN devices d ON d.id = e.device_id
+       LEFT JOIN trainers tr ON tr.device_id = e.device_id
        WHERE e.id = ? AND ${visibleDeviceSql('d')}
          AND EXISTS (SELECT 1 FROM best_entries b WHERE b.challenge = e.challenge AND b.scope IN (?, ?, ?, ?, ?)
            AND b.device_id = e.device_id AND b.entry_id = e.id)`,
     )
     .bind(id, ...entryScopes(now))
-    .first<{ device_id: string; player: string }>();
+    .first<{ device_id: string; player: string; trainer: string | null }>();
 }
 
 export interface PlayerRunRow {
@@ -435,11 +442,12 @@ export const RANK_EXPR = `(1
   + (SELECT COUNT(*) FROM best_entries o WHERE o.challenge = b.challenge AND o.scope = b.scope
       AND o.points = b.points AND o.score = b.score AND o.created_at = b.created_at AND o.entry_id < b.entry_id))`;
 
-/** Spalten einer Ranglisten-Zeile (b = best_entries, e = entries, d = devices); Parameter: me. */
+/** Spalten einer Ranglisten-Zeile (b = best_entries, e = entries, d = devices, tr = trainers); Parameter: me. */
 const ROW_COLUMNS = `b.entry_id AS id, d.name AS player, e.team_name, e.wins, e.draws, e.losses, b.points, b.score,
-  e.formation, b.created_at, e.day, CASE WHEN b.device_id = ? THEN 1 ELSE 0 END AS me`;
+  e.formation, b.created_at, e.day, CASE WHEN b.device_id = ? THEN 1 ELSE 0 END AS me, tr.look_json AS trainer`;
 
-const ROW_JOINS = `best_entries b JOIN entries e ON e.id = b.entry_id JOIN devices d ON d.id = b.device_id`;
+const ROW_JOINS = `best_entries b JOIN entries e ON e.id = b.entry_id JOIN devices d ON d.id = b.device_id
+  LEFT JOIN trainers tr ON tr.device_id = b.device_id`;
 
 /** Nur Geräte mit eigenem Namen (d = devices) – Standardnamen („Trainer") stehen in keiner Liste. */
 const ROW_VISIBLE = visibleDeviceSql('d');

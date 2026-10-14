@@ -7,6 +7,8 @@ import type { PlayerProfile } from '../lib/api/contract';
 import { copyText } from '../lib/exportImage';
 import { formatRecord } from '../lib/season';
 import { useToast } from '../state/Toast';
+import { TrainerAvatar } from '../components/TrainerAvatar';
+import { parseLook } from '../lib/trainer';
 import '../styles/leaderboard.css';
 
 type Status = { status: 'loading' } | { status: 'ready'; profile: PlayerProfile } | { status: 'gone' } | { status: 'error'; message: string };
@@ -77,11 +79,19 @@ export function Profile() {
   return (
     <div className="page profile">
       <header className="page-head">
-        <span className="kicker">{tp.kicker}</span>
-        <h1 className="page-title">{p.player}</h1>
-        <p className="page-lead">
-          {tp.since(date(p.since))} · {tp.runs(p.runs)}
-        </p>
+        <div className="profile__head">
+          {p.trainer && <TrainerAvatar look={parseLook(p.trainer)} size={96} label={t.trainer.editorTitle} />}
+          <div>
+            <span className="kicker">{tp.kicker}</span>
+            <h1 className="page-title">{p.player}</h1>
+            {p.trainer && p.trainer.title !== 'none' && t.trainer.titles[p.trainer.title] && (
+              <span className="trainer-editor__title">{t.trainer.titles[p.trainer.title]}</span>
+            )}
+            <p className="page-lead">
+              {tp.since(date(p.since))} · {tp.runs(p.runs)}
+            </p>
+          </div>
+        </div>
       </header>
 
       <section className="card" aria-labelledby="profile-best">

@@ -17,6 +17,8 @@ import { isChallengeKey, useApiOnline } from '../state/useChallengeRun';
 import type { ChallengeKey, Record3 } from '../types';
 import '../styles/run.css';
 import '../styles/daily.css';
+import { TrainerAvatar } from '../components/TrainerAvatar';
+import { parseLook, type TrainerLook } from '../lib/trainer';
 import '../styles/leaderboard.css';
 
 const CHALLENGES: ChallengeKey[] = ['c340', 'daily', 'retro340', 'c151'];
@@ -42,6 +44,8 @@ interface BoardRow {
   source: EntrySource;
   /** Online: Eintrag, über den das Spielerprofil erreichbar ist */
   profile?: string;
+  /** Online: Trainer des Spielers (falls gestaltet) */
+  trainer?: TrainerLook | null;
 }
 
 /** Fehler einer Abfrage: Code der API (falls vorhanden) + deutsche Meldung – übersetzt wird beim Anzeigen. */
@@ -128,6 +132,7 @@ function BoardTable({ rows, mine, onReload, focusPlayer = null }: BoardTableProp
       <td className="left lb-who">
         {r.profile ? (
           <Link className="lb-who__player lb-who__link" to={`/spieler/${r.profile}`} title={t.leaderboard.entry.profileTitle(r.player)}>
+            {r.trainer && <TrainerAvatar look={r.trainer} size={24} companion={false} className="lb-who__avatar" />}
             {r.player}
           </Link>
         ) : (
@@ -314,6 +319,7 @@ function OnlineBoard({ challenge, period, reload, onRetry, panelRef }: OnlineBoa
       me: r.me,
       source: { kind: 'online', entryId: r.entryId, summary },
       profile: r.entryId,
+      trainer: r.trainer ? parseLook(r.trainer) : null,
     };
   };
 

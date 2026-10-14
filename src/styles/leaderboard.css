@@ -183,3 +183,18 @@
   white-space: nowrap;
   font-weight: 700;
 }
+
+/* Trainer neben dem Spielernamen (Rangliste) bzw. im Kopf des Profils */
+.lb-who__avatar {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.lb-who__avatar svg {
+  border-radius: 6px;
+}
+.profile__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}

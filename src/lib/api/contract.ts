@@ -114,6 +114,8 @@ export interface LeaderboardRow {
   day: string;
   /** true, wenn die Zeile zum anfragenden Gerät gehört (?me=) */
   me: boolean;
+  /** Trainer des Spielers (fehlt bzw. null: keiner gestaltet) */
+  trainer?: TrainerLook | null;
 }
 
 export interface LeaderboardResponse {
@@ -200,6 +202,8 @@ export interface PlayerRun {
  */
 export interface PlayerProfile {
   player: string;
+  /** Trainer des Spielers (fehlt bzw. null: keiner gestaltet) */
+  trainer?: TrainerLook | null;
   /** Erster gewerteter Run (ISO) */
   since: string;
   runs: number;

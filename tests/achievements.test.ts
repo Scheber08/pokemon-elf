@@ -178,5 +178,16 @@ describe('Kennzahlen und /api/me', () => {
     const worn = await post('/me/trainer', { look: { ...DEFAULT_LOOK, hat: 'beanie', title: 'quatsch' } });
     expect(worn.status).toBe(200);
     expect(worn.body.trainer).toMatchObject({ hat: 'beanie', title: DEFAULT_LOOK.title });
+    // Andere sehen den Trainer in der Rangliste und im Profil (mit eigenem Namen)
+    expect((await post('/player', { player: 'Ash' })).status).toBe(200);
+    addEntry(db, auth.deviceId, 'c340', '2026-10-02', 31, 1, 2, ['all']);
+    const board = (await (await handleApi(new Request('http://localhost/api/leaderboard?challenge=c340&period=all'), { DB: db })).json()) as {
+      rows: { entryId: string; trainer?: unknown }[];
+    };
+    expect(board.rows[0].trainer).toMatchObject({ hat: 'beanie' });
+    const profile = (await (await handleApi(new Request(`http://localhost/api/entries/${board.rows[0].entryId}/player`), { DB: db })).json()) as {
+      trainer?: unknown;
+    };
+    expect(profile.trainer).toMatchObject({ hat: 'beanie' });
   });
 });

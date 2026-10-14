@@ -46,6 +46,7 @@ import {
   type TokenRow,
 } from './db';
 import type { Db, Env } from './env';
+import { lookFromJson } from '../src/lib/trainer';
 import { ENGINE_DATA, verifyRun } from './game';
 import { ApiError, json } from './http';
 import {
@@ -265,6 +266,7 @@ function toRow(r: RankedRow): LeaderboardRow {
     createdAt: new Date(r.created_at).toISOString(),
     day: r.day,
     me: r.me === 1,
+    trainer: lookFromJson(r.trainer),
   };
 }
 
@@ -437,6 +439,7 @@ export async function playerProfile(rawId: string, env: Env): Promise<Response> 
   const first = Math.min(...rows.counts.map((c) => c.first));
   const body: PlayerProfile = {
     player: device.player,
+    trainer: lookFromJson(device.trainer),
     since: new Date(Number.isFinite(first) ? first : Date.now()).toISOString(),
     runs: rows.counts.reduce((n, c) => n + c.runs, 0),
     challenges,

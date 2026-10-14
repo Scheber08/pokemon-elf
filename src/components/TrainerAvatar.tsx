@@ -4,6 +4,7 @@ import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import { colorOf, type TrainerLook } from '../lib/trainer';
 import { Sprite } from './Sprite';
+import '../styles/trainer.css';
 
 /** Farbe heller (amount > 0) bzw. dunkler (amount < 0) – amount −1 … 1 */
 function shade(hex: string, amount: number): string {
