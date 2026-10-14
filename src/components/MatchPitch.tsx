@@ -141,6 +141,19 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
           );
         })}
         <circle className="match-pitch__ball" cx={ball.x} cy={ball.y} r="0.95" />
+        {recent?.kind === 'goal' && time - recent.t < 1.6 && (
+          <text
+            key={recent.t}
+            className={`match-pitch__flash ${recent.side === 0 ? 'is-home' : 'is-away'}`}
+            x={PITCH_W / 2}
+            y={PITCH_H / 2}
+            textAnchor="middle"
+            dominantBaseline="central"
+            aria-hidden="true"
+          >
+            {tx.goalFlash}
+          </text>
+        )}
       </svg>
       <p className="match-pitch__event" aria-live="polite">
         {recent

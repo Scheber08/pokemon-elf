@@ -159,6 +159,40 @@
   image-rendering: pixelated;
   pointer-events: none;
 }
+.match-pitch__flash {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  stroke: rgba(0, 0, 0, 0.55);
+  stroke-width: 0.5;
+  paint-order: stroke;
+  pointer-events: none;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: match-pitch-flash 0.8s ease-out;
+}
+.match-pitch__flash.is-home {
+  fill: #ffcb05;
+}
+.match-pitch__flash.is-away {
+  fill: #e9eef5;
+}
+@keyframes match-pitch-flash {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .match-pitch__flash {
+    animation: none;
+  }
+}
 .match-pitch__ball {
   fill: #fff;
   stroke: #111;
