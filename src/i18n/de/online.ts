@@ -152,6 +152,9 @@ const online = {
     `${teams} Teams · ${snake ? 'Snake-Draft' : 'feste Reihenfolge'} über ${rounds} Runden.`,
   startTimer: (s: number) => `Läuft der ${s}-s-Timer ab, wählt der Server automatisch.`,
   startNoTimer: 'Ohne Timer kannst du für abwesende Teams automatisch wählen lassen.',
+  /** Dauer (Minuten, gerundet): Draft höchstens, danach der Saison-Ticker */
+  duration: (draft: number, season: number) => `Dauer: Draft höchstens ~${draft} Min., danach Saison-Ticker ~${season} Min.`,
+  durationNoTimer: (season: number) => `Nach dem Draft läuft der Saison-Ticker ~${season} Min.`,
   draftRunning: 'Der Draft läuft schon',
 
   // ------------------------------------------------ Live-Draft

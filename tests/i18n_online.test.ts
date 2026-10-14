@@ -449,6 +449,10 @@ describe('DraftLobby (en)', () => {
     const { container } = await render(app(h(DraftLobby, { room: fakeRoom(snap(lobby(2, { region: 1, maxTeams: 4, order: 'host' }))) })));
     expect(container.querySelector('.draft-code__value')!.getAttribute('aria-label')).toBe('League code A B C 2 3 4');
     expect(container.querySelector('.draft-start button')!.textContent).toBe('Start draft');
+    // Dauer: 2 Menschen × 11 Runden × 60 s = 22 min; Ticker 30 s + 34 × 5 s ≈ 3 min
+    expect(container.querySelectorAll('.draft-start .hint').map((e) => e.textContent)).toContain(
+      'Duration: draft at most ~22 min, then the season ticker ~3 min.',
+    );
     expectEnglishIn(
       container,
       '.draft-code, [id="draft-teams-title"], .draft-lobby__tools, [aria-labelledby="draft-teams-title"] p, [aria-labelledby="draft-teams-title"] button.btn, [id="draft-me-title"], [aria-labelledby="draft-me-title"] button.btn, [id="draft-settings-title"], .draft-start',

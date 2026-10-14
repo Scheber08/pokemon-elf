@@ -142,6 +142,8 @@ const online: Messages['online'] = {
     `${plural(teams, 'team', 'teams')} · ${snake ? 'snake draft' : 'fixed order'} over ${plural(rounds, 'round', 'rounds')}.`,
   startTimer: (s) => `If the ${s}-second timer runs out, the server picks automatically.`,
   startNoTimer: 'Without a timer you can have absent teams’ picks made automatically.',
+  duration: (draft, season) => `Duration: draft at most ~${draft} min, then the season ticker ~${season} min.`,
+  durationNoTimer: (season) => `After the draft the season ticker runs ~${season} min.`,
   draftRunning: 'The draft is already under way',
 
   // ------------------------------------------------ Live draft

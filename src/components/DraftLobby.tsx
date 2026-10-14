@@ -396,6 +396,21 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
                 {s.settings.pickSeconds ? t.online.startTimer(s.settings.pickSeconds) : t.online.startNoTimer}
               </p>
             )}
+            {!blocker && (
+              <p className="hint">
+                {(() => {
+                  const rounds = s.settings.setPiece ? 12 : 11;
+                  const humans = s.teams.filter((tm) => !tm.cpu).length;
+                  const cpus = s.teams.length - humans;
+                  // Längstens: jeder menschliche Pick bis zum Timer, CPU-Picks mit ihrer kurzen Pause
+                  const draftMs = rounds * (humans * s.settings.pickSeconds * 1000 + cpus * DRAFT_LIMITS.cpuPickMs);
+                  const days = s.settings.format === 'cup' ? (s.settings.cupGroups ? 9 : 4) : 2 * (DRAFT_LIMITS.leagueSize - 1);
+                  const seasonMs = DRAFT_LIMITS.seasonLeadMs + days * DRAFT_LIMITS.seasonStepMs;
+                  const min = (ms: number) => Math.max(1, Math.round(ms / 60_000));
+                  return s.settings.pickSeconds ? t.online.duration(min(draftMs), min(seasonMs)) : t.online.durationNoTimer(min(seasonMs));
+                })()}
+              </p>
+            )}
           </section>
         )}
         {!!s.history?.length && <EternalTable entries={s.history} youTeamId={me?.id ?? null} title={t.draft.eternal.soFar} />}
