@@ -91,6 +91,8 @@ export function Profile() {
               {tp.since(date(p.since))} · {tp.runs(p.runs)}
               {p.achievements && <> · {tp.achievements(p.achievements.done, p.achievements.total)}</>}
               {p.online && p.online.leagues > 0 && <> · {tp.online(p.online.titles, p.online.leagues)}</>}
+              {!!p.online?.managerCups && <> · {tp.managerCups(p.online.managerCups)}</>}
+              {!!p.online?.shinies && <> · {tp.shinies(p.online.shinies)}</>}
             </p>
           </div>
         </div>

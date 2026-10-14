@@ -110,6 +110,8 @@ const leaderboard: Messages['leaderboard'] = {
     runs: (n) => (n === 1 ? '1 ranked run' : `${n} ranked runs`),
     achievements: (done, total) => `🏅 ${done}/${total} achievements`,
     online: (titles, leagues) => `🏆 ${titles} ${titles === 1 ? 'title' : 'titles'} in ${leagues} online ${leagues === 1 ? 'league' : 'leagues'}`,
+    managerCups: (n) => `🥇 ${n === 1 ? '1 cup win' : `${n} cup wins`}`,
+    shinies: (n) => `✨ ${n === 1 ? '1 shiny' : `${n} shinies`}`,
     perChallenge: 'Best runs',
     runsCol: 'Runs',
     perfectTitle: (n) => (n === 1 ? 'One perfect season (wins only)' : `${n} perfect seasons (wins only)`),

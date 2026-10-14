@@ -280,6 +280,11 @@ describe('Kennzahlen und /api/me', () => {
     expect(profile.achievements?.total).toBe(ACHIEVEMENTS.length);
     expect(profile.achievements?.done).toBeGreaterThanOrEqual(3);
     expect(profile.online).toEqual({ leagues: 0, titles: 0 });
+    // Shinys und Pokalsiege der Manager-Saison erscheinen im Profil
+    db.update("INSERT INTO draft_results (code, device_id, format, rank, teams, wins, draws, losses, points, finished_at) VALUES ('X#shiny', ?, 'shiny', 3, 0, 0, 0, 0, 0, 1)", auth.deviceId);
+    db.update("INSERT INTO draft_results (code, device_id, format, rank, teams, wins, draws, losses, points, finished_at) VALUES ('X#cup', ?, 'manager_cup', 1, 16, 4, 0, 0, 0, 1)", auth.deviceId);
+    const again = (await (await handleApi(new Request(`http://localhost/api/entries/${board.rows[0].entryId}/player`), { DB: db })).json()) as typeof profile;
+    expect(again.online).toEqual({ leagues: 0, titles: 0, shinies: 3, managerCups: 1 });
   });
 });
 

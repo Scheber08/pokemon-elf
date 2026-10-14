@@ -452,7 +452,12 @@ export async function playerProfile(rawId: string, env: Env): Promise<Response> 
     challenges,
     recent: rows.recent.map(toPlayerRun).filter((r): r is PlayerRun => r != null),
     achievements: { done: states.filter((a) => a.done).length, total: states.length },
-    online: { leagues: stats.draft.leagues, titles: stats.draft.titles + stats.draft.cups + stats.draft.manager },
+    online: {
+      leagues: stats.draft.leagues,
+      titles: stats.draft.titles + stats.draft.cups + stats.draft.manager,
+      ...(stats.draft.shinies ? { shinies: stats.draft.shinies } : {}),
+      ...(stats.draft.managerCups ? { managerCups: stats.draft.managerCups } : {}),
+    },
   };
   return json(body, 200, { 'Cache-Control': ENTRY_CACHE_CONTROL });
 }

@@ -218,7 +218,8 @@ export interface PlayerProfile {
   /** Erreichte Erfolge von allen (fehlt bei älteren Antworten) */
   achievements?: { done: number; total: number };
   /** Fertige Online-Ligen und Titel darin (Liga, Pokal, Manager-Saison; fehlt bei älteren Antworten) */
-  online?: { leagues: number; titles: number };
+  /** shinies/managerCups nur, wenn > 0 */
+  online?: { leagues: number; titles: number; shinies?: number; managerCups?: number };
 }
 
 /** POST /api/me (Body: DeviceAuth) – Erfolge und Münzen des eigenen Geräts */

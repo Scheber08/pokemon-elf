@@ -115,6 +115,8 @@ const leaderboard = {
     achievements: (done: number, total: number) => `🏅 ${done}/${total} Erfolge`,
     online: (titles: number, leagues: number) =>
       `🏆 ${titles} Titel in ${leagues} ${leagues === 1 ? 'Online-Liga' : 'Online-Ligen'}`,
+    managerCups: (n: number) => `🥇 ${n === 1 ? '1 Pokalsieg' : `${n} Pokalsiege`}`,
+    shinies: (n: number) => `✨ ${n === 1 ? '1 Shiny' : `${n} Shinys`}`,
     perChallenge: 'Bestwerte',
     runsCol: 'Runs',
     perfectTitle: (n: number) => (n === 1 ? 'Eine perfekte Saison (nur Siege)' : `${n} perfekte Saisons (nur Siege)`),
