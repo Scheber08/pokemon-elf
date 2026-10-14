@@ -516,6 +516,9 @@ const draft = {
     rivalHome: 'Heimspiel',
     rivalAway: 'Auswärtsspiel',
     rivalPlace: (n: number) => `Platz ${n}`,
+    compareYou: 'Du',
+    compareTitle: 'Stärke der besten Elf aus dem Kader (ohne Tagesform)',
+    compareAria: (share: number) => `Stärkevergleich: ${share} % zu ${100 - share} %`,
     starLine: (goals: number, assists: number) =>
       [goals ? `${goals} ${goals === 1 ? 'Tor' : 'Tore'}` : '', assists ? `${assists} ${assists === 1 ? 'Vorlage' : 'Vorlagen'}` : '']
         .filter(Boolean)

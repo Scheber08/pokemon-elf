@@ -1310,3 +1310,23 @@ button.draft-bench__slot {
 .manager__trade-error {
   margin: 10px 0 0;
 }
+
+.manager__compare {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.manager__compare-bar {
+  position: relative;
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border, #3a4559);
+  overflow: hidden;
+}
+.manager__compare-bar > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--yellow);
+}

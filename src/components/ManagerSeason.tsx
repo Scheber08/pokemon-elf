@@ -5,7 +5,7 @@ import type { DraftSnapshot, DraftTeam, ManagerClaim, ManagerLineup, ManagerOffe
 import { rosterOf } from '../lib/draftEngine';
 import { matchFor, playerOfRound, recentForm, storedLeague } from '../lib/leagueTimeline';
 import { showNotify } from '../lib/notify';
-import { bestLineup, FORM_FIT, formFit, freeAgents, lineupScore, managerSchedule } from '../lib/manager';
+import { bestLineup, FORM_FIT, formFit, freeAgents, lineupScore, managerSchedule, squadStrength } from '../lib/manager';
 import { positionFit } from '../lib/fit';
 import type { Match } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -58,7 +58,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
   const t = useT();
   const lang = useLang();
   const tx = t.draft.manager;
-  const { byId } = usePokemonData();
+  const { byId, scale } = usePokemonData();
   const s = room.state!;
   const m = s.manager ?? null;
   const league = useMemo(() => storedLeague(s.league, s.teams.length), [s.league, s.teams.length]);
@@ -197,6 +197,24 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
               <FormDots form={recentForm(league.matches, rival, m.played)} />
             </p>
           )}
+          {/* Stärkevergleich der besten Elfen (nur gedraftete Gegner – Auffüllteams haben keinen Kader im Schnappschuss) */}
+          {you != null && s.teams[rival] && (() => {
+            const sc = scale('all');
+            const mine = squadStrength(s.teams[you], byId, sc);
+            const theirs = squadStrength(s.teams[rival], byId, sc);
+            // Die Kader liegen meist nah beieinander: 1 % Unterschied = 5 Punkte auf dem Balken (5–95 %)
+            const rel = mine + theirs > 0 ? (mine - theirs) / ((mine + theirs) / 2) : 0;
+            const share = Math.max(5, Math.min(95, 50 + rel * 500));
+            return (
+              <div className="manager__compare" title={tx.compareTitle}>
+                <span className="small">{tx.compareYou}</span>
+                <span className="manager__compare-bar" role="img" aria-label={tx.compareAria(Math.round(share))}>
+                  <span style={{ width: `${share}%` }} />
+                </span>
+                <span className="small">{nameOf(rival)}</span>
+              </div>
+            );
+          })()}
         </section>
       )}
 
