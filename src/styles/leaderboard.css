@@ -205,3 +205,14 @@
   white-space: nowrap;
   font-weight: 700;
 }
+.friendly__pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+.friendly__pick .input {
+  width: auto;
+  max-width: 100%;
+}

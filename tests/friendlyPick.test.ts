@@ -1,0 +1,68 @@
+/** Testspiel: Auswahl der eigenen Elf – aktuelle Builder-Elf oder eine aus „Meine Teams". */
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ALL } from './helpers';
+import { installMiniDom, MiniElement, MiniEvent } from './miniDom';
+
+const doc = installMiniDom();
+// <select>: React liest select.options – im Mini-DOM nachgerüstet (wie in i18n_draft.test.ts)
+Object.defineProperty(MiniElement.prototype, 'options', {
+  configurable: true,
+  get(this: MiniElement) {
+    if (this.localName !== 'select') return undefined;
+    return this.querySelectorAll('option').map((o) => {
+      if (o.value == null) o.value = o.getAttribute('value') ?? o.textContent;
+      return o;
+    });
+  },
+});
+const React = await import('react');
+const { createRoot } = await import('react-dom/client');
+const { MemoryRouter } = await import('react-router-dom');
+const { FriendlyMatch } = await import('../src/components/FriendlyMatch');
+const { PokemonDataProvider } = await import('../src/state/PokemonData');
+const { SettingsProvider } = await import('../src/state/Settings');
+const { act, createElement: h } = React;
+
+const eleven = (start: number) => ALL.slice(start, start + 11).map((p) => p.id);
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  localStorage.clear();
+});
+
+describe('Testspiel mit gespeicherter Elf', () => {
+  it('Auswahl zeigt aktuelle und gespeicherte Elfen; Wechsel spielt mit der gewählten', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => new Response(JSON.stringify(url.endsWith('pokemon.json') ? ALL : []), { status: 200 })),
+    );
+    localStorage.setItem('pokemon-elf:settings', JSON.stringify({ lang: 'de' }));
+    localStorage.setItem('pokemon-elf:lineup', JSON.stringify({ formation: '4-3-3', slots: eleven(0), teamName: 'Builder-Elf' }));
+    localStorage.setItem(
+      'pokemon-elf:saved-teams',
+      JSON.stringify([
+        { id: '1', name: 'Gespeichert', formation: '4-4-2', at: 1, state: { formation: '4-4-2', slots: eleven(100), teamName: 'Gespeichert' } },
+        { id: '2', name: 'Halb', formation: '4-3-3', at: 2, state: { formation: '4-3-3', slots: [1, 2, 3], teamName: 'Halb' } },
+      ]),
+    );
+    const container = doc.createElement('div');
+    doc.body.appendChild(container);
+    const root = createRoot(container as unknown as Element);
+    const opponent = { name: 'Gegner', formation: '4-3-3' as const, slots: eleven(200), ss: null };
+    await act(async () =>
+      root.render(h(MemoryRouter, null, h(SettingsProvider, null, h(PokemonDataProvider, null, h(FriendlyMatch, { opponent }))))),
+    );
+    for (let i = 0; i < 6; i++) await act(async () => new Promise((r) => setTimeout(r, 0)));
+    const select = container.querySelector('select') as MiniElement;
+    const options = select.querySelectorAll('option').map((o) => o.textContent);
+    // Die unvollständige Elf fehlt
+    expect(options).toEqual(['Builder-Elf (aktuelle Elf)', 'Gespeichert']);
+    expect(container.querySelector('h3')!.textContent).toContain('Builder-Elf – Gegner');
+    await act(async () => {
+      select.value = '1';
+      select.dispatchEvent(new MiniEvent('change', { bubbles: true }));
+    });
+    expect(container.querySelector('h3')!.textContent).toContain('Gespeichert – Gegner');
+    await act(async () => root.unmount());
+  });
+});

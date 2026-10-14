@@ -95,6 +95,8 @@ const leaderboard = {
     friendlyNeedEleven: 'Für ein Testspiel brauchst du im Builder eine volle Elf.',
     friendlyToBuilder: 'Zum Builder',
     friendlyYou: 'Deine Elf',
+    friendlyPick: 'Mit:',
+    friendlyCurrent: (name: string) => `${name} (aktuelle Elf)`,
     friendlyFirst: 'Hinspiel',
     friendlySecond: 'Rückspiel',
     friendlyAggregate: 'Gesamt',

@@ -92,6 +92,8 @@ const leaderboard: Messages['leaderboard'] = {
     friendlyNeedEleven: 'For a friendly you need a full XI in the builder.',
     friendlyToBuilder: 'To the builder',
     friendlyYou: 'Your XI',
+    friendlyPick: 'With:',
+    friendlyCurrent: (name) => `${name} (current XI)`,
     friendlyFirst: 'First leg',
     friendlySecond: 'Second leg',
     friendlyAggregate: 'Aggregate',
