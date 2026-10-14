@@ -580,6 +580,17 @@ export function DraftSettingsForm({ value, onChange, list, teamsJoined = 0, disa
             { value: true, label: t.draft.on, disabled: blocked({ setPiece: true }), title: blocked({ setPiece: true }) ? tooSmall : tx.setPieceRound },
           ]}
         />
+        <DraftChoice
+          label={tx.shinies}
+          value={value.shinies}
+          disabled={disabled}
+          busy={busy}
+          onChange={(shinies) => change({ shinies })}
+          options={[
+            { value: false, label: t.draft.off },
+            { value: true, label: t.draft.on, title: tx.shiniesTitle },
+          ]}
+        />
         <div className="draft-settings__pair">
           <DraftChoice
             label={tx.order}
@@ -710,6 +721,7 @@ export function DraftSettingsSummary({ settings }: { settings: DraftSettings }) 
     settings.forms ? tx.withForms : null,
     poolHasMegas(settings) ? (settings.maxMegas != null ? tx.maxMegas(settings.maxMegas) : tx.withMegas) : null,
     settings.setPiece ? tx.withSetPiece : tx.withoutSetPiece,
+    settings.shinies === false ? tx.withoutShinies : null,
     settings.format === 'cup'
       ? settings.cupGroups
         ? tx.cupWithGroups(CUP_SIZE)

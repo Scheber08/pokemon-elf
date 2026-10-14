@@ -35,4 +35,28 @@ describe('Shiny', () => {
     const shiny = leagueTeams({ ...state, shinies: [byName('Karpador').id] }, BY_ID, SCALE)[0].rating;
     expect(shiny).toBeGreaterThanOrEqual(base + SHINY_TEAM_MAX);
   });
+
+  it('Einstellung „Shinys aus“: kein Pick schillert', async () => {
+    const { createDraft, startDraft, applyPick, autoPickChoice, currentTeam, addCpuTeam } = await import('../src/lib/draftEngine');
+    const run = (shinies: boolean) => {
+      let s = createDraft({
+        code: 'SHN234',
+        seed: 'x',
+        settings: { pickSeconds: 0, shinies, maxTeams: 8, gens: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+        host: { teamId: 'h', deviceId: 'dev-h', name: 'H', formation: '4-3-3' },
+        now: 0,
+        list: ALL,
+      });
+      for (let i = 0; i < 7; i++) s = addCpuTeam(s, 'dev-h', `c${i}`);
+      s = startDraft(s, 'dev-h', 0, ALL);
+      while (s.phase === 'drafting') {
+        const cur = currentTeam(s)!;
+        const c = autoPickChoice(s, cur.id, ALL, SCALE, true);
+        s = applyPick(s, cur.id, c.pokemonId, c.slot, true, 1, ALL);
+      }
+      return s.shinies ?? [];
+    };
+    expect(run(false)).toEqual([]);
+  });
 });
+

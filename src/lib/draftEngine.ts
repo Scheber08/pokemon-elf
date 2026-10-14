@@ -311,6 +311,7 @@ export function upgradeSettings(raw: unknown): DraftSettings {
     megas: isBool(r.megas) ? r.megas : d.megas,
     maxMegas: isMaxMegas(r.maxMegas) ? r.maxMegas : d.maxMegas,
     setPiece: isBool(r.setPiece) ? r.setPiece : d.setPiece,
+    shinies: isBool(r.shinies) ? r.shinies : d.shinies,
     maxTeams:
       typeof r.maxTeams === 'number' && Number.isInteger(r.maxTeams) && r.maxTeams >= DRAFT_LIMITS.minTeams && r.maxTeams <= DRAFT_LIMITS.maxTeams
         ? r.maxTeams
@@ -543,7 +544,7 @@ export function normalizeSettings(patch: DraftSettingsPatch, base: DraftSettings
     if (!types.length) fail('bad_settings', 'Mindestens ein Typ');
     s.types = types;
   }
-  for (const key of ['legendary', 'mythical', 'ultraBeasts', 'forms', 'megas', 'setPiece', 'snake', 'cupGroups'] as const) {
+  for (const key of ['legendary', 'mythical', 'ultraBeasts', 'forms', 'megas', 'setPiece', 'shinies', 'snake', 'cupGroups'] as const) {
     if (p[key] !== undefined) {
       if (!isBool(p[key])) fail('bad_settings', 'Ungültige Einstellung');
       s[key] = p[key] as boolean;
@@ -1527,7 +1528,7 @@ export function applyPick(
   );
   const log: DraftPickLog = { pick: state.pickIndex, teamId, pokemonId, slot, auto, at: now };
   // Shiny? Aus dem geheimen Liga-Seed – erst beim Pick bekannt
-  const shiny = shinyRoll(leagueSeed(state.seed, 'shiny'), pokemonId);
+  const shiny = upgradeSettings(state.settings).shinies && shinyRoll(leagueSeed(state.seed, 'shiny'), pokemonId);
   if (shiny) log.shiny = true;
   // Vergeben → von allen Wunschlisten streichen
   const queues = state.queues && withoutQueued(state.queues, pokemonId);

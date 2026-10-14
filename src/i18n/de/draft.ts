@@ -156,6 +156,8 @@ const draft = {
     snakeNote: 'Jede zweite Runde rückwärts.',
     fixedNote: 'Jede Runde dieselbe Reihenfolge.',
     setPiece: 'Standardschütze',
+    shinies: 'Shinys',
+    shiniesTitle: '2 % je Pick: schillernde Pokémon spielen besser und heben das Team',
     /** Spielmodus nach dem Draft */
     format: 'Spielmodus',
     formatLeague: 'Liga',
@@ -228,6 +230,7 @@ const draft = {
     fixedOrder: 'jede Runde gleiche Reihenfolge',
     withSetPiece: 'mit Standardschütze',
     withoutSetPiece: 'ohne Standardschütze',
+    withoutShinies: 'ohne Shinys',
     maxTeams: (n: number) => `bis ${n} Teams`,
     orderRandom: 'Reihenfolge zufällig',
     orderHost: 'Reihenfolge vom Host',

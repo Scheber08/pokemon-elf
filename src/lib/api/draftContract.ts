@@ -162,6 +162,8 @@ export interface DraftSettings {
   maxMegas: number | null;
   /** Standardschütze → 12. Runde */
   setPiece: boolean;
+  /** Shinys (2 % je Pick, src/lib/shiny.ts) – aus: keine */
+  shinies: boolean;
   /** Maximale Teamzahl (2–8) */
   maxTeams: number;
   /** Bedenkzeit pro Pick in Sekunden, 0 = ohne Timer */
@@ -223,6 +225,7 @@ export const DEFAULT_DRAFT_SETTINGS: DraftSettings = {
   megas: false,
   maxMegas: 1,
   setPiece: false,
+  shinies: true,
   maxTeams: 4,
   pickSeconds: 60,
   order: 'random',
