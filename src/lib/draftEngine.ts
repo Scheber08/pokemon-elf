@@ -59,6 +59,7 @@ import type { TrainerLook } from './trainer';
 import { DRAFT_MODEL, opponentRatings, simulateLeague, type LeagueResult, type LeagueTeam } from './season';
 import { evaluateTeam } from './teamScore';
 import { cleanKit } from './kits';
+import { cleanCheer } from './cheer';
 
 /** Slot-Index des Standardschützen */
 export const DRAFT_SS_SLOT = 11;
@@ -713,6 +714,23 @@ export function setTeamJerseys(state: DraftState, deviceId: string, raw: unknown
         return rest;
       }
       return { ...t, jerseys };
+    }),
+  };
+}
+
+/** Torjubel des eigenen Teams ('' = keiner) – jederzeit, reine Optik. */
+export function setTeamCheer(state: DraftState, deviceId: string, raw: unknown): DraftState {
+  const teamId = teamOfDevice(state, deviceId) ?? fail('not_joined', 'Du bist in dieser Liga nicht dabei');
+  const cheer = cleanCheer(raw);
+  return {
+    ...state,
+    teams: state.teams.map((t) => {
+      if (t.id !== teamId) return t;
+      if (!cheer) {
+        const { cheer: _drop, ...rest } = t;
+        return rest;
+      }
+      return { ...t, cheer };
     }),
   };
 }

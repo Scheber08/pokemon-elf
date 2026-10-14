@@ -196,6 +196,18 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
             {tx.goalFlash}
           </text>
         )}
+        {recent?.kind === 'goal' && time - recent.t < 1.6 && lineups[recent.side]?.cheer && (
+          <text
+            key={`c${recent.t}`}
+            className={`match-pitch__cheer ${recent.side === 0 ? 'is-home' : 'is-away'}`}
+            x={PITCH_W / 2}
+            y={PITCH_H / 2 + 9}
+            textAnchor="middle"
+            dominantBaseline="central"
+          >
+            {lineups[recent.side]!.cheer}
+          </text>
+        )}
       </svg>
       <p className="match-pitch__event" aria-live="polite">
         {recent

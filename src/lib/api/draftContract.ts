@@ -260,6 +260,8 @@ export interface DraftTeam {
   captain?: number;
   /** Trikotfarben (src/lib/kits.ts) – fehlt: Standard */
   kit?: { home: string; away: string };
+  /** Torjubel (src/lib/cheer.ts) – fehlt: keiner */
+  cheer?: string;
 }
 
 /** Draft-Slot des ersten Bankplatzes (Manager-Saison): Bankplatz i = DRAFT_BENCH_SLOT + i */
@@ -512,6 +514,8 @@ export type DraftClientMessage =
   | { type: 'captain'; pokemonId: number | null }
   /** Trikotfarben setzen (null = Standard) – jederzeit, reine Optik */
   | { type: 'kit'; kit: { home: string; away: string } | null }
+  /** Torjubel setzen ('' = keiner) – jederzeit, reine Optik */
+  | { type: 'cheer'; text: string }
   | { type: 'offer-reply'; id: number; accept: boolean }
   /** Emoji-Reaktion an alle (nur Mitglieder; wird nicht gespeichert) */
   | { type: 'react'; emoji: DraftReaction }

@@ -102,7 +102,7 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           startsAt={season.startsAt}
           stepMs={season.stepMs}
           clockOffset={room.clockOffset}
-          lineups={s.teams.map((tm) => ({ formation: tm.formation, ids: tm.slots, jerseys: tm.jerseys, captain: tm.captain, kit: cleanKit(tm.kit) }))}
+          lineups={s.teams.map((tm) => ({ formation: tm.formation, ids: tm.slots, jerseys: tm.jerseys, captain: tm.captain, kit: cleanKit(tm.kit), cheer: tm.cheer }))}
           onDone={() => {
             setTicker(false);
             // Tab im Hintergrund: Saisonende melden (wie „Du bist dran" – nur mit Erlaubnis)
@@ -138,7 +138,7 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           transfers={s.manager?.transfers}
         />
       )}
-      {meIndex >= 0 && <KitPicker kit={cleanKit(s.teams[meIndex].kit)} onChange={(kit) => room.setKit(kit)} />}
+      {meIndex >= 0 && <KitPicker kit={cleanKit(s.teams[meIndex].kit)} onChange={(kit) => room.setKit(kit)} cheer={s.teams[meIndex].cheer ?? ''} onCheer={(c) => room.setCheer(c)} />}
       {meIndex >= 0 && (
         <JerseyEditor
           formation={s.teams[meIndex].formation}

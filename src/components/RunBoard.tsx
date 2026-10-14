@@ -26,6 +26,7 @@ import { CaptainPicker } from './CaptainPicker';
 import { JerseyEditor } from './JerseyEditor';
 import { useJerseys } from '../state/useJerseys';
 import { useKit } from '../state/useKit';
+import { useCheer } from '../state/useCheer';
 import { KitPicker } from './KitPicker';
 import { Pitch, type SlotState } from './Pitch';
 import { PokemonGrid } from './PokemonGrid';
@@ -87,6 +88,7 @@ export function RunBoard({
   // Eigene Trikotnummern je Challenge (Gerät) – reine Optik, der Run bleibt unberührt
   const [jerseys, setJerseys] = useJerseys(challenge);
   const [kit, setKit] = useKit(challenge);
+  const [cheer, setCheer] = useCheer(challenge);
   const style: SpriteStyle = challenge === 'retro340' ? 'retro' : sprite;
   const total = totalRounds(state.config);
   const complete = isComplete(state);
@@ -364,7 +366,7 @@ export function RunBoard({
           captain={captain}
         />
       </div>
-      <KitPicker kit={kit} onChange={setKit} />
+      <KitPicker kit={kit} onChange={setKit} cheer={cheer} onCheer={setCheer} />
       <JerseyEditor formation={formation} slots={state.slots} ss={ssEnabled ? state.ss : null} jerseys={jerseys} onChange={setJerseys} />
     </div>
   );

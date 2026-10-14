@@ -27,6 +27,7 @@ import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import { useToast } from '../state/Toast';
 import type { FormationId, PosCode, Pokemon, RegionFilter, Slots, SpriteStyle } from '../types';
+import { cleanCheer } from '../lib/cheer';
 
 interface BuilderState {
   formation: FormationId;
@@ -46,6 +47,8 @@ interface BuilderState {
   captain: number | null;
   /** Trikotfarben (null = Standard) */
   kit: Kit | null;
+  /** Torjubel ('' = keiner) */
+  cheer: string;
 }
 
 /** So viele Schritte lassen sich rückgängig machen */
@@ -72,6 +75,7 @@ const DEFAULT_STATE: BuilderState = {
   jerseys: {},
   captain: null,
   kit: null,
+  cheer: '',
 };
 
 function normalize(s: Partial<BuilderState>): BuilderState {
@@ -83,6 +87,7 @@ function normalize(s: Partial<BuilderState>): BuilderState {
   merged.forms = merged.forms !== false;
   merged.jerseys = cleanJerseys(merged.jerseys);
   merged.kit = cleanKit(merged.kit);
+  merged.cheer = cleanCheer(merged.cheer);
   merged.captain = typeof merged.captain === 'number' && merged.slots.includes(merged.captain) ? merged.captain : null;
   return merged;
 }
@@ -362,7 +367,12 @@ export function Builder() {
           />
         </section>
 
-        <KitPicker kit={state.kit} onChange={(kit) => change((s) => ({ ...s, kit }))} />
+        <KitPicker
+          kit={state.kit}
+          onChange={(kit) => change((s) => ({ ...s, kit }))}
+          cheer={state.cheer}
+          onCheer={(cheer) => change((s) => ({ ...s, cheer }))}
+        />
 
         <JerseyEditor
           formation={state.formation}

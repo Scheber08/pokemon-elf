@@ -24,6 +24,8 @@ export interface ReplayLineup {
   captain?: number | null;
   /** Trikotfarben (fehlt: Gelb/Weiß) */
   kit?: Kit | null;
+  /** Torjubel (Spruch unter „TOR!“) */
+  cheer?: string;
 }
 
 export interface ReplayPlayer {

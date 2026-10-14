@@ -206,7 +206,7 @@ function MyTeamCard({ room }: { room: DraftRoom }) {
           if (formation !== me.formation && room.updateTeam({ formation })) saveTeamPrefs({ name: me.name, formation });
         }}
       />
-      <KitPicker kit={cleanKit(me.kit)} onChange={(kit) => room.setKit(kit)} />
+      <KitPicker kit={cleanKit(me.kit)} onChange={(kit) => room.setKit(kit)} cheer={me.cheer ?? ''} onCheer={(c) => room.setCheer(c)} />
       <button type="button" className="btn btn--ghost btn--small" onClick={leave}>
         {t.online.leave}
       </button>

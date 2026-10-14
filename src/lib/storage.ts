@@ -18,6 +18,7 @@ export const STORAGE_KEYS = {
   /** Eigene Trikotnummern je Modus (z. B. „c340"), Pokémon-ID → Nummer */
   jerseys: (scope: string) => `jerseys:${scope}`,
   kit: (scope: string) => `kit:${scope}`,
+  cheer: (scope: string) => `cheer:${scope}`,
 } as const;
 
 export function load<T>(key: string, fallback: T): T {

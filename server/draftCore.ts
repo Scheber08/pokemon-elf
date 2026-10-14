@@ -62,6 +62,7 @@ import {
   updateSettings,
   updateTeam,
   setTeamCaptain,
+  setTeamCheer,
   setTeamKit,
   setTeamJerseys,
   upgradeSettings,
@@ -429,6 +430,9 @@ export function parseClientMessage(raw: unknown): ParsedMessage {
       if (!Object.values(j as Record<string, unknown>).every((v) => typeof v === 'number')) return badMessage();
       return ok({ type: 'jerseys', jerseys: j as Record<string, number> });
     }
+    case 'cheer':
+      // Wie Teamnamen säubern (Steuer- und Formatzeichen raus) – Länge prüft die Engine
+      return typeof d.text === 'string' && d.text.length <= 200 ? ok({ type: 'cheer', text: cleanText(d.text) }) : badMessage();
     case 'kit': {
       const k = d.kit;
       if (k === null) return ok({ type: 'kit', kit: null });
@@ -754,7 +758,7 @@ const sameState = (a: DraftState, b: DraftState) => a === b || JSON.stringify(a)
  * Lobby-Änderungen – zusätzlich pro Gerät gedrosselt (jede kostet Speichern und ggf. D1). Züge im
  * Draft (pick, auto-pick, reroll) nicht: Sie begrenzt schon die Engine (nur am Zug, Rerolls je Team).
  */
-const LOBBY_CHANGES = new Set<DraftClientMessage['type']>(['join', 'leave', 'update-team', 'settings', 'add-cpu', 'remove-team', 'set-order', 'queue', 'jerseys', 'captain', 'kit']);
+const LOBBY_CHANGES = new Set<DraftClientMessage['type']>(['join', 'leave', 'update-team', 'settings', 'add-cpu', 'remove-team', 'set-order', 'queue', 'jerseys', 'captain', 'kit', 'cheer']);
 
 interface Bucket {
   tokens: number;
@@ -1585,6 +1589,8 @@ export class DraftRoomCore {
         return setTeamJerseys(state, deviceId, msg.jerseys);
       case 'kit':
         return setTeamKit(state, deviceId, msg.kit);
+      case 'cheer':
+        return setTeamCheer(state, deviceId, msg.text);
       case 'captain':
         // Manager-Saison: Überfälliges erst spielen – der Kapitän gilt ab dem nächsten Anpfiff
         return setTeamCaptain(state.manager ? playDueMatchdays(state, now, list, scale) : state, deviceId, msg.pokemonId);

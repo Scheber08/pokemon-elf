@@ -557,6 +557,8 @@ export interface DraftRoom extends DraftRoomView {
   setCaptain(pokemonId: number | null): boolean;
   /** Trikotfarben setzen (null = Standard) */
   setKit(kit: { home: string; away: string } | null): boolean;
+  /** Torjubel setzen ('' = keiner) */
+  setCheer(text: string): boolean;
   /** Manager-Saison: Tausch anbieten (eigenes give gegen get von Team to) */
   offerTrade(to: string, give: number, get: number): boolean;
   /** Manager-Saison: Angebot annehmen bzw. ablehnen / zurückziehen */
@@ -946,6 +948,7 @@ export function useDraftRoom(code: string): DraftRoom {
     setJerseys: useCallback((jerseys: Record<string, number>) => send({ type: 'jerseys', jerseys }), [send]),
     setCaptain: useCallback((pokemonId: number | null) => send({ type: 'captain', pokemonId }), [send]),
     setKit: useCallback((kit: { home: string; away: string } | null) => send({ type: 'kit', kit }), [send]),
+    setCheer: useCallback((text: string) => send({ type: 'cheer', text }), [send]),
     offerTrade: useCallback((to: string, give: number, get: number) => send({ type: 'offer', to, give, get }), [send]),
     answerOffer: useCallback((id: number, accept: boolean) => send({ type: 'offer-reply', id, accept }), [send]),
     setLineup: useCallback((l: ManagerLineup) => send({ type: 'lineup', formation: l.formation, slots: l.slots, ss: l.ss, auto: l.auto }), [send]),

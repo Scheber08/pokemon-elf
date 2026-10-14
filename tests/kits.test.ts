@@ -1,5 +1,6 @@
 /** Trikotfarben: Palette, Prüfen, Farben im Spiel (Gast weicht bei gleicher Farbe aus). */
 import { describe, expect, it } from 'vitest';
+import { cleanCheer, CHEER_MAX } from '../src/lib/cheer';
 import { cleanKit, DEFAULT_KIT, KIT_COLORS, matchKits } from '../src/lib/kits';
 
 describe('Trikotfarben', () => {
@@ -23,5 +24,13 @@ describe('Trikotfarben', () => {
     const [h, a] = matchKits({ home: 'white', away: 'red' }, { home: 'white', away: 'white' });
     expect(h.id).toBe('white');
     expect(a.id).not.toBe('white');
+  });
+});
+
+describe('Torjubel', () => {
+  it('säubert: nur Text, Leerraum zusammengefasst, höchstens CHEER_MAX Zeichen', () => {
+    expect(cleanCheer('  Wir  sind\n die Elf!  ')).toBe('Wir sind die Elf!');
+    expect(cleanCheer(42)).toBe('');
+    expect([...cleanCheer('⚽'.repeat(60))]).toHaveLength(CHEER_MAX);
   });
 });

@@ -1,6 +1,9 @@
 /** Texte: Trikotfarben (alle Modi). */
 const kit = {
   title: 'Trikotfarben',
+  titleCheer: 'Trikot & Torjubel',
+  cheer: 'Torjubel (unter „TOR!“ in der 2D-Ansicht)',
+  cheerPlaceholder: 'z. B. Wir sind die Elf!',
   home: 'Heim',
   away: 'Auswärts',
   note: 'Zu Hause spielt dein Team in der Heimfarbe, auswärts auch – außer der Gegner trägt dieselbe, dann in der Auswärtsfarbe. Zu sehen in der 2D-Ansicht.',

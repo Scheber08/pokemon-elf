@@ -172,11 +172,32 @@
   transform-origin: center;
   animation: match-pitch-flash 0.8s ease-out;
 }
+.match-pitch__cheer {
+  font-family: var(--font-head);
+  font-size: 4.2px;
+  font-weight: 700;
+  stroke-width: 0.5;
+  paint-order: stroke;
+  pointer-events: none;
+  animation: match-pitch-flash 0.8s ease-out;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.match-pitch__cheer.is-home {
+  fill: var(--home-fill, #ffcb05);
+  stroke: var(--home-stroke, #7a5a00);
+}
+.match-pitch__cheer.is-away {
+  fill: var(--away-fill, #e9eef5);
+  stroke: var(--away-stroke, #2f62c9);
+}
 .match-pitch__flash.is-home {
   fill: var(--home-fill, #ffcb05);
+  stroke: var(--home-stroke, #7a5a00);
 }
 .match-pitch__flash.is-away {
   fill: var(--away-fill, #e9eef5);
+  stroke: var(--away-stroke, #2f62c9);
 }
 @keyframes match-pitch-flash {
   from {

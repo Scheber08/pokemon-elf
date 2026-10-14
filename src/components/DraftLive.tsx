@@ -567,7 +567,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                   hint={s.settings.format === 'manager' ? t.captain.managerNote : t.captain.draftNote}
                 />
               )}
-              {pitchTeam === me && me && !readOnly && <KitPicker kit={cleanKit(me.kit)} onChange={(kit) => room.setKit(kit)} />}
+              {pitchTeam === me && me && !readOnly && <KitPicker kit={cleanKit(me.kit)} onChange={(kit) => room.setKit(kit)} cheer={me.cheer ?? ''} onCheer={(c) => room.setCheer(c)} />}
               {pitchTeam === me && me && !readOnly && (
                 <JerseyEditor
                   formation={me.formation}

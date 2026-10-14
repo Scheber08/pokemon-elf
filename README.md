@@ -233,7 +233,8 @@ des Builders trägt eigene Nummern im Parameter `nr`.
 **Trikotfarben** (alle Modi, `src/lib/kits.ts`, `src/components/KitPicker.tsx`): je Team eine Heim- und eine
 Auswärtsfarbe aus 10 Farben. In der 2D-Ansicht spielt das Heimteam in Heimfarbe, der Gast ebenfalls – außer
 beide gleich, dann in seiner Auswärtsfarbe (notfalls eine Ausweichfarbe). Gespeichert wie die Trikotnummern
-(Builder-Zustand, `DraftTeam.kit` mit Nachricht `kit`, im Browser je Challenge bzw. im lokalen Draft).
+(Builder-Zustand, `DraftTeam.kit` mit Nachricht `kit`, im Browser je Challenge bzw. im lokalen Draft). Dazu ein **Torjubel**
+(`src/lib/cheer.ts`, bis 40 Zeichen, Nachricht `cheer`), der in der 2D-Ansicht unter „TOR!“ erscheint.
 
 **Kapitän** (alle Modi): seine Passung zählt im Team-Score doppelt (`captainWeight`). Challenges: beim
 Abschluss (Server prüft, `entry_captains`); Builder/Testspiel: im Zustand und im Teilen-Link (`k`); Online-Draft:

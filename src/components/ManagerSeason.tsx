@@ -163,7 +163,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
     const team = s.teams[i];
     if (!team) return null;
     const l = m?.playedLineups?.[match.round]?.[team.id] ?? m?.lineups[team.id];
-    return l ? { formation: l.formation, ids: l.slots, jerseys: team.jerseys, captain: team.captain, kit: cleanKit(team.kit) } : null;
+    return l ? { formation: l.formation, ids: l.slots, jerseys: team.jerseys, captain: team.captain, kit: cleanKit(team.kit), cheer: team.cheer } : null;
   });
 
   if (!m || !league) {
@@ -304,7 +304,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
         </section>
       )}
 
-      {room.me && !readOnly && meIndex >= 0 && <KitPicker kit={cleanKit(s.teams[meIndex].kit)} onChange={(kit) => room.setKit(kit)} />}
+      {room.me && !readOnly && meIndex >= 0 && <KitPicker kit={cleanKit(s.teams[meIndex].kit)} onChange={(kit) => room.setKit(kit)} cheer={s.teams[meIndex].cheer ?? ''} onCheer={(c) => room.setCheer(c)} />}
 
       {room.me && !readOnly && m.lineups[room.me.id] && meIndex >= 0 && (
         <JerseyEditor

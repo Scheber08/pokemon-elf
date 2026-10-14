@@ -16,6 +16,7 @@ import {
   startDraft,
   setTeamCaptain,
   setTeamKit,
+  setTeamCheer,
   setTeamJerseys,
   totalPicks,
   upgradeSettings,
@@ -576,5 +577,16 @@ describe('Trikotfarben im Online-Draft', () => {
     expect(parseClientMessage(JSON.stringify({ type: 'kit', kit: { home: 'red', away: 'blue' } }))).toMatchObject({ ok: true });
     expect(parseClientMessage(JSON.stringify({ type: 'kit', kit: null }))).toMatchObject({ ok: true });
     expect(parseClientMessage(JSON.stringify({ type: 'kit', kit: 'red' })).ok).toBe(false);
+  });
+});
+
+describe('Torjubel im Online-Draft', () => {
+  it('gesäubert gespeichert, leer = keiner; Nachricht nur mit Text', () => {
+    const s = drafted();
+    const next = setTeamCheer(s, 'dev-h', '  Auf geht’s!  ');
+    expect(next.teams.find((t) => t.id === 'h')!.cheer).toBe('Auf geht’s!');
+    expect(setTeamCheer(next, 'dev-h', '   ').teams.find((t) => t.id === 'h')).not.toHaveProperty('cheer');
+    expect(parseClientMessage(JSON.stringify({ type: 'cheer', text: 'Hurra' }))).toMatchObject({ ok: true });
+    expect(parseClientMessage(JSON.stringify({ type: 'cheer', text: 5 })).ok).toBe(false);
   });
 });
