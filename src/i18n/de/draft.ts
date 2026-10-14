@@ -243,6 +243,14 @@ const draft = {
     saveOwnImage: 'Meine Elf als Bild',
     grade: 'Note',
     /** Bester später Pick */
+    /** Direkte Duelle des eigenen Teams */
+    duels: 'Deine Duelle',
+    duelsOpponent: 'Gegner',
+    duelsScores: 'Ergebnisse',
+    duelsRecord: 'S–U–N',
+    duelsRecordTitle: 'Siege – Unentschieden – Niederlagen gegen dieses Team',
+    duelHome: 'Heimspiel',
+    duelAway: 'Auswärtsspiel',
     steal: (pokemon: string, pick: number, team: string, pos: string) => `Schnäppchen des Drafts: ${pokemon} (Pick ${pick}) für ${team} als ${pos}`,
     gradeTitle: 'Draft-Note nach Team-Score – relativ zu den anderen Teams dieser Liga (A+ bis D)',
     finalTable: 'Abschlusstabelle',

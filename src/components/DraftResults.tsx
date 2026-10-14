@@ -3,7 +3,7 @@ import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftTeam } from '../lib/api/draftContract';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { draftGrades, draftShareText, draftSteal, leagueTimeline, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { draftGrades, draftShareText, draftSteal, headToHead, leagueTimeline, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { formatRecord, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -53,6 +53,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
   const steal = useMemo(() => draftSteal(picks, teams, byId, scale('all')), [picks, teams, byId, scale]);
   const table = league.table;
   const you = highlight != null && highlight >= 0 && highlight < league.teams.length ? highlight : null;
+  const duels = useMemo(() => (you != null ? headToHead(league, you) : []), [league, you]);
 
   // Vereinsnamen der CPU-Teams erst bei der Anzeige übersetzen – gespeichert bleibt der deutsche Name
   const nameOf = useCallback(
@@ -285,6 +286,50 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
             </ol>
           )}
         </section>
+
+        {duels.length > 0 && (
+          <section className="card" aria-labelledby="draft-results-duels">
+            <h2 id="draft-results-duels" className="section-title">
+              {tx.duels}
+            </h2>
+            <div className="table-scroll">
+              <table className="league-table draft-results__duels">
+                <thead>
+                  <tr>
+                    <th scope="col" className="left">
+                      {tx.duelsOpponent}
+                    </th>
+                    <th scope="col" className="left">
+                      {tx.duelsScores}
+                    </th>
+                    <th scope="col" title={tx.duelsRecordTitle}>
+                      {tx.duelsRecord}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {duels.map((d) => (
+                    <tr key={d.opponent} className={d.w > d.l ? 'is-up' : d.l > d.w ? 'is-down' : ''}>
+                      <th scope="row" className="left">
+                        {nameOf(d.opponent)}
+                      </th>
+                      <td className="left">
+                        {d.scores.map((x, i) => (
+                          <span key={i} className="draft-results__duel" title={x.home ? tx.duelHome : tx.duelAway}>
+                            {x.gf}:{x.ga}
+                          </span>
+                        ))}
+                      </td>
+                      <td>
+                        <strong>{formatRecord({ w: d.w, d: d.d, l: d.l })}</strong>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
       </div>
 
       <section aria-labelledby="draft-results-rosters">

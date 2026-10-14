@@ -785,3 +785,17 @@
   font-family: var(--font-head);
   font-weight: 700;
 }
+
+/* Deine Duelle: Ergebnisse gegen jeden Gegner */
+.draft-results__duel {
+  display: inline-block;
+  min-width: 2.6em;
+  margin-right: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.draft-results__duels .is-up td:last-child {
+  color: var(--green);
+}
+.draft-results__duels .is-down td:last-child {
+  color: var(--red);
+}

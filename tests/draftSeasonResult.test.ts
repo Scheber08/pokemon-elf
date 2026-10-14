@@ -16,6 +16,7 @@ import {
 import { buildScale } from '../src/lib/fit';
 import {
   draftShareText,
+  headToHead,
   leagueRatings,
   leagueTimeline,
   resolveLeague,
@@ -360,5 +361,24 @@ describe('Schnäppchen des Drafts', () => {
     const own = state.picks.find((p) => p.pick === steal.pick)!;
     expect(own.pokemonId).toBe(steal.pokemonId);
     expect(draftSteal([], state.teams, byId, scale)).toBeNull();
+  });
+});
+
+describe('Deine Duelle (direkter Vergleich)', () => {
+  const m = (round: number, home: number, away: number, hg: number, ag: number): Match => ({
+    round, home, away, hg, ag, homeScorers: [], awayScorers: [],
+  });
+  it('sammelt Bilanz und Ergebnisse aus eigener Sicht, Gegner in Tabellenreihenfolge', () => {
+    const matches = [m(3, 2, 0, 1, 1), m(1, 0, 1, 2, 0), m(2, 0, 2, 0, 3), m(4, 1, 0, 2, 2), m(2, 1, 2, 5, 5)];
+    const table = [{ team: 2 }, { team: 0 }, { team: 1 }] as TableRow[];
+    const h = headToHead({ matches, table }, 0);
+    expect(h.map((x) => x.opponent)).toEqual([2, 1]);
+    expect(h[0]).toMatchObject({ w: 0, d: 1, l: 1, gf: 1, ga: 4 });
+    expect(h[0].scores).toEqual([
+      { gf: 0, ga: 3, home: true },
+      { gf: 1, ga: 1, home: false },
+    ]);
+    expect(h[1]).toMatchObject({ w: 1, d: 1, l: 0, gf: 4, ga: 2 });
+    expect(headToHead({ matches, table }, 9)).toEqual([]);
   });
 });

@@ -426,3 +426,37 @@ export function draftSteal(
   }
   return best && { pick: best.pick, teamId: best.teamId, pokemonId: best.pokemonId, pos: best.pos };
 }
+
+/** Bilanz eines Teams gegen einen Gegner (aus Sicht des Teams). */
+export interface HeadToHead {
+  opponent: number;
+  w: number;
+  d: number;
+  l: number;
+  gf: number;
+  ga: number;
+  /** Ergebnisse in Spielreihenfolge, eigene Tore zuerst */
+  scores: { gf: number; ga: number; home: boolean }[];
+}
+
+/** Direkte Duelle eines Teams gegen alle Gegner – in der Reihenfolge der Abschlusstabelle. */
+export function headToHead(league: Pick<LeagueResult, 'matches' | 'table'>, team: number): HeadToHead[] {
+  const byOpp = new Map<number, HeadToHead>();
+  const sorted = [...league.matches].sort((a, b) => a.round - b.round);
+  for (const m of sorted) {
+    if (m.home !== team && m.away !== team) continue;
+    const home = m.home === team;
+    const opponent = home ? m.away : m.home;
+    const gf = home ? m.hg : m.ag;
+    const ga = home ? m.ag : m.hg;
+    const h = byOpp.get(opponent) ?? { opponent, w: 0, d: 0, l: 0, gf: 0, ga: 0, scores: [] };
+    if (gf > ga) h.w++;
+    else if (gf === ga) h.d++;
+    else h.l++;
+    h.gf += gf;
+    h.ga += ga;
+    h.scores.push({ gf, ga, home });
+    byOpp.set(opponent, h);
+  }
+  return league.table.flatMap((r) => byOpp.get(r.team) ?? []);
+}
