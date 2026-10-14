@@ -1577,6 +1577,8 @@ export interface EternalRow {
   gf: number;
   ga: number;
   pts: number;
+  /** Summe der Plätze (Ø Platz = rankSum / leagues) */
+  rankSum: number;
 }
 
 /**
@@ -1588,12 +1590,13 @@ export function eternalTable(entries: readonly DraftHistoryEntry[]): EternalRow[
   for (const entry of entries) {
     for (const r of entry.rows) {
       const row = rows.get(r.teamId) ?? {
-        teamId: r.teamId, name: r.name, cpu: r.cpu, leagues: 0, titles: 0, played: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0,
+        teamId: r.teamId, name: r.name, cpu: r.cpu, leagues: 0, titles: 0, played: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0, rankSum: 0,
       };
       row.name = r.name;
       row.cpu = r.cpu;
       row.leagues++;
       if (r.rank === 1) row.titles++;
+      row.rankSum += r.rank;
       row.played += r.played;
       row.w += r.w;
       row.d += r.d;

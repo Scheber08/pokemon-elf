@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useT } from '../i18n';
+import { localeOf, useLang, useT } from '../i18n';
 import type { DraftHistoryEntry } from '../lib/api/draftContract';
 import { eternalTable } from '../lib/draftEngine';
 
@@ -15,6 +15,7 @@ interface Props {
 /** Ewige Tabelle einer Gruppe: alle Ligen der Revanche-Kette zusammengezählt. */
 export function EternalTable({ entries, youTeamId, title }: Props) {
   const t = useT();
+  const lang = useLang();
   const tx = t.draft.eternal;
   const c = t.draft.col;
   const rows = useMemo(() => eternalTable(entries), [entries]);
@@ -40,6 +41,9 @@ export function EternalTable({ entries, youTeamId, title }: Props) {
               </th>
               <th scope="col" title={tx.titlesTitle}>
                 {tx.titlesCol}
+              </th>
+              <th scope="col" title={tx.avgTitle}>
+                {tx.avgCol}
               </th>
               <th scope="col" title={c.playedTitle}>
                 {c.played}
@@ -70,6 +74,7 @@ export function EternalTable({ entries, youTeamId, title }: Props) {
                 </td>
                 <td>{r.leagues}</td>
                 <td>{r.titles || ''}</td>
+                <td>{(r.rankSum / r.leagues).toLocaleString(localeOf(lang), { maximumFractionDigits: 1 })}</td>
                 <td>{r.played}</td>
                 <td>{r.w}</td>
                 <td>{r.d}</td>

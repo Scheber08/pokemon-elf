@@ -319,6 +319,8 @@ const draft = {
     leaguesTitle: 'Ligen',
     titlesCol: '★',
     titlesTitle: 'Meistertitel',
+    avgCol: 'Ø Pl.',
+    avgTitle: 'Durchschnittlicher Platz über alle Ligen',
   },
   ticker: {
     startsSoon: 'Die gemeinsame Saison beginnt gleich.',

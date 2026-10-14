@@ -1007,3 +1007,18 @@ describe('Picks bis zum eigenen Zug', () => {
     expect(picksUntilTurn({ ...base, pickIndex: 0 }, 'x')).toBeNull();
   });
 });
+
+describe('Ewige Tabelle: Ø Platz', () => {
+  it('summiert die Plätze je Team über alle Ligen', async () => {
+    const { eternalTable } = await import('../src/lib/draftEngine');
+    const row = (teamId: string, rank: number, pts: number) => ({ teamId, name: teamId, cpu: false, rank, played: 2, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts });
+    const t = eternalTable([
+      { code: 'A', name: '', finishedAt: 1, rows: [row('x', 1, 6), row('y', 5, 1)] },
+      { code: 'B', name: '', finishedAt: 2, rows: [row('x', 4, 3), row('y', 2, 4)] },
+    ]);
+    expect(t.map((r) => [r.teamId, r.rankSum, r.rankSum / r.leagues])).toEqual([
+      ['x', 5, 2.5],
+      ['y', 7, 3.5],
+    ]);
+  });
+});

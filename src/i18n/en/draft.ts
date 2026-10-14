@@ -293,6 +293,8 @@ const draft: Messages['draft'] = {
     leaguesTitle: 'Leagues',
     titlesCol: '★',
     titlesTitle: 'Titles',
+    avgCol: 'Avg pos.',
+    avgTitle: 'Average position across all leagues',
   },
 
   ticker: {
