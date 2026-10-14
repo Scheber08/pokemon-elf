@@ -128,3 +128,10 @@ CREATE TABLE IF NOT EXISTS trainer_items (
   bought_at INTEGER NOT NULL,
   PRIMARY KEY (device_id, item)
 );
+
+-- Kapitän eines Eintrags (Pokémon-ID; fehlt = ohne Kapitän). Eigene Tabelle, weil entries
+-- in der Live-Datenbank schon existiert (Schema nur additiv).
+CREATE TABLE IF NOT EXISTS entry_captains (
+  entry_id TEXT PRIMARY KEY,
+  pokemon_id INTEGER NOT NULL
+);

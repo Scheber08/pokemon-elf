@@ -64,6 +64,10 @@ const scouting: Messages['scouting'] = {
       a: 'The three weakest positions also count again, at double weight. A gap drags you down more than a star lifts you up – a balanced XI almost always beats one with holes.',
     },
     {
+      q: 'What does the captain do?',
+      a: 'Their position fit counts double in the team score. A well-fitting captain lifts the team, a poorly fitting one drags it down – so pick one who shines in their position. The set-piece taker cannot be captain.',
+    },
+    {
       q: 'What does the set-piece taker do?',
       a: 'He doesn’t count towards the team score. In the season he converts some of the goals from set pieces and gives a small bonus to expected goals – the better his Sp. Atk and Attack, the bigger it is.',
     },

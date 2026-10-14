@@ -178,6 +178,9 @@ export interface ChallengeRun {
   start(opts?: StartOptions): Promise<void>;
   reroll(kind: RerollKind): void;
   place(pokemonId: number, slot: number): void;
+  /** Kapitän des laufenden Runs (Pokémon-ID) – null = keiner */
+  captain: number | null;
+  setCaptain(pokemonId: number | null): void;
   finish(opts?: FinishOptions): Promise<boolean>;
   /** Online-Start gescheitert (offlineFallback 'ask') → start({ offline: true }) anbieten */
   canStartOffline: boolean;
@@ -206,6 +209,8 @@ interface Persisted {
   day: string | null;
   online: boolean;
   result: RunResult | null;
+  /** Kapitän des laufenden Runs (Pokémon-ID aus der Elf) – fehlt/null = keiner */
+  captain?: number | null;
 }
 
 /** Steht für „Backend beim Start nicht erreichbar" (Health-Check gescheitert). */
@@ -412,7 +417,8 @@ function loadPersisted(
   if (raw.phase === 'play') {
     const engine = restoreEngine(raw.engine, data, allowed);
     if (!engine) return freshState(setup);
-    return { ...freshState(setup), phase: 'play', engine, token, day, online: raw.online === true && token != null };
+    const captain = typeof raw.captain === 'number' && engine.slots.includes(raw.captain) ? raw.captain : null;
+    return { ...freshState(setup), phase: 'play', engine, token, day, online: raw.online === true && token != null, captain };
   }
   if (raw.phase === 'result') {
     const result = readResult(raw.result, allowed);
@@ -657,6 +663,16 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
     [byId, commit, data],
   );
 
+  const setCaptain = useCallback(
+    (pokemonId: number | null) => {
+      const cur = stateRef.current;
+      if (cur.phase !== 'play' || !cur.engine || finishingRef.current) return;
+      if (pokemonId != null && !cur.engine.slots.includes(pokemonId)) return;
+      commit({ ...cur, captain: pokemonId });
+    },
+    [commit],
+  );
+
   const finish = useCallback(async (opts: FinishOptions = {}): Promise<boolean> => {
     const cur = stateRef.current;
     if (finishingRef.current || cur.phase !== 'play' || !cur.engine || !isComplete(cur.engine)) return false;
@@ -677,6 +693,7 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
       const challenge = cur.engine.config.challenge;
       const outcome = await finishRun({
         state: cur.engine,
+        captain: cur.captain != null && cur.engine.slots.includes(cur.captain) ? cur.captain : null,
         teamName: cleanTeamName(cur.setup.teamName),
         player: name,
         token: opts.offline ? null : cur.token,
@@ -788,6 +805,8 @@ export function useChallengeRun(storageId: string, options: ChallengeRunOptions 
     start,
     reroll,
     place,
+    captain: state.phase === 'play' ? state.captain ?? null : null,
+    setCaptain,
     finish,
     canStartOffline,
     canFinishOffline,

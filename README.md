@@ -98,7 +98,8 @@ Routen: `/` Builder · `/challenge` 34–0 · `/taeglich` Tägliche Elf · `/151
 3. **Fit** = Perzentil des gewichteten Werts im Pool (0–100), danach Typ-Bonus +3 %/+2 %/+1 %.
 4. **Team-Score** = gewichteter Durchschnitt der 11 Fits × 10. Gewichte TW 1,6 · IV 1,2 · AV/WB 1,0 ·
    DM 1,1 · ZM 1,0 · OM 1,2 · LM/RM/LF/RF 1,0 · ST 1,4. Die drei schwächsten Fits zählen zusätzlich mit
-   doppeltem Gewicht.
+   doppeltem Gewicht. Der **Kapitän** (optional, einer der elf) zählt mit doppeltem Positionsgewicht
+   (`SCORING.team.captainWeight`) – gut passend hebt, schlecht passend senkt.
 5. **Saison:** 18 Teams, Hin- und Rückrunde. Tore ~ Poisson mit
    `λ = 1,4 · exp((eigen − Gegner)/250) + 0,15 (Heim)`, leichte Streuung, λ auf 0,05–5,5 begrenzt.
    Gegner-Ratings 350–910. Das ist `CLASSIC_MODEL` (`src/lib/season.ts`) – der Server rechnet gewertete Runs
@@ -148,6 +149,10 @@ Gewertete Runs laufen so ab:
 3. `POST /api/runs/finish` – der Server spielt das Protokoll mit **derselben Engine** nach, lehnt illegale
    Runs ab, zieht den Saison-Seed selbst (Tägliche Elf: Seed des Tages), rechnet Team-Score + Saison und
    speichert die Wertung. Der Browser simuliert mit diesem Seed dieselbe Saison.
+   Der Kapitän kommt als `captain` (Pokémon-ID) mit, der Server prüft, dass er in der Elf steht, und
+   merkt ihn in `entry_captains`. Mit seiner Einführung wurde die Rangliste einmalig neu gestartet
+   (`cleanup:captain-reset-v1`: alle Runs und Bestwerte gelöscht); Gekauftes blieb, Münzen kosten nur Käufe
+   danach (`coinsSince`).
 
 Kein Account nötig: Jedes Gerät hat eine zufällige ID + einen geheimen Schlüssel (der Server speichert nur
 dessen SHA-256). Pro Gerät zählt der beste Run; die Tägliche Elf ist einmal pro Gerät und Tag gewertet.

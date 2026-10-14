@@ -58,6 +58,7 @@ export function parseEntryDetail(raw: unknown): EntryDetail | null {
     slots: FORMATIONS[formation].slots.map((_, i) => idOrNull(slots[i])),
     ss: ssEnabled ? idOrNull(raw.ss) : null,
     ssEnabled,
+    ...(idOrNull(raw.captain) != null && slots.includes(raw.captain) ? { captain: raw.captain as number } : {}),
     record: record3(raw.record),
     points: count(raw.points),
     score: count(raw.score),

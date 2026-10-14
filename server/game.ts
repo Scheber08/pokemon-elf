@@ -62,13 +62,17 @@ export function verifyRun(args: {
   picks: PickLog[];
   teamName: string;
   seasonSeed: number;
+  /** Kapitän (Pokémon-ID) – muss in der Elf stehen */
+  captain?: number | null;
 }): VerifyResult {
   const { challenge, formation, ssEnabled, seed } = args;
   const replay = replayRun({ challenge, formation, ssEnabled, seed }, args.picks, ENGINE_DATA);
   if (!replay.ok) return replay;
   const { state } = replay;
+  const captain = args.captain ?? null;
+  if (captain != null && !state.slots.includes(captain)) return { ok: false, error: 'Der Kapitän steht nicht in der Elf', round: 0 };
   const computed = computeRun(
-    { formation, slots: state.slots, ss: ssEnabled ? state.ss : undefined, teamName: args.teamName, seed: args.seasonSeed },
+    { formation, slots: state.slots, ss: ssEnabled ? state.ss : undefined, teamName: args.teamName, seed: args.seasonSeed, captain },
     ENGINE_DATA.byId,
     scaleFor(challenge),
   );

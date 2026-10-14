@@ -5,7 +5,7 @@
  * enthält dasselbe Schema für `wrangler d1 migrations`; ein Test hält beide gleich.
  * Danach laufen einmalige Daten-Bereinigungen (je einmal pro Datenbank, über meta abgesichert).
  */
-import { backfillWeekBests, cleanupDefaultNames, DEFAULT_NAMES_CLEANUP_KEY, WEEK_BACKFILL_KEY } from './db';
+import { backfillWeekBests, CAPTAIN_RESET_KEY, cleanupDefaultNames, DEFAULT_NAMES_CLEANUP_KEY, resetForCaptain, WEEK_BACKFILL_KEY } from './db';
 import type { Db } from './env';
 
 export const SCHEMA_STATEMENTS: readonly string[] = [
@@ -28,6 +28,7 @@ export const SCHEMA_STATEMENTS: readonly string[] = [
   `CREATE INDEX IF NOT EXISTS idx_draft_results_device ON draft_results (device_id)`,
   `CREATE TABLE IF NOT EXISTS trainers ( device_id TEXT PRIMARY KEY, look_json TEXT NOT NULL, updated_at INTEGER NOT NULL )`,
   `CREATE TABLE IF NOT EXISTS trainer_items ( device_id TEXT NOT NULL, item TEXT NOT NULL, price INTEGER NOT NULL, bought_at INTEGER NOT NULL, PRIMARY KEY (device_id, item) )`,
+  `CREATE TABLE IF NOT EXISTS entry_captains ( entry_id TEXT PRIMARY KEY, pokemon_id INTEGER NOT NULL )`,
 ];
 
 const ready = new WeakMap<Db, Promise<void>>();
@@ -68,6 +69,15 @@ function runCleanups(db: Db): Promise<void> {
           console.log(
             `Bereinigung ${DEFAULT_NAMES_CLEANUP_KEY}: ${res.entries} Einträge, ${res.bestEntries} Bestwerte und ` +
               `${res.tokens} Run-Tokens von Geräten ohne eigenen Namen gelöscht`,
+          );
+        }
+        return resetForCaptain(db, Date.now());
+      })
+      .then((res) => {
+        if (res && (res.entries || res.bestEntries || res.tokens)) {
+          console.log(
+            `${CAPTAIN_RESET_KEY}: Ranglisten-Neustart – ${res.entries} Einträge, ${res.bestEntries} Bestwerte und ` +
+              `${res.tokens} Run-Tokens gelöscht`,
           );
         }
         // Erst nach der Bereinigung: keine Wochen-Bestwerte für gerade gelöschte Geräte

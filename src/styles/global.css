@@ -854,6 +854,22 @@ button.slot.slot--filled:hover .token__sprite-wrap {
   text-align: center;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
+.token__captain {
+  position: absolute;
+  top: 0;
+  left: calc(var(--pw) * -0.006);
+  min-width: max(14px, calc(var(--pw) * 0.034));
+  padding: 0 2px;
+  border-radius: 4px;
+  background: #f2c230;
+  color: #0d1b2a;
+  font-family: var(--font-head);
+  font-size: max(9px, calc(var(--pw) * 0.022));
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
 .token__sprite {
   display: block;
   max-width: 100%;
@@ -1653,7 +1669,7 @@ button.sheet__row:hover {
   gap: 10px;
   justify-items: center;
 }
-.done-box p {
+.done-box > p {
   margin: 0;
   font-family: var(--font-head);
   font-size: 22px;
@@ -2510,5 +2526,26 @@ button.sheet__row:hover {
 }
 .jersey-editor__input {
   padding: 4px 6px;
+  text-align: center;
+}
+
+.captain-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.captain-picker select {
+  max-width: 100%;
+}
+.captain-picker p {
+  flex-basis: 100%;
+  margin: 0;
+  text-align: left;
+}
+.done-box .captain-picker {
+  justify-content: center;
+}
+.done-box .captain-picker p {
   text-align: center;
 }

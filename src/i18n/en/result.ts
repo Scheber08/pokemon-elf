@@ -25,7 +25,7 @@ const result: Messages['result'] = {
     relegated: 'Relegated. Time for a squad rebuild.',
   },
   explainer:
-    'Every Pokémon is rated on how well it fits its position – based on base stats, height, weight and type. Goalkeeper, centre-backs and strikers count the most, and your three weakest positions drag the whole team down. Opponents range from 350 to 910.',
+    'Every Pokémon is rated on how well it fits its position – based on base stats, height, weight and type. Goalkeeper, centre-backs and strikers count the most, and your three weakest positions drag the whole team down. Your captain’s fit counts double. Opponents range from 350 to 910.',
   rankedOnline: 'Ranked online',
   rankToday: (n) => `${ordinal(n)} today`,
   rankAllTime: (n) => `${ordinal(n)} all-time`,

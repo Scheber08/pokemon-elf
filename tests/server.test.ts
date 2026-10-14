@@ -38,7 +38,7 @@ import { buildScale, type Scale } from '../src/lib/fit';
 import { computeRun } from '../src/lib/runCompute';
 import type { ChallengeKey, FormationId } from '../src/types';
 import { normalizeIp } from '../server/auth';
-import { ALL_TIME_SCOPE, deleteStaleTokens, UPSERT_BEST_SQL } from '../server/db';
+import { ALL_TIME_SCOPE, CAPTAIN_RESET_KEY, coinsSince, deleteStaleTokens, resetForCaptain, UPSERT_BEST_SQL } from '../server/db';
 import { ORPHAN_GRACE_MS, STALE_TOKEN_MS } from '../server/endpoints';
 import { handleApi, type Env } from '../server/handler';
 import { profilePageMeta, profilePreview } from '../server/preview';
@@ -132,6 +132,8 @@ interface RunSpec extends PlayOptions {
   ssEnabled?: boolean;
   teamName?: string;
   player?: string;
+  /** Kapitän (Pokémon-ID) */
+  captain?: number | null;
 }
 
 /** Name, den startOnline unbenannten Geräten gibt (wie der Standard-Spieler in finishBody). */
@@ -168,6 +170,7 @@ function finishBody(dev: DeviceAuth, token: string, state: RunState, spec: RunSp
     picks: state.picks,
     teamName: spec.teamName ?? 'Test-Elf',
     player: spec.player ?? 'Ash',
+    ...(spec.captain !== undefined ? { captain: spec.captain } : {}),
   };
 }
 
@@ -188,7 +191,7 @@ async function playOnline(dev: DeviceAuth, spec: RunSpec = {}) {
 }
 
 /** Erwartetes Ergebnis – dieselbe Rechnung wie im Browser. */
-function expected(state: RunState, seasonSeed: number, teamName = 'Test-Elf') {
+function expected(state: RunState, seasonSeed: number, teamName = 'Test-Elf', captain: number | null = null) {
   const { config } = state;
   return computeRun(
     {
@@ -197,6 +200,7 @@ function expected(state: RunState, seasonSeed: number, teamName = 'Test-Elf') {
       ss: config.ssEnabled ? state.ss : undefined,
       teamName,
       seed: seasonSeed,
+      captain,
     },
     DATA.byId,
     SCALES[MODE_RULES[config.challenge].scale],
@@ -695,6 +699,67 @@ describe('Runs: start → finish', () => {
 });
 
 // ---------------------------------------------------------------- Tägliche Elf
+
+describe('Kapitän', () => {
+  it('zählt beim Server doppelt: Score wie im Browser, Eintrag merkt sich den Kapitän', async () => {
+    const dev = newDevice();
+    const start = await startOnline(dev);
+    const state = autoPlay({ challenge: 'c340', formation: '4-3-3', ssEnabled: false, seed: start.body.seed });
+    const captain = state.slots[0]!;
+    const finish = await post<FinishRunResponse>('/api/runs/finish', finishBody(dev, start.body.token, state, { captain }));
+    expect(finish.status).toBe(200);
+    const run = expected(state, finish.body.seasonSeed, 'Test-Elf', captain);
+    expect(finish.body.score).toBe(run.evaluation.score);
+    expect(finish.body.points).toBe(run.season.points);
+    expect(run.evaluation.exact).not.toBe(expected(state, finish.body.seasonSeed).evaluation.exact);
+    const detail = await get<{ captain?: number }>(`/api/entries/${finish.body.entryId}`);
+    expect(detail.body.captain).toBe(captain);
+  });
+
+  it('ohne Kapitän: Eintrag ohne Feld; Kapitän außerhalb der Elf → 422, ungültig → 400', async () => {
+    const { finish } = await playOnline(newDevice());
+    expect(finish.status).toBe(200);
+    const detail = await get<Record<string, unknown>>(`/api/entries/${finish.body.entryId}`);
+    expect('captain' in detail.body).toBe(false);
+
+    const dev = newDevice();
+    const start = await startOnline(dev);
+    const state = autoPlay({ challenge: 'c340', formation: '4-3-3', ssEnabled: false, seed: start.body.seed });
+    const outside = ALL.find((p) => !state.slots.includes(p.id))!.id;
+    const bad = await post<ApiErrorBody>('/api/runs/finish', finishBody(dev, start.body.token, state, { captain: outside }));
+    expect(bad.status).toBe(422);
+    expect(bad.body.message).toMatch(/Kapitän/);
+    const wrong = await post<ApiErrorBody>('/api/runs/finish', { ...finishBody(dev, start.body.token, state), captain: 'x' });
+    expect(wrong.status).toBe(400);
+  });
+
+  it('Neustart: löscht einmalig alle Runs und Bestwerte; Gekauftes bleibt und kostet danach nichts mehr', async () => {
+    const dev = newDevice();
+    const { finish } = await playOnline(dev);
+    expect(finish.status).toBe(200);
+    db.update(
+      'INSERT INTO trainer_items (device_id, item, price, bought_at) VALUES (?, ?, ?, ?)',
+      dev.deviceId.toLowerCase(),
+      'hat:crown',
+      1500,
+      Date.now() - 1000,
+    );
+    db.update('DELETE FROM meta WHERE key = ?', CAPTAIN_RESET_KEY);
+    const now = Date.now();
+    expect(await resetForCaptain(db, now)).toEqual({ entries: 1, bestEntries: 3, tokens: 1 });
+    expect(await resetForCaptain(db, now)).toBeNull();
+    expect(db.query('SELECT * FROM entries')).toEqual([]);
+    expect(db.query('SELECT * FROM best_entries')).toEqual([]);
+    expect(db.query('SELECT * FROM trainer_items')).toHaveLength(1);
+    expect(await coinsSince(db)).toBe(now);
+    const me = await post<{ coins: { spent: number; balance: number }; owned: string[] }>('/api/me', dev);
+    expect(me.body.coins.spent).toBe(0);
+    expect(me.body.coins.balance).toBeGreaterThanOrEqual(0);
+    expect(me.body.owned).toContain('hat:crown');
+    const board = await get<LeaderboardResponse>('/api/leaderboard?challenge=c340&period=all');
+    expect(board.body.rows).toEqual([]);
+  });
+});
 
 describe('Tägliche Elf', () => {
   const DAY = '2026-10-12';

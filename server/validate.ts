@@ -230,6 +230,8 @@ export interface FinishInput {
   teamName: string;
   /** null: kein gültiger (eigener) Name mitgeschickt – der gespeicherte bleibt */
   player: string | null;
+  /** Kapitän (Pokémon-ID) – null = keiner; ob er in der Elf steht, prüft verifyRun */
+  captain: number | null;
 }
 
 export function parseStart(body: Obj): { auth: DeviceAuth; challenge: ChallengeKey } {
@@ -254,7 +256,15 @@ export function parseFinish(body: Obj): FinishInput {
     picks: parsePicks(body.picks),
     teamName: parseTeamName(body.teamName),
     player: parseFinishPlayer(body.player),
+    captain: parseCaptain(body.captain),
   };
+}
+
+/** Kapitän: fehlt/null = keiner, sonst eine positive ganze Zahl (Pokémon-ID). */
+function parseCaptain(v: unknown): number | null {
+  if (v === undefined || v === null) return null;
+  if (typeof v !== 'number' || !Number.isInteger(v) || v <= 0) throw badRequest('Ungültiger Kapitän');
+  return v;
 }
 
 export function parseRename(body: Obj): { auth: DeviceAuth; player: string } {

@@ -62,6 +62,8 @@ export function Challenge151() {
           sprite={sprite}
           onReroll={run.reroll}
           onPlace={run.place}
+          captain={run.captain}
+          onCaptain={run.setCaptain}
           onFinish={() => void onFinish()}
           finishing={run.finishing}
           onFinishOffline={run.canFinishOffline ? () => void run.finish({ offline: true }) : undefined}

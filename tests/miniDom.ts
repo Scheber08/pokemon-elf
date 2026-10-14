@@ -433,6 +433,19 @@ export function installMiniDom(): MiniDocument {
   g.localStorage = memoryStorage();
   g.sessionStorage = memoryStorage();
   g.IS_REACT_ACT_ENVIRONMENT = true;
+  // <select>: React liest select.options – hier aus den <option>-Kindern
+  if (!Object.getOwnPropertyDescriptor(MiniElement.prototype, 'options')) {
+    Object.defineProperty(MiniElement.prototype, 'options', {
+      configurable: true,
+      get(this: MiniElement) {
+        if (this.localName !== 'select') return undefined;
+        return this.querySelectorAll('option').map((o) => {
+          if (o.value == null) o.value = o.getAttribute('value') ?? o.textContent;
+          return o;
+        });
+      },
+    });
+  }
   if (typeof g.requestAnimationFrame !== 'function') {
     g.requestAnimationFrame = (cb: (t: number) => void) => setTimeout(() => cb(Date.now()), 16);
     g.cancelAnimationFrame = (id: number) => clearTimeout(id);

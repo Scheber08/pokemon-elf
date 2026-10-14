@@ -10,7 +10,7 @@ import { itemByKey, itemOnSale, lockedItem, parseLook } from '../src/lib/trainer
 import type { DraftState } from '../src/lib/draftEngine';
 import type { ChallengeKey } from '../src/types';
 import { authenticate } from './auth';
-import { allTimePlaces, RANK_EXPR } from './db';
+import { allTimePlaces, coinsSince, RANK_EXPR } from './db';
 import type { Db, Env } from './env';
 import { ApiError, json } from './http';
 import { ensureSchema } from './schema';
@@ -90,9 +90,11 @@ async function meBody(db: Db, deviceId: string, name: string, now: number): Prom
   const earned = earnedCoins(stats);
   const [look, items] = await db.batch<Record<string, unknown>>([
     db.prepare('SELECT look_json FROM trainers WHERE device_id = ?').bind(deviceId),
-    db.prepare('SELECT item, price FROM trainer_items WHERE device_id = ? ORDER BY bought_at').bind(deviceId),
+    db.prepare('SELECT item, price, bought_at FROM trainer_items WHERE device_id = ? ORDER BY bought_at').bind(deviceId),
   ]);
-  const spent = items.results.reduce((n, r) => n + (Number(r.price) || 0), 0);
+  // Nur Käufe seit dem Ranglisten-Neustart kosten Münzen (siehe coinsSince)
+  const since = await coinsSince(db);
+  const spent = items.results.reduce((n, r) => n + (Number(r.bought_at) > since ? Number(r.price) || 0 : 0), 0);
   let raw: unknown = null;
   try {
     raw = look.results[0] ? JSON.parse(String(look.results[0].look_json)) : null;
@@ -160,9 +162,9 @@ export async function buyItem(request: Request, env: Env): Promise<Response> {
   const res = await db
     .prepare(
       `INSERT OR IGNORE INTO trainer_items (device_id, item, price, bought_at)
-       SELECT ?, ?, ?, ? WHERE (SELECT COALESCE(SUM(price), 0) FROM trainer_items WHERE device_id = ?) + ? <= ?`,
+       SELECT ?, ?, ?, ? WHERE (SELECT COALESCE(SUM(price), 0) FROM trainer_items WHERE device_id = ? AND bought_at > ?) + ? <= ?`,
     )
-    .bind(deviceId, key, it.price, now, deviceId, it.price, earned)
+    .bind(deviceId, key, it.price, now, deviceId, await coinsSince(db), it.price, earned)
     .run();
   if (!res.meta.changes) {
     const had = await db.prepare('SELECT 1 AS x FROM trainer_items WHERE device_id = ? AND item = ?').bind(deviceId, key).first();

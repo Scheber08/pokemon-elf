@@ -37,6 +37,8 @@ interface Props {
   className?: string;
   /** Eigene Trikotnummern (Pokémon-ID → Nummer); ohne: Vorgabe nach Position. false = keine Nummern */
   jerseys?: Jerseys | false;
+  /** Kapitän (Pokémon-ID) – bekommt die Binde „C“ */
+  captain?: number | null;
 }
 
 interface Press {
@@ -73,6 +75,7 @@ export function Pitch({
   ariaLabel,
   className = '',
   jerseys,
+  captain = null,
 }: Props) {
   const { byId } = usePokemonData();
   const t = useT();
@@ -244,7 +247,7 @@ export function Pitch({
       ? t.builder.pitch.filled(t.game.posName[pos], t.game.pokemon(pokemon), !!onSlotClick)
       : t.builder.pitch.empty(t.game.posName[pos], !!onSlotClick);
     const number = pokemon && numbers ? (numbers.get(pokemon.id) ?? null) : null;
-    const content = <PlayerToken key={`${index}-${id ?? 'x'}`} pos={pos} pokemon={pokemon} sprite={sprite} number={number} />;
+    const content = <PlayerToken key={`${index}-${id ?? 'x'}`} pos={pos} pokemon={pokemon} sprite={sprite} number={number} captain={captain != null && index !== SS_INDEX && id === captain} />;
     if (!interactive) {
       return (
         <div

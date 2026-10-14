@@ -180,6 +180,8 @@ export interface FinishOutcome {
 
 export interface FinishOptions {
   state: RunState;
+  /** Kapitän (Pokémon-ID aus der Elf) – null/fehlt = keiner */
+  captain?: number | null;
   teamName: string;
   /** Token aus /api/runs/start – null bei lokal gestarteten Runs */
   token: string | null;
@@ -257,6 +259,7 @@ export async function finishRun(o: FinishOptions): Promise<FinishOutcome> {
         picks: o.state.picks,
         teamName: o.teamName,
         player,
+        ...(o.captain != null ? { captain: o.captain } : {}),
       });
       // Der Server übernimmt einen gültigen Namen beim Abschluss fürs Gerät.
       if (!playerNameProblem(player)) markSynced(cleanPlayerName(player));
@@ -296,6 +299,7 @@ export async function finishRun(o: FinishOptions): Promise<FinishOutcome> {
     ss: config.ssEnabled ? o.state.ss : undefined,
     teamName: o.teamName,
     seed: seasonSeed,
+    ...(o.captain != null ? { captain: o.captain } : {}),
   };
   const computed = computeRun(input, o.byId, o.scale);
   if (expectedScore != null && expectedScore !== computed.evaluation.score) {

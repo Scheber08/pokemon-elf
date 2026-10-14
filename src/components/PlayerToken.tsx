@@ -11,10 +11,12 @@ interface Props {
   source?: SpriteSource;
   /** Trikotnummer (fehlt: keine) */
   number?: number | null;
+  /** Kapitänsbinde („C“) */
+  captain?: boolean;
 }
 
 /** Spieler auf dem Feld: Sprite über einem Namensschild – oder ein leerer, gestrichelter Slot. */
-export function PlayerToken({ pos, pokemon, sprite, source, number }: Props) {
+export function PlayerToken({ pos, pokemon, sprite, source, number, captain = false }: Props) {
   const t = useT();
   if (!pokemon) {
     return (
@@ -32,6 +34,11 @@ export function PlayerToken({ pos, pokemon, sprite, source, number }: Props) {
         {number != null && (
           <span className="token__number" aria-hidden="true">
             {number}
+          </span>
+        )}
+        {captain && (
+          <span className="token__captain" title={t.captain.title}>
+            C<span className="sr-only"> – {t.captain.title}</span>
           </span>
         )}
       </span>

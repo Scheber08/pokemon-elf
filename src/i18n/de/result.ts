@@ -15,7 +15,7 @@ const result = {
     relegated: 'Abstieg. Zeit für einen Kaderumbruch.',
   },
   explainer:
-    'Jedes Pokémon wird danach bewertet, wie gut es auf seine Position passt – aus Basiswerten, Größe, Gewicht und Typ. Torwart, Innenverteidiger und Stürmer zählen am meisten, und deine drei schwächsten Positionen ziehen das ganze Team runter. Gegner reichen von 350 bis 910.',
+    'Jedes Pokémon wird danach bewertet, wie gut es auf seine Position passt – aus Basiswerten, Größe, Gewicht und Typ. Torwart, Innenverteidiger und Stürmer zählen am meisten, und deine drei schwächsten Positionen ziehen das ganze Team runter. Die Passung deines Kapitäns zählt doppelt. Gegner reichen von 350 bis 910.',
   rankedOnline: 'Online gewertet',
   rankToday: (n: number) => `Platz ${n} heute`,
   rankAllTime: (n: number) => `Platz ${n} allzeit`,

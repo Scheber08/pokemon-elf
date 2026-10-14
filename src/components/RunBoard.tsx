@@ -22,6 +22,7 @@ import { createClickGuard } from '../lib/clickGuard';
 import type { Pokemon, SpriteStyle } from '../types';
 import { TypeBadges } from './Badges';
 import { RollCard, StatusLine, useRolling } from './ChallengeParts';
+import { CaptainPicker } from './CaptainPicker';
 import { JerseyEditor } from './JerseyEditor';
 import { useJerseys } from '../state/useJerseys';
 import { Pitch, type SlotState } from './Pitch';
@@ -50,6 +51,9 @@ interface Props {
   statusExtra?: ReactNode;
   /** Hinweise/Fehler über der Statuszeile */
   notice?: ReactNode;
+  /** Kapitän (Pokémon-ID) – wählbar, sobald die Elf steht; zählt in der Wertung doppelt */
+  captain?: number | null;
+  onCaptain?: (pokemonId: number | null) => void;
 }
 
 /**
@@ -71,6 +75,8 @@ export function RunBoard({
   onAbort,
   statusExtra,
   notice,
+  captain = null,
+  onCaptain,
 }: Props) {
   const t = useT();
   const tc = t.challenge;
@@ -310,6 +316,9 @@ export function RunBoard({
         {complete && (
           <div className="done-box card">
             <p>{tc.done}</p>
+            {onCaptain && (
+              <CaptainPicker formation={formation} slots={state.slots} captain={captain} onChange={onCaptain} disabled={finishing} />
+            )}
             <button
               type="button"
               className="btn btn--primary btn--big"
@@ -349,6 +358,7 @@ export function RunBoard({
           slotState={slotState}
           ariaLabel={tc.pitchAria(FORMATIONS[formation].label)}
           jerseys={jerseys}
+          captain={captain}
         />
       </div>
       <JerseyEditor formation={formation} slots={state.slots} ss={ssEnabled ? state.ss : null} jerseys={jerseys} onChange={setJerseys} />

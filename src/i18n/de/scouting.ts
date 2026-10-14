@@ -81,6 +81,10 @@ const scouting = {
       a: 'Die drei schwächsten Positionen zählen zusätzlich mit doppeltem Gewicht. Ein Loch zieht stärker runter, als ein Star hebt – eine ausgeglichene Elf schlägt fast immer eine Elf mit Lücken.',
     },
     {
+      q: 'Was bringt der Kapitän?',
+      a: 'Seine Positionspassung zählt im Team-Score doppelt. Ein gut passender Kapitän hebt das Team, ein schlecht passender zieht es runter – nimm also einen, der auf seiner Position glänzt. Der Standardschütze kann nicht Kapitän sein.',
+    },
+    {
       q: 'Was macht der Standardschütze?',
       a: 'Er zählt nicht zum Team-Score. In der Saison verwandelt er einen Teil der Tore aus Standards und gibt einen kleinen Bonus auf die Torerwartung – je besser Sp.-Angriff und Angriff, desto mehr.',
     },

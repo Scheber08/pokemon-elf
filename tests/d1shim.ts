@@ -81,6 +81,9 @@ export class D1Shim implements Db {
   migrate(): void {
     const files = readdirSync(MIGRATIONS_DIR).filter((f) => f.endsWith('.sql')).sort();
     for (const f of files) this.sqlite.exec(readFileSync(MIGRATIONS_DIR + f, 'utf8'));
+    // Testdatenbanken gelten als nach dem Ranglisten-Neustart (Kapitän) angelegt – sonst löschte
+    // der erste API-Aufruf die vorbereiteten Einträge (eigene Tests: captainReset.test.ts).
+    this.sqlite.exec("INSERT OR IGNORE INTO meta (key, value) VALUES ('cleanup:captain-reset-v1', '1970-01-01T00:00:00.000Z')");
   }
 
   prepare(query: string): DbStatement {

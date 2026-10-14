@@ -80,6 +80,8 @@ export interface FinishRunRequest extends DeviceAuth {
    * gespeicherte Name unverändert.
    */
   player: string;
+  /** Kapitän (Pokémon-ID aus der Elf) – fehlt/null = keiner; seine Passung zählt doppelt */
+  captain?: number | null;
 }
 
 export interface FinishRunResponse {
@@ -153,6 +155,8 @@ export interface EntryDetail {
    */
   ss: number | null;
   ssEnabled: boolean;
+  /** Kapitän (Pokémon-ID aus slots) – null ohne Kapitän */
+  captain?: number | null;
   record: Record3;
   points: number;
   score: number;

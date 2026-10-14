@@ -154,6 +154,7 @@ export async function finishRun(request: Request, env: Env): Promise<Response> {
     picks: input.picks,
     teamName: input.teamName,
     seasonSeed,
+    captain: input.captain,
   });
   if (!verified.ok) {
     const where = verified.round > 0 ? ` (Runde ${verified.round})` : '';
@@ -192,6 +193,7 @@ export async function finishRun(request: Request, env: Env): Promise<Response> {
         points,
         seasonSeed,
         createdAt: now,
+        captain: input.captain,
       },
       input.player,
       // In die Rangliste (Bestwerte) nur mit eigenem Namen – nach diesem Abschluss. Ohne ihn (alter
@@ -363,6 +365,7 @@ export function toEntryDetail(row: EntryDetailRow): EntryDetail | null {
     slots: lineup.slots,
     ss: lineup.ss,
     ssEnabled,
+    ...(typeof row.captain === 'number' && lineup.slots.includes(row.captain) ? { captain: row.captain } : {}),
     record: { w: row.wins, d: row.draws, l: row.losses },
     points: row.points,
     score: row.score,

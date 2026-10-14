@@ -128,7 +128,7 @@ export function EntryDialog({ source, onClose, onReloadBoard }: Props) {
       content = (
         <div className="entry__team">
           <div className="entry__pitch">
-            <Pitch formation={d.formation} slots={d.slots} ss={ss} sprite={sprite} ariaLabel={tr.pitchAria(info.teamName || player, d.formation)} />
+            <Pitch formation={d.formation} slots={d.slots} ss={ss} sprite={sprite} captain={d.captain ?? null} ariaLabel={tr.pitchAria(info.teamName || player, d.formation)} />
           </div>
           <TeamSheet formation={d.formation} slots={d.slots} ss={ss} sprite={sprite} title={tr.sheetTitle} />
         </div>

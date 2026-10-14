@@ -266,6 +266,7 @@ export function SeasonResultView({
               highlight={evaluation.weakest}
               ariaLabel={tr.yourTeam}
               jerseys={jerseys}
+              captain={input.captain ?? null}
             />
           </div>
           <div className="result-hero__info">

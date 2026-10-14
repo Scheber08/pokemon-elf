@@ -42,6 +42,8 @@ export interface NewEntry {
   points: number;
   seasonSeed: number;
   createdAt: number;
+  /** Kapitän (Pokémon-ID) – null/fehlt = keiner (Tabelle entry_captains) */
+  captain?: number | null;
 }
 
 /** Gespeicherter Eintrag – genug, um die Antwort eines Abschlusses zu wiederholen. */
@@ -250,6 +252,8 @@ export interface EntryDetailRow {
   created_at: number;
   /** Aktueller Name des Geräts */
   player: string;
+  /** Kapitän (entry_captains) – null ohne */
+  captain?: number | null;
 }
 
 /**
@@ -278,8 +282,9 @@ export function entryScopes(now: number): [string, string, string, string, strin
  * Parameter: id, dann die fünf Wertungen aus entryScopes.
  */
 export const ENTRY_DETAIL_SQL = `SELECT e.id, e.challenge, e.day, e.formation, e.ss_enabled, e.lineup_json, e.team_name,
-    e.score, e.wins, e.draws, e.losses, e.points, e.created_at, d.name AS player
+    e.score, e.wins, e.draws, e.losses, e.points, e.created_at, d.name AS player, c.pokemon_id AS captain
   FROM entries e JOIN devices d ON d.id = e.device_id
+  LEFT JOIN entry_captains c ON c.entry_id = e.id
   WHERE e.id = ? AND ${visibleDeviceSql('d')}
     AND EXISTS (SELECT 1 FROM best_entries b WHERE b.challenge = e.challenge AND b.scope IN (?, ?, ?, ?, ?)
       AND b.device_id = e.device_id AND b.entry_id = e.id)`;
@@ -412,6 +417,9 @@ export async function insertEntry(db: Db, e: NewEntry, player: string | null, ra
         e.createdAt,
       ),
   ];
+  if (e.captain != null) {
+    statements.push(db.prepare('INSERT OR REPLACE INTO entry_captains (entry_id, pokemon_id) VALUES (?, ?)').bind(e.id, e.captain));
+  }
   if (ranked) statements.push(upsertBest(db, e, ALL_TIME_SCOPE), upsertBest(db, e, e.day), upsertBest(db, e, weekKey(e.day)));
   if (player != null) statements.push(db.prepare(setNameSql).bind(player, e.deviceId));
   await db.batch(statements);
@@ -643,6 +651,50 @@ export async function cleanupDefaultNames(db: Db, now: number): Promise<DefaultN
     db.prepare('INSERT OR IGNORE INTO meta (key, value) VALUES (?, ?)').bind(key, new Date(now).toISOString()),
   ]);
   return { entries: entries.meta.changes, bestEntries: bestEntries.meta.changes, tokens: tokens.meta.changes };
+}
+
+// ---------------------------------------------------------------- Neustart mit Kapitän
+
+/**
+ * meta-Schlüssel des Ranglisten-Neustarts zur Einführung des Kapitäns (Wert: Zeitpunkt, ISO).
+ * Seit dem Kapitän zählt dessen Passung doppelt – alte Runs wären nicht vergleichbar.
+ */
+export const CAPTAIN_RESET_KEY = 'cleanup:captain-reset-v1';
+
+export interface CaptainReset {
+  entries: number;
+  bestEntries: number;
+  tokens: number;
+}
+
+/**
+ * Einmalig pro Datenbank: Löscht alle gewerteten Runs (entries, best_entries, entry_captains)
+ * und die schon gewerteten Run-Tokens. Offene Tokens, Geräte, Namen, Trainer, Gekauftes und
+ * Online-Ligen bleiben. Abgesichert wie cleanupDefaultNames (jede Löschung prüft den Schlüssel).
+ *
+ * @returns null, wenn der Neustart schon erledigt war
+ */
+export async function resetForCaptain(db: Db, now: number): Promise<CaptainReset | null> {
+  const key = CAPTAIN_RESET_KEY;
+  if (await db.prepare('SELECT 1 AS x FROM meta WHERE key = ?').bind(key).first()) return null;
+  const [tokens, bestEntries, entries] = await db.batch([
+    db.prepare(`DELETE FROM run_tokens WHERE entry_id IS NOT NULL AND ${CLEANUP_PENDING}`).bind(key),
+    db.prepare(`DELETE FROM best_entries WHERE ${CLEANUP_PENDING}`).bind(key),
+    db.prepare(`DELETE FROM entries WHERE ${CLEANUP_PENDING}`).bind(key),
+    db.prepare(`DELETE FROM entry_captains WHERE ${CLEANUP_PENDING}`).bind(key),
+    db.prepare('INSERT OR IGNORE INTO meta (key, value) VALUES (?, ?)').bind(key, new Date(now).toISOString()),
+  ]);
+  return { entries: entries.meta.changes, bestEntries: bestEntries.meta.changes, tokens: tokens.meta.changes };
+}
+
+/**
+ * Ab wann Käufe die Münzen belasten: seit dem Neustart (die Erfolge aus alten Runs sind weg –
+ * davor Gekauftes bleibt, kostet aber nichts mehr, so rutscht niemand ins Minus). 0 = kein Neustart.
+ */
+export async function coinsSince(db: Db): Promise<number> {
+  const row = await db.prepare('SELECT value FROM meta WHERE key = ?').bind(CAPTAIN_RESET_KEY).first<{ value: string }>();
+  const t = row ? Date.parse(row.value) : NaN;
+  return Number.isFinite(t) ? t : 0;
 }
 
 // ---------------------------------------------------------------- Wochenwertung nachtragen
