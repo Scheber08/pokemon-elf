@@ -374,6 +374,14 @@ function hat(c: Canvas, id: string, cloth: string) {
         c.dots([[cx - 2, 1]], '#f7a1bf');
       }
       break;
+    case 'leaves':
+      // Herbstkranz: Blätter in Rot, Orange und Gelb auf einem Reif
+      c.fill((x, y) => y === 9 && head(x, y), '#7a5236', null);
+      for (const [x, y, col] of [[9, 8, '#d8342a'], [12, 7, '#e8772a'], [15, 6, '#f2c230'], [18, 7, '#d8342a'], [21, 8, '#e8772a']] as const) {
+        c.fill(ellipse(x, y, 1.6, 1.3), col, shade(col, -0.35));
+      }
+      c.dots([[15, 4], [16, 5]], '#7a5236');
+      break;
     case 'wizard':
       c.fill((x, y) => y <= 9 && y >= 0 && Math.abs(x - 15.5) <= 1 + y * 0.9, '#5b3fb0');
       c.rect(6, 9, 20, 2, '#4a3191');

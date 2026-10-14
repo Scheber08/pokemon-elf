@@ -115,6 +115,7 @@ const trainer = {
       straw: 'Strohhut',
       bunny: 'Hasenohren',
       party: 'Partyhut',
+      leaves: 'Herbstkranz',
       hearts: 'Herz-Haarreif',
     },
     accessory: {
