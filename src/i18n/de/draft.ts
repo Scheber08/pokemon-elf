@@ -268,8 +268,16 @@ const draft = {
     duelAway: 'Auswärtsspiel',
     /** Auffüllteam aus der Rangliste: Name des echten Spielers */
     fillPlayerTitle: 'Team eines Spielers aus der Rangliste (34–0 Challenge)',
-    /** Längste Siegesserie der Saison (Liga) */
-    streak: (team: string, n: number, from: number, to: number) => `Längste Siegesserie: ${team}, ${n} Siege am Stück (${from}.–${to}. Spieltag)`,
+    /** Saisonrekorde (Liga) */
+    records: 'Saisonrekorde',
+    recordAttack: 'Bester Angriff',
+    recordDefense: 'Beste Abwehr',
+    recordWin: 'Höchster Sieg',
+    recordStreak: 'Längste Siegesserie',
+    recordGoals: (team: string, n: number) => `${team} – ${n} Tore`,
+    recordConceded: (team: string, n: number) => `${team} – ${n === 1 ? '1 Gegentor' : `${n} Gegentore`}`,
+    recordWinLine: (home: string, score: string, away: string, round: number) => `${home} ${score} ${away} (${round}. Spieltag)`,
+    streak: (team: string, n: number, from: number, to: number) => `${team}, ${n} Siege am Stück (${from}.–${to}. Spieltag)`,
     /** Bester später Pick */
     steal: (pokemon: string, pick: number, team: string, pos: string) => `Schnäppchen des Drafts: ${pokemon} (Pick ${pick}) für ${team} als ${pos}`,
     gradeTitle: 'Draft-Note nach Team-Score – relativ zu den anderen Teams dieser Liga (A+ bis D)',

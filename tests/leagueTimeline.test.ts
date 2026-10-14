@@ -12,7 +12,7 @@ import {
   startDraft,
 } from '../src/lib/draftEngine';
 import { buildScale } from '../src/lib/fit';
-import { longestWinStreak, recentForm,
+import { biggestWin, longestWinStreak, recentForm,
   currentMatchday,
   FINALE_MS,
   leagueTimeline,
@@ -285,5 +285,13 @@ describe('Längste Siegesserie', () => {
     const matches = [m(1, 0, 1, 1, 0), m(2, 1, 0, 0, 2), m(3, 0, 1, 1, 1), m(4, 1, 0, 2, 0), m(5, 0, 1, 0, 3), m(6, 1, 0, 1, 0)];
     expect(longestWinStreak({ teams, matches })).toEqual({ team: 1, length: 3, from: 4, to: 6 });
     expect(longestWinStreak({ teams, matches: [m(1, 0, 1, 0, 0)] })).toBeNull();
+  });
+});
+
+describe('Höchster Sieg', () => {
+  const m = (round: number, home: number, away: number, hg: number, ag: number) => ({ round, home, away, hg, ag, homeScorers: [], awayScorers: [] });
+  it('größte Differenz, dann mehr Tore, dann früher; ohne Sieg null', () => {
+    expect(biggestWin([m(1, 0, 1, 3, 0), m(2, 1, 0, 4, 1), m(3, 0, 1, 1, 4)])).toEqual(m(2, 1, 0, 4, 1));
+    expect(biggestWin([m(1, 0, 1, 1, 1)])).toBeNull();
   });
 });

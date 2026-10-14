@@ -411,7 +411,10 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     expect(container.querySelectorAll('.draft-results__table tbody tr')).toHaveLength(18);
     expect(all).toContain('Share result');
     expect(all).toMatch(/⚽ Top scorer: [^|]+ \(\d+ goals?\)/);
-    expect(all).toMatch(/Longest winning run: [^|]+, \d+ wins in a row \(matchdays \d+–\d+\)/);
+    expect(all).toContain('Season records');
+    expect(all).toMatch(/Best attack \| [^|]+ – \d+ goals/);
+    expect(all).toMatch(/Biggest win \| [^|]+ \d+:\d+ [^|]+ \(matchday \d+\)/);
+    expect(all).toMatch(/Longest winning run \| [^|]+, \d+ wins in a row \(matchdays \d+–\d+\)/);
     // Formkurve in der Abschlusstabelle (je Team fünf Punkte)
     expect(container.querySelectorAll('.draft-results__table .league-form')).toHaveLength(18);
     // Duelle des eigenen Teams

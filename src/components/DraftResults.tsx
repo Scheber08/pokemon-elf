@@ -3,7 +3,7 @@ import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftTeam } from '../lib/api/draftContract';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { draftGrades, draftShareText, draftSteal, headToHead, leagueTimeline, longestWinStreak, recentForm, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { draftGrades, draftShareText, biggestWin, draftSteal, headToHead, leagueTimeline, longestWinStreak, recentForm, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { formatRecord, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -64,6 +64,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
   const you = highlight != null && highlight >= 0 && highlight < league.teams.length ? highlight : null;
   const duels = useMemo(() => (you != null ? headToHead(league, you) : []), [league, you]);
   const streak = useMemo(() => (league.cup ? null : longestWinStreak(league)), [league]);
+  const bigWin = useMemo(() => (league.cup ? null : biggestWin(league.matches)), [league]);
 
   // Vereinsnamen der CPU-Teams erst bei der Anzeige übersetzen – gespeichert bleibt der deutsche Name
   const nameOf = useCallback(
@@ -199,9 +200,6 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
           <p className="draft-results__steal">
             {tx.steal(t.game.pokemon(stealMon), steal.pick + 1, nameOf(stealTeam), t.game.posName[steal.pos])}
           </p>
-        )}
-        {streak && streak.length >= 3 && (
-          <p className="draft-results__steal">{tx.streak(nameOf(streak.team), streak.length, streak.from, streak.to)}</p>
         )}
         {ownRow && (
           <p className="draft-results__you">
@@ -358,6 +356,44 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
             </ol>
           )}
         </section>
+
+        {!cup && table.length > 1 && (
+          <section className="card" aria-labelledby="draft-results-records">
+            <h2 id="draft-results-records" className="section-title">
+              {tx.records}
+            </h2>
+            <dl className="draft-records">
+              {(() => {
+                const attack = table.reduce((a, b) => (b.gf > a.gf ? b : a));
+                const defense = table.reduce((a, b) => (b.ga < a.ga ? b : a));
+                return (
+                  <>
+                    <div>
+                      <dt>{tx.recordAttack}</dt>
+                      <dd>{tx.recordGoals(nameOf(attack.team), attack.gf)}</dd>
+                    </div>
+                    <div>
+                      <dt>{tx.recordDefense}</dt>
+                      <dd>{tx.recordConceded(nameOf(defense.team), defense.ga)}</dd>
+                    </div>
+                  </>
+                );
+              })()}
+              {bigWin && (
+                <div>
+                  <dt>{tx.recordWin}</dt>
+                  <dd>{tx.recordWinLine(nameOf(bigWin.home), `${bigWin.hg}:${bigWin.ag}`, nameOf(bigWin.away), bigWin.round)}</dd>
+                </div>
+              )}
+              {streak && streak.length >= 3 && (
+                <div>
+                  <dt>{tx.recordStreak}</dt>
+                  <dd>{tx.streak(nameOf(streak.team), streak.length, streak.from, streak.to)}</dd>
+                </div>
+              )}
+            </dl>
+          </section>
+        )}
 
         {duels.length > 0 && (
           <section className="card" aria-labelledby="draft-results-duels">

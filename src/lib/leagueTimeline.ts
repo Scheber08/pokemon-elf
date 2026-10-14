@@ -525,3 +525,17 @@ export function longestWinStreak(league: Pick<LeagueResult, 'matches' | 'teams'>
   }
   return best;
 }
+
+/** Höchster Sieg der Saison (größte Tordifferenz, dann mehr Tore, dann früherer Spieltag) – null ohne Sieg. */
+export function biggestWin(matches: readonly Match[]): Match | null {
+  let best: Match | null = null;
+  for (const m of matches) {
+    const diff = Math.abs(m.hg - m.ag);
+    if (!diff) continue;
+    const bd = best ? Math.abs(best.hg - best.ag) : -1;
+    if (!best || diff > bd || (diff === bd && (m.hg + m.ag > best.hg + best.ag || (m.hg + m.ag === best.hg + best.ag && m.round < best.round)))) {
+      best = m;
+    }
+  }
+  return best;
+}

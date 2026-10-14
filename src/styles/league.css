@@ -955,3 +955,20 @@
   font-size: 1.1rem;
   overflow-wrap: anywhere;
 }
+
+/* Saisonrekorde */
+.draft-records {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.draft-records dt {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+.draft-records dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+}
