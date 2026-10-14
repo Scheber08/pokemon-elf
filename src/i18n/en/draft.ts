@@ -470,6 +470,10 @@ const draft: Messages['draft'] = {
     formNote: (fit) => `Each form step shifts the fit by ${fit} points. The form applies to the next matchday.`,
     lastResults: (n) => `Results matchday ${n}`,
     starTitle: 'Player of the matchday:',
+    rivalTitle: 'Next opponent',
+    rivalHome: 'home',
+    rivalAway: 'away',
+    rivalPlace: (n) => `${n}${n % 10 === 1 && n % 100 !== 11 ? 'st' : n % 10 === 2 && n % 100 !== 12 ? 'nd' : n % 10 === 3 && n % 100 !== 13 ? 'rd' : 'th'} place`,
     starLine: (goals, assists) =>
       [goals ? `${goals} ${goals === 1 ? 'goal' : 'goals'}` : '', assists ? `${assists} ${assists === 1 ? 'assist' : 'assists'}` : '']
         .filter(Boolean)

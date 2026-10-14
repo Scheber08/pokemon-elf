@@ -512,6 +512,10 @@ const draft = {
     formNote: (fit: number) => `Jede Formstufe verschiebt den Fit um ${fit} Punkte. Die Form gilt für den nächsten Spieltag.`,
     lastResults: (n: number) => `Ergebnisse Spieltag ${n}`,
     starTitle: 'Spieler des Spieltags:',
+    rivalTitle: 'Nächster Gegner',
+    rivalHome: 'Heimspiel',
+    rivalAway: 'Auswärtsspiel',
+    rivalPlace: (n: number) => `Platz ${n}`,
     starLine: (goals: number, assists: number) =>
       [goals ? `${goals} ${goals === 1 ? 'Tor' : 'Tore'}` : '', assists ? `${assists} ${assists === 1 ? 'Vorlage' : 'Vorlagen'}` : '']
         .filter(Boolean)

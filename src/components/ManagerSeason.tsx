@@ -3,7 +3,7 @@ import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerClaim, ManagerLineup } from '../lib/api/draftContract';
 import { rosterOf } from '../lib/draftEngine';
-import { matchFor, playerOfRound, storedLeague } from '../lib/leagueTimeline';
+import { matchFor, playerOfRound, recentForm, storedLeague } from '../lib/leagueTimeline';
 import { showNotify } from '../lib/notify';
 import { bestLineup, FORM_FIT, formFit, freeAgents, lineupScore, managerSchedule } from '../lib/manager';
 import { positionFit } from '../lib/fit';
@@ -14,7 +14,7 @@ import { teamLabel, type DraftRoom } from '../state/useDraftRoom';
 import type { FormationId, Pokemon, PosCode } from '../types';
 import { PosBadge } from './Badges';
 import { BenchRow } from './BenchRow';
-import { FixtureList } from './LeagueTicker';
+import { FixtureList, FormDots } from './LeagueTicker';
 import { ReplayToggle, useMatchReport } from './MatchReport';
 import { SeasonStats } from './SeasonStats';
 import { Sprite } from './Sprite';
@@ -145,6 +145,10 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
   const last = m.played > 0 ? league.matches.filter((x) => x.round === m.played) : [];
   const lastTransfers = (m.transfers ?? []).filter((x) => x.matchday === m.played);
   const star = playerOfRound(last);
+  // Nächster Gegner: Tabellenplatz und Form (letzte fünf Spiele)
+  const myNext = you != null ? upcoming.find((x) => x.home === you || x.away === you) : undefined;
+  const rival = myNext ? (myNext.home === you ? myNext.away : myNext.home) : null;
+  const rivalPlace = rival != null ? league.table.findIndex((r) => r.team === rival) + 1 : 0;
   const when = m.nextAt != null ? new Date(m.nextAt - room.clockOffset).toLocaleString(localeOf(lang), { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : '';
 
   return (
@@ -159,6 +163,23 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           </p>
         )}
       </section>
+
+      {rival != null && myNext && (
+        <section className="card manager__rival" aria-labelledby="manager-rival">
+          <h2 id="manager-rival" className="section-title">
+            {tx.rivalTitle}
+          </h2>
+          <p>
+            <strong>{nameOf(rival)}</strong> <span className="muted">({myNext.home === you ? tx.rivalHome : tx.rivalAway})</span>
+          </p>
+          {m.played > 0 && (
+            <p className="manager__rival-line">
+              {rivalPlace > 0 && <span>{tx.rivalPlace(rivalPlace)}</span>}
+              <FormDots form={recentForm(league.matches, rival, m.played)} />
+            </p>
+          )}
+        </section>
+      )}
 
       {room.me && !readOnly && m.lineups[room.me.id] ? (
         <LineupEditor

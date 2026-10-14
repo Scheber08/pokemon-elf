@@ -1274,3 +1274,13 @@ button.draft-bench__slot {
   width: 32px;
   height: 32px;
 }
+
+/* Manager-Saison: nächster Gegner */
+.manager__rival p {
+  margin: 4px 0 0;
+}
+.manager__rival-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
