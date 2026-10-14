@@ -558,6 +558,7 @@ const draft = {
     offerIn: (team: string, give: string, get: string) => `${team} bietet ${give} für deinen ${get}`,
     offerOut: (team: string, give: string, get: string) => `Dein Angebot an ${team}: ${give} für ${get}`,
     tradeDone: (out: string, team: string, inn: string) => `Getauscht: ${out} an ${team}, dafür ${inn}`,
+    offerCpuExpires: 'gilt bis zum Anpfiff',
     offerAccept: 'Annehmen',
     offerDecline: 'Ablehnen',
     offerWithdraw: 'Zurückziehen',

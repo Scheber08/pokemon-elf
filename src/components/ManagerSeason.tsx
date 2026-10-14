@@ -739,7 +739,10 @@ function TradePanel({
         <ul className="manager__offers">
           {incoming.map((o) => (
             <li key={o.id} className="hint hint--active">
-              <span>{tx.offerIn(nameOf(o.from), name(o.give), name(o.get))}</span>
+              <span>
+                {tx.offerIn(nameOf(o.from), name(o.give), name(o.get))}
+                {state.teams.find((x) => x.id === o.from)?.cpu && <small className="muted"> · {tx.offerCpuExpires}</small>}
+              </span>
               <span className="manager__offer-actions">
                 <button type="button" className="btn btn--small" onClick={() => onAnswer(o.id, true)}>
                   {tx.offerAccept}
