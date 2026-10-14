@@ -165,9 +165,9 @@ export function JoinByCode() {
 }
 
 /** Ligen, in denen dieses Gerät mitspielt – zum Zurückkehren ohne Link (nur lokal gespeichert). */
-export function RecentLeagues() {
+export function RecentLeagues({ only }: { only?: 'manager' } = {}) {
   const t = useT();
-  const [leagues] = useState(() => loadRecentLeagues());
+  const [leagues] = useState(() => loadRecentLeagues().filter((l) => !only || l.format === only));
   if (!leagues.length) return null;
   return (
     <section className="card draft-lobbies" aria-labelledby="draft-recent-title">
@@ -181,6 +181,7 @@ export function RecentLeagues() {
               <strong className="draft-lobbies__name">{l.name || t.online.leagueFallback(l.code)}</strong>
               <span className="draft-lobbies__facts">
                 <span>{l.team}</span>
+                {l.format === 'manager' && !only && <span className="draft-tag">{t.nav.tabs.manager}</span>}
                 <span>{phaseLabel(l.phase, t)}</span>
                 <span>{ago(l.at, t)}</span>
               </span>

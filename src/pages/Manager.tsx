@@ -62,7 +62,7 @@ export function Manager() {
         <div className="draft-online__grid">
           <CreateLeague preset={{ format: 'manager' }} storageKey="manager:settings" title={tx.createTitle} />
           <div className="draft-online__side">
-            <RecentLeagues />
+            <RecentLeagues only="manager" />
             <JoinByCode />
             <p className="muted small">
               {tx.otherModes} <Link to="/draft">{t.nav.tabs.draft}</Link>

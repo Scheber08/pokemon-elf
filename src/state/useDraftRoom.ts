@@ -322,6 +322,8 @@ export interface RecentLeague {
   phase: DraftSnapshot['phase'];
   /** Zuletzt gesehen (ms) */
   at: number;
+  /** Spielmodus (fehlt bei älteren Einträgen = Liga) */
+  format?: DraftSettings['format'];
 }
 
 const RECENT_KEY = 'draft-online:recent';
@@ -338,11 +340,11 @@ export function loadRecentLeagues(now = Date.now()): RecentLeague[] {
 export function rememberLeague(snap: DraftSnapshot, now = Date.now()): void {
   const me = snap.you ? snap.teams.find((t) => t.id === snap.you) : undefined;
   if (!me) return;
-  const entry: RecentLeague = { code: snap.code, name: snap.settings.name, team: me.name, phase: snap.phase, at: now };
+  const entry: RecentLeague = { code: snap.code, name: snap.settings.name, team: me.name, phase: snap.phase, at: now, format: snap.settings.format };
   const prev = loadRecentLeagues(now);
   const same = prev.find((l) => l.code === entry.code);
   // Nur speichern, wenn sich etwas Sichtbares ändert (nicht bei jedem Pick)
-  if (same && same.name === entry.name && same.team === entry.team && same.phase === entry.phase && now - same.at < 3_600_000) return;
+  if (same && same.name === entry.name && same.team === entry.team && same.phase === entry.phase && same.format === entry.format && now - same.at < 3_600_000) return;
   save(RECENT_KEY, [entry, ...prev.filter((l) => l.code !== entry.code)].slice(0, RECENT_MAX));
 }
 
