@@ -429,7 +429,8 @@ describe('DraftLive (en)', () => {
     expect(container.querySelector('.draft-turnbar__last')!.textContent).toBe(`Last pick: ${mon.en} → Host FC (auto)`);
     expect(container.querySelector('.draft-hostauto button')!.textContent).toBe('Pick automatically for Team 1');
     expect(container.querySelector('p.hint')!.textContent).toBe(
-      'Team 1 is on the clock. You can already browse and shortlist a favourite.',
+      // Snake mit zwei Teams: Team 1 wählt zweimal hintereinander
+      'Team 1 is on the clock. You can already browse and shortlist a favourite. 2 picks until your turn.',
     );
     expectEnglishIn(container, '.draft-turnbar, .draft-live [aria-live], .draft-hostauto, p.hint, .draft-timer');
   });

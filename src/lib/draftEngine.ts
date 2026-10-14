@@ -820,6 +820,21 @@ export function currentTeam(state: DraftView): DraftTeam | null {
   return state.teams[teamIndexForPick(state.pickIndex, state.teams.length, state.settings.snake ?? true)] ?? null;
 }
 
+/**
+ * Wie viele Picks vor dem nächsten eigenen liegen (0 = man ist dran) – null, wenn das Team im
+ * Draft nicht mehr wählt (oder gar nicht dabei ist).
+ */
+export function picksUntilTurn(state: DraftView, teamId: string): number | null {
+  if (state.phase !== 'drafting') return null;
+  const idx = state.teams.findIndex((t) => t.id === teamId);
+  if (idx < 0) return null;
+  const total = state.teams.length * rounds(state.settings);
+  for (let p = state.pickIndex; p < total; p++) {
+    if (teamIndexForPick(p, state.teams.length, state.settings.snake ?? true) === idx) return p - state.pickIndex;
+  }
+  return null;
+}
+
 export function draftedIds(state: Pick<DraftState, 'teams'>): Set<number> {
   const ids = new Set<number>();
   for (const t of state.teams) {

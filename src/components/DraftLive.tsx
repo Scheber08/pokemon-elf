@@ -20,6 +20,7 @@ import {
   poolOf,
   rerollsLeft,
   rerollUsable,
+  picksUntilTurn,
 } from '../lib/draftEngine';
 import { positionFit } from '../lib/fit';
 import { usePokemonData } from '../state/PokemonData';
@@ -360,7 +361,13 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
       {t.online.hintQueued}
     </>
   ) : (
-    t.online.hintWaiting(current ? teamLabel(current, t) : t.online.anotherTeam)
+    <>
+      {t.online.hintWaiting(current ? teamLabel(current, t) : t.online.anotherTeam)}
+      {me && (() => {
+        const n = picksUntilTurn(s, me.id);
+        return n != null && n > 0 ? t.online.hintUntil(n) : null;
+      })()}
+    </>
   );
 
   // Abwesendes Team am Zug: jedes Mitglied darf nach der Frist für es wählen (Server prüft dasselbe)

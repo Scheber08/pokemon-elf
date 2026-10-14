@@ -177,6 +177,8 @@ const online = {
   hintQueued: ' ist vorgemerkt. Sobald du dran bist, klickst du auf einen freien Platz.',
   hintWaiting: (team: string) => `${team} ist dran. Du kannst schon stöbern und einen Favoriten vormerken.`,
   anotherTeam: 'Ein anderes Team',
+  /** Hinter hintWaiting, mit Leerzeichen vorn */
+  hintUntil: (n: number) => (n === 1 ? ' Danach bist du dran.' : ` Noch ${n} Picks bis zu deinem Zug.`),
   round: 'Runde',
   pick: 'Pick',
   onTheClock: 'Am Zug:',

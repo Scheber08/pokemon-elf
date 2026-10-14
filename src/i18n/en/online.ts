@@ -164,6 +164,7 @@ const online: Messages['online'] = {
   hintQueued: ' is shortlisted. Once it’s your turn, click a free spot.',
   hintWaiting: (team) => `${team} is on the clock. You can already browse and shortlist a favourite.`,
   anotherTeam: 'Another team',
+  hintUntil: (n) => (n === 1 ? ' You’re up next.' : ` ${n} picks until your turn.`),
   round: 'Round',
   pick: 'Pick',
   onTheClock: 'On the clock:',

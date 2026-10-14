@@ -991,3 +991,19 @@ describe('Lobby mit neuen Einstellungen', () => {
     expect(codeOf(() => updateSettings(s, 'dev-1', { roll: 'pick' }, ALL))).toBe('not_host');
   });
 });
+
+describe('Picks bis zum eigenen Zug', () => {
+  it('Snake: zählt bis zum nächsten eigenen Pick, null außerhalb des Drafts', async () => {
+    const { picksUntilTurn } = await import('../src/lib/draftEngine');
+    const base = { phase: 'drafting' as const, roll: null, teams: ['a', 'b', 'c'].map((id) => ({ id })) as never, settings: { setPiece: false, snake: true } as never };
+    // Runde 1: a b c, Runde 2: c b a
+    expect(picksUntilTurn({ ...base, pickIndex: 0 }, 'a')).toBe(0);
+    expect(picksUntilTurn({ ...base, pickIndex: 1 }, 'a')).toBe(4);
+    expect(picksUntilTurn({ ...base, pickIndex: 1 }, 'c')).toBe(1);
+    expect(picksUntilTurn({ ...base, pickIndex: 3 }, 'c')).toBe(0);
+    expect(picksUntilTurn({ ...base, pickIndex: 1, settings: { setPiece: false, snake: false } as never }, 'a')).toBe(2);
+    expect(picksUntilTurn({ ...base, pickIndex: 32 }, 'a')).toBeNull();
+    expect(picksUntilTurn({ ...base, phase: 'done', pickIndex: 0 }, 'a')).toBeNull();
+    expect(picksUntilTurn({ ...base, pickIndex: 0 }, 'x')).toBeNull();
+  });
+});
