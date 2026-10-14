@@ -16,7 +16,7 @@ import { positionFit } from '../lib/fit';
 import { emptySlots } from '../lib/formation';
 import { draftGrades } from '../lib/leagueTimeline';
 import { createRng, gaussian, randomSeed, shuffle } from '../lib/rng';
-import { simulateLeague, type LeagueTeam } from '../lib/season';
+import { CLASSIC_MODEL, DRAFT_MODEL, simulateLeague, type LeagueTeam } from '../lib/season';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
 import { evaluateTeam } from '../lib/teamScore';
 import { usePokemonData } from '../state/PokemonData';
@@ -49,6 +49,11 @@ interface DraftState {
   pick: number;
   selected: number | null;
   seed: number | null;
+  /**
+   * Spielmodell der Liga: 'draft' (wie der Online-Draft – Tagesform, realistischere Ergebnisse) für
+   * neue Ligen; fehlt bei älteren gespeicherten Ligen → klassisch, damit sie gleich bleiben.
+   */
+  model?: 'draft';
 }
 
 function defaultTeams(n: number): DraftTeam[] {
@@ -142,6 +147,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
         selected: null,
         phase: pick >= s.teams.length * ROUNDS ? 'league' : 'drafting',
         seed: pick >= s.teams.length * ROUNDS ? randomSeed() : s.seed,
+        ...(pick >= s.teams.length * ROUNDS ? { model: 'draft' as const } : {}),
       };
     });
 
@@ -225,7 +231,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
         squad: players.flatMap((p, i) => (p ? [{ pokemonId: p.id, pos: defs[i].pos, atk: p.atk, spa: p.spa }] : [])),
       };
     });
-    const result = simulateLeague(leagueTeams, createRng(state.seed));
+    const result = simulateLeague(leagueTeams, createRng(state.seed), state.model === 'draft' ? DRAFT_MODEL : CLASSIC_MODEL);
     const scorers = new Map<number, { id: number; team: number; goals: number }>();
     for (const m of result.matches) {
       for (const [team, goals] of [
@@ -240,7 +246,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
       }
     }
     return { ...result, scorers: [...scorers.values()].sort((a, b) => b.goals - a.goals).slice(0, 10) };
-  }, [state.phase, state.seed, state.teams, byId, scale]);
+  }, [state.phase, state.seed, state.model, state.teams, byId, scale]);
 
   if (state.phase === 'setup') {
     return (
@@ -462,7 +468,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           ))}
         </section>
         <div className="actionbar">
-          <button type="button" className="btn btn--primary" onClick={() => setState((s) => ({ ...s, seed: randomSeed() }))}>
+          <button type="button" className="btn btn--primary" onClick={() => setState((s) => ({ ...s, seed: randomSeed(), model: 'draft' }))}>
             {tx.replay}
           </button>
           <button type="button" className="btn" onClick={reset}>
