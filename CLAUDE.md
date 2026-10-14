@@ -55,10 +55,11 @@ Saison auf 18 Teams mit Ranglisten-Teams aufgefüllt, KO-Turnier mit optionaler 
 (Bank, Spieltage im Takt, Aufstellung, Tagesform je Pokémon), Erfolge mit Münzen, eigener Trainer mit
 Cosmetics-Shop (auch in Rangliste, Profil und Draft), Transfermarkt und Erinnerung vor dem Anpfiff in der
 Manager-Saison, eigener Menüpunkt „Manager", Spielbericht + 2D-Wiedergabe in allen Modi (einstellbar),
-Erfolge für die Manager-Saison, Hinweis „Erfolg freigeschaltet" nach Runs und Ligen.
+Erfolge für die Manager-Saison, Hinweis „Erfolg freigeschaltet" nach Runs und Ligen, Saisonartikel im Shop
+(Halloween, Weihnachten), Spieler des Spieltags.
 
 1. Tausch-Angebote zwischen Teams in der Manager-Saison (mit dem Besitzer abgestimmt)
-2. Mehr Cosmetics (z. B. saisonale Items)
+2. Weitere Saisons im Shop (z. B. Ostern, Sommer) – neue Einträge mit `seasonal(...)` in `src/lib/trainer.ts`
 
 ## Daten
 

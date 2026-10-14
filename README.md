@@ -205,7 +205,8 @@ Spielerprofile `/spieler/:id` (Name, gewertete Runs, bester Allzeit-Platz).
 **Spielwiedergabe** (alle Modi): Ein Klick aufs Ergebnis öffnet den Spielbericht (`src/components/MatchReport.tsx`,
 Statistik, Torschützen mit Vorlagen) oder die 2D-Ansicht von oben (`src/lib/matchReplay.ts`,
 `src/components/MatchPitch.tsx`: Formationen mit Pokémon-Sprites, Ballwege, Schüsse und die echten Tore – reine
-Illustration, das Ergebnis ändert sich nicht). In den Einstellungen bzw. per Umschalter: 2D, Bericht oder aus.
+Illustration, das Ergebnis ändert sich nicht; Tempo 1×/2×/4×, „⏭ Tor“, Leertaste/N, „TOR!“-Einblendung). In den
+Einstellungen bzw. per Umschalter: 2D, Bericht oder aus. In der Manager-Saison zusätzlich der Spieler des Spieltags.
 
 ## Trainer & Erfolge
 
@@ -216,6 +217,8 @@ Dafür gibt es Cosmetics für den selbst gestalteten **Trainer** (`src/lib/train
 `src/components/TrainerAvatar.tsx`): Haut, Frisur, Haarfarbe, Kleidung, Kopfbedeckung, Accessoire, Hintergrund,
 Begleiter-Pokémon und Titel. `POST /api/me/buy` kauft atomar (nur wenn die Münzen nach allen Käufen reichen,
 `trainer_items`), `POST /api/me/trainer` speichert den Look (`trainers`, nur Freies und Gekauftes).
+**Saisonartikel** (`season` im Katalog, `itemOnSale`): nur in ihrem Zeitraum kaufbar (Halloween 1.10.–7.11.,
+Weihnachten 1.12.–6.1.), sonst `400 not_on_sale`; Gekauftes bleibt tragbar.
 
 ## Deploy auf Cloudflare
 
