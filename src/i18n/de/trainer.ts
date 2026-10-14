@@ -209,6 +209,7 @@ const trainer = {
     draft_title: { name: 'Meister', desc: 'Gewinne eine Online-Liga.' },
     draft_cup: { name: 'Pokalsieger', desc: 'Gewinne ein KO-Turnier im Online-Draft.' },
     manager_first: { name: 'Erste Saison', desc: 'Spiele eine Manager-Saison zu Ende.' },
+    manager_podium: { name: 'Aufs Treppchen', desc: 'Beende eine Manager-Saison auf Platz 1 bis 3.' },
     manager_5: { name: 'Alter Hase', desc: 'Spiele 5 Manager-Saisons zu Ende.' },
     draft_manager: { name: 'Meistertrainer', desc: 'Gewinne eine Manager-Saison.' },
     draft_unbeaten: { name: 'Ungeschlagen', desc: 'Eine Online-Liga oder Manager-Saison ohne Niederlage.' },

@@ -44,6 +44,7 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
            SUM(CASE WHEN rank = 1 AND format = 'manager' THEN 1 ELSE 0 END) AS manager,
            SUM(CASE WHEN rank <= 3 THEN 1 ELSE 0 END) AS podiums,
            SUM(CASE WHEN format = 'manager' THEN 1 ELSE 0 END) AS seasons,
+           SUM(CASE WHEN format = 'manager' AND rank <= 3 THEN 1 ELSE 0 END) AS manager_podiums,
            SUM(CASE WHEN losses = 0 AND format != 'cup' AND wins + draws > 0 THEN 1 ELSE 0 END) AS unbeaten
          FROM draft_results WHERE device_id = ?`,
       )
@@ -78,6 +79,7 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
       podiums: num(d.podiums),
       unbeaten: num(d.unbeaten),
       seasons: num(d.seasons),
+      managerPodiums: num(d.manager_podiums),
     },
   };
 }

@@ -31,6 +31,8 @@ export interface AchievementStats {
     unbeaten?: number;
     /** Gespielte Manager-Saisons (fehlt bei älteren Antworten = 0) */
     seasons?: number;
+    /** Manager-Saisons auf Platz 1–3 (fehlt bei älteren Antworten = 0) */
+    managerPodiums?: number;
   };
 }
 
@@ -84,6 +86,7 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'draft_title', category: 'draft', coins: 300, goal: 1, value: (s) => s.draft.titles },
   { id: 'draft_cup', category: 'draft', coins: 300, goal: 1, value: (s) => s.draft.cups },
   { id: 'manager_first', category: 'draft', coins: 150, goal: 1, value: (s) => s.draft.seasons ?? 0 },
+  { id: 'manager_podium', category: 'draft', coins: 250, goal: 1, value: (s) => s.draft.managerPodiums ?? 0 },
   { id: 'manager_5', category: 'draft', coins: 400, goal: 5, value: (s) => s.draft.seasons ?? 0 },
   { id: 'draft_manager', category: 'draft', coins: 400, goal: 1, value: (s) => s.draft.manager },
   { id: 'draft_unbeaten', category: 'draft', coins: 500, goal: 1, value: (s) => s.draft.unbeaten ?? 0 },

@@ -15,7 +15,7 @@ const EMPTY: AchievementStats = {
   dailyStreak: 0,
   dailyWins: 0,
   bestPlace: null,
-  draft: { leagues: 0, titles: 0, cups: 0, manager: 0, podiums: 0, unbeaten: 0, seasons: 0 },
+  draft: { leagues: 0, titles: 0, cups: 0, manager: 0, podiums: 0, unbeaten: 0, seasons: 0, managerPodiums: 0 },
 };
 
 const hex = (bytes: number) => Array.from(crypto.getRandomValues(new Uint8Array(bytes)), (b) => b.toString(16).padStart(2, '0')).join('');
@@ -130,7 +130,7 @@ describe('Kennzahlen und /api/me', () => {
     expect(s.dailyStreak).toBe(3);
     expect(s.dailyWins).toBe(1);
     expect(s.bestPlace).toBe(1);
-    expect(s.draft).toEqual({ leagues: 1, titles: 0, cups: 1, manager: 0, podiums: 1, unbeaten: 0, seasons: 0 });
+    expect(s.draft).toEqual({ leagues: 1, titles: 0, cups: 1, manager: 0, podiums: 1, unbeaten: 0, seasons: 0, managerPodiums: 0 });
     // Doppelt gespeichert (Neuversuch) zählt nicht doppelt
     expect(db.query('SELECT * FROM draft_results')).toHaveLength(1);
     // Manager-Saison als Zweiter: zählt als Saison, nicht als Titel
@@ -149,7 +149,7 @@ describe('Kennzahlen und /api/me', () => {
       2,
     );
     const m = await achievementStats(db, dev, '2026-10-14');
-    expect(m.draft).toMatchObject({ leagues: 2, manager: 0, seasons: 1 });
+    expect(m.draft).toMatchObject({ leagues: 2, manager: 0, seasons: 1, managerPodiums: 1 });
     expect(achievementStates(m).find((a) => a.id === 'manager_first')?.done).toBe(true);
   });
 

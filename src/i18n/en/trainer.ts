@@ -210,6 +210,7 @@ const trainer: Messages['trainer'] = {
     draft_title: { name: 'Champion', desc: 'Win an online league.' },
     draft_cup: { name: 'Cup winner', desc: 'Win a knockout cup in the online draft.' },
     manager_first: { name: 'First season', desc: 'Finish a manager season.' },
+    manager_podium: { name: 'On the podium', desc: 'Finish a manager season in the top 3.' },
     manager_5: { name: 'Old hand', desc: 'Finish 5 manager seasons.' },
     draft_manager: { name: 'Master trainer', desc: 'Win a manager season.' },
     draft_unbeaten: { name: 'Unbeaten', desc: 'An online league or manager season without a defeat.' },
