@@ -60,6 +60,34 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
   const minute = Math.max(1, Math.min(Math.ceil(time), 95));
   // Sprung kurz vor das nächste Tor (Vorlage und Abschluss bleiben sichtbar)
   const nextGoal = replay.events.find((e) => e.kind === 'goal' && e.t - 1.5 > time + 0.05);
+  const togglePlay = () => {
+    if (time >= replay.end) setTime(0);
+    setPlaying((x) => !x);
+  };
+  const skipToGoal = () => {
+    if (!nextGoal) return;
+    setTime(Math.max(0, nextGoal.t - 1.5));
+    setPlaying(true);
+  };
+
+  // Tastatur: Leertaste = Abspielen/Pause, N = nächstes Tor (nicht in Eingabefeldern bzw. auf Knöpfen,
+  // die die Leertaste selbst auslösen)
+  const keys = useRef({ togglePlay, skipToGoal });
+  keys.current = { togglePlay, skipToGoal };
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (e.key === ' ' && tag !== 'BUTTON' && tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+        e.preventDefault();
+        keys.current.togglePlay();
+      } else if ((e.key === 'n' || e.key === 'N') && tag !== 'INPUT' && tag !== 'TEXTAREA') {
+        keys.current.skipToGoal();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   return (
     <div className="match-pitch">
@@ -125,10 +153,8 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
         <button
           type="button"
           className="btn btn--small"
-          onClick={() => {
-            if (time >= replay.end) setTime(0);
-            setPlaying((x) => !x);
-          }}
+          title={tx.playKey}
+          onClick={togglePlay}
         >
           {playing ? tx.pause : time >= replay.end ? tx.again : tx.play}
         </button>
@@ -149,11 +175,7 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
           className="btn btn--small btn--ghost match-pitch__skip"
           disabled={!nextGoal}
           title={tx.nextGoal}
-          onClick={() => {
-            if (!nextGoal) return;
-            setTime(Math.max(0, nextGoal.t - 1.5));
-            setPlaying(true);
-          }}
+          onClick={skipToGoal}
         >
           {tx.nextGoalShort}
         </button>

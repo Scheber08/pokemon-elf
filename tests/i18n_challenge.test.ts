@@ -6,7 +6,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ALL } from './helpers';
-import { installMiniDom, type MiniElement } from './miniDom';
+import { installMiniDom, MiniEvent, type MiniElement } from './miniDom';
 
 const doc = installMiniDom();
 // React-DOM und alles mit UI erst nach dem Mini-DOM laden (React prüft beim Laden, ob es ein DOM gibt)
@@ -451,6 +451,17 @@ describe('Saisonbilanz und Ticker', () => {
     }
     expect(goals).toBeGreaterThan(0);
     expect(jumps).toBe(goals);
+    // Tastatur: Leertaste schaltet Abspielen/Pause
+    const play = () => document.body.querySelector('.match-pitch__controls .btn') as unknown as { textContent: string };
+    const key = (k: string) =>
+      act(async () => {
+        window.dispatchEvent(Object.assign(new MiniEvent('keydown', { bubbles: true, cancelable: true }), { key: k }) as unknown as Event);
+      });
+    expect(play().textContent).toBe('Pause');
+    await key(' ');
+    expect(play().textContent).toBe('Abspielen');
+    await key(' ');
+    expect(play().textContent).toBe('Pause');
     // Dialog zu, Wiedergabe ausschalten
     const close = document.body.querySelector('.modal .icon-btn') as unknown as { click(): void };
     await act(async () => close.click());
