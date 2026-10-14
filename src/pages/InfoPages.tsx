@@ -26,6 +26,12 @@ export function About() {
           <Link to="/scouting">{a.guideLink}</Link>
           {a.guidePost}
         </p>
+        <h2 className="section-title">{a.newsTitle}</h2>
+        <ul>
+          {a.news.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
         <h2 className="section-title">{a.contactTitle}</h2>
         <p>{a.contact}</p>
         <p className="muted small">{a.disclaimer}</p>

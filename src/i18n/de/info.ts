@@ -13,6 +13,17 @@ const info = {
     guidePre: 'Wie bewertet wird, steht im ',
     guideLink: 'Scouting-Guide',
     guidePost: '.',
+    /** „Was ist neu?" – die wichtigsten Neuerungen, neueste zuerst */
+    newsTitle: 'Was ist neu?',
+    news: [
+      'Online-Draft: Ultrabestien, Megas und Formen – je mit eigenem Limit pro Team',
+      'Online-Draft: Revanche mit ewiger Tabelle, Wunschliste für Auto-Picks, Emoji-Reaktionen und QR-Code zum Beitreten',
+      'Online-Draft: Draft-Noten, Schnäppchen des Drafts, „Deine Duelle“ und Toptorjäger je Team im Ergebnis',
+      'Rangliste: Wochenwertung, Teams ansehen, Testspiel gegen deine Elf und Spielerprofile mit Allzeit-Platz',
+      'Tägliche Elf: Serie und Archiv der letzten Tage',
+      'Builder: Megas und Formen, „Beste Elf“, Sortierung nach Positions-Fit, Rückgängig und Wiederholen',
+      'Installierbar als App (PWA) und Link-Vorschauen für Ligen und Profile',
+    ],
     contactTitle: 'Kontakt',
     contact:
       'Feedback, Fehler oder Ideen? Am besten als Issue im Repository des Projekts oder per E-Mail an die im Impressum des Betreibers genannte Adresse.',

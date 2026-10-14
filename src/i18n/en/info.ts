@@ -12,6 +12,16 @@ const info: Messages['info'] = {
     guidePre: 'How teams are rated is explained in the ',
     guideLink: 'Scouting guide',
     guidePost: '.',
+    newsTitle: 'What’s new?',
+    news: [
+      'Online draft: Ultra Beasts, Megas and forms – each with its own per-team limit',
+      'Online draft: rematch with an all-time table, a wishlist for auto-picks, emoji reactions and a QR code to join',
+      'Online draft: draft grades, steal of the draft, “Your head-to-heads” and each team’s top scorer in the result',
+      'Leaderboard: weekly ranking, view teams, friendly against your XI and player profiles with all-time rank',
+      'Daily XI: streak and archive of recent days',
+      'Builder: Megas and forms, “Best XI”, sorting by positional fit, undo and redo',
+      'Installable as an app (PWA) and link previews for leagues and profiles',
+    ],
     contactTitle: 'Contact',
     contact:
       'Feedback, bugs or ideas? Ideally as an issue in the project’s repository, or by email to the address given in the operator’s legal notice (Impressum).',
