@@ -34,6 +34,12 @@ die sechs Basiswerte, Größe in m, Gewicht in kg, Generation, `leg`/`myth` und 
 Sprite-Varianten existieren. Antworten werden in `scripts/.cache/` zwischengespeichert
 (`npm run data -- --fresh` ignoriert den Cache).
 
+**Formen** (`npm run data:forms`, `scripts/build-forms.mjs`): Megas inkl. Proto-Formen, Regionalformen und
+Sonderformen landen in `public/data/forms.json` (IDs ab 10001, `base` = Art, `form` = mega/regional/other).
+Quelle sind die CSV-Dateien der PokeAPI auf GitHub. Nur Builder und Draft nutzen sie – `pokemon.json`
+(Challenges, Skala, gespeicherte Runs) bleibt unverändert. Ultrabestien sind eine feste Liste
+(`src/config/categories.ts`).
+
 Sprites kommen direkt aus dem PokeAPI-Sprite-Repository auf GitHub (CORS-fähig, für den Bild-Export nötig):
 
 - **Pixel** – Gen-V-Black/White-Animationen, sonst Standard-Sprite
@@ -44,7 +50,8 @@ Sprites kommen direkt aus dem PokeAPI-Sprite-Repository auf GitHub (CORS-fähig,
 
 ```
 scripts/build-data.mjs     Daten-Build (PokeAPI → public/data/pokemon.json)
-public/data/pokemon.json   Statische Pokémon-Daten
+scripts/build-forms.mjs    Formen-Build (PokeAPI-CSV → public/data/forms.json)
+public/data/               Statische Pokémon-Daten (pokemon.json, forms.json)
 src/
   config/                  ← Stellschrauben, leicht anpassbar
     positions.ts           Positionen, Bewertungsprofile (Schlüssel/Hilft/…), Team-Gewichte, Typ-Bonus
@@ -80,7 +87,7 @@ tests/                     Unit-Tests: Fit, Team-Score, Saison, Engine, Server/A
 
 Routen: `/` Builder · `/challenge` 34–0 · `/taeglich` Tägliche Elf · `/151` 151 Challenge & Retro 34–0 ·
 `/draft` Fantasy-Draft (lokal + online) · `/draft/:code` Online-Liga · `/rangliste` (Deep-Link
-`?c=daily&p=today`) · `/scouting` · `/ueber` · `/datenschutz`
+`?c=daily&p=today|week|all`) · `/spieler/:id` Spielerprofil · `/scouting` · `/ueber` · `/datenschutz`
 
 ## Bewertung in Kürze
 
@@ -101,16 +108,19 @@ Alle Zahlen sind in `src/config/` änderbar – die Tests prüfen Eigenschaften,
 
 ## Spielmodi
 
-- **Builder** – frei aufstellen, Drag & Drop, Bild speichern (1200×1500 PNG), Link teilen. Keine Fit-Anzeige.
+- **Builder** – frei aufstellen, Drag & Drop, Bild speichern (1200×1500 PNG), Link teilen, Rückgängig.
+  Optional Formen und Megas (mit Mega-Limit); der Auswahl-Dialog sortiert auf Wunsch nach Positions-Fit.
 - **34–0 Challenge** – pro Runde werden Region + Typ gewürfelt (je ein Reroll pro Run), max. 2 Legendäre.
 - **Tägliche Elf** – jeden Tag (Europe/Berlin) dieselben Würfe für alle, Regeln wie 34–0, ein Versuch pro
   Tag und Gerät. Die Saison ist für alle identisch (gleiche Elf → gleiches Ergebnis). Ergebnis als
-  Emoji-Raster teilen (34 Spieltage in zwei Reihen).
+  Emoji-Raster teilen (34 Spieltage in zwei Reihen). Serie (Tage am Stück) und Archiv auf dem Gerät.
 - **151 Challenge** – pro Runde ein zufälliges Pokémon aus den Original-151, 5 Rerolls.
 - **Retro 34–0** – Modus der 151-Seite: Typ-Würfel wie bei 34–0, aber nur Kanto, Retro-Sprites,
   Gen-1-Skalierung, eigene Rangliste.
 - **Fantasy-Draft** – 2–8 Teams (Hot-Seat oder CPU), Snake-Draft über 11 Runden, danach Liga.
 - **Online-Draft** – Liga anlegen, Code/Link teilen, gemeinsam live draften (siehe unten).
+- **Rangliste** – Heute, Diese Woche, Allzeit; Team ansehen, Testspiel gegen die eigene Builder-Elf,
+  Spielerprofil.
 
 Im Draft zeigt ein Hover über eine Position, welche Werte dort zählen (Schlüssel/Hilft/Kleiner Anteil,
 Typ-Bonus, Gewicht im Team-Score). Die Oberfläche gibt es auf Deutsch und Englisch (Umschalter im Kopf,
@@ -142,7 +152,8 @@ Ist das Backend nicht erreichbar, spielt die App lokal und ungewertet weiter; sc
 kann man erneut senden oder offline auswerten.
 
 Endpunkte: `GET /api/health` · `POST /api/runs/start` · `POST /api/runs/finish` ·
-`GET /api/leaderboard?challenge=…&period=today|all` · `POST /api/player` (Spielername).
+`GET /api/leaderboard?challenge=…&period=today|week|all` · `GET /api/entries/:id` (Team) ·
+`GET /api/entries/:id/player` (Profil) · `POST /api/player` (Spielername).
 
 ## Online-Draft (Cloudflare Durable Object)
 
@@ -156,6 +167,13 @@ es auto-picken; ein abwesender Host gibt die Rolle nach 30 s (Lobby: 5 min) ab. 
 rechnet der Server die Saison einmal und alle sehen sie gleichzeitig im Ticker.
 Öffentliche Lobbys: `GET /api/drafts/public`. Ligen werden nach 14 Tagen gelöscht. Vertrag und Limits:
 `src/lib/api/draftContract.ts`.
+
+Weitere Liga-Funktionen: Pool mit Legendären/Mysteriösen, Ultrabestien, Formen und Megas – je mit Limit
+pro Team; Zufallsmodus mit Rerolls; Wunschliste für Auto-Picks (privat); Emoji-Reaktionen (nur verteilt,
+nicht gespeichert); „Du bist dran" als Ton und Browser-Benachrichtigung. Nach der Saison legt
+`POST /api/drafts/:code/rematch` eine **Revanche** an (gleiche Teams und Einstellungen); jede Revanche
+trägt die Ergebnisse ihrer Vorgänger mit – daraus die **ewige Tabelle**. Für `/draft/:code` liefert der
+Worker eigene Open-Graph-Tags (Link-Vorschau mit Liganame, Host und Teams, `server/preview.ts`).
 
 ## Deploy auf Cloudflare
 
