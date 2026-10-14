@@ -94,11 +94,32 @@ function Wallet({ me }: { me: MeResponse }) {
   );
 }
 
+/** Fast geschafft: offene Erfolge mit Teilfortschritt, am weitesten zuerst (höchstens 3) */
+export function closest(me: MeResponse): MeResponse['achievements'] {
+  return me.achievements
+    .filter((a) => !a.done && a.goal > 1 && a.value > 0)
+    .sort((a, b) => b.value / b.goal - a.value / a.goal || a.goal - a.value - (b.goal - b.value))
+    .slice(0, 3);
+}
+
 function Achievements({ me, seen }: { me: MeResponse; seen: Set<string> }) {
   const t = useT();
   const tx = t.trainer;
+  const near = closest(me);
   return (
     <>
+      {near.length > 0 && (
+        <section className="card" aria-labelledby="ach-near">
+          <h2 id="ach-near" className="section-title">
+            {tx.nearTitle}
+          </h2>
+          <ul className="achievements">
+            {near.map((a) => (
+              <AchievementItem key={a.id} a={a} fresh={false} />
+            ))}
+          </ul>
+        </section>
+      )}
       {ACHIEVEMENT_CATEGORIES.map((cat) => {
         const items = me.achievements.filter((a) => CATEGORY_OF.get(a.id) === cat);
         if (!items.length) return null;
@@ -109,37 +130,42 @@ function Achievements({ me, seen }: { me: MeResponse; seen: Set<string> }) {
               <small className="muted">{tx.progressValue(items.filter((a) => a.done).length, items.length)}</small>
             </h2>
             <ul className="achievements">
-              {items.map((a) => {
-                const text = tx.list[a.id] ?? { name: a.id, desc: '' };
-                const fresh = a.done && !seen.has(a.id);
-                return (
-                  <li key={a.id} className={`achievement ${a.done ? 'is-done' : ''}`}>
-                    <span className="achievement__icon" aria-hidden="true">
-                      {a.done ? '★' : '☆'}
-                    </span>
-                    <div className="achievement__body">
-                      <strong className="achievement__name">
-                        {text.name}
-                        {fresh && <span className="achievement__new">{tx.newBadge}</span>}
-                      </strong>
-                      <span className="achievement__desc">{text.desc}</span>
-                      {!a.done && a.goal > 1 && (
-                        <span className="achievement__bar" role="progressbar" aria-valuemin={0} aria-valuemax={a.goal} aria-valuenow={a.value}>
-                          <span style={{ width: `${(a.value / a.goal) * 100}%` }} />
-                        </span>
-                      )}
-                    </div>
-                    <span className="achievement__reward" title={tx.rewardTitle(a.coins)}>
-                      {a.done ? tx.done : a.goal > 1 ? tx.progressValue(a.value, a.goal) : ''}
-                      <small>{tx.reward(a.coins)} ◎</small>
-                    </span>
-                  </li>
-                );
-              })}
+              {items.map((a) => (
+                <AchievementItem key={a.id} a={a} fresh={a.done && !seen.has(a.id)} />
+              ))}
             </ul>
           </section>
         );
       })}
     </>
+  );
+}
+
+/** Ein Erfolg: Name, Beschreibung, Fortschritt und Belohnung */
+function AchievementItem({ a, fresh }: { a: MeResponse['achievements'][number]; fresh: boolean }) {
+  const tx = useT().trainer;
+  const text = tx.list[a.id] ?? { name: a.id, desc: '' };
+  return (
+    <li className={`achievement ${a.done ? 'is-done' : ''}`}>
+      <span className="achievement__icon" aria-hidden="true">
+        {a.done ? '★' : '☆'}
+      </span>
+      <div className="achievement__body">
+        <strong className="achievement__name">
+          {text.name}
+          {fresh && <span className="achievement__new">{tx.newBadge}</span>}
+        </strong>
+        <span className="achievement__desc">{text.desc}</span>
+        {!a.done && a.goal > 1 && (
+          <span className="achievement__bar" role="progressbar" aria-valuemin={0} aria-valuemax={a.goal} aria-valuenow={a.value}>
+            <span style={{ width: `${(a.value / a.goal) * 100}%` }} />
+          </span>
+        )}
+      </div>
+      <span className="achievement__reward" title={tx.rewardTitle(a.coins)}>
+        {a.done ? tx.done : a.goal > 1 ? tx.progressValue(a.value, a.goal) : ''}
+        <small>{tx.reward(a.coins)} ◎</small>
+      </span>
+    </li>
   );
 }

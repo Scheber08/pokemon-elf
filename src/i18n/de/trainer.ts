@@ -45,6 +45,7 @@ const trainer = {
   price: (n: number) => `${n} ◎`,
   /** Saisonartikel: Ende der Saison (MM-DD) */
   seasonal: (to: string) => `Saisonartikel – nur bis ${Number(to.slice(3))}.${Number(to.slice(0, 2))}.`,
+  nearTitle: 'Fast geschafft',
   seasonNow: (to: string) => `Saisonartikel im Shop – nur bis ${Number(to.slice(3))}.${Number(to.slice(0, 2))}.`,
   previewing: (name: string) => `Vorschau: ${name}`,
   slots: {

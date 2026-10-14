@@ -340,3 +340,14 @@ describe('Zufälliger Trainer', () => {
     expect(crowns).toBeGreaterThan(0);
   });
 });
+
+describe('Fast geschafft', () => {
+  it('offene Erfolge mit Teilfortschritt, am weitesten zuerst, höchstens 3', async () => {
+    const { closest } = await import('../src/pages/Trainer');
+    const a = (id: string, value: number, goal: number, done = false) => ({ id, value, goal, done, coins: 1 });
+    const me = {
+      achievements: [a('x', 1, 10), a('y', 8, 10), a('z', 0, 5), a('w', 1, 1, true), a('v', 25, 30), a('u', 2, 3), a('t', 1, 1)],
+    } as unknown as MeResponse;
+    expect(closest(me).map((x) => x.id)).toEqual(['v', 'y', 'u']);
+  });
+});
