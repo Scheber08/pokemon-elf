@@ -12,6 +12,8 @@ const builder = {
   savingImage: 'Erstelle Bild …',
   random: 'Zufällig',
   undo: 'Rückgängig',
+  best: 'Beste Elf',
+  bestTitle: 'Stellt die stärkste Elf aus der gewählten Region und den Einstellungen auf',
   undoTitle: 'Letzte Änderung an der Aufstellung zurücknehmen (Strg/Cmd+Z)',
   reset: 'Zurücksetzen',
   clearAll: 'Alles leeren',

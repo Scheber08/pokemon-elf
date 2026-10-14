@@ -17,6 +17,8 @@ const builder: Messages['builder'] = {
   savingImage: 'Creating image …',
   random: 'Random',
   undo: 'Undo',
+  best: 'Best XI',
+  bestTitle: 'Picks the strongest lineup from the selected region and settings',
   undoTitle: 'Undo the last change to the lineup (Ctrl/Cmd+Z)',
   reset: 'Reset',
   clearAll: 'Clear all',

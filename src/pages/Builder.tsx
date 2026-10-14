@@ -9,6 +9,7 @@ import { RandomNameButton } from '../components/RandomNameButton';
 import { Segmented } from '../components/Segmented';
 import { TeamSheet } from '../components/TeamSheet';
 import { useT } from '../i18n';
+import { bestEleven } from '../lib/bestEleven';
 import { copyText, downloadBlob } from '../lib/exportImage';
 import { remapFormation } from '../lib/formation';
 import { shuffle } from '../lib/rng';
@@ -78,7 +79,7 @@ function megasOnField(s: BuilderState, byId: Map<number, Pokemon>, except?: numb
 }
 
 export function Builder() {
-  const { all, byId } = usePokemonData();
+  const { all, byId, scale } = usePokemonData();
   const { sprite, setSprite } = useSettings();
   const t = useT();
   const toast = useToast();
@@ -206,6 +207,13 @@ export function Builder() {
     }));
   };
 
+  /** Stärkste Elf aus dem aktuellen Pool (Region, Legendäre, Formen, Mega-Limit) */
+  const autoBest = () => {
+    const source = regionPool.length >= 12 ? regionPool : pool;
+    const best = bestEleven(state.formation, source, scale('all'), { megaMax: megaMax(state.megas), setPiece: state.ssEnabled });
+    change((s) => ({ ...s, slots: best.slots, ss: s.ssEnabled ? best.ss : s.ss }));
+  };
+
   const saveImage = async () => {
     setBusy(true);
     try {
@@ -263,6 +271,9 @@ export function Builder() {
           </button>
           <button type="button" className="btn" onClick={randomize}>
             {t.builder.random}
+          </button>
+          <button type="button" className="btn" onClick={autoBest} title={t.builder.bestTitle}>
+            {t.builder.best}
           </button>
           <button type="button" className="btn" onClick={undo} disabled={!history.length} title={t.builder.undoTitle}>
             {t.builder.undo}
