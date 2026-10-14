@@ -153,7 +153,7 @@ kann man erneut senden oder offline auswerten.
 
 Endpunkte: `GET /api/health` · `POST /api/runs/start` · `POST /api/runs/finish` ·
 `GET /api/leaderboard?challenge=…&period=today|week|all` · `GET /api/entries/:id` (Team) ·
-`GET /api/entries/:id/player` (Profil) · `POST /api/player` (Spielername).
+`GET /api/entries/:id/player` (Profil mit aktuellem Allzeit-Platz je Wertung) · `POST /api/player` (Spielername).
 
 ## Online-Draft (Cloudflare Durable Object)
 
@@ -170,7 +170,9 @@ rechnet der Server die Saison einmal und alle sehen sie gleichzeitig im Ticker.
 
 Weitere Liga-Funktionen: Pool mit Legendären/Mysteriösen, Ultrabestien, Formen und Megas – je mit Limit
 pro Team; Zufallsmodus mit Rerolls; Wunschliste für Auto-Picks (privat); Emoji-Reaktionen (nur verteilt,
-nicht gespeichert); „Du bist dran" als Ton und Browser-Benachrichtigung. Nach der Saison legt
+nicht gespeichert); „Du bist dran" als Ton und Browser-Benachrichtigung; QR-Code des Liga-Links in der
+Lobby; Taste „/" springt ins Suchfeld. Das Ergebnis zeigt Draft-Noten, das „Schnäppchen des Drafts"
+(bester später Pick) und „Deine Duelle" (Bilanz gegen jeden Gegner). Nach der Saison legt
 `POST /api/drafts/:code/rematch` eine **Revanche** an (gleiche Teams und Einstellungen); jede Revanche
 trägt die Ergebnisse ihrer Vorgänger mit – daraus die **ewige Tabelle**. Für `/draft/:code` liefert der
 Worker eigene Open-Graph-Tags (Link-Vorschau mit Liganame, Host und Teams, `server/preview.ts`).
