@@ -188,6 +188,7 @@ const online: Messages['online'] = {
   noRerollLeft: 'No rerolls of this kind left',
   noOtherRoll: 'No other roll possible',
   onlyFitting: 'Matching only',
+  bestFirst: 'Best for my team first',
   blockedRoll: 'Doesn’t match the roll',
   blockedLegends: (max) => `Limit: ${plural(max, 'legendary', 'legendaries')}`,
   blockedUltraBeasts: (max) => `Limit: ${plural(max, 'Ultra Beast', 'Ultra Beasts')}`,

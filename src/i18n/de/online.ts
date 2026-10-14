@@ -197,6 +197,7 @@ const online = {
   noRerollLeft: 'Keine Rerolls dieser Art mehr übrig',
   noOtherRoll: 'Kein anderer Wurf möglich',
   onlyFitting: 'Nur passende',
+  bestFirst: 'Beste für mein Team zuerst',
   /** Grund auf ausgegrauten Karten */
   blockedRoll: 'Passt nicht zum Wurf',
   blockedLegends: (max: number) => (max === 1 ? 'Limit: ein Legendäres' : `Limit: ${max} Legendäre`),

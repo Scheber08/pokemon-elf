@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { FORMATIONS } from '../config/formations';
+import { POSITIONS } from '../config/positions';
 import { useT } from '../i18n';
 import { DRAFT_REROLL_KINDS, type DraftRerollKind, type DraftSnapshot, type DraftTeam } from '../lib/api/draftContract';
 import {
@@ -20,6 +21,7 @@ import {
   rerollsLeft,
   rerollUsable,
 } from '../lib/draftEngine';
+import { positionFit } from '../lib/fit';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import {
@@ -176,6 +178,8 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   const [selected, setSelected] = useState<number | null>(null);
   const [suggestSlot, setSuggestSlot] = useState<number | null>(null);
   const [showTaken, setShowTaken] = useState(false);
+  /** Pool nach „passt am besten auf meine freien Plätze" sortieren */
+  const [bestFirst, setBestFirst] = useState(false);
   /** Nur Pokémon zeigen, die gerade erlaubt sind (Wurf, Legendären-Limit) */
   const [onlyFit, setOnlyFit] = useState(true);
   const [filters, setFilters] = useState<PokemonFilters>({ query: '', type: null, region: 0 });
@@ -216,10 +220,24 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   /** Die Regeln sperren gerade etwas aus dem freien Pool → Umschalter „Nur passende" */
   const restricted = !!allowed && allowed.size < freeCount;
   const fitOnly = restricted && onlyFit;
-  const items = useMemo(
-    () => pool.filter((p) => (owners.has(p.id) ? showTaken : !fitOnly || allowed!.has(p.id))),
-    [pool, owners, showTaken, fitOnly, allowed],
-  );
+  // Freie eigene Plätze (Positionen) – Grundlage für „Beste zuerst"
+  const freeKey = me ? freeSlots(me, s.settings).join(',') : '';
+  const items = useMemo(() => {
+    const shown = pool.filter((p) => (owners.has(p.id) ? showTaken : !fitOnly || allowed!.has(p.id)));
+    if (!bestFirst || !me) return shown;
+    const sc = scale('all');
+    const defs = FORMATIONS[me.formation].slots;
+    const positions = freeSlots(me, s.settings).map((slot) => (slot === DRAFT_SS_SLOT ? 'SS' : defs[slot].pos));
+    if (!positions.length) return shown;
+    // Wie der Auto-Pick: Fit × Positionsgewicht, der Standardschütze zählt halb
+    const score = new Map(
+      shown.map((p) => [
+        p.id,
+        Math.max(...positions.map((pos) => positionFit(p, pos, sc) * (pos === 'SS' ? 0.5 : 0.92 + 0.08 * POSITIONS[pos].teamWeight))),
+      ]),
+    );
+    return [...shown].sort((a, b) => score.get(b.id)! - score.get(a.id)! || a.id - b.id);
+  }, [pool, owners, showTaken, fitOnly, allowed, bestFirst, freeKey, me?.formation]);
   // Regionsfilter nur, solange er zu sehen ist (mehrere Generationen, kein eigener Wurf mit „Nur
   // passende") – ein vorher gewählter Wert bliebe sonst unsichtbar wirksam und leerte das Raster
   const regionShown = gens.length > 1 && !(fitOnly && myRoll);
@@ -230,7 +248,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   const filtered = useFilteredPokemon(items, effFilters);
   const feed = useMemo(() => pickFeed(s, byId, undefined, t), [s, byId, t]);
   // Raster nur bei anderem Filter/Pool/Wurf wieder von vorn – ein Pick nimmt nur eine Karte heraus
-  const gridKey = `${poolKey}|${showTaken}|${fitOnly ? rollKey || 'fit' : ''}|${effFilters.region}|${effFilters.type ?? ''}|${effFilters.query}`;
+  const gridKey = `${poolKey}|${showTaken}|${bestFirst ? `best:${freeKey}` : ''}|${fitOnly ? rollKey || 'fit' : ''}|${effFilters.region}|${effFilters.type ?? ''}|${effFilters.query}`;
   const filtering = !!effFilters.query.trim() || !!effFilters.type || effFilters.region !== 0;
   const randomMode = s.settings.roll === 'pick' || s.settings.roll === 'round';
   const legendLimit = maxLegends != null && poolHasLegends(s.settings) ? maxLegends : null;
@@ -445,6 +463,10 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                 <label className="draft-check">
                   <input type="checkbox" checked={showTaken} onChange={(e) => setShowTaken(e.target.checked)} />{' '}
                   {t.online.showTaken}
+                </label>
+                <label className="draft-check">
+                  <input type="checkbox" checked={bestFirst} onChange={(e) => setBestFirst(e.target.checked)} />{' '}
+                  {t.online.bestFirst}
                 </label>
               </div>
               <FilterBar
