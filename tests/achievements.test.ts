@@ -223,8 +223,12 @@ describe('Kennzahlen und /api/me', () => {
     expect(board.rows[0].trainer).toMatchObject({ hat: 'beanie' });
     const profile = (await (await handleApi(new Request(`http://localhost/api/entries/${board.rows[0].entryId}/player`), { DB: db })).json()) as {
       trainer?: unknown;
+      achievements?: { done: number; total: number };
     };
     expect(profile.trainer).toMatchObject({ hat: 'beanie' });
+    // Erfolge im Profil: erreichte von allen
+    expect(profile.achievements?.total).toBe(ACHIEVEMENTS.length);
+    expect(profile.achievements?.done).toBeGreaterThanOrEqual(3);
   });
 });
 

@@ -112,6 +112,7 @@ const leaderboard = {
     kicker: 'Spielerprofil',
     since: (date: string) => `Dabei seit ${date}`,
     runs: (n: number) => (n === 1 ? '1 gewerteter Run' : `${n} gewertete Runs`),
+    achievements: (done: number, total: number) => `🏅 ${done}/${total} Erfolge`,
     perChallenge: 'Bestwerte',
     runsCol: 'Runs',
     perfectTitle: (n: number) => (n === 1 ? 'Eine perfekte Saison (nur Siege)' : `${n} perfekte Saisons (nur Siege)`),

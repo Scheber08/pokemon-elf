@@ -108,6 +108,7 @@ const leaderboard: Messages['leaderboard'] = {
     kicker: 'Player profile',
     since: (date) => `Playing since ${date}`,
     runs: (n) => (n === 1 ? '1 ranked run' : `${n} ranked runs`),
+    achievements: (done, total) => `🏅 ${done}/${total} achievements`,
     perChallenge: 'Best runs',
     runsCol: 'Runs',
     perfectTitle: (n) => (n === 1 ? 'One perfect season (wins only)' : `${n} perfect seasons (wins only)`),

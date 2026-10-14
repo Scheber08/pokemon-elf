@@ -47,6 +47,8 @@ import {
 } from './db';
 import type { Db, Env } from './env';
 import { lookFromJson } from '../src/lib/trainer';
+import { achievementStates } from '../src/lib/achievements';
+import { achievementStats } from './achievements';
 import { ENGINE_DATA, verifyRun } from './game';
 import { ApiError, json } from './http';
 import {
@@ -437,6 +439,7 @@ export async function playerProfile(rawId: string, env: Env): Promise<Response> 
     ];
   });
   const first = Math.min(...rows.counts.map((c) => c.first));
+  const states = achievementStates(await achievementStats(env.DB, device.device_id, dayKey(new Date())));
   const body: PlayerProfile = {
     player: device.player,
     trainer: lookFromJson(device.trainer),
@@ -444,6 +447,7 @@ export async function playerProfile(rawId: string, env: Env): Promise<Response> 
     runs: rows.counts.reduce((n, c) => n + c.runs, 0),
     challenges,
     recent: rows.recent.map(toPlayerRun).filter((r): r is PlayerRun => r != null),
+    achievements: { done: states.filter((a) => a.done).length, total: states.length },
   };
   return json(body, 200, { 'Cache-Control': ENTRY_CACHE_CONTROL });
 }

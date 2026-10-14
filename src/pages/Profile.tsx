@@ -89,6 +89,7 @@ export function Profile() {
             )}
             <p className="page-lead">
               {tp.since(date(p.since))} · {tp.runs(p.runs)}
+              {p.achievements && <> · {tp.achievements(p.achievements.done, p.achievements.total)}</>}
             </p>
           </div>
         </div>

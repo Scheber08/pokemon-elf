@@ -211,6 +211,8 @@ export interface PlayerProfile {
   challenges: PlayerChallengeStats[];
   /** Die letzten gewerteten Runs, neuester zuerst (höchstens 20) */
   recent: PlayerRun[];
+  /** Erreichte Erfolge von allen (fehlt bei älteren Antworten) */
+  achievements?: { done: number; total: number };
 }
 
 /** POST /api/me (Body: DeviceAuth) – Erfolge und Münzen des eigenen Geräts */
