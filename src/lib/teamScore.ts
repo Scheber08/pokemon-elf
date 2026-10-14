@@ -2,6 +2,7 @@
  * Team-Score (0–1.000): gewichteter Durchschnitt der 11 Fits × 10.
  * Die drei schwächsten Fits gehen zusätzlich mit doppeltem Gewicht ein –
  * ein Loch zieht stärker runter, als ein Star hebt.
+ * Der Kapitän (optional) zählt mit doppeltem Positionsgewicht – ohne Kapitän ändert sich nichts.
  */
 import { FORMATIONS } from '../config/formations';
 import { POSITIONS } from '../config/positions';
@@ -36,17 +37,30 @@ export function teamScoreFromFits(fits: number[], weights: number[]): { exact: n
   return { exact: total ? (sum / total) * factor : 0, weakest };
 }
 
+/** Positionsgewichte mit Kapitän: dessen Slot zählt captainWeight-fach (unbekannter Kapitän = keiner). */
+export function captainWeights(weights: number[], ids: readonly (number | null | undefined)[], captain: number | null | undefined): number[] {
+  if (captain == null) return weights;
+  const i = ids.findIndex((id) => id === captain);
+  return i < 0 ? weights : weights.map((w, j) => (j === i ? w * SCORING.team.captainWeight : w));
+}
+
 export function evaluateTeam(
   formation: FormationId,
   players: (Pokemon | null | undefined)[],
   scale: Scale,
+  /** Pokémon-ID des Kapitäns (null/undefined = keiner) */
+  captain?: number | null,
 ): TeamEvaluation {
   const slots = FORMATIONS[formation].slots;
   const fits = slots.map((s, i) => {
     const p = players[i];
     return p ? positionFit(p, s.pos, scale) : 0;
   });
-  const weights = slots.map((s) => POSITIONS[s.pos].teamWeight);
+  const weights = captainWeights(
+    slots.map((s) => POSITIONS[s.pos].teamWeight),
+    slots.map((_, i) => players[i]?.id),
+    captain,
+  );
   const { exact, weakest } = teamScoreFromFits(fits, weights);
   return { score: Math.round(exact), exact, fits, weakest };
 }

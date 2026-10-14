@@ -37,5 +37,7 @@ export const SCORING = {
     weakestExtra: 2,
     /** Team-Score-Skala: Durchschnitts-Fit (0–100) × factor. */
     factor: 10,
+    /** Kapitän: seine Positionspassung zählt so oft (× Positionsgewicht) – gut passend hilft, schlecht passend schadet. */
+    captainWeight: 2,
   },
 } as const;

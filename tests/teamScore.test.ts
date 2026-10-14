@@ -88,4 +88,17 @@ describe('Team-Score – mit echten Daten', () => {
     const random = ['Rattfratz', 'Raupy', 'Pichu', 'Hornliu', 'Sleima', 'Mauzi', 'Taubsi', 'Knofensa', 'Pummeluff', 'Sandan', 'Zubat'].map(byName);
     expect(evaluateTeam('4-3-3', scouted, scale).score).toBeGreaterThan(evaluateTeam('4-3-3', random, scale).score + 200);
   });
+
+  it('Kapitän: seine Passung zählt doppelt – gut passend hebt, schlecht passend senkt; ohne Kapitän unverändert', () => {
+    const team = ['Relaxo', 'Turtok', 'Stahlos', 'Geowaz', 'Garados', 'Simsala', 'Machomei', 'Gengar', 'Zapdos', 'Glurak', 'Blitza'].map(byName);
+    const base = evaluateTeam('4-3-3', team, scale);
+    expect(evaluateTeam('4-3-3', team, scale, null)).toEqual(base);
+    expect(evaluateTeam('4-3-3', team, scale, 99999)).toEqual(base);
+    const order = base.fits.map((_, i) => i).sort((a, b) => base.fits[a] - base.fits[b]);
+    const best = team[order[order.length - 1]].id;
+    const worst = team[order[0]].id;
+    expect(evaluateTeam('4-3-3', team, scale, best).exact).toBeGreaterThan(base.exact);
+    expect(evaluateTeam('4-3-3', team, scale, worst).exact).toBeLessThan(base.exact);
+    expect(evaluateTeam('4-3-3', team, scale, best).fits).toEqual(base.fits);
+  });
 });

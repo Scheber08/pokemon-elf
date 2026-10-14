@@ -14,6 +14,8 @@ export interface FinishedRunInput {
   /** undefined = ohne Standardschützen */
   ss?: number | null;
   teamName: string;
+  /** Pokémon-ID des Kapitäns (fehlt/null = keiner) – seine Passung zählt doppelt */
+  captain?: number | null;
   /** Seed der Saison-Simulation */
   seed: number;
 }
@@ -27,7 +29,7 @@ export interface ComputedRun {
 export function computeRun(input: FinishedRunInput, byId: Map<number, Pokemon>, scale: Scale): ComputedRun {
   const defs = FORMATIONS[input.formation].slots;
   const players = input.slots.map((id) => (id != null ? byId.get(id) ?? null : null));
-  const evaluation = evaluateTeam(input.formation, players, scale);
+  const evaluation = evaluateTeam(input.formation, players, scale, input.captain);
   const squad: SquadPlayer[] = players.flatMap((p, i) =>
     p ? [{ pokemonId: p.id, pos: defs[i].pos, atk: p.atk, spa: p.spa }] : [],
   );
