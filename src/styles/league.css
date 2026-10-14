@@ -825,6 +825,8 @@
   padding: 0;
   display: grid;
   gap: 14px;
+  /* Breit (Ergebnisseite): Teams nicht weit auseinanderziehen */
+  max-width: 720px;
 }
 .cup-bracket__stage {
   margin: 0 0 6px;
