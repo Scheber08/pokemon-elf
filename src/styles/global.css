@@ -2683,3 +2683,19 @@ button.sheet__row:hover {
 .manager__cup-winner {
   font-size: 1.1rem;
 }
+
+.manager__live {
+  color: var(--red);
+  font-weight: 700;
+  animation: manager-live 1.2s ease-in-out infinite;
+}
+@keyframes manager-live {
+  50% {
+    opacity: 0.4;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .manager__live {
+    animation: none;
+  }
+}

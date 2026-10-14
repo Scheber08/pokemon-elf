@@ -4,9 +4,10 @@ import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { rosterOf } from '../lib/draftEngine';
 import { leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague } from '../lib/leagueTimeline';
+import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
-import { bestLineup, FORM_FIT, formFit, lineupScore, managerSchedule, squadStrength } from '../lib/manager';
-import type { LeagueResult, Match } from '../lib/season';
+import { bestLineup, FORM_FIT, formFit, kickoffAt, lineupScore, managerSchedule, squadStrength } from '../lib/manager';
+import { buildTable, type LeagueResult, type Match } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import { teamLabel, type DraftRoom } from '../state/useDraftRoom';
@@ -102,9 +103,13 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
       league.matches.filter((x) => x.round === playedNow),
       you,
     );
-    const body = r
-      ? t.draft.manager.notifyResult(t.draft.outcome[r.outcome], r.gf, r.ga, nameOf(r.opponent))
-      : t.draft.manager.notifyPlayed(playedNow);
+    // Läuft der Spieltag noch live, nichts verraten – nur Bescheid geben
+    const live = s.season ? liveMinute(kickoffAt(s.season, playedNow), now, liveDuration(s.season.stepMs)) != null : false;
+    const body = live
+      ? t.draft.manager.notifyLive(playedNow)
+      : r
+        ? t.draft.manager.notifyResult(t.draft.outcome[r.outcome], r.gf, r.ga, nameOf(r.opponent))
+        : t.draft.manager.notifyPlayed(playedNow);
     showNotify(t.draft.manager.notifyHeading(s.settings.name || t.online.leagueFallback(s.code), playedNow), body, `manager-${s.code}`);
   }, [playedNow]);
 
@@ -179,6 +184,17 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
     );
   }
 
+  // Live: Der zuletzt gespielte Spieltag läuft nach dem Anpfiff noch einige Minuten in Echtzeit ab
+  const liveMin =
+    m.played > 0 && s.season ? liveMinute(kickoffAt(s.season, m.played), now, liveDuration(s.season.stepMs)) : null;
+  const shown: LeagueResult =
+    liveMin == null
+      ? league
+      : (() => {
+          const matches = league.matches.map((x) => (x.round === m.played ? partialMatch(x, liveMin) : x));
+          return { ...league, matches, table: buildTable(league.teams, matches) };
+        })();
+
   const nextNo = m.played + 1;
   const schedule = managerSchedule(league.teams.length);
   const upcoming: Match[] = (schedule[m.played] ?? []).map(([home, away]) => ({
@@ -190,9 +206,9 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
     homeScorers: [],
     awayScorers: [],
   }));
-  const last = m.played > 0 ? league.matches.filter((x) => x.round === m.played) : [];
+  const last = m.played > 0 ? shown.matches.filter((x) => x.round === m.played) : [];
   const lastTransfers = (m.transfers ?? []).filter((x) => x.matchday === m.played);
-  const star = playerOfRound(last);
+  const star = liveMin == null ? playerOfRound(last) : null;
   // Ein Tausch steht zweimal im Protokoll (je Team) – angezeigt wird er einmal
   const shownOnce = (x: ManagerTransfer) => !x.with || x.teamId < x.with;
   const teamName = (id: string) => {
@@ -209,7 +225,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
   // Nächster Gegner: Tabellenplatz und Form (letzte fünf Spiele)
   const myNext = you != null ? upcoming.find((x) => x.home === you || x.away === you) : undefined;
   const rival = myNext ? (myNext.home === you ? myNext.away : myNext.home) : null;
-  const rivalPlace = rival != null ? league.table.findIndex((r) => r.team === rival) + 1 : 0;
+  const rivalPlace = rival != null ? shown.table.findIndex((r) => r.team === rival) + 1 : 0;
   const when = m.nextAt != null ? new Date(m.nextAt - room.clockOffset).toLocaleString(localeOf(lang), { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : '';
 
   return (
@@ -262,7 +278,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           {m.played > 0 && (
             <p className="manager__rival-line">
               {rivalPlace > 0 && <span>{tx.rivalPlace(rivalPlace)}</span>}
-              <FormDots form={recentForm(league.matches, rival, m.played)} />
+              <FormDots form={recentForm(shown.matches, rival, m.played)} />
             </p>
           )}
           {/* Stärkevergleich der besten Elfen (nur gedraftete Gegner – Auffüllteams haben keinen Kader im Schnappschuss) */}
@@ -400,10 +416,19 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
       {last.length > 0 && (
         <section className="card" aria-labelledby="manager-last">
           <h2 id="manager-last" className="section-title">
-            {tx.lastResults(m.played)}
+            {liveMin != null ? (
+              <>
+                <span className="manager__live" aria-hidden="true">
+                  ● LIVE
+                </span>{' '}
+                {tx.liveTitle(m.played, liveMin)}
+              </>
+            ) : (
+              tx.lastResults(m.played)
+            )}
           </h2>
-          <ReplayToggle />
-          <FixtureList matches={last} you={you} nameOf={nameOf} pokemonName={pokemonName} onOpen={report.open} />
+          {liveMin != null ? <p className="muted small">{tx.liveNote}</p> : <ReplayToggle />}
+          <FixtureList matches={last} you={you} nameOf={nameOf} pokemonName={pokemonName} onOpen={liveMin == null ? report.open : undefined} />
           {star && (
             <p className={`manager__star ${star.teamIndex === you ? 'is-you' : ''}`}>
               <span aria-hidden="true">⭐</span> <strong>{tx.starTitle}</strong>{' '}
@@ -414,7 +439,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
         </section>
       )}
 
-      {m.played > 0 && <SeasonStats league={league} you={you} nameOf={nameOf} />}
+      {m.played > 0 && <SeasonStats league={shown} you={you} nameOf={nameOf} />}
 
       {you != null && m.played >= 2 && (
         <section className="card" aria-labelledby="manager-places">
@@ -430,12 +455,12 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           {tx.tableTitle}
         </h2>
         <ManagerTable
-          rows={league.table}
+          rows={shown.table}
           you={you}
           nameOf={nameOf}
-          matches={league.matches}
+          matches={shown.matches}
           played={m.played}
-          league={league}
+          league={shown}
           crestOf={(i) => cleanCrest(s.teams[i]?.crest)}
         />
       </section>

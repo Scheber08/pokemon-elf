@@ -747,5 +747,26 @@ describe('ManagerSeason', () => {
     expect(later.container.querySelector('.manager__cup')!.textContent).toMatch(/Pokalsieger|holt den Pokal/);
     expect(later.container.querySelectorAll('.manager__cup-round')).toHaveLength(4);
   });
+
+  it('Live: kurz nach dem Anpfiff läuft der Spieltag mit Minute, ohne Spieler des Spieltags; danach normal', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    s = playMatchday(s, ALL, SCALE);
+    const step = 12 * 3_600_000;
+    const liveState = { ...s, season: { ...s.season!, startsAt: Date.now() - 60_000, stepMs: step } };
+    const live = await render(app(h(ManagerSeason, { room: fakeRoom(snap(liveState, 'h')), readOnly: false })));
+    await settle();
+    const head = live.container.querySelector('h2[id="manager-last"]')!.textContent!;
+    expect(head).toContain('LIVE');
+    expect(head).toMatch(/Spieltag 1 · \d+\. Minute/);
+    expect(live.container.querySelector('.manager__star')).toBeNull();
+    const doneState = { ...s, season: { ...s.season!, startsAt: Date.now() - 10 * 60_000, stepMs: step } };
+    const after = await render(app(h(ManagerSeason, { room: fakeRoom(snap(doneState, 'h')), readOnly: false })));
+    await settle();
+    expect(after.container.querySelector('h2[id="manager-last"]')!.textContent).not.toContain('LIVE');
+  });
 });
 

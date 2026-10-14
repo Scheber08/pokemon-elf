@@ -581,6 +581,9 @@ const draft = {
     outRed: (until: number) => `nach Roter Karte gesperrt (Spieltag ${until})`,
     outWarning: (names: string[]) =>
       `${names.join(', ')} ${names.length === 1 ? 'fällt' : 'fallen'} aus – beim Anpfiff springt der beste verfügbare Ersatz ein.`,
+    notifyLive: (matchday: number) => `Spieltag ${matchday} läuft jetzt live – schau zu!`,
+    liveTitle: (matchday: number, minute: number) => `Spieltag ${matchday} · ${minute}. Minute`,
+    liveNote: 'Der Spieltag läuft gerade – alle sehen dieselbe Minute. Tore fallen zu ihrer Spielminute, Tabelle live.',
     cupTitle: 'Pokal',
     cupNote: 'Neben der Liga: 16 Teams, KO-Runden nach den Spieltagen 4, 8, 12 und 16 – bei Remis Elfmeterschießen, das Finale auf neutralem Platz.',
     cupNext: (stage: string, matchday: number) => `Nächste Runde: ${stage} nach Spieltag ${matchday}`,

@@ -238,6 +238,11 @@ ihrer Optik, kein Draft: Der Host startet die Saison direkt (jedes Team stellt s
 letzten drei Plätzen, ab; die Auffüllteams sind je Stufe stärker bzw. schwächer (`CAREER_TIER_SHIFT`). In der
 Karriere-Lobby kann niemand neu beitreten, und nur Name, Sichtbarkeit und Takt lassen sich ändern.
 
+**Live-Spieltag** (`src/lib/liveMatchday.ts`): Der Server spielt jeden Manager-Spieltag zum Anpfiff aus; die Seite
+lässt ihn danach in Echtzeit ablaufen (bis 4 Minuten bzw. 40 % des Takts) – Minute aus der Serverzeit, also für
+alle gleich, Tore zu ihrer Spielminute, Tabelle live. Währenddessen kein Spieler des Spieltags und keine
+Wiedergabe; Hinweise verraten das Ergebnis nicht.
+
 **Trikotnummern** (alle Modi, `src/lib/jerseys.ts`, `src/components/JerseyEditor.tsx`): Ohne eigene Wahl gilt
 eine Vorgabe nach Position (Torwart 1, Abwehr 2–5, Sechser 6, Zehner 10, Stürmer 9 …). Jedes Team kann seinen
 Pokémon Nummern von 1 bis 99 geben – je Team eindeutig (belegte Nummern tauschen), die Nummer hängt am Pokémon,
