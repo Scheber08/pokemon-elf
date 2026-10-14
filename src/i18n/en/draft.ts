@@ -382,7 +382,7 @@ const draft: Messages['draft'] = {
     standings: 'Final standings',
     tbd: 'TBD',
     result: (outcome, gf, ga, home, opponent) => `${outcome} ${gf}:${ga} ${home ? 'against' : 'at'} ${opponent}.`,
-    shareLine: (code, champion) => `Pokémon Elf – online draft ${code}: ${champion} win the knockout cup.`,
+    shareLine: (code, champion, final) => `Pokémon Elf – online draft ${code}: ${champion} win the knockout cup${final ? ` (${final})` : ''}.`,
     shareOwn: (team, status) => ` My team ${team}: ${status}.`,
   },
   share: {

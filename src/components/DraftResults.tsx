@@ -139,7 +139,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
     tieNote,
     own: ownRow ? { name: nameOf(ownRow.team), place: ownIndex + 1 } : null,
     url: draftLink(code),
-    ...(cup ? { cup: { ownStatus: ownCupStatus } } : {}),
+    ...(cup ? { cup: { ownStatus: ownCupStatus, final: cupFinalLine } } : {}),
   });
 
   /** Eigene Elf als Bild (wie im Builder) – mit Bilanz und Platz dieser Liga */

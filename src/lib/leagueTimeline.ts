@@ -376,7 +376,7 @@ export interface DraftShareInput {
   /** Link zur Liga (draftLink) – Tabelle und Aufstellungen ohne Code-Eingabe */
   url: string;
   /** KO-Turnier: Sieger statt Meister; ownStatus = Abschneiden des eigenen Teams als Text */
-  cup?: { ownStatus: string | null };
+  cup?: { ownStatus: string | null; final?: string | null };
 }
 
 /**
@@ -389,7 +389,7 @@ export function draftShareText(i: DraftShareInput): string {
   if (i.cup) {
     const c = messages().draft.cup;
     const own = i.own && i.cup.ownStatus ? c.shareOwn(i.own.name, i.cup.ownStatus) : '';
-    return [c.shareLine(i.code, i.championName) + own, i.url].join('\n');
+    return [c.shareLine(i.code, i.championName, i.cup.final ?? null) + own, i.url].join('\n');
   }
   const tx = messages().draft.share;
   const tie = i.tieNote ? ` – ${i.tieNote.charAt(0).toLowerCase()}${i.tieNote.slice(1)}` : '';

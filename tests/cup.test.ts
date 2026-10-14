@@ -220,5 +220,11 @@ describe('Online-Draft im KO-Modus', () => {
       cup: { ownStatus: 'Turniersieger' },
     });
     expect(text).toBe('Pokémon Elf – Online-Draft CUP234: Host-Elf gewinnt das KO-Turnier. Mein Team Host-Elf: Turniersieger.\nhttps://elf.example/draft/CUP234');
+    // Mit Finalergebnis
+    const withFinal = draftShareText({
+      code: 'CUP234', championName: 'Host-Elf', championPts: 12, tieNote: null, own: null,
+      url: 'https://elf.example/draft/CUP234', cup: { ownStatus: null, final: 'Finale 2:1 gegen FC Pika' },
+    });
+    expect(withFinal.split('\n')[0]).toBe('Pokémon Elf – Online-Draft CUP234: Host-Elf gewinnt das KO-Turnier (Finale 2:1 gegen FC Pika).');
   });
 });

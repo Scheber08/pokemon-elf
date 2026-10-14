@@ -416,7 +416,9 @@ const draft = {
     tbd: 'offen',
     result: (outcome: string, gf: number, ga: number, home: boolean, opponent: string) =>
       `${outcome} ${gf}:${ga} ${home ? 'gegen' : 'bei'} ${opponent}.`,
-    shareLine: (code: string, champion: string) => `Pokémon Elf – Online-Draft ${code}: ${champion} gewinnt das KO-Turnier.`,
+    /** final: Finalzeile („Finale 2:1 gegen …“) oder null */
+    shareLine: (code: string, champion: string, final: string | null) =>
+      `Pokémon Elf – Online-Draft ${code}: ${champion} gewinnt das KO-Turnier${final ? ` (${final})` : ''}.`,
     shareOwn: (team: string, status: string) => ` Mein Team ${team}: ${status}.`,
   },
   share: {
