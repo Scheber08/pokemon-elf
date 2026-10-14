@@ -7,8 +7,10 @@ import { RunNotice } from '../components/RunBoard';
 import { useT } from '../i18n';
 import { isDraftCode, normalizeDraftCode } from '../lib/api/draftClient';
 import { DRAFT_LIMITS } from '../lib/api/draftContract';
+import { notifyPermission, notifySupported, requestNotify } from '../lib/notify';
 import { previewChime } from '../lib/sound';
 import { useSettings } from '../state/Settings';
+import { useToast } from '../state/Toast';
 import { draftRoomReady, useDraftRoom, type DraftRoomStatus } from '../state/useDraftRoom';
 import { useTurnSounds } from '../state/useTurnSounds';
 import '../styles/draft.css';
@@ -66,6 +68,33 @@ function SoundToggle() {
   );
 }
 
+/** Browser-Benachrichtigung an/aus (gespeichert) – beim Einschalten wird um Erlaubnis gefragt. */
+function NotifyToggle() {
+  const t = useT();
+  const { notify, setNotify } = useSettings();
+  const toast = useToast();
+  if (!notifySupported()) return null;
+  const on = notify && notifyPermission() === 'granted';
+  return (
+    <button
+      type="button"
+      className={`draft-sound ${on ? 'is-on' : ''}`}
+      aria-pressed={on}
+      title={t.online.notifyTitle}
+      onClick={async () => {
+        if (on) return setNotify(false);
+        if (await requestNotify()) setNotify(true);
+        else toast(t.online.notifyDenied);
+      }}
+    >
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+        <path d="M12 3a6 6 0 0 0-6 6v4l-2 3h16l-2-3V9a6 6 0 0 0-6-6zM10 19a2 2 0 0 0 4 0" fill="currentColor" />
+      </svg>
+      <span>{on ? t.online.notifyOn : t.online.notifyOff}</span>
+    </button>
+  );
+}
+
 /**
  * /draft/:code – Lobby, Live-Draft, gemeinsame Saison und Ergebnis einer Online-Liga. Ein
  * anderer Code (z. B. „Zur Revanche") ist ein neuer Raum mit eigener Verbindung.
@@ -81,7 +110,7 @@ function DraftRoomPage({ raw }: { raw: string }) {
   const code = normalizeDraftCode(raw);
   const room = useDraftRoom(code);
   const s = room.state;
-  const { sound } = useSettings();
+  const { sound, notify } = useSettings();
 
   // Gong, wenn man dran ist; Warnton kurz vor Ablauf des Timers
   useTurnSounds({
@@ -92,6 +121,12 @@ function DraftRoomPage({ raw }: { raw: string }) {
     ownManualLast: !!room.lastPick && !!room.me && room.lastPick.teamId === room.me.id && !room.lastPick.auto,
     deadline: s?.phase === 'drafting' ? s.deadline : null,
     clockOffset: room.clockOffset,
+    notify: {
+      enabled: notify,
+      title: t.online.notifyHeading(s?.settings.name || t.online.leagueFallback(code)),
+      body: t.online.notifyBody(room.pickNo, room.totalPicks),
+      tag: `draft-turn-${code}`,
+    },
   });
 
   // Kleinbuchstaben o. Ä. in der Adresse → kanonische Adresse
@@ -146,6 +181,7 @@ function DraftRoomPage({ raw }: { raw: string }) {
         </div>
         <div className="draft-room__tools">
           <SoundToggle />
+          <NotifyToggle />
           <ConnectionPill status={room.status} failed={failed} onReconnect={room.reconnect} />
         </div>
       </header>

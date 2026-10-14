@@ -7,6 +7,12 @@ const online: Messages['online'] = {
   soundOn: 'Sound on',
   soundOff: 'Sound off',
   soundTitle: 'Play a sound when it’s your turn – and 10 seconds before the pick timer runs out',
+  notifyOn: 'Alerts on',
+  notifyOff: 'Alerts off',
+  notifyTitle: 'Browser notification when it’s your turn and the tab is in the background',
+  notifyDenied: 'Notifications are blocked in your browser – allow them in the site settings.',
+  notifyHeading: (league) => `Your turn – ${league}`,
+  notifyBody: (pick, total) => `Pick ${pick} of ${total}. Choose your next Pokémon!`,
   // ------------------------------------------------ /draft (online mode)
   title: 'Fantasy Draft',
   lead: 'Online league with friends: create a league, share the link, pick live in a snake draft – with a pick timer, CPU teams and a shared season at the end.',

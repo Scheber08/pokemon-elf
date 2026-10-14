@@ -3,6 +3,12 @@ const online = {
   soundOn: 'Ton an',
   soundOff: 'Ton aus',
   soundTitle: 'Ton, wenn du dran bist – und 10 Sekunden bevor der Pick-Timer abläuft',
+  notifyOn: 'Hinweis an',
+  notifyOff: 'Hinweis aus',
+  notifyTitle: 'Browser-Benachrichtigung, wenn du dran bist und der Tab im Hintergrund liegt',
+  notifyDenied: 'Benachrichtigungen sind im Browser blockiert – erlaube sie in den Website-Einstellungen.',
+  notifyHeading: (league: string) => `Du bist dran – ${league}`,
+  notifyBody: (pick: number, total: number) => `Pick ${pick} von ${total}. Wähl dein nächstes Pokémon!`,
   // ------------------------------------------------ /draft (Online-Modus)
   title: 'Fantasy-Draft',
   lead: 'Online-Liga mit Freunden: Liga erstellen, Link teilen, live im Snake-Draft wählen – mit Pick-Timer, CPU-Teams und einer gemeinsamen Saison zum Schluss.',

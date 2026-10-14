@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { showNotify } from '../lib/notify';
 import { playTimeWarning, playTurnChime, unlockAudio } from '../lib/sound';
 import { remainingMs } from './useDraftRoom';
 
@@ -39,10 +40,15 @@ interface Input extends TurnObservation {
   /** Ablauf des aktuellen Picks (Serverzeit) oder null */
   deadline: number | null;
   clockOffset: number;
+  /** Zusätzlich Browser-Benachrichtigung (nur bei Tab im Hintergrund und erteilter Erlaubnis) */
+  notify?: { enabled: boolean; title: string; body: string; tag: string };
 }
 
-/** Signaltöne im Online-Draft: Gong, wenn man dran ist, und Warnton 10 s vor Ablauf des Timers. */
-export function useTurnSounds({ enabled, live, myTurn, pickIndex, ownManualLast, deadline, clockOffset }: Input): void {
+/**
+ * Signaltöne im Online-Draft: Gong, wenn man dran ist, und Warnton 10 s vor Ablauf des Timers.
+ * Zum Gong optional eine Browser-Benachrichtigung (unabhängig vom Ton).
+ */
+export function useTurnSounds({ enabled, live, myTurn, pickIndex, ownManualLast, deadline, clockOffset, notify }: Input): void {
   useEffect(() => unlockAudio(), []);
 
   const memo = useRef<TurnChimeMemo>(TURN_CHIME_START);
@@ -50,6 +56,7 @@ export function useTurnSounds({ enabled, live, myTurn, pickIndex, ownManualLast,
     const { memo: next, chime } = turnChimeDue(memo.current, { live, myTurn, pickIndex, ownManualLast });
     memo.current = next;
     if (chime && enabled) playTurnChime();
+    if (chime && notify?.enabled) showNotify(notify.title, notify.body, notify.tag);
     // ownManualLast gehört zum selben Schnappschuss wie pickIndex – kein eigener Auslöser
   }, [live, myTurn, pickIndex, enabled]);
 

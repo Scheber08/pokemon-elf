@@ -11,6 +11,8 @@ interface GlobalSettings {
   lang: Lang;
   /** Signaltöne (z. B. „Du bist dran" im Online-Draft) */
   sound: boolean;
+  /** Browser-Benachrichtigung, wenn man im Online-Draft dran ist (Tab im Hintergrund) */
+  notify: boolean;
 }
 
 interface SettingsCtx extends GlobalSettings {
@@ -18,6 +20,7 @@ interface SettingsCtx extends GlobalSettings {
   setTheme(t: Theme): void;
   setLang(l: Lang): void;
   setSound(on: boolean): void;
+  setNotify(on: boolean): void;
 }
 
 const Ctx = createContext<SettingsCtx | null>(null);
@@ -29,6 +32,7 @@ function initialSettings(): GlobalSettings {
     theme: 'dark',
     ...stored,
     sound: stored.sound !== false,
+    notify: stored.notify === true,
     // Ohne gespeicherte Wahl: Browsersprache (Deutsch → de, sonst en)
     lang: isLang(stored.lang) ? stored.lang : detectLang(),
   };
@@ -58,10 +62,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setSettings((s) => ({ ...s, lang }));
   }, []);
   const setSound = useCallback((sound: boolean) => setSettings((s) => ({ ...s, sound })), []);
+  const setNotify = useCallback((notify: boolean) => setSettings((s) => ({ ...s, notify })), []);
 
   const value = useMemo(
-    () => ({ ...settings, setSprite, setTheme, setLang, setSound }),
-    [settings, setSprite, setTheme, setLang, setSound],
+    () => ({ ...settings, setSprite, setTheme, setLang, setSound, setNotify }),
+    [settings, setSprite, setTheme, setLang, setSound, setNotify],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
@@ -79,10 +84,12 @@ function fallbackSettings(): SettingsCtx {
     theme: stored.theme ?? 'dark',
     lang: currentLang(),
     sound: stored.sound ?? true,
+    notify: stored.notify === true,
     setSprite: noop,
     setTheme: noop,
     setLang: noop,
     setSound: noop,
+    setNotify: noop,
   };
 }
 
