@@ -5,7 +5,7 @@
  */
 import type { HealthResponse } from '../src/lib/api/contract';
 import { draftRoute, draftsUnavailable } from './drafts';
-import { entryDetail, finishRun, health, leaderboard, renamePlayer, startRun } from './endpoints';
+import { entryDetail, finishRun, health, leaderboard, playerProfile, renamePlayer, startRun } from './endpoints';
 import type { Env } from './env';
 import { ApiError, corsHeaders, errorResponse, json, preflight, withHeaders } from './http';
 import { ensureSchema } from './schema';
@@ -32,11 +32,14 @@ const ROUTES: Record<string, { method: 'GET' | 'POST'; run: Route }> = {
 
 /** GET /api/entries/:id – die ID prüft der Endpunkt (ungültig → 400), Unterpfade gibt es nicht. */
 const ENTRY_PATH_RE = /^\/api\/entries\/([^/]+)$/;
+const PLAYER_PATH_RE = /^\/api\/entries\/([^/]+)\/player$/;
 
 /** Routen mit Parameter im Pfad (außer dem Online-Draft). */
 function paramRoute(path: string): { method: 'GET' | 'POST'; run: Route } | null {
   const entry = ENTRY_PATH_RE.exec(path);
   if (entry) return { method: 'GET', run: (_req, env) => entryDetail(entry[1], env) };
+  const player = PLAYER_PATH_RE.exec(path);
+  if (player) return { method: 'GET', run: (_req, env) => playerProfile(player[1], env) };
   return null;
 }
 

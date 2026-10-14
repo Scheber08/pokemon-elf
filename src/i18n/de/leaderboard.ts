@@ -82,6 +82,8 @@ const leaderboard = {
     unreadable: 'Diese Aufstellung lässt sich nicht anzeigen.',
     openInBuilder: 'Im Builder öffnen',
     openInBuilderHint: 'Ersetzt deine Aufstellung im Builder.',
+    profile: 'Profil',
+    profileTitle: (player: string) => `Profil von ${player}`,
     /** Testspiel: eigene Builder-Elf gegen dieses Team */
     friendly: 'Testspiel gegen deine Elf',
     friendlyAgain: 'Nochmal spielen',
@@ -98,6 +100,23 @@ const leaderboard = {
     friendlyScore: (own: number, opp: number) => `Team-Score ${own} : ${opp}`,
     friendlyScorers: (list: string) => `Tore: ${list}`,
     friendlyNote: 'Nur zum Spaß – zählt für keine Rangliste. Bewertet über alle 1.025 Pokémon.',
+  },
+  /** Spielerprofil (/spieler/:id) */
+  profile: {
+    kicker: 'Spielerprofil',
+    since: (date: string) => `Dabei seit ${date}`,
+    runs: (n: number) => (n === 1 ? '1 gewerteter Run' : `${n} gewertete Runs`),
+    perChallenge: 'Bestwerte',
+    runsCol: 'Runs',
+    best: 'Bester Run',
+    showTeam: 'Team ansehen',
+    recent: 'Letzte Runs',
+    loading: 'Profil wird geladen …',
+    gone: 'Dieses Profil ist nicht (mehr) erreichbar – der Eintrag steht nicht mehr in der Rangliste.',
+    error: (message: string) => `Profil nicht erreichbar: ${message}`,
+    toBoard: 'Zur Rangliste',
+    pts: (n: number) => `${n} Pkt`,
+    score: (n: number) => `Score ${n}`,
   },
 };
 

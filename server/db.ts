@@ -280,6 +280,60 @@ export const ENTRY_DETAIL_SQL = `SELECT e.id, e.challenge, e.day, e.formation, e
     AND EXISTS (SELECT 1 FROM best_entries b WHERE b.challenge = e.challenge AND b.scope IN (?, ?, ?)
       AND b.device_id = e.device_id AND b.entry_id = e.id)`;
 
+/** Gerät hinter einem Ranglisten-Eintrag (Sichtbarkeit wie ENTRY_DETAIL_SQL) – null sonst. */
+export function rankedEntryDevice(db: Db, id: string, now: number): Promise<{ device_id: string; player: string } | null> {
+  return db
+    .prepare(
+      `SELECT e.device_id, d.name AS player FROM entries e JOIN devices d ON d.id = e.device_id
+       WHERE e.id = ? AND ${visibleDeviceSql('d')}
+         AND EXISTS (SELECT 1 FROM best_entries b WHERE b.challenge = e.challenge AND b.scope IN (?, ?, ?)
+           AND b.device_id = e.device_id AND b.entry_id = e.id)`,
+    )
+    .bind(id, ...entryScopes(now))
+    .first<{ device_id: string; player: string }>();
+}
+
+export interface PlayerRunRow {
+  id: string;
+  challenge: string;
+  formation: string;
+  day: string;
+  team_name: string;
+  wins: number;
+  draws: number;
+  losses: number;
+  points: number;
+  score: number;
+  created_at: number;
+}
+
+/** Profil-Daten eines Geräts: Runs je Wertung, Bestwerte (allzeit) und die letzten Runs. */
+export async function playerRows(db: Db, deviceId: string, recent: number) {
+  const [counts, bests, last] = await db.batch([
+    db
+      .prepare('SELECT challenge, COUNT(*) AS runs, MIN(created_at) AS first FROM entries WHERE device_id = ? GROUP BY challenge')
+      .bind(deviceId),
+    db
+      .prepare(
+        `SELECT e.id, e.challenge, e.formation, e.day, e.team_name, e.wins, e.draws, e.losses, e.points, e.score, e.created_at
+         FROM best_entries b JOIN entries e ON e.id = b.entry_id
+         WHERE b.device_id = ? AND b.scope = ?`,
+      )
+      .bind(deviceId, ALL_TIME_SCOPE),
+    db
+      .prepare(
+        `SELECT id, challenge, formation, day, team_name, wins, draws, losses, points, score, created_at
+         FROM entries WHERE device_id = ? ORDER BY created_at DESC LIMIT ?`,
+      )
+      .bind(deviceId, recent),
+  ]);
+  return {
+    counts: counts.results as { challenge: string; runs: number; first: number }[],
+    bests: bests.results as PlayerRunRow[],
+    recent: last.results as PlayerRunRow[],
+  };
+}
+
 /** Siehe ENTRY_DETAIL_SQL – null, wenn es den Eintrag nicht gibt oder er in keiner Rangliste (mehr) steht. */
 export function rankedEntry(db: Db, id: string, now: number): Promise<EntryDetailRow | null> {
   return db

@@ -15,6 +15,7 @@ import type {
   HealthResponse,
   LeaderboardResponse,
   Period,
+  PlayerProfile,
   StartRunResponse,
 } from './contract';
 
@@ -191,6 +192,15 @@ export async function fetchEntry(entryId: string): Promise<EntryDetail> {
   const detail = parseEntryDetail(body);
   if (!detail) throw new ApiRequestError(messages().errors.unexpected, 200, 'server_error');
   return detail;
+}
+
+/** Profil des Spielers hinter einem Ranglisten-Eintrag (404 = nicht mehr in der Rangliste). */
+export async function fetchPlayerProfile(entryId: string): Promise<PlayerProfile> {
+  const body = await request<PlayerProfile>(`/entries/${encodeURIComponent(entryId)}/player`);
+  if (!body || typeof body.player !== 'string' || !Array.isArray(body.challenges) || !Array.isArray(body.recent)) {
+    throw new ApiRequestError(messages().errors.unexpected, 200, 'server_error');
+  }
+  return body;
 }
 
 export async function renamePlayer(player: string): Promise<void> {

@@ -183,3 +183,8 @@
   margin: 0;
   font-size: 1.05rem;
 }
+
+/* Spielerprofil */
+.profile .card + .card {
+  margin-top: 16px;
+}

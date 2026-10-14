@@ -10,6 +10,8 @@ import {
   type HealthResponse,
   type LeaderboardResponse,
   type LeaderboardRow,
+  type PlayerProfile,
+  type PlayerRun,
   type StartRunResponse,
 } from '../src/lib/api/contract';
 import { FORMATIONS, FORMATION_IDS } from '../src/config/formations';
@@ -32,9 +34,12 @@ import {
   insertToken,
   isUniqueViolation,
   leaderboardPage,
+  playerRows,
   rankedEntry,
+  rankedEntryDevice,
   releaseToken,
   setDeviceName,
+  type PlayerRunRow,
   type EntryDetailRow,
   type RankedRow,
   type TokenRow,
@@ -374,5 +379,62 @@ export async function entryDetail(rawId: string, env: Env): Promise<Response> {
     console.warn(`Eintrag ${id}: Daten unlesbar oder Standardname – Team-Ansicht als 404`);
     throw entryNotFound();
   }
+  return json(body, 200, { 'Cache-Control': ENTRY_CACHE_CONTROL });
+}
+
+// ---------------------------------------------------------------- Spielerprofil
+
+/** So viele Runs zeigt das Profil im Verlauf */
+export const PROFILE_RECENT = 20;
+
+function toPlayerRun(r: PlayerRunRow): PlayerRun | null {
+  const challenge = r.challenge as ChallengeKey;
+  if (!CHALLENGE_KEYS.includes(challenge) || typeof r.created_at !== 'number') return null;
+  return {
+    challenge,
+    day: r.day,
+    teamName: r.team_name,
+    record: { w: r.wins, d: r.draws, l: r.losses },
+    points: r.points,
+    score: r.score,
+    createdAt: new Date(r.created_at).toISOString(),
+  };
+}
+
+/**
+ * GET /api/entries/:id/player – Profil des Spielers hinter einem Ranglisten-Eintrag: Runs und
+ * Bestwert je Wertung, die letzten Runs. Gleiche Sichtbarkeit wie GET /api/entries/:id (sonst
+ * 404); Geräte-IDs verlassen den Server nicht.
+ */
+export async function playerProfile(rawId: string, env: Env): Promise<Response> {
+  const id = parseEntryId(rawId);
+  const device = await rankedEntryDevice(env.DB, id, Date.now());
+  if (!device || isDefaultPlayerName(device.player)) throw entryNotFound();
+  const rows = await playerRows(env.DB, device.device_id, PROFILE_RECENT);
+  const challenges = CHALLENGE_KEYS.flatMap((challenge) => {
+    const count = rows.counts.find((c) => c.challenge === challenge);
+    if (!count) return [];
+    const best = rows.bests.find((b) => b.challenge === challenge);
+    const run = best ? toPlayerRun(best) : null;
+    const formation = best?.formation as FormationId | undefined;
+    return [
+      {
+        challenge,
+        runs: count.runs,
+        best:
+          best && run && formation && FORMATION_IDS.includes(formation)
+            ? { entryId: best.id, teamName: run.teamName, formation, day: run.day, record: run.record, points: run.points, score: run.score }
+            : null,
+      },
+    ];
+  });
+  const first = Math.min(...rows.counts.map((c) => c.first));
+  const body: PlayerProfile = {
+    player: device.player,
+    since: new Date(Number.isFinite(first) ? first : Date.now()).toISOString(),
+    runs: rows.counts.reduce((n, c) => n + c.runs, 0),
+    challenges,
+    recent: rows.recent.map(toPlayerRun).filter((r): r is PlayerRun => r != null),
+  };
   return json(body, 200, { 'Cache-Control': ENTRY_CACHE_CONTROL });
 }

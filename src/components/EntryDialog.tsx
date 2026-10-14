@@ -203,7 +203,17 @@ export function EntryDialog({ source, onClose, onReloadBoard }: Props) {
       <div className="entry" ref={bodyRef} tabIndex={-1}>
         <p className="entry__meta">
           <span className="kicker">{tr.kicker(t.game.challenge[info.challenge], date)}</span>
-          <span className="entry__by">{tr.byline(player, source.summary.rank)}</span>
+          <span className="entry__by">
+            {tr.byline(player, source.summary.rank)}
+            {onlineId && (
+              <>
+                {' · '}
+                <Link to={`/spieler/${onlineId}`} title={tr.profileTitle(player)} onClick={onClose}>
+                  {tr.profile}
+                </Link>
+              </>
+            )}
+          </span>
         </p>
         <dl className="facts entry__facts">
           <div>

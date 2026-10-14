@@ -8,6 +8,7 @@
  *   GET  /api/leaderboard?challenge=…&period=today|all&limit=…&me=<deviceId>
  *                                            → LeaderboardResponse
  *   GET  /api/entries/:id                    → EntryDetail (nur Ranglisten-Einträge, sonst 404)
+ *   GET  /api/entries/:id/player             → PlayerProfile (Spieler dieses Ranglisten-Eintrags)
  *   POST /api/player        RenameRequest    → { ok: true }
  *
  * Spielername: Ein neues Gerät heißt auf dem Server „Trainer" (DEFAULT_PLAYER_NAME). Mit
@@ -149,6 +150,51 @@ export interface EntryDetail {
   score: number;
   /** ISO-Zeitstempel */
   createdAt: string;
+}
+
+/** Bestwert (allzeit) eines Spielers in einer Wertung – steht in der Rangliste, also verlinkbar */
+export interface PlayerBest {
+  entryId: string;
+  teamName: string;
+  formation: FormationId;
+  day: string;
+  record: Record3;
+  points: number;
+  score: number;
+}
+
+export interface PlayerChallengeStats {
+  challenge: ChallengeKey;
+  /** Gewertete Runs */
+  runs: number;
+  best: PlayerBest | null;
+}
+
+/** Ein gewerteter Run (Verlauf – nicht verlinkbar, nur Bestwerte stehen in der Rangliste) */
+export interface PlayerRun {
+  challenge: ChallengeKey;
+  day: string;
+  teamName: string;
+  record: Record3;
+  points: number;
+  score: number;
+  /** ISO-Zeitstempel */
+  createdAt: string;
+}
+
+/**
+ * GET /api/entries/:id/player – Profil des Spielers hinter einem Ranglisten-Eintrag (gleiche
+ * Sichtbarkeit wie GET /api/entries/:id, sonst 404). Keine Geräte-IDs. Cache: max-age=60.
+ */
+export interface PlayerProfile {
+  player: string;
+  /** Erster gewerteter Run (ISO) */
+  since: string;
+  runs: number;
+  /** Je Wertung (Reihenfolge wie CHALLENGE_KEYS, nur gespielte) */
+  challenges: PlayerChallengeStats[];
+  /** Die letzten gewerteten Runs, neuester zuerst (höchstens 20) */
+  recent: PlayerRun[];
 }
 
 export interface RenameRequest extends DeviceAuth {

@@ -13,6 +13,7 @@ import {
   type DeviceAuth,
   type FinishRunResponse,
   type LeaderboardResponse,
+  type PlayerProfile,
   type StartRunResponse,
 } from '../src/lib/api/contract';
 import {
@@ -1511,5 +1512,34 @@ describe('Nachträge: Emoji-Namen, verwaiste Tokens, IP-Salz', () => {
     // Beide Geräte derselben Verbindung → derselbe Hash (Limit greift weiter)
     const hashes = db.query<{ ip_hash: string }>('SELECT ip_hash FROM devices');
     expect(new Set(hashes.map((h) => h.ip_hash)).size).toBe(1);
+  });
+});
+
+describe('Spielerprofil (GET /api/entries/:id/player)', () => {
+  it('Runs und Bestwert je Wertung, letzte Runs zuerst – ohne Geräte-IDs', async () => {
+    const dev = newDevice();
+    const a = await playOnline(dev, { teamName: 'Erste Elf' });
+    const b = await playOnline(dev, { teamName: 'Zweite Elf' });
+    const c = await playOnline(dev, { challenge: 'c151', teamName: 'Retro Elf' });
+    for (const r of [a, b, c]) expect(r.finish.status).toBe(200);
+    const res = await get<PlayerProfile>(`/api/entries/${c.finish.body.entryId}/player`);
+    expect(res.status).toBe(200);
+    expect(res.body.player).toBe(TEST_PLAYER);
+    expect(res.body.runs).toBe(3);
+    expect(res.body.challenges.map((x) => [x.challenge, x.runs])).toEqual([
+      ['c340', 2],
+      ['c151', 1],
+    ]);
+    const best340 = res.body.challenges[0].best!;
+    expect([a.finish.body.entryId, b.finish.body.entryId]).toContain(best340.entryId);
+    expect(res.body.recent.map((r) => r.teamName)).toEqual(['Retro Elf', 'Zweite Elf', 'Erste Elf']);
+    expect(JSON.stringify(res.body)).not.toContain(dev.deviceId.toLowerCase());
+    // Der Bestwert ist selbst ein Ranglisten-Eintrag
+    expect((await get(`/api/entries/${best340.entryId}`)).status).toBe(200);
+  });
+
+  it('unbekannt bzw. nicht in der Rangliste → 404, ungültige ID → 400', async () => {
+    expect((await get(`/api/entries/${crypto.randomUUID()}/player`)).status).toBe(404);
+    expect((await get('/api/entries/nicht-gueltig/player')).status).toBe(400);
   });
 });
