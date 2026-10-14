@@ -8,6 +8,8 @@ import { PosBadge } from '../components/Badges';
 import { FilterBar, useFilteredPokemon, type PokemonFilters } from '../components/FilterBar';
 import { CaptainPicker } from '../components/CaptainPicker';
 import { JerseyEditor } from '../components/JerseyEditor';
+import { KitPicker } from '../components/KitPicker';
+import { cleanKit, type Kit } from '../lib/kits';
 import { cleanJerseys, type Jerseys } from '../lib/jerseys';
 import { Pitch, type SlotState } from '../components/Pitch';
 import { PokemonGrid } from '../components/PokemonGrid';
@@ -44,6 +46,8 @@ interface DraftTeam {
   jerseys?: Jerseys;
   /** Kapitän (Pokémon-ID aus der Elf, nur Menschen) – wird im Draft gewählt, zählt doppelt */
   captain?: number | null;
+  /** Trikotfarben (nur Menschen; fehlt: Standard) */
+  kit?: Kit | null;
 }
 
 interface DraftState {
@@ -266,7 +270,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     },
     (m) => tx.roundNo(m.round),
     undefined,
-    (i) => (state.teams[i] ? { formation: state.teams[i].formation, ids: state.teams[i].slots, jerseys: cleanJerseys(state.teams[i].jerseys), captain: state.teams[i].captain } : null),
+    (i) => (state.teams[i] ? { formation: state.teams[i].formation, ids: state.teams[i].slots, jerseys: cleanJerseys(state.teams[i].jerseys), captain: state.teams[i].captain, kit: cleanKit(state.teams[i].kit) } : null),
   );
 
   if (state.phase === 'setup') {
@@ -517,6 +521,9 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 jerseys={tm.jerseys}
                 captain={tm.captain ?? null}
               />
+              {!tm.cpu && (
+                <KitPicker kit={cleanKit(tm.kit)} onChange={(kit) => setState((s) => ({ ...s, teams: s.teams.map((x, j) => (j === i ? { ...x, kit } : x)) }))} />
+              )}
               {!tm.cpu && (
                 <JerseyEditor
                   formation={tm.formation}

@@ -230,6 +230,15 @@ auf Feld, Bild, 2D-Wiedergabe und im Spielbericht (Torschützen mit Nummer) – 
 keine Nummern. Der Knopf „Pokédex-Nummern“ vergibt die letzten beiden Ziffern der Pokédex-Nummer; der Teilen-Link
 des Builders trägt eigene Nummern im Parameter `nr`.
 
+**Trikotfarben** (alle Modi, `src/lib/kits.ts`, `src/components/KitPicker.tsx`): je Team eine Heim- und eine
+Auswärtsfarbe aus 10 Farben. In der 2D-Ansicht spielt das Heimteam in Heimfarbe, der Gast ebenfalls – außer
+beide gleich, dann in seiner Auswärtsfarbe (notfalls eine Ausweichfarbe). Gespeichert wie die Trikotnummern
+(Builder-Zustand, `DraftTeam.kit` mit Nachricht `kit`, im Browser je Challenge bzw. im lokalen Draft).
+
+**Kapitän** (alle Modi): seine Passung zählt im Team-Score doppelt (`captainWeight`). Challenges: beim
+Abschluss (Server prüft, `entry_captains`); Builder/Testspiel: im Zustand und im Teilen-Link (`k`); Online-Draft:
+nur während des Drafts (Nachricht `captain`), Manager-Saison: jederzeit, zählt ab dem nächsten Anpfiff.
+
 ## Trainer & Erfolge
 
 **Erfolge** (`/trainer`, `src/lib/achievements.ts`, `server/achievements.ts`): `POST /api/me` rechnet aus den Runs
