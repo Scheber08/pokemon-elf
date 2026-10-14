@@ -365,6 +365,15 @@ function hat(c: Canvas, id: string, cloth: string) {
       c.fill(ellipse(15.5, 1.5, 1.5, 1.5), '#f27fc0', '#b0447f');
       c.dots([[9, 10], [22, 10]], '#26282e');
       break;
+    case 'hearts':
+      // Haarreif mit zwei Herzen auf Federn
+      c.fill((x, y) => y === 9 && head(x, y), '#e8326e', null);
+      for (const cx of [11, 20]) {
+        c.rect(cx, 4, 1, 5, '#26282e');
+        c.dots([[cx - 2, 1], [cx - 1, 1], [cx + 1, 1], [cx + 2, 1], [cx - 2, 2], [cx - 1, 2], [cx, 2], [cx + 1, 2], [cx + 2, 2], [cx - 1, 3], [cx, 3], [cx + 1, 3], [cx, 4]], '#e8326e');
+        c.dots([[cx - 2, 1]], '#f7a1bf');
+      }
+      break;
     case 'wizard':
       c.fill((x, y) => y <= 9 && y >= 0 && Math.abs(x - 15.5) <= 1 + y * 0.9, '#5b3fb0');
       c.rect(6, 9, 20, 2, '#4a3191');

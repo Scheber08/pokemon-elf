@@ -45,6 +45,8 @@ const SUMMER = ['06-21', '08-31', '☀️'] as const;
 const XMAS = ['12-01', '01-06', '🎄'] as const;
 /** Silvester und Neujahr */
 const NEWYEAR = ['12-27', '01-10', '🎆'] as const;
+/** Valentinstag */
+const VALENTINE = ['02-07', '02-14', '💘'] as const;
 
 /** Ist ein Artikel zum Zeitpunkt `now` (ms) im Shop? Saisonartikel nur in ihrem Zeitraum (auch über den Jahreswechsel). */
 export function itemOnSale(it: TrainerItem, now: number): boolean {
@@ -137,6 +139,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('hat', 'straw', 250), ...SUMMER),
   seasonal(item('hat', 'bunny', 250), ...SPRING),
   seasonal(item('hat', 'party', 250), ...NEWYEAR),
+  seasonal(item('hat', 'hearts', 200), ...VALENTINE),
   // Accessoire
   item('accessory', 'none', 0),
   item('accessory', 'freckles', 0),
@@ -199,6 +202,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('companion', '278', 300), ...SUMMER),
   seasonal(item('companion', '175', 350), ...SPRING),
   seasonal(item('companion', '385', 800), ...NEWYEAR),
+  seasonal(item('companion', '370', 300), ...VALENTINE),
   item('companion', '6', 600),
   item('companion', '149', 600),
   item('companion', '448', 600),
