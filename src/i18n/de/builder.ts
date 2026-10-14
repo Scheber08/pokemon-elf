@@ -15,6 +15,8 @@ const builder = {
   best: 'Beste Elf',
   bestTitle: 'Stellt die stärkste Elf aus der gewählten Region und den Einstellungen auf',
   undoTitle: 'Letzte Änderung an der Aufstellung zurücknehmen (Strg/Cmd+Z)',
+  redo: 'Wiederholen',
+  redoTitle: 'Zurückgenommene Änderung wiederherstellen (Strg+Y bzw. Strg/Cmd+Umschalt+Z)',
   reset: 'Zurücksetzen',
   clearAll: 'Alles leeren',
   region: 'Region',

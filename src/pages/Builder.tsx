@@ -134,29 +134,48 @@ export function Builder() {
   const stateRef = useRef(state);
   stateRef.current = state;
   const [history, setHistory] = useState<BuilderState[]>([]);
+  /** Wiederholen: zurückgenommene Stände (neuester zuletzt) – jede neue Änderung leert sie */
+  const [future, setFuture] = useState<BuilderState[]>([]);
   const change = (fn: (s: BuilderState) => BuilderState) => {
     const prev = stateRef.current;
     const next = fn(prev);
     if (next === prev) return;
     setHistory((h) => [...h.slice(-(UNDO_MAX - 1)), prev]);
+    setFuture([]);
     stateRef.current = next;
     setState(next);
   };
   const undo = () => {
     const prev = history[history.length - 1];
     if (!prev) return;
+    const cur = stateRef.current;
     setHistory((h) => h.slice(0, -1));
+    setFuture((f) => [...f.slice(-(UNDO_MAX - 1)), cur]);
     stateRef.current = prev;
     setState(prev);
   };
-  // Strg/Cmd+Z – nicht in Eingabefeldern (dort gilt das Rückgängig des Browsers)
+  const redo = () => {
+    const next = future[future.length - 1];
+    if (!next) return;
+    const cur = stateRef.current;
+    setFuture((f) => f.slice(0, -1));
+    setHistory((h) => [...h.slice(-(UNDO_MAX - 1)), cur]);
+    stateRef.current = next;
+    setState(next);
+  };
+  // Strg/Cmd+Z, Strg/Cmd+Umschalt+Z bzw. Strg+Y – nicht in Eingabefeldern (dort gilt der Browser)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.key.toLowerCase() !== 'z') return;
+      if (!(e.ctrlKey || e.metaKey)) return;
+      const key = e.key.toLowerCase();
+      const isUndo = key === 'z' && !e.shiftKey;
+      const isRedo = (key === 'z' && e.shiftKey) || (key === 'y' && !e.shiftKey);
+      if (!isUndo && !isRedo) return;
       const el = e.target as HTMLElement | null;
       if (el?.closest('input, textarea, [contenteditable="true"]') || picking != null) return;
       e.preventDefault();
-      undo();
+      if (isUndo) undo();
+      else redo();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -277,6 +296,9 @@ export function Builder() {
           </button>
           <button type="button" className="btn" onClick={undo} disabled={!history.length} title={t.builder.undoTitle}>
             {t.builder.undo}
+          </button>
+          <button type="button" className="btn" onClick={redo} disabled={!future.length} title={t.builder.redoTitle}>
+            {t.builder.redo}
           </button>
           <button
             type="button"

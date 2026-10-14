@@ -20,6 +20,8 @@ const builder: Messages['builder'] = {
   best: 'Best XI',
   bestTitle: 'Picks the strongest lineup from the selected region and settings',
   undoTitle: 'Undo the last change to the lineup (Ctrl/Cmd+Z)',
+  redo: 'Redo',
+  redoTitle: 'Redo the change you undid (Ctrl+Y or Ctrl/Cmd+Shift+Z)',
   reset: 'Reset',
   clearAll: 'Clear all',
   region: 'Region',
