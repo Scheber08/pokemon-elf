@@ -329,6 +329,8 @@ export interface ManagerSnapshot {
   offers?: ManagerOffer[];
   /** Gespielte Aufstellungen je Spieltag („1", …) und Team-ID (fehlt bei älteren Ständen) */
   playedLineups?: Record<string, Record<string, Pick<ManagerLineup, 'formation' | 'slots'>>>;
+  /** Ausfälle: Pokémon-ID → Verletzung bzw. Rote Karte bis einschließlich Spieltag `until` (fehlt = keine) */
+  out?: Record<string, { kind: 'injury' | 'red'; until: number; since: number }>;
 }
 
 export interface DraftPickLog {

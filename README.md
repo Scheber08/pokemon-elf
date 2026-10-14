@@ -221,6 +221,11 @@ Statistik, Torschützen mit Vorlagen) oder die 2D-Ansicht von oben (`src/lib/mat
 Illustration, das Ergebnis ändert sich nicht; Tempo 1×/2×/4×, „⏭ Tor“, Leertaste/N, „TOR!“-Einblendung). In den
 Einstellungen bzw. per Umschalter: 2D, Bericht oder aus. In der Manager-Saison zusätzlich der Spieler des Spieltags.
 
+**Ausfälle in der Manager-Saison** (`src/lib/manager.ts`: `rollAbsences`, `coverAbsences`): Nach jedem Spieltag
+kann sich ein eingesetztes Pokémon verletzen (3 %, 1–3 Spieltage) oder Rot sehen (1 %, 1 Spieltag gesperrt) –
+deterministisch aus dem Liga-Seed, gespeichert in `ManagerState.out`. Automatische Aufstellungen und CPU-Teams
+lassen Ausfälle draußen; eigene Aufstellungen bekommen zum Anpfiff den besten verfügbaren Ersatz.
+
 **Trikotnummern** (alle Modi, `src/lib/jerseys.ts`, `src/components/JerseyEditor.tsx`): Ohne eigene Wahl gilt
 eine Vorgabe nach Position (Torwart 1, Abwehr 2–5, Sechser 6, Zehner 10, Stürmer 9 …). Jedes Team kann seinen
 Pokémon Nummern von 1 bis 99 geben – je Team eindeutig (belegte Nummern tauschen), die Nummer hängt am Pokémon,

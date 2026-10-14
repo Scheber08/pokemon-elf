@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
-import type { DraftTeam, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
+import type { DraftSnapshot, DraftTeam, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { rosterOf } from '../lib/draftEngine';
 import { leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague } from '../lib/leagueTimeline';
 import { showNotify } from '../lib/notify';
@@ -27,6 +27,7 @@ import '../styles/draft.css';
 import { cleanKit } from '../lib/kits';
 import { CrestEditor } from './CrestEditor';
 import { cleanCrest, type Crest as CrestData } from '../lib/crest';
+import { absentAt, type ManagerAbsence } from '../lib/manager';
 import { Crest } from './Crest';
 
 /** Auswahl beim Tauschen: ein Feld-/SS-Platz oder ein Bankspieler */
@@ -290,10 +291,14 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           form={m.form}
           setPiece={s.settings.setPiece}
           onChange={(l) => room.setLineup(l)}
+          out={m.out ?? {}}
+          next={m.played + 1}
         />
       ) : (
         <p className="notice">{tx.spectator}</p>
       )}
+
+      <OutList state={s} out={m.out ?? {}} next={m.played + 1} />
 
       {room.me && !readOnly && m.lineups[room.me.id] && meIndex >= 0 && (
         <section className="card">
@@ -440,12 +445,18 @@ function LineupEditor({
   form,
   setPiece,
   onChange,
+  out,
+  next,
 }: {
   team: DraftTeam;
   lineup: ManagerLineup;
   form: Record<string, number>;
   setPiece: boolean;
   onChange: (l: ManagerLineup) => void;
+  /** Ausfälle der Liga (Pokémon-ID → Ausfall) */
+  out: Record<string, ManagerAbsence>;
+  /** Nächster Spieltag */
+  next: number;
 }) {
   const t = useT();
   const tx = t.draft.manager;
@@ -463,7 +474,12 @@ function LineupEditor({
       return p ? [{ p, pos: FORMATIONS[l.formation].slots[i].pos }] : [];
     });
   const strength = lineupScore(squadOf(lineup), sc, formOf);
-  const best = bestLineup(team, lineup.formation, byId, sc, form, setPiece);
+  const absent = absentAt({ out }, next);
+  const outText = (id: number): string | null => {
+    const a = absent.has(id) ? out[id] : undefined;
+    return a ? (a.kind === 'red' ? tx.outRed(a.until) : tx.outInjury(a.until)) : null;
+  };
+  const best = bestLineup(team, lineup.formation, byId, sc, form, setPiece, absent);
   const bestStrength = lineupScore(squadOf(best), sc, formOf);
 
   const manual = (l: Omit<ManagerLineup, 'auto'>) => {
@@ -565,6 +581,13 @@ function LineupEditor({
         const names = weak.map((id) => (byId.get(id) ? t.game.pokemon(byId.get(id)!) : `#${id}`));
         return <p className="hint manager__formwarn">⚠️ {tx.formWarning(names)}</p>;
       })()}
+      {(() => {
+        // Ausfälle in der eigenen Elf: werden zum Anpfiff ersetzt
+        const missing = [...lineup.slots, ...(lineup.ss != null ? [lineup.ss] : [])].filter((id) => absent.has(id));
+        if (!missing.length) return null;
+        const names = missing.map((id) => (byId.get(id) ? t.game.pokemon(byId.get(id)!) : `#${id}`));
+        return <p className="hint manager__formwarn">🚑 {tx.outWarning(names)}</p>;
+      })()}
       <p className={`hint ${pick ? 'hint--active' : ''}`}>{pickedName ? tx.selected(pickedName) : tx.swapHint}</p>
       <div className="manager__pitch">
         <Pitch
@@ -606,7 +629,16 @@ function LineupEditor({
           <tbody>
             {rows.map((r) => (
               <tr key={r.p.id} className={r.role ? '' : 'is-bench'}>
-                <td className="left">{t.game.pokemon(r.p)}</td>
+                <td className="left">
+                  {t.game.pokemon(r.p)}
+                  {outText(r.p.id) && (
+                    <span className="manager__out" title={outText(r.p.id)!}>
+                      {' '}
+                      {out[r.p.id].kind === 'red' ? '🟥' : '🚑'}
+                      <span className="sr-only"> – {outText(r.p.id)}</span>
+                    </span>
+                  )}
+                </td>
                 <td>
                   {r.role ? (
                     <PosBadge pos={r.role} />
@@ -625,6 +657,40 @@ function LineupEditor({
           </tbody>
         </table>
       </div>
+    </section>
+  );
+}
+
+/** Ausfälle der Liga zum nächsten Spieltag (Verletzungen und Sperren) mit Team. */
+function OutList({ state, out, next }: { state: DraftSnapshot; out: Record<string, ManagerAbsence>; next: number }) {
+  const t = useT();
+  const tx = t.draft.manager;
+  const { byId } = usePokemonData();
+  const rows = [...absentAt({ out }, next)].flatMap((id) => {
+    const team = state.teams.find((tm) => rosterOf(tm).includes(id));
+    const p = byId.get(id);
+    return team && p ? [{ id, team, p, a: out[id] }] : [];
+  });
+  return (
+    <section className="card manager__out-list" aria-labelledby="manager-out">
+      <h2 id="manager-out" className="section-title">
+        {tx.outTitle}
+      </h2>
+      <p className="muted small">{tx.outNote}</p>
+      {rows.length ? (
+        <ul className="manager__out-rows">
+          {rows.map(({ id, team, p, a }) => (
+            <li key={id}>
+              <span aria-hidden="true">{a.kind === 'red' ? '🟥' : '🚑'}</span> <strong>{t.game.pokemon(p)}</strong>{' '}
+              <span className="muted">
+                ({teamLabel(team, t)}) · {a.kind === 'red' ? tx.outRed(a.until) : tx.outInjury(a.until)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="small">{tx.outNone}</p>
+      )}
     </section>
   );
 }

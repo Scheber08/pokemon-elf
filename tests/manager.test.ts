@@ -45,6 +45,10 @@ import {
   cpuOffers,
   squadStrength,
   lineupScore,
+  rollAbsences,
+  absentAt,
+  INJURY_CHANCE,
+  RED_CARD_CHANCE,
 } from '../src/lib/manager';
 import { expiresAt, parseClientMessage } from '../server/draftCore';
 import { handleApi, type Env } from '../server/handler';
@@ -602,5 +606,48 @@ describe('Wappen im Online-Draft', () => {
     expect(() => setTeamCrest(s, 'dev-h', { ...crest, shape: 'star' })).toThrow(/Wappen/);
     expect(parseClientMessage(JSON.stringify({ type: 'crest', crest }))).toMatchObject({ ok: true });
     expect(parseClientMessage(JSON.stringify({ type: 'crest', crest: 'x' })).ok).toBe(false);
+  });
+});
+
+describe('Verletzungen und Sperren', () => {
+  it('deterministisch aus dem Seed, Häufigkeit wie eingestellt, Dauer 1–3 bzw. 1 Spieltag', () => {
+    const ids = Array.from({ length: 4000 }, (_, i) => i + 1);
+    const a = rollAbsences(7, 3, ids);
+    expect(rollAbsences(7, 3, ids)).toEqual(a);
+    const list = Object.values(a);
+    const injuries = list.filter((x) => x.kind === 'injury');
+    const reds = list.filter((x) => x.kind === 'red');
+    expect(injuries.length / ids.length).toBeGreaterThan(INJURY_CHANCE * 0.6);
+    expect(injuries.length / ids.length).toBeLessThan(INJURY_CHANCE * 1.4);
+    expect(reds.length / ids.length).toBeGreaterThan(RED_CARD_CHANCE * 0.4);
+    expect(reds.length / ids.length).toBeLessThan(RED_CARD_CHANCE * 1.8);
+    expect(injuries.every((x) => x.until >= 4 && x.until <= 6 && x.since === 3)).toBe(true);
+    expect(reds.every((x) => x.until === 4)).toBe(true);
+    expect([...absentAt({ out: { '5': { kind: 'red', until: 4, since: 3 } } }, 4)]).toEqual([5]);
+    expect([...absentAt({ out: { '5': { kind: 'red', until: 4, since: 3 } } }, 5)]).toEqual([]);
+  });
+
+  it('wer ausfällt, spielt nicht: eigene Aufstellung bekommt zum Anpfiff Ersatz, gespeichert bleibt sie', () => {
+    let s = startManagerSeason(drafted(), ALL, SCALE);
+    const lineup = s.manager!.lineups.h;
+    const injured = lineup.slots[3];
+    s = setLineup(s, 'dev-h', { ...lineup, auto: false }, ALL, SCALE);
+    s = { ...s, manager: { ...s.manager!, out: { [injured]: { kind: 'injury', until: 1, since: 0 } } } };
+    const after = playMatchday(s, ALL, SCALE);
+    const played = after.manager!.playedLineups!['1'].h;
+    expect(played.slots).not.toContain(injured);
+    expect(new Set(played.slots).size).toBe(played.slots.length);
+    // Gespeicherte Aufstellung unverändert; der Ausfall ist nach Spieltag 1 vorbei
+    expect(after.manager!.lineups.h.slots).toContain(injured);
+    expect(after.manager!.out?.[injured]).toBeUndefined();
+  });
+
+  it('automatische Aufstellungen lassen Ausfälle draußen', () => {
+    let s = startManagerSeason(drafted(), ALL, SCALE);
+    const cpuLineup = s.manager!.lineups.c1;
+    const injured = cpuLineup.slots[0];
+    s = { ...s, manager: { ...s.manager!, out: { [injured]: { kind: 'red', until: 1, since: 0 } } } };
+    const after = playMatchday(s, ALL, SCALE);
+    expect(after.manager!.playedLineups!['1'].c1.slots).not.toContain(injured);
   });
 });

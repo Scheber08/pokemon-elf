@@ -531,6 +531,12 @@ const draft: Messages['draft'] = {
     jumpTable: 'Table',
     formWarning: (names) =>
       `${names.length === 1 ? `${names[0]} is` : `${names.length} players in your eleven are`} in poor form today${names.length > 1 ? ` (${names.join(', ')})` : ''} – rotate?`,
+    outInjury: (until) => `injured until matchday ${until}`,
+    outRed: (until) => `suspended after a red card (matchday ${until})`,
+    outWarning: (names) => `${names.join(', ')} ${names.length === 1 ? 'is' : 'are'} out – the best available replacement steps in at kickoff.`,
+    outTitle: 'Absences',
+    outNote: 'After every matchday a fielded Pokémon may get injured (1–3 matchdays) or see red (banned for 1 matchday).',
+    outNone: 'Nobody is out right now.',
     offersOpen: (n) => (n === 1 ? '1 trade offer for you' : `${n} trade offers for you`),
     offerAccepted: (team, give, get) => `${team} accepted: ${get} joins, ${give} leaves.`,
     offerDeclined: (team, give, get) => `Your offer to ${team} (${give} for ${get}) is off the table – declined or no longer possible.`,

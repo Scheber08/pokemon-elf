@@ -695,4 +695,27 @@ describe('ManagerSeason', () => {
     expect(sent.slots.slice(1)).toEqual(lineup.slots.slice(1));
     expect(lineup.slots).not.toContain(sent.slots[0]);
   });
+
+  it('Ausfälle: Liste mit Team, Markierung im Kader und Hinweis auf Ersatz in der eigenen Elf', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason } = await import('../src/lib/manager');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    const lineup = s.manager!.lineups.h;
+    const hurt = lineup.slots[2];
+    s = {
+      ...s,
+      manager: { ...s.manager!, lineups: { ...s.manager!.lineups, h: { ...lineup, auto: false } }, out: { [hurt]: { kind: 'injury', until: 2, since: 0 } } },
+    };
+    const room = fakeRoom(snap(s, 'h'));
+    const { container } = await render(app(h(ManagerSeason, { room, readOnly: false })));
+    await settle();
+    const name = ALL.find((p) => p.id === hurt)!.de;
+    expect(container.querySelector('.manager__out-list')!.textContent).toContain(name);
+    expect(container.querySelector('.manager__out-list')!.textContent).toContain('verletzt bis Spieltag 2');
+    expect(container.querySelector('.manager__lineup')!.textContent).toContain('beim Anpfiff springt der beste verfügbare Ersatz ein');
+    expect(container.querySelectorAll('.manager__squad .manager__out')).toHaveLength(1);
+  });
 });
+

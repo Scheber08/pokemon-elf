@@ -74,7 +74,24 @@ export interface ManagerState {
   offers?: ManagerOffer[];
   /** Nächste Angebots-ID */
   offerSeq?: number;
+  /** Ausfälle (Pokémon-ID → bis einschließlich Spieltag `until`): Verletzung oder Rote Karte */
+  out?: Record<string, ManagerAbsence>;
 }
+
+/** Ein Ausfall: verletzt (1–3 Spieltage) oder nach Roter Karte gesperrt (1 Spieltag) */
+export interface ManagerAbsence {
+  kind: 'injury' | 'red';
+  /** Fällt bis einschließlich dieses Spieltags aus */
+  until: number;
+  /** Am Spieltag passiert */
+  since: number;
+}
+
+/** Chance je eingesetztem Spieler und Spieltag: Verletzung bzw. Rote Karte */
+export const INJURY_CHANCE = 0.03;
+export const RED_CARD_CHANCE = 0.01;
+/** Verletzungsdauer 1, 2 oder 3 Spieltage (Gewichte) */
+const INJURY_WEIGHTS = [3, 2, 1];
 
 /** Aufstellung, mit der ein Team an einem Spieltag gespielt hat */
 export type ManagerPlayedLineup = Pick<ManagerLineup, 'formation' | 'slots'>;
@@ -109,6 +126,41 @@ export function formsOf(seed: number | string, matchday: number): (pokemonId: nu
     }
     return 0;
   };
+}
+
+/** Wer fällt am Spieltag k aus? (Pokémon-IDs) */
+export function absentAt(m: Pick<ManagerState, 'out'> | null | undefined, matchday: number): Set<number> {
+  const out = new Set<number>();
+  for (const [id, a] of Object.entries(m?.out ?? {})) if (a.until >= matchday) out.add(Number(id));
+  return out;
+}
+
+/**
+ * Neue Ausfälle nach Spieltag k – deterministisch aus dem Liga-Seed, je eingesetztem Pokémon:
+ * Rote Karte (gesperrt für den nächsten Spieltag) oder Verletzung (1–3 Spieltage).
+ */
+export function rollAbsences(seed: number | string, matchday: number, played: readonly number[]): Record<string, ManagerAbsence> {
+  const base = leagueSeed(seed, 'out', matchday);
+  const out: Record<string, ManagerAbsence> = {};
+  const total = INJURY_WEIGHTS.reduce((a, b) => a + b, 0);
+  for (const id of played) {
+    const x = hashSeed(base, id) / 0x80000000;
+    if (x < RED_CARD_CHANCE) {
+      out[id] = { kind: 'red', until: matchday + 1, since: matchday };
+    } else if (x < RED_CARD_CHANCE + INJURY_CHANCE) {
+      let d = (hashSeed(base + 1, id) / 0x80000000) * total;
+      let games = 1;
+      for (let i = 0; i < INJURY_WEIGHTS.length; i++) {
+        d -= INJURY_WEIGHTS[i];
+        if (d < 0) {
+          games = i + 1;
+          break;
+        }
+      }
+      out[id] = { kind: 'injury', until: matchday + games, since: matchday };
+    }
+  }
+  return out;
 }
 
 /** Tagesform aller Kader-Pokémon der gedrafteten Teams für einen Spieltag (nur ≠ 0). */
@@ -179,8 +231,10 @@ export function bestLineup(
   scale: Scale,
   form: Record<string, number>,
   setPiece: boolean,
+  /** Ausfälle – nicht aufstellen */
+  absent: ReadonlySet<number> = new Set(),
 ): Omit<ManagerLineup, 'auto'> {
-  const pool = rosterOf(team).flatMap((id) => byId.get(id) ?? []);
+  const pool = rosterOf(team).flatMap((id) => (absent.has(id) ? [] : byId.get(id) ?? []));
   const best = bestEleven(formation, pool, scale, { setPiece, bonus: (p) => (form[p.id] ?? 0) * FORM_FIT });
   return { formation, slots: best.slots.map((id) => id ?? -1), ss: setPiece ? best.ss : null };
 }
@@ -203,15 +257,59 @@ export function lineupError(team: Pick<DraftTeam, 'slots' | 'ss' | 'bench'>, lin
   return null;
 }
 
-/** Aufstellungen fürs nächste Spiel: CPU-Teams und „auto" bekommen die beste Elf zur Tagesform. */
-function refreshAuto(state: DraftState, lineups: Record<string, ManagerLineup>, form: Record<string, number>, byId: ById, scale: Scale) {
+/** Aufstellungen fürs nächste Spiel: CPU-Teams und „auto" bekommen die beste Elf zur Tagesform (ohne Ausfälle). */
+function refreshAuto(
+  state: DraftState,
+  lineups: Record<string, ManagerLineup>,
+  form: Record<string, number>,
+  byId: ById,
+  scale: Scale,
+  absent: ReadonlySet<number> = new Set(),
+) {
   const setPiece = upgradeSettings(state.settings).setPiece;
   const out: Record<string, ManagerLineup> = {};
   for (const t of state.teams) {
     const cur = lineups[t.id] ?? { ...draftedLineup(t), auto: true };
-    out[t.id] = t.cpu || cur.auto ? { ...bestLineup(t, cur.formation, byId, scale, form, setPiece), auto: cur.auto || t.cpu } : cur;
+    out[t.id] = t.cpu || cur.auto ? { ...bestLineup(t, cur.formation, byId, scale, form, setPiece, absent), auto: cur.auto || t.cpu } : cur;
   }
   return out;
+}
+
+/**
+ * Eigene Aufstellung zum Anpfiff: Wer ausfällt, wird durch das am besten passende verfügbare
+ * Kader-Pokémon ersetzt (Standardschütze notfalls keiner). Die gespeicherte Aufstellung bleibt.
+ */
+export function coverAbsences(
+  team: Pick<DraftTeam, 'slots' | 'ss' | 'bench'>,
+  lineup: ManagerLineup,
+  absent: ReadonlySet<number>,
+  byId: ById,
+  scale: Scale,
+  form: Record<string, number>,
+): ManagerLineup {
+  const hit = lineup.slots.some((id) => absent.has(id)) || (lineup.ss != null && absent.has(lineup.ss));
+  if (!hit) return lineup;
+  const used = new Set([...lineup.slots, ...(lineup.ss != null ? [lineup.ss] : [])]);
+  const free = rosterOf(team).filter((id) => !used.has(id) && !absent.has(id));
+  const take = (pos: PosCode): number | null => {
+    let best: number | null = null;
+    let bestFit = -1;
+    for (const id of free) {
+      const p = byId.get(id);
+      if (!p) continue;
+      const f = formFit(p, pos, scale, form[id] ?? 0);
+      if (f > bestFit) {
+        bestFit = f;
+        best = id;
+      }
+    }
+    if (best != null) free.splice(free.indexOf(best), 1);
+    return best;
+  };
+  const defs = FORMATIONS[lineup.formation].slots;
+  const slots = lineup.slots.map((id, i) => (absent.has(id) ? take(defs[i].pos) ?? id : id));
+  const ss = lineup.ss != null && absent.has(lineup.ss) ? take('SS') : lineup.ss;
+  return { ...lineup, slots, ss };
 }
 
 /** Kompakte Liga-Teams (ohne Kader) für Zustand und Schnappschuss */
@@ -314,8 +412,16 @@ export function playMatchday(before: DraftState, list: Pokemon[], scale: Scale):
   if (!state.league) return state;
   const byId = new Map(list.map((p) => [p.id, p]));
   const k = m.played + 1;
-  // Zum Anpfiff gilt die Form dieses Spieltags (auto-Aufstellungen sind schon darauf gestellt)
-  const lineups = refreshAuto(state, m.lineups, rosterForm(state, k), byId, scale);
+  // Zum Anpfiff gilt die Form dieses Spieltags (auto-Aufstellungen sind schon darauf gestellt);
+  // wer ausfällt, spielt nicht – eigene Aufstellungen bekommen dafür einen Ersatz
+  const absent = absentAt(m, k);
+  const formNow = rosterForm(state, k);
+  const lineups = Object.fromEntries(
+    Object.entries(refreshAuto(state, m.lineups, formNow, byId, scale, absent)).map(([id, l]) => {
+      const team = state.teams.find((t) => t.id === id);
+      return [id, team ? coverAbsences(team, l, absent, byId, scale, formNow) : l];
+    }),
+  );
   const playedNow = Object.fromEntries(Object.entries(lineups).map(([id, l]) => [id, { formation: l.formation, slots: [...l.slots] }]));
   const cur: ManagerState = { ...m, lineups, playedLineups: { ...(m.playedLineups ?? {}), [k]: playedNow } };
   const teams = matchdayTeams(state, cur, k, byId, scale);
@@ -329,12 +435,27 @@ export function playMatchday(before: DraftState, list: Pokemon[], scale: Scale):
   if (k >= m.total) {
     return { ...state, phase: 'done', league, manager: { ...cur, played: k, form: {} } };
   }
+  // Neue Ausfälle (eingesetzte Pokémon der gedrafteten Teams), abgelaufene fallen weg
+  const fielded = Object.values(lineups).flatMap((l) => [...l.slots, ...(l.ss != null ? [l.ss] : [])]);
+  const out: Record<string, ManagerAbsence> = {};
+  for (const [id, a] of Object.entries(m.out ?? {})) if (a.until > k) out[id] = a;
+  Object.assign(out, rollAbsences(state.seed, k, fielded));
   const nextForm_ = rosterForm(state, k + 1);
+  const nextAbsent = absentAt({ out }, k + 1);
+  // Gespeicherte eigene Aufstellungen bleiben, wie sie sind (Ersatz erst zum Anpfiff)
+  const keep = Object.fromEntries(Object.entries(lineups).map(([id, l]) => [id, l.auto ? l : (m.lineups[id] ?? l)]));
+  const { out: _old, ...rest } = cur;
   return cpuOffers(
     {
       ...state,
       league,
-      manager: { ...cur, played: k, form: nextForm_, lineups: refreshAuto(state, lineups, nextForm_, byId, scale) },
+      manager: {
+        ...rest,
+        played: k,
+        form: nextForm_,
+        lineups: refreshAuto(state, keep, nextForm_, byId, scale, nextAbsent),
+        ...(Object.keys(out).length ? { out } : {}),
+      },
     },
     list,
     scale,
@@ -373,7 +494,7 @@ export function setLineup(
   let lineup: ManagerLineup;
   if (input.auto) {
     const byId = new Map(list.map((p) => [p.id, p]));
-    lineup = { ...bestLineup(team, input.formation, byId, scale, m.form, setPiece), auto: true };
+    lineup = { ...bestLineup(team, input.formation, byId, scale, m.form, setPiece, absentAt(m, m.played + 1)), auto: true };
   } else {
     const l = { formation: input.formation, slots: input.slots, ss: setPiece ? input.ss : null };
     const err = lineupError(team, l, setPiece);

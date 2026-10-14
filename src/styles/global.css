@@ -2634,3 +2634,10 @@ button.sheet__row:hover {
   height: 22px;
   border-radius: 50%;
 }
+
+.manager__out-rows {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 4px;
+}

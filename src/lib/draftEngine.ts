@@ -1724,6 +1724,7 @@ function managerView(m: ManagerState, season: DraftSeason | null, you: string | 
     // Tausch-Angebote nur für die beiden beteiligten Teams
     ...(you ? { offers: (m.offers ?? []).filter((o) => o.from === you || o.to === you) } : {}),
     ...(m.playedLineups ? { playedLineups: m.playedLineups } : {}),
+    ...(m.out ? { out: m.out } : {}),
   };
 }
 

@@ -575,6 +575,13 @@ const draft = {
     jumpTable: 'Tabelle',
     formWarning: (names: string[]) =>
       `${names.length === 1 ? `${names[0]} ist` : `${names.length} Spieler deiner Elf sind`} heute schlecht in Form${names.length > 1 ? ` (${names.join(', ')})` : ''} – vielleicht rotieren?`,
+    outInjury: (until: number) => `verletzt bis Spieltag ${until}`,
+    outRed: (until: number) => `nach Roter Karte gesperrt (Spieltag ${until})`,
+    outWarning: (names: string[]) =>
+      `${names.join(', ')} ${names.length === 1 ? 'fällt' : 'fallen'} aus – beim Anpfiff springt der beste verfügbare Ersatz ein.`,
+    outTitle: 'Ausfälle',
+    outNote: 'Nach jedem Spieltag kann sich ein eingesetztes Pokémon verletzen (1–3 Spieltage) oder Rot sehen (1 Spieltag gesperrt).',
+    outNone: 'Gerade fällt niemand aus.',
     offersOpen: (n: number) => (n === 1 ? '1 Tausch-Angebot an dich offen' : `${n} Tausch-Angebote an dich offen`),
     offerAccepted: (team: string, give: string, get: string) => `${team} hat angenommen: ${get} kommt, ${give} geht.`,
     offerDeclined: (team: string, give: string, get: string) => `Dein Angebot an ${team} (${give} für ${get}) ist vom Tisch – abgelehnt oder hinfällig.`,
