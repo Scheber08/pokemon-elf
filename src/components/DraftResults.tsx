@@ -17,6 +17,8 @@ import { CupBracket, CupGroups, cupStatusText } from './CupBracket';
 import { FixtureList, FormDots } from './LeagueTicker';
 import { useMatchReport } from './MatchReport';
 import { SeasonStats } from './SeasonStats';
+import { TrainerAvatar } from './TrainerAvatar';
+import { parseLook } from '../lib/trainer';
 import { Pitch } from './Pitch';
 import { PlaceChart } from './PlaceChart';
 import { SaveImageButton } from './SaveImageButton';
@@ -355,6 +357,9 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                   <tr key={r.team} className={r.team === you ? 'is-user' : ''}>
                     <td>{i + 1}</td>
                     <td className="left draft-results__name">
+                      {teams[r.team]?.trainer && (
+                        <TrainerAvatar look={parseLook(teams[r.team].trainer)} size={22} companion={false} className="draft-trainer" />
+                      )}
                       {nameOf(r.team)}
                       {teams[r.team]?.cpu && <span className="rating">{t.draft.cpu}</span>}
                       {!teams[r.team] && league.teams[r.team]?.player && (
