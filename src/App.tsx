@@ -18,6 +18,7 @@ const Daily = lazy(() => import('./pages/Daily').then((m) => ({ default: m.Daily
 const Draft = lazy(() => import('./pages/Draft').then((m) => ({ default: m.Draft })));
 const DraftRoom = lazy(() => import('./pages/DraftRoom').then((m) => ({ default: m.DraftRoom })));
 const Leaderboard = lazy(() => import('./pages/Leaderboard').then((m) => ({ default: m.Leaderboard })));
+const Manager = lazy(() => import('./pages/Manager').then((m) => ({ default: m.Manager })));
 const Trainer = lazy(() => import('./pages/Trainer').then((m) => ({ default: m.Trainer })));
 const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
 const Scouting = lazy(() => import('./pages/Scouting').then((m) => ({ default: m.Scouting })));
@@ -82,6 +83,7 @@ export function App() {
                   <Route path="/scouting" element={<Scouting />} />
                   <Route path="/spieler/:entryId" element={<Profile />} />
                   <Route path="/trainer" element={<Trainer />} />
+                  <Route path="/manager" element={<Manager />} />
                   <Route path="/ueber" element={<About />} />
                   <Route path="/datenschutz" element={<Privacy />} />
                   <Route path="*" element={<NotFound />} />

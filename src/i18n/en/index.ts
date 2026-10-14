@@ -9,10 +9,11 @@ import errors from './errors';
 import game from './game';
 import info from './info';
 import leaderboard from './leaderboard';
+import manager from './manager';
 import nav from './nav';
 import online from './online';
 import result from './result';
 import scouting from './scouting';
 import trainer from './trainer';
 
-export const en: Messages = { common, nav, game, builder, challenge, result, daily, leaderboard, draft, online, scouting, info, errors, trainer };
+export const en: Messages = { common, nav, game, builder, challenge, result, daily, leaderboard, draft, online, scouting, info, errors, trainer, manager };

@@ -14,6 +14,7 @@ const info: Messages['info'] = {
     guidePost: '.',
     newsTitle: 'What’s new?',
     news: [
+      'New: “Manager” menu item and match replays (2D/report) in every mode – configurable or off',
       'New: design your own trainer – coins from achievements buy caps, jerseys, backgrounds and companion Pokémon',
       'Online draft: manager season – draft a bench, set your eleven before every matchday, daily form per Pokémon, transfer market',
       'Builder: “My teams” – save and load up to five XIs',

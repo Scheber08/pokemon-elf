@@ -10,6 +10,7 @@ const TABS = [
   { to: '/taeglich', key: 'daily' },
   { to: '/151', key: 'c151' },
   { to: '/draft', key: 'draft' },
+  { to: '/manager', key: 'manager' },
   { to: '/rangliste', key: 'leaderboard' },
   { to: '/trainer', key: 'trainer' },
 ] as const;

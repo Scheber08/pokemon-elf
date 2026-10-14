@@ -8,6 +8,7 @@ const nav: Messages['nav'] = {
     daily: 'Daily XI',
     c151: '151 Challenge',
     draft: 'Fantasy Draft',
+    manager: 'Manager',
     leaderboard: 'Leaderboard',
     trainer: 'Trainer',
   },

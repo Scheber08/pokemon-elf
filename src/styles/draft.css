@@ -1249,3 +1249,11 @@ button.draft-bench__slot {
   margin: 0;
   padding-left: 18px;
 }
+
+/* Menüpunkt „Manager" */
+.manager-page__steps {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 4px;
+}

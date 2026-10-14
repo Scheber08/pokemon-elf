@@ -36,12 +36,12 @@ const LOBBY_REFRESH_MS = 20_000;
  * Zuletzt benutzte Einstellungen (Liganame nicht) – ungültige Reste fallen auf die Standardwerte
  * zurück. Ältere Stände (region/legends) schreibt normalizeSettings um.
  */
-function initialSettings(list: Pokemon[]): DraftSettings {
-  const stored = load<DraftSettingsPatch | null>(SETTINGS_KEY, null);
+function initialSettings(list: Pokemon[], key: string, preset: DraftSettingsPatch): DraftSettings {
+  const stored = load<DraftSettingsPatch | null>(key, null);
   try {
-    return { ...normalizeSettings({ ...stored, name: '' }, DEFAULT_DRAFT_SETTINGS, list) };
+    return { ...normalizeSettings({ ...stored, ...preset, name: '' }, DEFAULT_DRAFT_SETTINGS, list) };
   } catch {
-    return { ...DEFAULT_DRAFT_SETTINGS };
+    return { ...DEFAULT_DRAFT_SETTINGS, ...preset };
   }
 }
 
@@ -49,12 +49,19 @@ function errorText(e: unknown, t: Messages): string {
   return e instanceof ApiRequestError ? draftErrorText(e.message, e.code) : t.online.unknownRetry;
 }
 
-/** Neue Liga erstellen → /draft/CODE */
-function CreateLeague() {
+/**
+ * Neue Liga erstellen → /draft/CODE. preset: fest vorbelegte Einstellungen (z. B. die Manager-Seite:
+ * format 'manager'); storageKey: eigene gemerkte Einstellungen je Seite.
+ */
+export function CreateLeague({
+  preset = {},
+  storageKey = SETTINGS_KEY,
+  title,
+}: { preset?: DraftSettingsPatch; storageKey?: string; title?: string } = {}) {
   const t = useT();
   const { all: list } = usePokemonData();
   const navigate = useNavigate();
-  const [settings, setSettings] = useState<DraftSettings>(() => initialSettings(list));
+  const [settings, setSettings] = useState<DraftSettings>(() => initialSettings(list, storageKey, preset));
   const [team, setTeam] = useState<TeamPrefs>(loadTeamPrefs);
   const [busy, setBusy] = useState(false);
   /** Fehler – Text erst beim Rendern (folgt der Sprache) */
@@ -77,7 +84,7 @@ function CreateLeague() {
         formation: team.formation,
       });
       saveTeamPrefs({ name: teamName, formation: team.formation });
-      save(SETTINGS_KEY, { ...settings, name: '' });
+      save(storageKey, { ...settings, name: '' });
       navigate(`/draft/${code}`);
     } catch (err) {
       setFailure({ err });
@@ -88,7 +95,7 @@ function CreateLeague() {
   return (
     <form className="card draft-create" aria-labelledby="draft-create-title" onSubmit={submit}>
       <h2 id="draft-create-title" className="section-title">
-        {t.online.createTitle}
+        {title ?? t.online.createTitle}
       </h2>
       <DraftPresets value={settings} list={list} onApply={(patch) => setSettings((x) => ({ ...x, ...patch }))} />
       <DraftSettingsForm value={settings} onChange={(patch) => setSettings((s) => ({ ...s, ...patch }))} list={list} />
@@ -113,7 +120,7 @@ function CreateLeague() {
 }
 
 /** Mit Code beitreten (auch eingefügte Links werden erkannt). */
-function JoinByCode() {
+export function JoinByCode() {
   const t = useT();
   const navigate = useNavigate();
   const id = useId();
@@ -158,7 +165,7 @@ function JoinByCode() {
 }
 
 /** Ligen, in denen dieses Gerät mitspielt – zum Zurückkehren ohne Link (nur lokal gespeichert). */
-function RecentLeagues() {
+export function RecentLeagues() {
   const t = useT();
   const [leagues] = useState(() => loadRecentLeagues());
   if (!leagues.length) return null;

@@ -6,6 +6,7 @@ const nav = {
     daily: 'Tägliche Elf',
     c151: '151 Challenge',
     draft: 'Fantasy-Draft',
+    manager: 'Manager',
     leaderboard: 'Rangliste',
     trainer: 'Trainer',
   },

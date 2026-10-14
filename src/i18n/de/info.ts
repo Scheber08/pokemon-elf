@@ -16,6 +16,7 @@ const info = {
     /** „Was ist neu?" – die wichtigsten Neuerungen, neueste zuerst */
     newsTitle: 'Was ist neu?',
     news: [
+      'Neu: eigener Menüpunkt „Manager“ und Spielwiedergabe (2D/Bericht) in jedem Modus – einstellbar oder aus',
       'Neu: Gestalte deinen eigenen Trainer – Münzen aus Erfolgen kaufen Kappen, Trikots, Hintergründe und Begleiter-Pokémon',
       'Online-Draft: Manager-Saison – Bank mitdraften, vor jedem Spieltag die Elf aufstellen, Tagesform je Pokémon, Transfermarkt',
       'Builder: „Meine Teams“ – bis zu fünf Elfen speichern und laden',
