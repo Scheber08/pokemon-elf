@@ -446,6 +446,8 @@ const draft = {
   // ---------------------------------------------------------------- Spielbericht
   report: {
     title: 'Spielbericht',
+    image: 'Als Bild',
+    imageAria: 'Spielbericht als Bild speichern',
     open: (home: string, away: string, score: string) => `Spielbericht ${home} gegen ${away} (${score}) öffnen`,
     goals: 'Tore',
     noGoals: 'Keine Tore.',

@@ -1,9 +1,10 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { useT } from '../i18n';
 import { formatMinute, type Goal, type Match } from '../lib/season';
 import type { ReplayLineup } from '../lib/matchReplay';
 import { MatchPitch } from './MatchPitch';
 import { Modal } from './Modal';
+import { SaveImageButton } from './SaveImageButton';
 import { Segmented } from './Segmented';
 import { useSettings, type ReplayMode } from '../state/Settings';
 import '../styles/match-report.css';
@@ -41,21 +42,13 @@ export function MatchReport({ match, nameOf, pokemonName, label, pens, lineupOf,
   // Startansicht wie eingestellt; ein Wechsel im Dialog wird zur neuen Einstellung
   const view = replay === 'report' ? 'report' : 'pitch';
   const setView = (v: 'pitch' | 'report') => setReplay(v);
+  const cardRef = useRef<HTMLDivElement>(null);
   const lineups = useMemo<[ReplayLineup | null, ReplayLineup | null]>(
     () => [lineupOf?.(match.home, match) ?? null, lineupOf?.(match.away, match) ?? null],
     [match, lineupOf],
   );
   return (
     <Modal title={tx.title} onClose={onClose} className="match-report" labelId="match-report-title">
-      {label && <p className="kicker match-report__label">{label}</p>}
-      <div className="match-report__score">
-        <span className="match-report__team">{nameOf(match.home)}</span>
-        <strong className="match-report__result">
-          {match.hg}:{match.ag}
-        </strong>
-        <span className="match-report__team match-report__team--away">{nameOf(match.away)}</span>
-      </div>
-      {pens && <p className="match-report__pens">{t.draft.cup.pens(pens.home, pens.away)}</p>}
       <div className="match-report__tabs">
         <Segmented<'pitch' | 'report'>
           label={tx.title}
@@ -68,13 +61,27 @@ export function MatchReport({ match, nameOf, pokemonName, label, pens, lineupOf,
           ]}
         />
       </div>
+      <div ref={cardRef} className="match-report__card">
+        {label && <p className="kicker match-report__label">{label}</p>}
+        <div className="match-report__score">
+          <span className="match-report__team">{nameOf(match.home)}</span>
+          <strong className="match-report__result">
+            {match.hg}:{match.ag}
+          </strong>
+          <span className="match-report__team match-report__team--away">{nameOf(match.away)}</span>
+        </div>
+        {pens && <p className="match-report__pens">{t.draft.cup.pens(pens.home, pens.away)}</p>}
+        {view === 'report' && <ReportBody match={match} nameOf={nameOf} pokemonName={pokemonName} />}
+      </div>
       {view === 'pitch' ? (
         <>
           <MatchPitch match={match} lineups={lineups} nameOf={nameOf} pokemonName={pokemonName} />
           <p className="muted small">{t.draft.replay.note}</p>
         </>
       ) : (
-        <ReportBody match={match} nameOf={nameOf} pokemonName={pokemonName} />
+        <div className="match-report__actions">
+          <SaveImageButton target={cardRef} filename={`pokemon-elf-spiel-${match.round}.png`} label={tx.image} aria={tx.imageAria} />
+        </div>
       )}
     </Modal>
   );

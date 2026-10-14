@@ -231,3 +231,13 @@
   flex: 1;
   accent-color: var(--yellow);
 }
+
+.match-report__card {
+  padding: 8px 12px;
+  margin-inline: -12px;
+}
+.match-report__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}

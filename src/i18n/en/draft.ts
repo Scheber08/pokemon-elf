@@ -409,6 +409,8 @@ const draft: Messages['draft'] = {
 
   report: {
     title: 'Match report',
+    image: 'As image',
+    imageAria: 'Save match report as image',
     open: (home, away, score) => `Open match report ${home} vs ${away} (${score})`,
     goals: 'Goals',
     noGoals: 'No goals.',
