@@ -597,6 +597,7 @@ function TransferMarket({
               <span className="manager__free-name">{t.game.pokemon(p)}</span>
               <PosBadge pos={pos} />
               <span className="manager__free-fit">{Math.round(fit)}</span>
+              <TradeEffect team={team} out={validOut} inn={p.id} short />
               <button
                 type="button"
                 className="btn btn--small"
@@ -721,21 +722,7 @@ function TradePanel({
   };
   const validGive = roster.includes(give) ? give : roster[0];
   const validGet = get != null && theirs.includes(get) ? get : theirs[0];
-  // Wirkung eines Tauschs auf die eigene beste Elf (gewichtete Fit-Punkte, ohne Tagesform)
-  const base = squadStrength(team, byId, sc);
-  const effect = (out: number, inn: number) => {
-    const swap = (ids: (number | null)[]) => ids.map((id) => (id === out ? inn : id));
-    const after = { ...team, slots: swap(team.slots), ss: team.ss === out ? inn : team.ss, ...(team.bench ? { bench: swap(team.bench) as number[] } : {}) };
-    return squadStrength(after, byId, sc) - base;
-  };
-  const Effect = ({ out, inn }: { out: number; inn: number }) => {
-    const d = effect(out, inn);
-    return (
-      <small className={`manager__effect ${d > 0.05 ? 'is-up' : d < -0.05 ? 'is-down' : ''}`} title={tx.effectTitle}>
-        {tx.effect(d)}
-      </small>
-    );
-  };
+
   const incoming = offers.filter((o) => o.to === team.id);
   const outgoing = offers.filter((o) => o.from === team.id);
   if (!partner) return null;
@@ -757,7 +744,7 @@ function TradePanel({
               <span>
                 {tx.offerIn(nameOf(o.from), name(o.give), name(o.get))}
                 {state.teams.find((x) => x.id === o.from)?.cpu && <small className="muted"> · {tx.offerCpuExpires}</small>}{' '}
-                <Effect out={o.get} inn={o.give} />
+                <TradeEffect team={team} out={o.get} inn={o.give} />
               </span>
               <span className="manager__offer-actions">
                 <button type="button" className="btn btn--small" onClick={() => onAnswer(o.id, true)}>
@@ -840,7 +827,7 @@ function TradePanel({
       </div>
       {validGet != null && (
         <p className="small manager__effect-preview">
-          <Effect out={validGive} inn={validGet} />
+          <TradeEffect team={team} out={validGive} inn={validGet} />
         </p>
       )}
       <button
@@ -863,3 +850,17 @@ function TradePanel({
   );
 }
 
+/** Wirkung eines Tauschs out → in auf die beste Elf des Teams (gewichtete Fit-Punkte, ohne Tagesform). */
+function TradeEffect({ team, out, inn, short = false }: { team: DraftTeam; out: number; inn: number; short?: boolean }) {
+  const tx = useT().draft.manager;
+  const { byId, scale } = usePokemonData();
+  const sc = scale('all');
+  const swap = (ids: (number | null)[]) => ids.map((id) => (id === out ? inn : id));
+  const after = { ...team, slots: swap(team.slots), ss: team.ss === out ? inn : team.ss, ...(team.bench ? { bench: swap(team.bench) as number[] } : {}) };
+  const d = squadStrength(after, byId, sc) - squadStrength(team, byId, sc);
+  return (
+    <small className={`manager__effect ${d > 0.05 ? 'is-up' : d < -0.05 ? 'is-down' : ''}`} title={short ? `${tx.effect(d)} – ${tx.effectTitle}` : tx.effectTitle}>
+      {short ? tx.effectShort(d) : tx.effect(d)}
+    </small>
+  );
+}

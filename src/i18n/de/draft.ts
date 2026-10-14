@@ -561,6 +561,8 @@ const draft = {
     offerCpuExpires: 'gilt bis zum Anpfiff',
     effect: (d: number) =>
       `Deine beste Elf: ${d > 0.05 ? '+' : d < -0.05 ? '−' : '±'}${Math.abs(d).toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}`,
+    effectShort: (d: number) =>
+      `${d > 0.05 ? '+' : d < -0.05 ? '−' : '±'}${Math.abs(d).toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}`,
     effectTitle: 'Veränderung der Stärke deiner besten Elf durch diesen Tausch (gewichtete Fit-Punkte, ohne Tagesform)',
     offerAccept: 'Annehmen',
     offerDecline: 'Ablehnen',
