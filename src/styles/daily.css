@@ -273,3 +273,6 @@
   color: var(--yellow);
   font-family: var(--font-head);
 }
+:root[data-theme='light'] .daily-streak__no {
+  color: #b45309;
+}

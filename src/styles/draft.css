@@ -965,7 +965,7 @@
 }
 .draft-queue__btn {
   background: none;
-  border: 1px solid var(--line, rgba(255, 255, 255, 0.2));
+  border: 1px solid var(--line-strong);
   color: inherit;
   border-radius: 6px;
   width: 28px;
@@ -989,8 +989,8 @@
   width: 36px;
   height: 36px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line-strong);
+  background: var(--surface-2);
   cursor: pointer;
   transition: transform 0.12s ease;
 }
@@ -1017,8 +1017,8 @@
   gap: 8px;
   padding: 6px 12px 6px 8px;
   border-radius: 999px;
-  background: var(--card, #13263a);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
   animation: draft-bubble 4s ease forwards;
 }
