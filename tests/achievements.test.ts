@@ -35,6 +35,17 @@ function addEntry(db: D1Shim, dev: string, challenge: string, day: string, w: nu
   }
 }
 
+describe('Erfolgs-Texte', () => {
+  it('jeder Erfolg hat einen eigenen Namen (DE und EN)', async () => {
+    for (const lang of ['de', 'en'] as const) {
+      const { default: tr } = await import(`../src/i18n/${lang}/trainer.ts`);
+      const names = ACHIEVEMENTS.map((a) => tr.list[a.id]?.name);
+      expect(names.every(Boolean)).toBe(true);
+      expect(new Set(names).size).toBe(names.length);
+    }
+  });
+});
+
 describe('Trainer-Katalog', () => {
   it('Standard-Look ist frei, Schlüssel eindeutig, jeder Slot hat etwas Freies', () => {
     expect(lockedItem(DEFAULT_LOOK, new Set())).toBeNull();
