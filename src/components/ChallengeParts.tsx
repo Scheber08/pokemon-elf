@@ -6,6 +6,7 @@ import type { ChallengeStats } from '../lib/challengeStats';
 import type { NameField, NameIssues } from '../lib/runFinish';
 import { formatRecord } from '../lib/season';
 import type { FormationId } from '../types';
+import { RandomNameButton } from './RandomNameButton';
 import { Segmented } from './Segmented';
 import '../styles/run.css';
 
@@ -86,20 +87,25 @@ export function NameFields({ playerName, teamName, onPlayerNameChange, onTeamNam
         <label className="field__label" htmlFor={id}>
           {label}
         </label>
-        <input
-          id={id}
-          ref={refs[key]}
-          className="input"
-          maxLength={max}
-          value={value}
-          placeholder={placeholder}
-          autoComplete={key === 'player' ? 'nickname' : 'off'}
-          aria-required="true"
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error ? `${id}-error` : undefined}
-          disabled={disabled}
-          onChange={(e) => onChange(e.target.value)}
-        />
+        <div className="input-row">
+          <input
+            id={id}
+            ref={refs[key]}
+            className="input"
+            maxLength={max}
+            value={value}
+            placeholder={placeholder}
+            autoComplete={key === 'player' ? 'nickname' : 'off'}
+            aria-required="true"
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${id}-error` : undefined}
+            disabled={disabled}
+            onChange={(e) => onChange(e.target.value)}
+          />
+          {key === 'teamName' && (
+            <RandomNameButton current={value} disabled={disabled} onPick={(n) => onChange(Array.from(n).slice(0, max).join(''))} />
+          )}
+        </div>
         {error && (
           // Neu angesagt bei jedem Fehlversuch (key) – auch wenn der Fokus schon im Feld steht.
           <p id={`${id}-error`} key={attempt} className="field__error" role="alert">
