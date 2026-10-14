@@ -38,7 +38,7 @@ import { hashSeed, shuffle } from './rng';
 import { CUP_SIZE, playTie, type CupRound, type CupStage, type CupTie } from './cup';
 import { buildTable, DRAFT_MODEL, nextForm, playMatch, roundRobin, type LeagueResult, type LeagueTeam, type Match, type SquadPlayer } from './season';
 import { captainWeights, teamScoreFromFits } from './teamScore';
-import { SHINY_FIT_BONUS, shinyBonus } from './shiny';
+import { SHINY_FIT_BONUS, shinyBonus, shinyTeamBoost } from './shiny';
 
 /** Fit-Punkte je Formstufe */
 export const FORM_FIT = 5;
@@ -255,9 +255,12 @@ export function bestLineup(
   setPiece: boolean,
   /** Ausfälle – nicht aufstellen */
   absent: ReadonlySet<number> = new Set(),
+  /** Shinys der Liga – spielen besser und heben das Team, also möglichst aufstellen */
+  shinies?: ReadonlySet<number>,
 ): Omit<ManagerLineup, 'auto'> {
   const pool = rosterOf(team).flatMap((id) => (absent.has(id) ? [] : byId.get(id) ?? []));
-  const best = bestEleven(formation, pool, scale, { setPiece, bonus: (p) => (form[p.id] ?? 0) * FORM_FIT });
+  const shinyEdge = (p: Pokemon) => (shinies?.has(p.id) ? SHINY_FIT_BONUS + shinyTeamBoost(p) : 0);
+  const best = bestEleven(formation, pool, scale, { setPiece, bonus: (p) => (form[p.id] ?? 0) * FORM_FIT + shinyEdge(p) });
   return { formation, slots: best.slots.map((id) => id ?? -1), ss: setPiece ? best.ss : null };
 }
 
@@ -288,11 +291,12 @@ function refreshAuto(
   scale: Scale,
   absent: ReadonlySet<number> = new Set(),
 ) {
+  const shinies = state.shinies?.length ? new Set(state.shinies) : undefined;
   const setPiece = upgradeSettings(state.settings).setPiece;
   const out: Record<string, ManagerLineup> = {};
   for (const t of state.teams) {
     const cur = lineups[t.id] ?? { ...draftedLineup(t), auto: true };
-    out[t.id] = t.cpu || cur.auto ? { ...bestLineup(t, cur.formation, byId, scale, form, setPiece, absent), auto: cur.auto || t.cpu } : cur;
+    out[t.id] = t.cpu || cur.auto ? { ...bestLineup(t, cur.formation, byId, scale, form, setPiece, absent, shinies), auto: cur.auto || t.cpu } : cur;
   }
   return out;
 }
@@ -558,7 +562,10 @@ export function setLineup(
   let lineup: ManagerLineup;
   if (input.auto) {
     const byId = new Map(list.map((p) => [p.id, p]));
-    lineup = { ...bestLineup(team, input.formation, byId, scale, m.form, setPiece, absentAt(m, m.played + 1)), auto: true };
+    lineup = {
+      ...bestLineup(team, input.formation, byId, scale, m.form, setPiece, absentAt(m, m.played + 1), state.shinies?.length ? new Set(state.shinies) : undefined),
+      auto: true,
+    };
   } else {
     const l = { formation: input.formation, slots: input.slots, ss: setPiece ? input.ss : null };
     const err = lineupError(team, l, setPiece);

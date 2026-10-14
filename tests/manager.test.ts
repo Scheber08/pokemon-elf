@@ -749,3 +749,17 @@ describe('Kapitän der CPU-Teams', () => {
     expect(s.teams.find((t) => t.id === 'h')).not.toHaveProperty('captain');
   });
 });
+
+describe('Shinys in der Manager-Saison', () => {
+  it('automatische Aufstellung stellt einen Shiny von der Bank auf', () => {
+    const s = startManagerSeason(drafted(), ALL, SCALE);
+    const team = s.teams.find((t) => t.id === 'h')!;
+    const lineup = s.manager!.lineups.h;
+    const benchId = rosterOf(team).find((id) => !lineup.slots.includes(id) && id !== lineup.ss)!;
+    expect(benchId).toBeDefined();
+    const shiny = { ...s, shinies: [benchId] };
+    const next = setLineup(shiny, 'dev-h', { formation: lineup.formation, slots: lineup.slots, ss: lineup.ss, auto: true }, ALL, SCALE);
+    expect(next.manager!.lineups.h.slots).toContain(benchId);
+  });
+});
+
