@@ -94,6 +94,8 @@ export interface DraftState {
   history?: DraftHistoryEntry[];
   /** Code der Revanche, sobald es eine gibt */
   rematch?: string | null;
+  /** Wunschlisten je Team-ID (privat – nur das eigene Team sieht seine) */
+  queues?: Record<string, number[]>;
 }
 
 /** Lesende Sicht – passt auf den Server-Zustand und auf Client-Schnappschüsse. */
@@ -1251,10 +1253,12 @@ export function applyPick(
         : { ...t, slots: t.slots.map((v, i) => (i === slot ? pokemonId : v)) },
   );
   const log: DraftPickLog = { pick: state.pickIndex, teamId, pokemonId, slot, auto, at: now };
+  // Vergeben → von allen Wunschlisten streichen
+  const queues = state.queues && withoutQueued(state.queues, pokemonId);
   if (roll) log.roll = { gen: roll.gen, type: roll.type };
   const picks = [...state.picks, log];
   const pickIndex = state.pickIndex + 1;
-  const next: DraftState = { ...state, teams, picks, pickIndex, turnStartedAt: now };
+  const next: DraftState = { ...state, teams, picks, pickIndex, turnStartedAt: now, ...(queues ? { queues } : {}) };
   if (pickIndex >= totalPicks(next)) {
     return {
       ...next,
@@ -1275,7 +1279,8 @@ export function applyPick(
 }
 
 /**
- * Automatische Wahl: bestes Pokémon für den Slot, der es am meisten braucht –
+ * Automatische Wahl: Hat das Team (ein Mensch) eine Wunschliste, das erste erlaubte Pokémon
+ * davon auf seinen besten freien Platz. Sonst bestes Pokémon für den Slot, der es am meisten braucht –
  * bewertet wie der Team-Score (Fit × Positionsgewicht). CPU-Teams bekommen etwas
  * Zufall aus dem Liga-Seed, Auto-Picks für Menschen (Timer) nicht. Gewählt wird nur,
  * was die Regeln erlauben (Wurf, Legendären-Limit – siehe pickAllowed); CPU-Teams würfeln nie neu.
@@ -1288,8 +1293,14 @@ export function autoPickChoice(
   withNoise: boolean,
 ): { pokemonId: number; slot: number } {
   const team = state.teams.find((t) => t.id === teamId) ?? fail('no_team', 'Dieses Team gibt es nicht');
-  const pool = rulesFor(state, teamId, list).allowed;
-  if (!pool.length) fail('pool_empty', 'Keine Pokémon mehr im Pool');
+  const rules = rulesFor(state, teamId, list);
+  if (!rules.allowed.length) fail('pool_empty', 'Keine Pokémon mehr im Pool');
+  // Wunschliste (nur Menschen, ohne Zufall): das erste erlaubte Pokémon – auf seinen besten Platz
+  const byId = byIdOf(list);
+  const wished = withNoise
+    ? undefined
+    : state.queues?.[teamId]?.map((id) => byId.get(id)).find((p): p is Pokemon => !!p && blockOf(rules, p) == null);
+  const pool = wished ? [wished] : rules.allowed;
   const rng = withNoise ? leagueRng(state.seed, 'cpu', state.pickIndex) : null;
   const defs = FORMATIONS[team.formation].slots;
   let best: { score: number; pokemonId: number; slot: number } | null = null;
@@ -1391,6 +1402,7 @@ export function snapshotOf(state: DraftState, you: string | null, now: number): 
     rerollsUsed: state.rerollsUsed ?? {},
     ...(state.history?.length ? { history: state.history } : {}),
     ...(state.rematch ? { rematch: state.rematch } : {}),
+    ...(you && state.queues?.[you]?.length ? { queue: state.queues[you] } : {}),
   };
 }
 
@@ -1490,4 +1502,29 @@ export function groupEntries(
 ): DraftHistoryEntry[] {
   const current = historyEntryOf(state);
   return [...(state.history ?? []), ...(current ? [current] : [])];
+}
+
+// ---------------------------------------------------------------- Wunschliste
+
+/** Ein Pokémon von allen Wunschlisten streichen (gleiches Objekt, wenn es auf keiner steht). */
+function withoutQueued(queues: Record<string, number[]>, pokemonId: number): Record<string, number[]> {
+  if (!Object.values(queues).some((q) => q.includes(pokemonId))) return queues;
+  return Object.fromEntries(Object.entries(queues).map(([id, q]) => [id, q.filter((x) => x !== pokemonId)]));
+}
+
+/**
+ * Wunschliste des eigenen Teams ersetzen: nur noch freie Pokémon des Pools, ohne Doppelte, höchstens
+ * DRAFT_LIMITS.queueMax (Reihenfolge = Vorrang). In Lobby und Draft. Fehler: not_joined, done, bad_queue.
+ */
+export function setQueue(state: DraftState, deviceId: string, ids: unknown, list: Pokemon[]): DraftState {
+  const teamId = teamOfDevice(state, deviceId) ?? fail('not_joined', 'Du bist in dieser Liga nicht dabei');
+  if (state.phase === 'done') fail('done', 'Der Draft ist schon vorbei');
+  if (!Array.isArray(ids) || ids.length > DRAFT_LIMITS.queueMax || !ids.every((id) => Number.isInteger(id))) {
+    fail('bad_queue', `Höchstens ${DRAFT_LIMITS.queueMax} Pokémon auf der Wunschliste`);
+  }
+  // Nur Pool-Pokémon (ändert der Host den Pool später, überspringt der Auto-Pick die übrigen)
+  const pool = poolIdsOf(poolOf(state.settings, list));
+  const taken = draftedIds(state);
+  const queue = [...new Set(ids as number[])].filter((id) => pool.has(id) && !taken.has(id));
+  return { ...state, queues: { ...state.queues, [teamId]: queue } };
 }

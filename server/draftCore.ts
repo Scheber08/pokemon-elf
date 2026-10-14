@@ -51,6 +51,7 @@ import {
   removeTeam,
   setOnline,
   setOrder,
+  setQueue,
   snapshotOf,
   startDraft,
   teamOfDevice,
@@ -377,6 +378,10 @@ export function parseClientMessage(raw: unknown): ParsedMessage {
         ...(d.teamId !== undefined ? { teamId: d.teamId as string } : {}),
         ...(d.pickIndex !== undefined ? { pickIndex: d.pickIndex as number } : {}),
       });
+    case 'queue':
+      return Array.isArray(d.ids) && d.ids.length <= DRAFT_LIMITS.queueMax && d.ids.every(isInt)
+        ? ok({ type: 'queue', ids: d.ids as number[] })
+        : badMessage();
     case 'leave':
     case 'add-cpu':
     case 'start':
@@ -675,7 +680,7 @@ const sameState = (a: DraftState, b: DraftState) => a === b || JSON.stringify(a)
  * Lobby-Änderungen – zusätzlich pro Gerät gedrosselt (jede kostet Speichern und ggf. D1). Züge im
  * Draft (pick, auto-pick, reroll) nicht: Sie begrenzt schon die Engine (nur am Zug, Rerolls je Team).
  */
-const LOBBY_CHANGES = new Set<DraftClientMessage['type']>(['join', 'leave', 'update-team', 'settings', 'add-cpu', 'remove-team', 'set-order']);
+const LOBBY_CHANGES = new Set<DraftClientMessage['type']>(['join', 'leave', 'update-team', 'settings', 'add-cpu', 'remove-team', 'set-order', 'queue']);
 
 interface Bucket {
   tokens: number;
@@ -1423,6 +1428,8 @@ export class DraftRoomCore {
       }
       case 'start':
         return startDraft(state, deviceId, now, list);
+      case 'queue':
+        return setQueue(state, deviceId, msg.ids, list);
       case 'pick': {
         const teamId = teamOfDevice(state, deviceId) ?? fail('not_joined', 'Du bist in dieser Liga nicht dabei');
         return applyPick(state, teamId, msg.pokemonId, msg.slot, false, now, list);

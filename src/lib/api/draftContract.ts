@@ -65,6 +65,8 @@ export const DRAFT_LIMITS = {
   rerollsMax: 3,
   /** Höchstens so viele frühere Ligen im Verlauf einer Gruppe (ewige Tabelle) */
   historyMax: 30,
+  /** Höchstens so viele Pokémon auf der Wunschliste eines Teams */
+  queueMax: 20,
 } as const;
 
 export type PickSeconds = (typeof DRAFT_LIMITS.pickSeconds)[number];
@@ -281,6 +283,11 @@ export interface DraftSnapshot {
   history?: DraftHistoryEntry[];
   /** Code der Revanche, sobald es eine gibt */
   rematch?: string | null;
+  /**
+   * Wunschliste des eigenen Teams (nur im eigenen Schnappschuss, fehlt sonst): Läuft der Timer
+   * ab bzw. wählt jemand automatisch, nimmt der Server das erste davon, das gerade erlaubt ist.
+   */
+  queue?: number[];
 }
 
 /** Abschluss eines Teams in einer früheren Liga der Gruppe */
@@ -366,6 +373,8 @@ export type DraftClientMessage =
    * (statt einen ungesehenen Wurf neu zu würfeln und einen Reroll zu verbrauchen).
    */
   | { type: 'reroll'; kind: DraftRerollKind; pickIndex?: number; roll?: DraftRoll }
+  /** Wunschliste des eigenen Teams ersetzen (Reihenfolge = Vorrang, höchstens queueMax) */
+  | { type: 'queue'; ids: number[] }
   | { type: 'ping' };
 
 export type DraftServerMessage =

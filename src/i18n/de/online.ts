@@ -205,6 +205,16 @@ const online = {
   favouriteNoMatch: (name: string) => `${name} passt nicht zu deinem Wurf – such dir ein passendes Pokémon.`,
   /** Hinweis unter „Pool", wenn ein Wurf gilt (mit Leerzeichen vorn) */
   hintRoll: (region: string, type: string) => ` Gesucht: ${region} + ${type}.`,
+  /** Wunschliste (Auto-Pick nimmt die erste erlaubte) */
+  queueTitle: 'Wunschliste',
+  queueCount: (n: number, max: number) => `${n}/${max}`,
+  queueAdd: '★ Auf die Wunschliste',
+  queueRemove: '☆ Von der Wunschliste',
+  queueEmpty: 'Wähle ein Pokémon im Pool und setz es auf deine Wunschliste.',
+  queueNote: 'Läuft dein Timer ab (oder wählt jemand für dich), nimmt der Auto-Pick das erste passende Pokémon von hier.',
+  queueUp: (name: string) => `${name} nach oben`,
+  queueDrop: (name: string) => `${name} entfernen`,
+  queueFull: (max: number) => `Die Wunschliste ist voll (höchstens ${max}).`,
   /** Statusleiste: Legendäre im eigenen Team bei einem Limit */
   legendsCount: 'Legendäre',
   /** Statusleiste: Ultrabestien im eigenen Team bei einem Limit */

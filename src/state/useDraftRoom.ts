@@ -538,6 +538,8 @@ export interface DraftRoom extends DraftRoomView {
   autoPick(teamId?: string): boolean;
   /** Wurf des eigenen Picks neu würfeln (Typ bzw. Region) – nur am Zug, im Zufallsmodus, mit Rerolls übrig */
   reroll(kind: DraftRerollKind): boolean;
+  /** Wunschliste des eigenen Teams ersetzen (Reihenfolge = Vorrang) */
+  setQueue(ids: number[]): boolean;
   reconnect(): void;
 }
 
@@ -893,6 +895,7 @@ export function useDraftRoom(code: string): DraftRoom {
     pick,
     autoPick,
     reroll,
+    setQueue: useCallback((ids: number[]) => send({ type: 'queue', ids }), [send]),
     reconnect: useCallback(() => {
       if (!conn.current?.reconnectNow()) setGeneration((g) => g + 1);
     }, []),

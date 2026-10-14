@@ -34,6 +34,7 @@ import {
 import type { Pokemon } from '../types';
 import { TypeBadge } from './Badges';
 import { DraftBoard, DraftPickFeed } from './DraftBoard';
+import { DraftQueue } from './DraftQueue';
 import { DraftCountdown } from './DraftCountdown';
 import { FilterBar, useFilteredPokemon, type PokemonFilters } from './FilterBar';
 import { Pitch, type SlotState } from './Pitch';
@@ -424,6 +425,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
           {autoOpensAt != null && current && (
             <AutoPickNotice key={`${s.pickIndex}|${current.id}`} room={room} team={current} opensAt={autoOpensAt} />
           )}
+          {me && !readOnly && <DraftQueue room={room} selected={selected} />}
           {me ? (
             <section aria-labelledby="draft-pool-title">
               <h2 id="draft-pool-title" className="section-title">
