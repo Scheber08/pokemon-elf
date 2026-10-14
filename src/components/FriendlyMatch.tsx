@@ -7,6 +7,7 @@ import { load, STORAGE_KEYS } from '../lib/storage';
 import { loadSavedTeams } from './SavedTeams';
 import { usePokemonData } from '../state/PokemonData';
 import type { FormationId } from '../types';
+import '../styles/friendly.css';
 
 /** Gespeicherte Builder-Aufstellung (siehe pages/Builder.tsx) – nur die nötigen Felder. */
 interface StoredLineup {

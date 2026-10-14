@@ -162,28 +162,6 @@
   }
 }
 
-/* Testspiel gegen ein Ranglisten-Team */
-.friendly {
-  margin-top: 16px;
-  display: grid;
-  gap: 8px;
-  justify-items: start;
-}
-.friendly .section-title {
-  margin: 0;
-}
-.friendly__legs {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 4px;
-}
-.friendly__verdict {
-  margin: 0;
-  font-size: 1.05rem;
-}
-
 /* Spielerprofil */
 .profile .card + .card {
   margin-top: 16px;
@@ -204,15 +182,4 @@
 .profile__place {
   white-space: nowrap;
   font-weight: 700;
-}
-.friendly__pick {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 8px;
-  font-size: 14px;
-}
-.friendly__pick .input {
-  width: auto;
-  max-width: 100%;
 }

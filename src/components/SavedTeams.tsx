@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { FriendlyMatch } from './FriendlyMatch';
+import type { FormationId } from '../types';
 import { useT } from '../i18n';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
 import { useToast } from '../state/Toast';
@@ -38,17 +40,28 @@ export function withSavedTeam<T>(list: SavedTeam<T>[], entry: SavedTeam<T>): Sav
   return [entry, ...rest].slice(0, SAVED_TEAMS_MAX);
 }
 
-interface Props<T extends { teamName: string; formation: string }> {
+/** Felder, die ein Testspiel braucht (siehe Builder-Zustand) */
+interface Playable {
+  teamName: string;
+  formation: string;
+  slots?: (number | null)[];
+  ss?: number | null;
+  ssEnabled?: boolean;
+}
+
+interface Props<T extends Playable> {
   current: T;
   onLoad: (state: T) => void;
 }
 
 /** „Meine Teams": aktuelle Elf speichern, gespeicherte laden oder löschen (localStorage). */
-export function SavedTeams<T extends { teamName: string; formation: string }>({ current, onLoad }: Props<T>) {
+export function SavedTeams<T extends Playable>({ current, onLoad }: Props<T>) {
   const t = useT();
   const tx = t.builder.saved;
   const toast = useToast();
   const [list, setList] = useState<SavedTeam<T>[]>(() => loadSavedTeams<T>());
+  /** Testspiel der aktuellen Elf gegen diese gespeicherte (id) */
+  const [vs, setVs] = useState<string | null>(null);
   const persist = (next: SavedTeam<T>[]) => {
     setList(next);
     save(STORAGE_KEYS.savedTeams, next);
@@ -86,6 +99,15 @@ export function SavedTeams<T extends { teamName: string; formation: string }>({ 
               </button>
               <button
                 type="button"
+                className="btn btn--small btn--ghost"
+                aria-pressed={vs === x.id}
+                title={tx.friendlyTitle(x.name)}
+                onClick={() => setVs((v) => (v === x.id ? null : x.id))}
+              >
+                {tx.friendly}
+              </button>
+              <button
+                type="button"
                 className="btn btn--small btn--ghost saved-teams__remove"
                 aria-label={tx.removeAria(x.name)}
                 title={tx.remove}
@@ -97,6 +119,21 @@ export function SavedTeams<T extends { teamName: string; formation: string }>({ 
           ))}
         </ul>
       )}
+      {(() => {
+        const opp = list.find((x) => x.id === vs);
+        if (!opp?.state.slots) return null;
+        return (
+          <FriendlyMatch
+            key={opp.id}
+            opponent={{
+              name: opp.name,
+              formation: opp.formation as FormationId,
+              slots: opp.state.slots,
+              ss: opp.state.ssEnabled ? (opp.state.ss ?? null) : null,
+            }}
+          />
+        );
+      })()}
       <button type="button" className="btn btn--small" onClick={store}>
         {tx.save}
       </button>

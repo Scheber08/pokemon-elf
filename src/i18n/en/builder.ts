@@ -28,6 +28,8 @@ const builder: Messages['builder'] = {
     saved: (name) => `“${name}” saved`,
     updated: (name) => `“${name}” updated`,
     loaded: (name) => `“${name}” loaded`,
+    friendly: 'Friendly',
+    friendlyTitle: (name) => `Current XI against ${name} (home and away)`,
   },
   best: 'Best XI',
   bestTitle: 'Picks the strongest lineup from the selected region and settings',

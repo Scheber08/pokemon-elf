@@ -24,6 +24,8 @@ const builder = {
     saved: (name: string) => `„${name}" gespeichert`,
     updated: (name: string) => `„${name}" aktualisiert`,
     loaded: (name: string) => `„${name}" geladen`,
+    friendly: 'Testspiel',
+    friendlyTitle: (name: string) => `Aktuelle Elf gegen ${name} (Hin- und Rückspiel)`,
   },
   best: 'Beste Elf',
   bestTitle: 'Stellt die stärkste Elf aus der gewählten Region und den Einstellungen auf',
