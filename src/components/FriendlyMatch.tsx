@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useT } from '../i18n';
 import { friendlyMatch, fullEleven, type FriendlySide } from '../lib/friendly';
-import type { Goal } from '../lib/season';
+import { formatMinute, type Goal } from '../lib/season';
 import { load, STORAGE_KEYS } from '../lib/storage';
 import { loadSavedTeams } from './SavedTeams';
 import { usePokemonData } from '../state/PokemonData';
@@ -58,7 +58,8 @@ export function FriendlyMatch({ opponent }: { opponent: FriendlySide }) {
     goals
       .map((g) => {
         const p = byId.get(g.pokemonId);
-        return p ? t.game.pokemon(p) : `#${g.pokemonId}`;
+        const name = p ? t.game.pokemon(p) : `#${g.pokemonId}`;
+        return g.minute != null ? `${name} ${formatMinute(g.minute)}` : name;
       })
       .join(', ');
   const [gf, ga] = result.aggregate;

@@ -7,7 +7,7 @@ import { DEFAULT_DRAFT_SETTINGS, type DraftTeam } from './api/draftContract';
 import { leagueTeams } from './draftEngine';
 import type { Scale } from './fit';
 import { createRng } from './rng';
-import { simulateLeague, type Match } from './season';
+import { DRAFT_MODEL, simulateLeague, type Match } from './season';
 import type { FormationId, Pokemon } from '../types';
 
 export interface FriendlySide {
@@ -39,7 +39,8 @@ const asTeam = (s: FriendlySide, id: string): DraftTeam => ({
 
 export function friendlyMatch(own: FriendlySide, opp: FriendlySide, byId: Map<number, Pokemon>, scale: Scale, seed: number): FriendlyResult {
   const teams = leagueTeams({ teams: [asTeam(own, 'own'), asTeam(opp, 'opp')], settings: DEFAULT_DRAFT_SETTINGS }, byId, scale);
-  const league = simulateLeague(teams, createRng(seed));
+  // Wie der Online-Draft: realistischere Ergebnisse, Tagesform, Torminuten (zählt für keine Rangliste)
+  const league = simulateLeague(teams, createRng(seed), DRAFT_MODEL);
   // Hinspiel zuerst, mit der eigenen Elf zu Hause
   const matches = [...league.matches].sort((a, b) => Number(b.home === 0) - Number(a.home === 0));
   const goals = (team: 0 | 1) => matches.reduce((n, m) => n + (m.home === team ? m.hg : m.ag), 0);

@@ -32,6 +32,14 @@ describe('Testspiel', () => {
     expect(wins).toBeGreaterThan(70);
   });
 
+  it('Tore mit Spielminute (Spielmodell des Online-Drafts)', () => {
+    const goals = Array.from({ length: 20 }, (_, i) => friendlyMatch(strong, weak, byId, scale, 100 + i)).flatMap((r) =>
+      r.matches.flatMap((m) => [...m.homeScorers, ...m.awayScorers]),
+    );
+    expect(goals.length).toBeGreaterThan(10);
+    expect(goals.every((g) => Number.isInteger(g.minute) && g.minute! >= 1 && g.minute! <= 95)).toBe(true);
+  });
+
   it('volle Elf nötig', () => {
     expect(fullEleven(strong.slots)).toBe(true);
     expect(fullEleven([...strong.slots.slice(0, 10), null])).toBe(false);
