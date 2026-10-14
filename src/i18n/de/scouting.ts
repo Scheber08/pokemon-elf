@@ -88,6 +88,14 @@ const scouting = {
       q: 'Warum sind die Scores in der 151 Challenge anders?',
       a: 'Für Retro und die 151 Challenge wird nur über die Original-151 normalisiert. So sind Scores innerhalb jeder Challenge fair vergleichbar – ein Glurak wird an den Kanto-Pokémon gemessen, nicht an Paldea.',
     },
+    {
+      q: 'Wo gibt es Megas, Regionalformen und Ultrabestien?',
+      a: 'Im Builder (Schalter „Formen" und „Megas", mit Mega-Limit) und im Fantasy-Draft, wo der Host sie in den Pool nimmt und pro Team begrenzen kann – Ultrabestien sind dort eine eigene Kategorie neben den Legendären. In den Challenges und der Täglichen Elf bleiben sie außen vor, damit die Ranglisten vergleichbar bleiben.',
+    },
+    {
+      q: 'Wie werden Megas bewertet?',
+      a: 'Wie jedes andere Pokémon – mit ihren eigenen Werten, Typen, Größen und Gewichten, gemessen an den 1.025 normalen Pokémon. Deshalb sind Megas so stark und im Builder bzw. Draft begrenzbar.',
+    },
   ] as { q: string; a: string }[],
 };
 

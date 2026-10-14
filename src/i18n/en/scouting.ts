@@ -71,6 +71,14 @@ const scouting: Messages['scouting'] = {
       q: 'Why are scores different in the 151 Challenge?',
       a: 'For Retro and the 151 Challenge, normalisation only uses the original 151. That keeps scores fairly comparable within each challenge – a Charizard is measured against Kanto Pokémon, not against Paldea.',
     },
+    {
+      q: 'Where can I use Megas, regional forms and Ultra Beasts?',
+      a: 'In the builder (“Forms” and “Megas” toggles, with a Mega limit) and in the fantasy draft, where the host adds them to the pool and can limit them per team – Ultra Beasts are a category of their own there, next to legendaries. The challenges and the Daily XI leave them out so the leaderboards stay comparable.',
+    },
+    {
+      q: 'How are Megas rated?',
+      a: 'Like any other Pokémon – with their own stats, types, height and weight, measured against the 1,025 regular Pokémon. That’s why Megas are so strong and can be limited in the builder and the draft.',
+    },
   ],
 };
 
