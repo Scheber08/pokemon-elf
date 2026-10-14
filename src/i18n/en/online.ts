@@ -132,6 +132,7 @@ const online: Messages['online'] = {
   orderHost: 'Draft order as listed (round 2 in reverse – snake draft).',
   orderHostFixed: 'Draft order as listed – the same every round.',
   addCpu: 'Add CPU team',
+  fillCpu: (n) => `Fill with CPU (${n})`,
   readOnlyLobby:
     'View only – the live connection isn’t up yet. Once it is, you can join (or edit your team, if you’re already in).',
   settings: 'Settings',

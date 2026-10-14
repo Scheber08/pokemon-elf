@@ -543,6 +543,8 @@ export interface DraftRoom extends DraftRoomView {
   updateTeam(patch: { name?: string; formation?: FormationId }): boolean;
   updateSettings(patch: Partial<DraftSettings>): boolean;
   addCpu(): boolean;
+  /** Alle freien Plätze mit CPU-Teams auffüllen */
+  fillCpu(): boolean;
   removeTeam(teamId: string): boolean;
   setOrder(teamIds: string[]): boolean;
   start(): boolean;
@@ -945,6 +947,7 @@ export function useDraftRoom(code: string): DraftRoom {
     updateTeam,
     updateSettings,
     addCpu: useCallback(() => sendOnce('add-cpu', { type: 'add-cpu' }), [sendOnce]),
+    fillCpu: useCallback(() => sendOnce('add-cpu', { type: 'add-cpu', fill: true }), [sendOnce]),
     removeTeam: useCallback((teamId: string) => send({ type: 'remove-team', teamId }), [send]),
     setOrder: useCallback((order: string[]) => send({ type: 'set-order', order }), [send]),
     start: useCallback(() => sendOnce('start', { type: 'start' }), [sendOnce]),

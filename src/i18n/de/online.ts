@@ -141,6 +141,7 @@ const online = {
   orderHost: 'Draft-Reihenfolge wie in der Liste (Runde 2 rückwärts – Snake-Draft).',
   orderHostFixed: 'Draft-Reihenfolge wie in der Liste – jede Runde gleich.',
   addCpu: 'CPU-Team hinzufügen',
+  fillCpu: (n: number) => `Mit CPU auffüllen (${n})`,
   readOnlyLobby:
     'Nur Ansicht – die Live-Verbindung steht noch nicht. Beitreten (bzw. dein Team, falls du schon dabei bist) gibt es, sobald sie da ist.',
   settings: 'Einstellungen',

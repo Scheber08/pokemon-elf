@@ -355,6 +355,17 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
               {t.online.addCpu}
             </button>
           )}
+          {isHost && s.settings.maxTeams - s.teams.length >= 2 && (
+            <button
+              type="button"
+              className="btn btn--small"
+              aria-disabled={room.busy['add-cpu'] || undefined}
+              aria-busy={room.busy['add-cpu']}
+              onClick={() => !room.busy['add-cpu'] && room.fillCpu()}
+            >
+              {t.online.fillCpu(s.settings.maxTeams - s.teams.length)}
+            </button>
+          )}
         </section>
         {me ? (
           <MyTeamCard room={room} />

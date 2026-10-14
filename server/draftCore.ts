@@ -461,6 +461,8 @@ export function parseClientMessage(raw: unknown): ParsedMessage {
         : badMessage();
     case 'leave':
     case 'add-cpu':
+      if (d.fill === undefined) return ok({ type });
+      return d.fill === true ? ok({ type, fill: true }) : badMessage();
     case 'start':
     case 'ping':
       return ok({ type });
@@ -1576,8 +1578,12 @@ export class DraftRoomCore {
         });
       case 'settings':
         return updateSettings(state, deviceId, cleanSettingsPatch(msg.settings), list);
-      case 'add-cpu':
-        return addCpuTeam(state, deviceId, newTeamId(state));
+      case 'add-cpu': {
+        let next = addCpuTeam(state, deviceId, newTeamId(state));
+        // Auffüllen: bis die Liga voll ist (eine Nachricht, eine Änderung)
+        while (msg.fill && next.teams.length < next.settings.maxTeams) next = addCpuTeam(next, deviceId, newTeamId(next));
+        return next;
+      }
       case 'remove-team':
         return removeTeam(state, deviceId, msg.teamId);
       case 'set-order': {

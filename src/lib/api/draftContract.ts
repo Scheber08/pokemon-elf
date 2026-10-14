@@ -509,7 +509,8 @@ export type DraftClientMessage =
   | { type: 'leave' }
   | { type: 'update-team'; teamName?: string; formation?: FormationId }
   | { type: 'settings'; settings: DraftSettingsPatch }
-  | { type: 'add-cpu' }
+  /** fill: alle freien Plätze mit CPU-Teams auffüllen (sonst eins) */
+  | { type: 'add-cpu'; fill?: true }
   | { type: 'remove-team'; teamId: string }
   | { type: 'set-order'; order: string[] }
   | { type: 'start' }
