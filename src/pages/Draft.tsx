@@ -588,7 +588,15 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     <span className="muted">{i + 1}.</span>
                     {p ? <Sprite pokemon={p} style={sprite} className="scorers__sprite" /> : <span aria-hidden="true" />}
                     <span className="scorers__name">
-                      {p && t.game.pokemon(p)} <small className="muted">{teamName(state.teams[s.team].name)}</small>
+                      {p && t.game.pokemon(p)}{' '}
+                      {captainOf(state.teams[s.team]) === s.id && (
+                        <>
+                          <span className="captain-badge" title={t.captain.title}>
+                            C<span className="sr-only"> – {t.captain.title}</span>
+                          </span>{' '}
+                        </>
+                      )}
+                      <small className="muted">{teamName(state.teams[s.team].name)}</small>
                     </span>
                     <span className="scorers__goals">{s.goals}</span>
                   </li>

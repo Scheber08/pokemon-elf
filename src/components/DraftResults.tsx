@@ -447,7 +447,15 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                     <span className="draft-results__rank">{i + 1}.</span>
                     {p ? <Sprite pokemon={p} style={sprite} className="scorers__sprite" /> : <span aria-hidden="true" />}
                     <span className="scorers__name">
-                      {pokemonName(s.pokemonId)} <small className="muted">{nameOf(s.teamIndex)}</small>
+                      {pokemonName(s.pokemonId)}{' '}
+                      {teams[s.teamIndex]?.captain === s.pokemonId && (
+                        <>
+                          <span className="captain-badge" title={t.captain.title}>
+                            C<span className="sr-only"> – {t.captain.title}</span>
+                          </span>{' '}
+                        </>
+                      )}
+                      <small className="muted">{nameOf(s.teamIndex)}</small>
                       {s.setPieceGoals > 0 && (
                         <small className="draft-results__setpiece">
                           {s.setPieceGoals === s.goals ? tx.setPieceOnly : tx.setPiecePart(s.setPieceGoals)}
