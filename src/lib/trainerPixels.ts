@@ -358,6 +358,13 @@ function hat(c: Canvas, id: string, cloth: string) {
       c.fill((x, y) => y >= 8 && y <= 9 && x >= 3 && x <= 28, '#f2d27a', '#a8862e');
       c.rect(9, 6, 14, 1, '#d8342a');
       break;
+    case 'party':
+      // Spitzer Partyhut mit Streifen, Bommel und Gummiband
+      c.fill((x, y) => y >= 2 && y <= 9 && Math.abs(x - 15.5) <= (y - 1.5) * 0.8, '#2f62c9');
+      c.fill((x, y) => y >= 3 && y <= 8 && Math.abs(x - 15.5) <= (y - 1.5) * 0.8 - 1 && (x + y) % 4 < 2, '#f2c230', null);
+      c.fill(ellipse(15.5, 1.5, 1.5, 1.5), '#f27fc0', '#b0447f');
+      c.dots([[9, 10], [22, 10]], '#26282e');
+      break;
     case 'wizard':
       c.fill((x, y) => y <= 9 && y >= 0 && Math.abs(x - 15.5) <= 1 + y * 0.9, '#5b3fb0');
       c.rect(6, 9, 20, 2, '#4a3191');

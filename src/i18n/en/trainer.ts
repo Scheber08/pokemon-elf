@@ -115,6 +115,7 @@ const trainer: Messages['trainer'] = {
       santa: 'Santa hat',
       straw: 'Straw hat',
       bunny: 'Bunny ears',
+      party: 'Party hat',
     },
     accessory: {
       none: 'None',

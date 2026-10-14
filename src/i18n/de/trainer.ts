@@ -114,6 +114,7 @@ const trainer = {
       santa: 'Weihnachtsmütze',
       straw: 'Strohhut',
       bunny: 'Hasenohren',
+      party: 'Partyhut',
     },
     accessory: {
       none: 'Ohne',

@@ -56,10 +56,10 @@ Saison auf 18 Teams mit Ranglisten-Teams aufgefüllt, KO-Turnier mit optionaler 
 Cosmetics-Shop (auch in Rangliste, Profil und Draft), Transfermarkt und Erinnerung vor dem Anpfiff in der
 Manager-Saison, eigener Menüpunkt „Manager", Spielbericht + 2D-Wiedergabe in allen Modi (einstellbar),
 Erfolge für die Manager-Saison, Hinweis „Erfolg freigeschaltet" nach Runs und Ligen, Saisonartikel im Shop
-(Halloween, Weihnachten, Frühling/Ostern, Sommer), Spieler des Spieltags, Tausch-Angebote zwischen Teams in der Manager-Saison,
+(Halloween, Weihnachten, Frühling/Ostern, Sommer, Neujahr), Spieler des Spieltags, Tausch-Angebote zwischen Teams in der Manager-Saison,
 Trikotnummern in allen Modi.
 
-1. Weitere Saisons im Shop (z. B. Fußball-Sommer, Neujahr) – neue Einträge mit `seasonal(...)` in `src/lib/trainer.ts`
+1. Weitere Saisons im Shop (z. B. Fußball-Sommer, Valentinstag) – neue Einträge mit `seasonal(...)` in `src/lib/trainer.ts`
 
 ## Daten
 
