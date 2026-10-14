@@ -58,6 +58,8 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
   const shooter = scene ? scene.shooter : -1;
   const shooterPos = scene ? ballAt(replay.keys, Math.min(time, scene.t - 0.35)) : null;
   const minute = Math.max(1, Math.min(Math.ceil(time), 95));
+  // Sprung kurz vor das nächste Tor (Vorlage und Abschluss bleiben sichtbar)
+  const nextGoal = replay.events.find((e) => e.kind === 'goal' && e.t - 1.5 > time + 0.05);
 
   return (
     <div className="match-pitch">
@@ -142,6 +144,19 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
             setTime(Number(e.target.value));
           }}
         />
+        <button
+          type="button"
+          className="btn btn--small btn--ghost match-pitch__skip"
+          disabled={!nextGoal}
+          title={tx.nextGoal}
+          onClick={() => {
+            if (!nextGoal) return;
+            setTime(Math.max(0, nextGoal.t - 1.5));
+            setPlaying(true);
+          }}
+        >
+          {tx.nextGoalShort}
+        </button>
         <button
           type="button"
           className="btn btn--small btn--ghost match-pitch__rate"

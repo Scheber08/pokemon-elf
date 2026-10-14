@@ -441,6 +441,16 @@ describe('Saisonbilanz und Ticker', () => {
       await act(async () => rate().click());
       expect(rate().textContent).toBe(next);
     }
+    // „⏭ Tor“: springt vor das nächste Tor; nach dem letzten ist der Knopf aus
+    const skip = () => document.body.querySelector('.match-pitch__skip') as unknown as { click(): void; getAttribute(n: string): string | null };
+    const goals = (buttons()[0] as unknown as { textContent: string }).textContent.split(':').reduce((n, x) => n + Number(x), 0);
+    let jumps = 0;
+    while (skip().getAttribute('disabled') == null && jumps < 20) {
+      await act(async () => skip().click());
+      jumps++;
+    }
+    expect(goals).toBeGreaterThan(0);
+    expect(jumps).toBe(goals);
     // Dialog zu, Wiedergabe ausschalten
     const close = document.body.querySelector('.modal .icon-btn') as unknown as { click(): void };
     await act(async () => close.click());

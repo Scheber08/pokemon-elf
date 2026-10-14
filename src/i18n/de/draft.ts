@@ -433,6 +433,8 @@ const draft = {
     pause: 'Pause',
     again: 'Nochmal',
     seek: 'Spielminute',
+    nextGoal: 'Zum nächsten Tor springen',
+    nextGoalShort: '⏭ Tor',
     speed: (rate: number) => `Tempo ${rate}× – zum Wechseln klicken`,
     goal: (scorer: string, assist: string | null) => (assist ? `⚽ Tor! ${scorer} (Vorlage ${assist})` : `⚽ Tor! ${scorer}`),
     shot: (team: string) => `Abschluss ${team}`,

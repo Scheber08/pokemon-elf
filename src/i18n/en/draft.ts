@@ -397,6 +397,8 @@ const draft: Messages['draft'] = {
     pause: 'Pause',
     again: 'Replay',
     seek: 'Match minute',
+    nextGoal: 'Jump to the next goal',
+    nextGoalShort: '⏭ Goal',
     speed: (rate) => `Speed ${rate}× – click to change`,
     goal: (scorer, assist) => (assist ? `⚽ Goal! ${scorer} (assist ${assist})` : `⚽ Goal! ${scorer}`),
     shot: (team) => `Shot ${team}`,
