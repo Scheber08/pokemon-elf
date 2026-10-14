@@ -21,6 +21,8 @@ export interface LeagueTeam {
   rating: number;
   /** Online-Draft: aufgefülltes Team eines echten Spielers aus der Rangliste (Spielername) */
   player?: string;
+  /** … und dessen Ranglisten-Eintrag (Link zum Spielerprofil) */
+  playerEntry?: string;
   isUser?: boolean;
   /** Spieler für die Torschützenliste (optional) */
   squad?: SquadPlayer[];

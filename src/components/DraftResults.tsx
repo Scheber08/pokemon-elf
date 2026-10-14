@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftTeam } from '../lib/api/draftContract';
@@ -318,7 +319,11 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                       {teams[r.team]?.cpu && <span className="rating">{t.draft.cpu}</span>}
                       {!teams[r.team] && league.teams[r.team]?.player && (
                         <small className="muted draft-results__player" title={tx.fillPlayerTitle}>
-                          {league.teams[r.team].player}
+                          {league.teams[r.team].playerEntry ? (
+                            <Link to={`/spieler/${league.teams[r.team].playerEntry}`}>{league.teams[r.team].player}</Link>
+                          ) : (
+                            league.teams[r.team].player
+                          )}
                         </small>
                       )}
                       {r.team === you && <span className="sr-only">{tx.yourTeamSr}</span>}

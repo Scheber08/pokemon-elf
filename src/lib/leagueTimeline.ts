@@ -196,6 +196,7 @@ export function storedLeague(raw: unknown, teamCount: number): LeagueResult | nu
     const team: LeagueTeam = { name: t.name, rating: t.rating };
     if (t.isUser === true) team.isUser = true;
     if (typeof t.player === 'string' && t.player) team.player = t.player;
+    if (typeof t.playerEntry === 'string' && /^[\w-]{1,64}$/.test(t.playerEntry)) team.playerEntry = t.playerEntry;
     teams.push(team);
   }
 

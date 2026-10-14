@@ -32,6 +32,7 @@ export function toFillCandidate(row: FillCandidateRow): FillCandidate | null {
   const values = data as (number | null)[];
   return {
     player: row.player,
+    ...(typeof row.entry_id === 'string' && row.entry_id ? { entryId: row.entry_id } : {}),
     teamName: typeof row.team_name === 'string' ? row.team_name : '',
     formation,
     slots: values.slice(0, size),

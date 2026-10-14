@@ -498,6 +498,7 @@ export async function leaderboardPage(
 
 export interface FillCandidateRow {
   player: string;
+  entry_id: string;
   team_name: string;
   formation: string;
   lineup_json: string;
@@ -511,7 +512,7 @@ export interface FillCandidateRow {
 export async function fillCandidateRows(db: Db, challenge: ChallengeKey, limit: number): Promise<FillCandidateRow[]> {
   const res = await db
     .prepare(
-      `SELECT d.name AS player, e.team_name, e.formation, e.lineup_json, e.ss_enabled
+      `SELECT d.name AS player, b.entry_id, e.team_name, e.formation, e.lineup_json, e.ss_enabled
        FROM ${ROW_JOINS}
        WHERE b.challenge = ? AND b.scope = ? AND ${ROW_VISIBLE}
        ORDER BY b.points DESC, b.score DESC, b.created_at, b.entry_id LIMIT ?`,

@@ -104,6 +104,7 @@ describe('Niveau der Auffüllteams', () => {
 describe('Kandidaten aus der Rangliste', () => {
   const row = (over: Partial<Parameters<typeof toFillCandidate>[0]> = {}) => ({
     player: 'Ash',
+    entry_id: 'e-1',
     team_name: 'Pallet Power',
     formation: '4-3-3',
     lineup_json: JSON.stringify(candidate(0).slots),
@@ -112,7 +113,7 @@ describe('Kandidaten aus der Rangliste', () => {
   });
 
   it('toFillCandidate: Elf und Standardschütze, kaputte Zeilen und Standardnamen fallen weg', () => {
-    expect(toFillCandidate(row())).toEqual({ player: 'Ash', teamName: 'Pallet Power', formation: '4-3-3', slots: candidate(0).slots, ss: null });
+    expect(toFillCandidate(row())).toEqual({ player: 'Ash', entryId: 'e-1', teamName: 'Pallet Power', formation: '4-3-3', slots: candidate(0).slots, ss: null });
     const withSs = toFillCandidate(row({ ss_enabled: 1, lineup_json: JSON.stringify([...candidate(0).slots, 25]) }))!;
     expect(withSs.ss).toBe(25);
     expect(toFillCandidate(row({ formation: '9-9-9' }))).toBeNull();
@@ -201,6 +202,8 @@ describe('Draft-Raum: Saison mit Ranglisten-Teams', () => {
     expect(fill.every((t) => /^Profi \d+$/.test(t.player!) && /^Elf \d+$/.test(t.name))).toBe(true);
     // Spielername und Teamname gehören zusammen
     expect(fill.every((t) => t.name.slice(4) === t.player!.slice(6))).toBe(true);
+    // … und der Ranglisten-Eintrag (Profil-Link)
+    expect(fill.every((t) => t.playerEntry === `e${t.name.slice(4)}`)).toBe(true);
     // Auch der Schnappschuss trägt die Spieler (für die Anzeige)
     expect(host.state!.league!.teams.slice(2).map((t) => t.player)).toEqual(fill.map((t) => t.player));
     // Torschützen auch bei den Auffüllteams (echte Elf)

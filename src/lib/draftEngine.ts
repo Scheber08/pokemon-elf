@@ -1373,6 +1373,8 @@ export function leagueTeams(state: Pick<DraftState, 'teams' | 'settings'>, byId:
 /** Kandidat zum Auffüllen der Liga: Bestwert eines echten Spielers aus der Allzeit-Rangliste */
 export interface FillCandidate {
   player: string;
+  /** Ranglisten-Eintrag (Profil-Link) */
+  entryId?: string;
   teamName: string;
   formation: FormationId;
   /** Elf in der Reihenfolge der Formation */
@@ -1412,6 +1414,7 @@ export function fillTeams(
     out.push({
       name,
       player: c.player.trim(),
+      ...(c.entryId ? { playerEntry: c.entryId } : {}),
       rating: ev.score,
       squad: players.map((p, i) => ({ pokemonId: p!.id, pos: def.slots[i].pos, atk: p!.atk, spa: p!.spa })),
       setPieceTaker: ss ? { pokemonId: ss.id, pos: 'SS' as const, atk: ss.atk, spa: ss.spa } : null,
@@ -1484,7 +1487,11 @@ export function withLeague(state: DraftState, list: Pokemon[], scale: Scale, can
     ...state,
     league: {
       ...full,
-      teams: full.teams.map((t) => (t.player ? { name: t.name, rating: t.rating, player: t.player } : { name: t.name, rating: t.rating })),
+      teams: full.teams.map((t) =>
+        t.player
+          ? { name: t.name, rating: t.rating, player: t.player, ...(t.playerEntry ? { playerEntry: t.playerEntry } : {}) }
+          : { name: t.name, rating: t.rating },
+      ),
     },
   };
 }
