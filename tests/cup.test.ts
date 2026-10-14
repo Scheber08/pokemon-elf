@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { DRAFT_LIMITS } from '../src/lib/api/draftContract';
 import {
   CUP_SIZE,
+  cupPath,
   cupPens,
   cupStageOf,
   cupStatus,
@@ -22,6 +23,26 @@ import { ALL } from './helpers';
 
 const SCALE = buildScale(ALL, 'all');
 const teams16 = (): LeagueTeam[] => Array.from({ length: 16 }, (_, i) => ({ name: `T${i}`, rating: 400 + i * 30 }));
+
+describe('cupPath', () => {
+  it('Sieger: vier KO-Spiele, jedes gewonnen (Tore oder Elfmeter), eigene Tore zuerst', () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const r = simulateCup(teams16(), createRng(seed));
+      const winner = cupWinner(r.cup)!;
+      const path = cupPath(r.cup, r.matches, winner);
+      expect(path.map((s) => s.stage)).toEqual(['r16', 'qf', 'sf', 'final']);
+      for (const s of path) expect(s.gf > s.ga || (s.gf === s.ga && s.pens!.own > s.pens!.opp)).toBe(true);
+      // Gegner im Finale = Verlierer der Final-Paarung
+      const fin = r.cup.rounds[3].ties[0];
+      expect(path[3].opponent).toBe(fin.home === winner ? fin.away : fin.home);
+    }
+    // Team, das im Achtelfinale ausscheidet: nur ein Spiel
+    const r = simulateCup(teams16(), createRng(3));
+    const tie = r.cup.rounds[0].ties[0];
+    const loser = tie.winner === tie.home ? tie.away : tie.home;
+    expect(cupPath(r.cup, r.matches, loser)).toHaveLength(1);
+  });
+});
 
 describe('simulateCup', () => {
   it('16 Teams: Achtel-, Viertel-, Halbfinale, Finale – Sieger kommen weiter, gesetzt nach Team-Score', () => {

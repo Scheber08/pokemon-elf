@@ -11,7 +11,7 @@ import { usePokemonData } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
 import { teamLabel } from '../state/useDraftRoom';
 import type { SpriteStyle } from '../types';
-import { cupPens, cupStageOf, cupStatus, cupWinner } from '../lib/cup';
+import { cupPath, cupPens, cupStageOf, cupStatus, cupWinner } from '../lib/cup';
 import { Confetti } from './Confetti';
 import { CupBracket, CupGroups, cupStatusText } from './CupBracket';
 import { FixtureList, FormDots } from './LeagueTicker';
@@ -122,6 +122,8 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
           return t.draft.cup.finalLine(score + pens, nameOf(home ? finalMatch.away : finalMatch.home));
         })()
       : null;
+  /** Weg des Siegers durch die KO-Runden (ohne das Finale, das steht schon in der Zeile darüber) */
+  const championPath = cup && cupFinalLine ? cupPath(cup, league.matches, champion.team).filter((s) => s.stage !== 'final') : [];
   const tieNote = cup ? null : titleTieNote(race, nameOf);
   const dayTitle = (round: number) => {
     const stage = cup ? cupStageOf(cup, round) : null;
@@ -203,6 +205,20 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
           {championName}
         </h2>
         <p className="draft-results__line">{cupFinalLine ?? tx.heroLine(champion, ratingOf(champion.team))}</p>
+        {championPath.length > 0 && (
+          <p className="draft-results__path muted small">
+            {t.draft.cup.pathTitle}:{' '}
+            {championPath
+              .map((s) =>
+                t.draft.cup.pathStep(
+                  t.draft.cup.stage[s.stage],
+                  `${s.gf}:${s.ga}${s.pens ? ` (${t.draft.cup.pens(s.pens.own, s.pens.opp)})` : ''}`,
+                  nameOf(s.opponent),
+                ),
+              )
+              .join(' · ')}
+          </p>
+        )}
         {tieNote && <p className="draft-results__tie">{tieNote}</p>}
         {steal && stealMon && stealTeam >= 0 && (
           <p className="draft-results__steal">

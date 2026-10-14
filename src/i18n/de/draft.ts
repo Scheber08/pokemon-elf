@@ -409,6 +409,8 @@ const draft = {
     pens: (home: number, away: number) => `i. E. ${home}:${away}`,
     pensTitle: 'nach Elfmeterschießen',
     finalLine: (score: string, opponent: string) => `Finale ${score} gegen ${opponent}`,
+    pathTitle: 'Weg zum Titel',
+    pathStep: (stage: string, score: string, opponent: string) => `${stage}: ${score} gegen ${opponent}`,
     yourCup: (team: string, status: string) => `Dein Team ${team}: ${status}`,
     standings: 'Endklassement',
     tbd: 'offen',

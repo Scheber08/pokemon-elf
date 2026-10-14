@@ -376,6 +376,8 @@ const draft: Messages['draft'] = {
     pens: (home, away) => `${home}:${away} on pens`,
     pensTitle: 'after a penalty shoot-out',
     finalLine: (score, opponent) => `Final ${score} against ${opponent}`,
+    pathTitle: 'Road to the title',
+    pathStep: (stage, score, opponent) => `${stage}: ${score} against ${opponent}`,
     yourCup: (team, status) => `Your team ${team}: ${status}`,
     standings: 'Final standings',
     tbd: 'TBD',

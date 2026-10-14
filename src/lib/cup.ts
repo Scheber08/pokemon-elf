@@ -232,6 +232,35 @@ export function cupPens(cup: CupInfo, m: Pick<Match, 'round' | 'home' | 'away'>)
   return r?.ties.find((x) => x.home === m.home && x.away === m.away)?.pens ?? null;
 }
 
+/** Ein KO-Spiel aus Sicht eines Teams (eigene Tore zuerst) */
+export interface CupPathStep {
+  stage: CupStage;
+  opponent: number;
+  gf: number;
+  ga: number;
+  /** Elfmeterschießen, eigene Treffer zuerst */
+  pens: { own: number; opp: number } | null;
+}
+
+/** Die KO-Spiele eines Teams in Reihenfolge (z. B. „Weg zum Titel“ des Siegers). */
+export function cupPath(cup: CupInfo, matches: readonly Match[], team: number): CupPathStep[] {
+  const out: CupPathStep[] = [];
+  for (const r of cup.rounds) {
+    const tie = r.ties.find((x) => x.home === team || x.away === team);
+    const m = tie && matches.find((x) => x.round === r.round && x.home === tie.home && x.away === tie.away);
+    if (!tie || !m) continue;
+    const home = tie.home === team;
+    out.push({
+      stage: r.stage,
+      opponent: home ? tie.away : tie.home,
+      gf: home ? m.hg : m.ag,
+      ga: home ? m.ag : m.hg,
+      pens: tie.pens ? { own: home ? tie.pens.home : tie.pens.away, opp: home ? tie.pens.away : tie.pens.home } : null,
+    });
+  }
+  return out;
+}
+
 /**
  * Wo ein Team im Turnier steht bzw. ausschied: 'winner', die Runde seines Ausscheidens –
  * oder null (gar nicht dabei). upTo: nur Spieltage bis einschließlich dieses zählen
