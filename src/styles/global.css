@@ -2584,3 +2584,53 @@ button.sheet__row:hover {
   height: 14px;
   border-radius: 50%;
 }
+
+.crest {
+  display: inline-block;
+  flex: none;
+  vertical-align: middle;
+}
+.crest-editor__summary {
+  margin-left: 0.5rem;
+}
+.crest-editor__body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+}
+.crest-editor__fields {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+.crest-editor__group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  border: 0;
+}
+.crest-editor__group legend {
+  margin-bottom: 4px;
+}
+.crest-editor__option {
+  display: grid;
+  place-items: center;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+.crest-editor__option.is-active {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+.crest-editor__swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+}

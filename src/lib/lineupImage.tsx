@@ -1,6 +1,7 @@
 import { ExportCard, type ExportResult } from '../components/ExportCard';
 import type { FormationId, Pokemon, Slots, SpriteStyle } from '../types';
 import type { Jerseys } from './jerseys';
+import { crestPokemon, type Crest } from './crest';
 import { renderToPng, spriteDataUrls } from './exportImage';
 
 interface Options {
@@ -17,13 +18,18 @@ interface Options {
   jerseys?: Jerseys;
   /** Kapitän (Pokémon-ID) */
   captain?: number | null;
+  /** Vereinswappen */
+  crest?: Crest | null;
 }
 
 /** Erzeugt das 1200×1500-PNG einer Aufstellung (optional mit Saisonbilanz). */
 export async function lineupImage(o: Options): Promise<Blob> {
   const players = o.slots.map((id) => (id != null ? o.byId.get(id) ?? null : null));
   const ss = o.ss === undefined ? undefined : o.ss != null ? o.byId.get(o.ss) ?? null : null;
-  const images = await spriteDataUrls([...players, ss], o.sprite);
+  // Wappentier mitladen (Data-URL – sonst fehlt es im Bild)
+  const mascotId = o.crest ? crestPokemon(o.crest.symbol) : null;
+  const mascot = mascotId != null ? o.byId.get(mascotId) ?? null : null;
+  const images = await spriteDataUrls([...players, ss, mascot], o.sprite);
   const watermark = `${window.location.host}${import.meta.env.BASE_URL}`.replace(/\/$/, '');
   return renderToPng(
     <ExportCard
@@ -38,6 +44,8 @@ export async function lineupImage(o: Options): Promise<Blob> {
       watermark={watermark}
       jerseys={o.jerseys}
       captain={o.captain}
+      crest={o.crest}
+      crestHref={mascot ? images.get(mascot.id)?.url : undefined}
     />,
   );
 }

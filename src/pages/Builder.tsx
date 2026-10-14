@@ -28,6 +28,9 @@ import { useSettings } from '../state/Settings';
 import { useToast } from '../state/Toast';
 import type { FormationId, PosCode, Pokemon, RegionFilter, Slots, SpriteStyle } from '../types';
 import { cleanCheer } from '../lib/cheer';
+import { cleanCrest, type Crest as CrestData } from '../lib/crest';
+import { Crest } from '../components/Crest';
+import { CrestEditor } from '../components/CrestEditor';
 
 interface BuilderState {
   formation: FormationId;
@@ -49,6 +52,8 @@ interface BuilderState {
   kit: Kit | null;
   /** Torjubel ('' = keiner) */
   cheer: string;
+  /** Vereinswappen (null = keins) */
+  crest: CrestData | null;
 }
 
 /** So viele Schritte lassen sich rückgängig machen */
@@ -76,6 +81,7 @@ const DEFAULT_STATE: BuilderState = {
   captain: null,
   kit: null,
   cheer: '',
+  crest: null,
 };
 
 function normalize(s: Partial<BuilderState>): BuilderState {
@@ -88,6 +94,7 @@ function normalize(s: Partial<BuilderState>): BuilderState {
   merged.jerseys = cleanJerseys(merged.jerseys);
   merged.kit = cleanKit(merged.kit);
   merged.cheer = cleanCheer(merged.cheer);
+  merged.crest = cleanCrest(merged.crest);
   merged.captain = typeof merged.captain === 'number' && merged.slots.includes(merged.captain) ? merged.captain : null;
   return merged;
 }
@@ -271,6 +278,7 @@ export function Builder() {
         subtitle: `${state.formation} · ${state.region ? t.game.region[state.region] : t.common.allRegions}`,
         jerseys: state.jerseys,
         captain,
+        crest: state.crest,
       });
       downloadBlob(blob, `${slugify(state.teamName || 'pokemon-elf')}.png`);
       toast(t.builder.imageSaved);
@@ -301,7 +309,16 @@ export function Builder() {
           <span className="only-fine">{t.builder.hintFine}</span>
           <span className="only-coarse">{t.builder.hintCoarse}</span>
         </p>
-        {state.teamName && <h1 className="team-title">{state.teamName}</h1>}
+        {(state.teamName || state.crest) && (
+          <h1 className="team-title">
+            {state.crest && (
+              <>
+                <Crest crest={state.crest} size={26} />{' '}
+              </>
+            )}
+            {state.teamName}
+          </h1>
+        )}
         <Pitch
           formation={state.formation}
           slots={state.slots}
@@ -372,6 +389,12 @@ export function Builder() {
           onChange={(kit) => change((s) => ({ ...s, kit }))}
           cheer={state.cheer}
           onCheer={(cheer) => change((s) => ({ ...s, cheer }))}
+        />
+
+        <CrestEditor
+          crest={state.crest}
+          onChange={(crest) => change((s) => ({ ...s, crest }))}
+          pokemon={[...state.slots, state.ssEnabled ? state.ss : null].filter((x): x is number => x != null)}
         />
 
         <JerseyEditor

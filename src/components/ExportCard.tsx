@@ -5,6 +5,8 @@ import { PitchMarkings } from './PitchMarkings';
 import { PlayerToken } from './PlayerToken';
 import { jerseyNumbers, type Jerseys } from '../lib/jerseys';
 import type { SpriteSource } from './Sprite';
+import { Crest } from './Crest';
+import type { Crest as CrestData } from '../lib/crest';
 
 export interface ExportResult {
   record: string;
@@ -29,6 +31,10 @@ interface Props {
   jerseys?: Jerseys;
   /** Kapitän (Pokémon-ID) – Binde „C“ */
   captain?: number | null;
+  /** Vereinswappen neben dem Teamnamen */
+  crest?: CrestData | null;
+  /** Data-URL des Wappentiers */
+  crestHref?: string;
 }
 
 export const EXPORT_W = 1200;
@@ -36,7 +42,7 @@ export const EXPORT_H = 1500;
 const PITCH_W = 880;
 
 /** Statisches 1200×1500-Bild (Spielfeld, Teamname, ggf. Saisonbilanz) für html2canvas. */
-export function ExportCard({ formation, players, ss, sprite, images, teamName, subtitle, result, watermark, jerseys, captain = null }: Props) {
+export function ExportCard({ formation, players, ss, sprite, images, teamName, subtitle, result, watermark, jerseys, captain = null, crest = null, crestHref }: Props) {
   const t = useT();
   const defs = FORMATIONS[formation].slots;
   // Trikotnummern wie auf dem Feld (eigene bzw. Vorgabe nach Position)
@@ -49,7 +55,14 @@ export function ExportCard({ formation, players, ss, sprite, images, teamName, s
       <div className="export-card__head">
         <div>
           <div className="export-card__kicker">Pokémon Elf{result ? ` · ${result.label}` : ''}</div>
-          <div className="export-card__team">{teamName || t.builder.exportCard.defaultTeam}</div>
+          <div className="export-card__team">
+            {crest && (
+              <>
+                <Crest crest={crest} size={64} spriteHref={crestHref} />{' '}
+              </>
+            )}
+            {teamName || t.builder.exportCard.defaultTeam}
+          </div>
           <div className="export-card__sub">{subtitle ?? formation}</div>
         </div>
         {result && (
