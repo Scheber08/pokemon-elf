@@ -750,6 +750,16 @@ describe('ManagerSeason', () => {
     };
     expect(await text(withCaptain(lineup.slots[0]))).not.toContain('Dein Kapitän');
     expect(await text(withCaptain(benchId))).toContain('steht nicht in der Startelf');
+    {
+      const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(withCaptain(benchId), 'h')), readOnly: false })));
+      await settle();
+      // Kapitän auf der Bank: in der Auswahl als Bank-Spieler, in der Kader-Tabelle markiert
+      const opts = container.querySelectorAll('.captain-picker option') as unknown as { selected?: boolean; textContent: string; getAttribute(n: string): string | null }[];
+      const chosen = opts.find((o) => o.selected);
+      expect(chosen?.getAttribute('value')).toBe(String(benchId));
+      expect(chosen?.textContent).toMatch(/^BK · /);
+      expect(container.querySelectorAll('.manager__squad .manager__captain')).toHaveLength(1);
+    }
     expect(await text(withCaptain(lineup.slots[0], { [lineup.slots[0]]: { kind: 'red', until: 2, since: 0 } }))).toContain('keinen Kapitänsbonus');
   });
 

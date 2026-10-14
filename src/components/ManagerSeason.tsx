@@ -336,6 +336,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             formation={m.lineups[room.me.id].formation}
             slots={m.lineups[room.me.id].slots}
             captain={s.teams[meIndex].captain ?? null}
+            bench={rosterOf(s.teams[meIndex]).filter((id) => !m.lineups[room.me!.id].slots.includes(id))}
             onChange={(c) => room.setCaptain(c)}
             hint={t.captain.managerNote}
           />
@@ -684,6 +685,12 @@ function LineupEditor({
               <tr key={r.p.id} className={r.role ? '' : 'is-bench'}>
                 <td className="left">
                   {t.game.pokemon(r.p)}
+                  {team.captain === r.p.id && (
+                    <span className="manager__captain" title={t.captain.title}>
+                      {' '}
+                      ©<span className="sr-only"> – {t.captain.title}</span>
+                    </span>
+                  )}
                   {shinySet?.has(r.p.id) && (
                     <span title={t.shiny.title}>
                       {' '}

@@ -17,10 +17,12 @@ interface Props {
   hint?: string | null;
   /** Skala für „Beste Wahl“ (Standard: alle 1.025) */
   scale?: Scale;
+  /** Weitere wählbare Spieler (Manager-Saison: Bank) – zählen nur, wenn sie in der Elf stehen */
+  bench?: readonly number[];
 }
 
 /** Kapitän wählen: einer der elf Spieler auf dem Feld (nicht der Standardschütze). */
-export function CaptainPicker({ formation, slots, captain, onChange, disabled = false, hint, scale: scaleProp }: Props) {
+export function CaptainPicker({ formation, slots, captain, onChange, disabled = false, hint, scale: scaleProp, bench = [] }: Props) {
   const t = useT();
   const tx = t.captain;
   const { byId, scale } = usePokemonData();
@@ -30,6 +32,10 @@ export function CaptainPicker({ formation, slots, captain, onChange, disabled = 
     const mon = slots[i] != null ? byId.get(slots[i] as number) : undefined;
     return mon ? [{ id: mon.id, label: `${t.game.posShort[d.pos]} · ${t.game.pokemon(mon)}` }] : [];
   });
+  for (const b of bench) {
+    const mon = byId.get(b);
+    if (mon && !players.some((p) => p.id === b)) players.push({ id: mon.id, label: `${t.draft.bench.short} · ${t.game.pokemon(mon)}` });
+  }
   if (!players.length) return null;
   const best = bestCaptain(
     formation,
