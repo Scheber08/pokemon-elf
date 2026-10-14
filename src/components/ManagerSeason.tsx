@@ -3,7 +3,7 @@ import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerClaim, ManagerLineup } from '../lib/api/draftContract';
 import { rosterOf } from '../lib/draftEngine';
-import { matchFor, storedLeague } from '../lib/leagueTimeline';
+import { matchFor, playerOfRound, storedLeague } from '../lib/leagueTimeline';
 import { showNotify } from '../lib/notify';
 import { bestLineup, FORM_FIT, formFit, freeAgents, lineupScore, managerSchedule } from '../lib/manager';
 import { positionFit } from '../lib/fit';
@@ -17,6 +17,7 @@ import { BenchRow } from './BenchRow';
 import { FixtureList } from './LeagueTicker';
 import { ReplayToggle, useMatchReport } from './MatchReport';
 import { SeasonStats } from './SeasonStats';
+import { Sprite } from './Sprite';
 import { Pitch, SS_INDEX, type SlotState } from './Pitch';
 import '../styles/draft.css';
 
@@ -81,7 +82,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
 
   // 2D-Ansicht mit der Aufstellung dieses Spieltags (ältere Stände: die aktuelle)
   // Neuer Spieltag gespielt, während die Seite offen ist (Tab im Hintergrund): Hinweis mit dem eigenen Ergebnis
-  const { notify } = useSettings();
+  const { notify, sprite } = useSettings();
   const playedNow = m?.played ?? 0;
   const seenPlayed = useRef(playedNow);
   useEffect(() => {
@@ -143,6 +144,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
   }));
   const last = m.played > 0 ? league.matches.filter((x) => x.round === m.played) : [];
   const lastTransfers = (m.transfers ?? []).filter((x) => x.matchday === m.played);
+  const star = playerOfRound(last);
   const when = m.nextAt != null ? new Date(m.nextAt - room.clockOffset).toLocaleString(localeOf(lang), { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : '';
 
   return (
@@ -215,6 +217,13 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           </h2>
           <ReplayToggle />
           <FixtureList matches={last} you={you} nameOf={nameOf} pokemonName={pokemonName} onOpen={report.open} />
+          {star && (
+            <p className={`manager__star ${star.teamIndex === you ? 'is-you' : ''}`}>
+              <span aria-hidden="true">⭐</span> <strong>{tx.starTitle}</strong>{' '}
+              {byId.get(star.pokemonId) && <Sprite pokemon={byId.get(star.pokemonId)!} style={sprite} className="manager__star-sprite" />}
+              {pokemonName(star.pokemonId)} <span className="muted">({nameOf(star.teamIndex)})</span> – {tx.starLine(star.goals, star.assists)}
+            </p>
+          )}
         </section>
       )}
 

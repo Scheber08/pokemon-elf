@@ -1257,3 +1257,20 @@ button.draft-bench__slot {
   display: grid;
   gap: 4px;
 }
+
+/* Manager-Saison: Spieler des Spieltags */
+.manager__star {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin: 10px 0 0;
+  font-size: 14px;
+}
+.manager__star.is-you strong {
+  color: var(--yellow);
+}
+.manager__star-sprite {
+  width: 32px;
+  height: 32px;
+}

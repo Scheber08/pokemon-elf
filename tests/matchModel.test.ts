@@ -194,3 +194,18 @@ describe('Saison-Statistik', () => {
     expect(t0).toMatchObject({ games: 2, shots: 22, onTarget: 9, xg: 3.3, xga: 1.6, goals: 3, against: 1, possession: 60 });
   });
 });
+
+describe('Spieler des Spieltags', () => {
+  it('Tore zählen doppelt, bei Gleichstand mehr Tore, ohne Tore null', async () => {
+    const { playerOfRound } = await import('../src/lib/leagueTimeline');
+    const goal = (pokemonId: number, assist?: number) => ({ pokemonId, pos: 'ST' as const, ...(assist != null ? { assist } : {}) });
+    const m = (homeScorers: ReturnType<typeof goal>[], awayScorers: ReturnType<typeof goal>[]) => ({
+      round: 1, home: 0, away: 1, hg: homeScorers.length, ag: awayScorers.length, homeScorers, awayScorers,
+    });
+    // 7: 1 Tor + 1 Vorlage = 3; 9: 3 Vorlagen = 3 → 7 (mehr Tore); 5: 1 Tor = 2
+    expect(playerOfRound([m([goal(7, 9), goal(5, 9)], [goal(8)]), m([goal(4, 7)], [goal(6, 9)])])).toMatchObject({ pokemonId: 7, goals: 1, assists: 1 });
+    // Doppelpack schlägt zwei Vorlagen und eine Vorlage + Tor
+    expect(playerOfRound([m([goal(3), goal(3)], [goal(2, 1), goal(1, 2)])])).toMatchObject({ pokemonId: 3, goals: 2 });
+    expect(playerOfRound([m([], [])])).toBeNull();
+  });
+});

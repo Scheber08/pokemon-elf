@@ -466,6 +466,11 @@ const draft: Messages['draft'] = {
     formTitle: (n) => (n > 0 ? `Daily form +${n}` : n < 0 ? `Daily form ${n}` : 'Daily form normal'),
     formNote: (fit) => `Each form step shifts the fit by ${fit} points. The form applies to the next matchday.`,
     lastResults: (n) => `Results matchday ${n}`,
+    starTitle: 'Player of the matchday:',
+    starLine: (goals, assists) =>
+      [goals ? `${goals} ${goals === 1 ? 'goal' : 'goals'}` : '', assists ? `${assists} ${assists === 1 ? 'assist' : 'assists'}` : '']
+        .filter(Boolean)
+        .join(', '),
     upcoming: (n) => `Matchday ${n} – fixtures`,
     tableTitle: 'Table',
     spectator: 'You’re watching – only the teams of this league set lineups.',

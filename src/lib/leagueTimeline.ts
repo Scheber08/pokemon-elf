@@ -176,6 +176,18 @@ export function playerTallies(league: Pick<LeagueResult, 'matches'>): PlayerTall
   return [...tally.values()];
 }
 
+/**
+ * Spieler des Spieltags (bzw. beliebiger Spiele): die meisten Torbeteiligungen, Tore doppelt gewichtet;
+ * bei Gleichstand mehr Tore, dann fest nach Team und Pokémon. null ohne Torbeteiligung.
+ */
+export function playerOfRound(matches: LeagueResult['matches']): PlayerTally | null {
+  const value = (p: PlayerTally) => p.goals * 2 + p.assists;
+  const all = playerTallies({ matches }).sort(
+    (a, b) => value(b) - value(a) || b.goals - a.goals || a.teamIndex - b.teamIndex || a.pokemonId - b.pokemonId,
+  );
+  return all[0] ?? null;
+}
+
 /** Statistik eines Teams über alle Spiele mit Details (Match.stats) */
 export interface TeamTally {
   team: number;
