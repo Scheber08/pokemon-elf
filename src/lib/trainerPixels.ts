@@ -445,6 +445,14 @@ function accessory(c: Canvas, id: string, cloth: string) {
       for (const cx of [7.5, 23.5]) c.fill(ellipse(cx, 13, 1.6, 2.6), '#2f62c9', '#1b3a7a');
       c.fill((x, y) => (x === 7 || x === 24) && y >= 5 && y <= 10, '#26282e');
       break;
+    case 'facepaint':
+      // Fanschminke: Streifen in Vereinsfarbe und Weiß auf beiden Wangen
+      for (const x0 of [9, 20]) {
+        c.rect(x0, 15, 1, 3, cloth);
+        c.rect(x0 + 1, 15, 1, 3, '#f3f3f3');
+        c.rect(x0 + 2, 15, 1, 3, cloth);
+      }
+      break;
     case 'whistle':
       c.dots([[12, 24], [13, 25], [14, 26], [19, 24], [18, 25], [17, 26]], '#26282e');
       c.rect(15, 27, 3, 2, '#c9ced6');

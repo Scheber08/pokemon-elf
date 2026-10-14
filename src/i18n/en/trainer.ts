@@ -131,6 +131,7 @@ const trainer: Messages['trainer'] = {
       headphones: 'Headphones',
       sunglasses: 'Sunglasses',
       eyepatch: 'Eyepatch',
+      facepaint: 'Face paint',
       medal: 'Medal',
     },
     background: {

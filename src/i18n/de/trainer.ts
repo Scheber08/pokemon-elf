@@ -130,6 +130,7 @@ const trainer = {
       headphones: 'Kopfhörer',
       sunglasses: 'Sonnenbrille',
       eyepatch: 'Augenklappe',
+      facepaint: 'Fanschminke',
       medal: 'Medaille',
     },
     background: {
