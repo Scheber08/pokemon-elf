@@ -618,6 +618,16 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 captain={captainOf(tm)}
                 shinies={state.shinies}
               />
+              {(() => {
+                // Shinys dieses Teams mit ihrem Team-Bonus
+                const own = tm.slots.filter((id): id is number => id != null && !!state.shinies?.includes(id));
+                if (!own.length) return null;
+                const parts = own.flatMap((id) => {
+                  const p = byId.get(id);
+                  return p ? [`${t.game.pokemon(p)} +${shinyTeamBoost(p)}`] : [];
+                });
+                return <p className="small">✨ {parts.join(', ')}</p>;
+              })()}
               {!tm.cpu && (
                 <KitPicker
                   kit={cleanKit(tm.kit)}
