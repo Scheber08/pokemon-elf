@@ -179,7 +179,9 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
     championName,
     championPts: champion.pts,
     tieNote,
-    own: ownRow ? { name: nameOf(ownRow.team), place: ownIndex + 1 } : null,
+    own: ownRow
+      ? { name: nameOf(ownRow.team), place: ownIndex + 1, shinies: you != null && teams[you] ? rosterOf(teams[you]).filter((id) => shinies?.includes(id)).length : 0 }
+      : null,
     url: draftLink(code),
     ...(cup ? { cup: { ownStatus: ownCupStatus, final: cupFinalLine } } : {}),
   });

@@ -510,8 +510,8 @@ export interface DraftShareInput {
   championPts: number;
   /** Hinweis bei Punktgleichheit an der Spitze (titleTieNote) oder null */
   tieNote: string | null;
-  /** Eigenes Team mit Platz – null für Zuschauer */
-  own: { name: string; place: number } | null;
+  /** Eigenes Team mit Platz (shinies: Shinys im Kader) – null für Zuschauer */
+  own: { name: string; place: number; shinies?: number } | null;
   /** Link zur Liga (draftLink) – Tabelle und Aufstellungen ohne Code-Eingabe */
   url: string;
   /** KO-Turnier: Sieger statt Meister; ownStatus = Abschneiden des eigenen Teams als Text */
@@ -525,15 +525,16 @@ export interface DraftShareInput {
  * Bei Punktgleichheit an der Spitze folgt der Hinweis nach einem Gedankenstrich.
  */
 export function draftShareText(i: DraftShareInput): string {
+  const shiny = i.own?.shinies ? messages().shiny.shareOwn(i.own.shinies) : '';
   if (i.cup) {
     const c = messages().draft.cup;
-    const own = i.own && i.cup.ownStatus ? c.shareOwn(i.own.name, i.cup.ownStatus) : '';
+    const own = i.own && i.cup.ownStatus ? c.shareOwn(i.own.name, i.cup.ownStatus) + shiny : '';
     return [c.shareLine(i.code, i.championName, i.cup.final ?? null) + own, i.url].join('\n');
   }
   const tx = messages().draft.share;
   const tie = i.tieNote ? ` – ${i.tieNote.charAt(0).toLowerCase()}${i.tieNote.slice(1)}` : '';
   return [
-    tx.line(i.code, i.championName, i.championPts, tie) + (i.own ? tx.own(i.own.name, i.own.place) : ''),
+    tx.line(i.code, i.championName, i.championPts, tie) + (i.own ? tx.own(i.own.name, i.own.place) + shiny : ''),
     i.url,
   ].join('\n');
 }

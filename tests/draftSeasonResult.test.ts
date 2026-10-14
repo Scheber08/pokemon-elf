@@ -325,6 +325,11 @@ describe('Teilen-Text des Online-Drafts (SEASON-2, SEASON-5)', () => {
     );
   });
 
+  it('Shinys im eigenen Kader stehen im Teilen-Text', () => {
+    const text = draftShareText({ code: 'K7MPQ2', championName: 'FC Pika', championPts: 12, tieNote: null, own: { name: 'Glumanda 04', place: 2, shinies: 2 }, url: 'https://elf.example/draft/K7MPQ2' });
+    expect(text.split('\n')[0]).toBe('Pokémon Elf – Online-Draft K7MPQ2: Meister FC Pika (12 Pkt). Mein Team Glumanda 04: Platz 2. ✨ 2 Shinys im Kader.');
+  });
+
   it('Zuschauer: ohne eigenes Team, Link unter Unterpfad', () => {
     const sub = draftLinkFor('https://host.example', '/elf/', 'ABC234');
     const text = draftShareText({ code: 'ABC234', championName: 'FC Pika', championPts: 3, tieNote: null, own: null, url: sub });
