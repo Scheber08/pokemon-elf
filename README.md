@@ -183,7 +183,9 @@ Weitere Liga-Funktionen: Pool mit Legendären/Mysteriösen, Ultrabestien, Formen
 pro Team; Zufallsmodus mit Rerolls; Wunschliste für Auto-Picks (privat); Emoji-Reaktionen (nur verteilt,
 nicht gespeichert); „Du bist dran" als Ton und Browser-Benachrichtigung; QR-Code des Liga-Links in der
 Lobby; Taste „/" springt ins Suchfeld. Das Ergebnis zeigt Draft-Noten, das „Schnäppchen des Drafts"
-(bester später Pick) und „Deine Duelle" (Bilanz gegen jeden Gegner). Nach der Saison legt
+(bester später Pick), „Deine Duelle" (Bilanz gegen jeden Gegner), Saisonrekorde, den eigenen Saisonverlauf
+und die Formkurve. Der Ticker zeigt Torjäger live und die Überraschung des Spieltags; mit Hinweisen meldet der
+Browser auch das Saisonende. Nach der Saison legt
 `POST /api/drafts/:code/rematch` eine **Revanche** an (gleiche Teams und Einstellungen); jede Revanche
 trägt die Ergebnisse ihrer Vorgänger mit – daraus die **ewige Tabelle**. Für `/draft/:code` liefert der
 Worker eigene Open-Graph-Tags (Link-Vorschau mit Liganame, Host und Teams, `server/preview.ts`) – ebenso für

@@ -16,6 +16,8 @@ const info = {
     /** „Was ist neu?" – die wichtigsten Neuerungen, neueste zuerst */
     newsTitle: 'Was ist neu?',
     news: [
+      'Builder: „Meine Teams“ – bis zu fünf Elfen speichern und laden',
+      'Online-Draft: Formkurve, Saisonrekorde, Saisonverlauf, Überraschung des Spieltags, Torjäger live und Hinweis zum Saisonende',
       'Online-Draft: Liga immer mit 18 Teams – aufgefüllt mit Teams echter Spieler aus der Rangliste',
       'Online-Draft: KO-Turnier als Spielmodus, optional mit Gruppenphase',
       'Online-Draft: realistischere Saison mit Tagesform und Torminuten im Ticker',
