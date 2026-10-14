@@ -158,7 +158,7 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
               {p.pokemonId != null && !broken.has(p.pokemonId) && (
                 <image
                   className="match-pitch__sprite"
-                  href={`${SPRITE_BASE}${p.pokemonId}.png`}
+                  href={`${SPRITE_BASE}${lineups[p.side]?.shinies?.includes(p.pokemonId) ? 'shiny/' : ''}${p.pokemonId}.png`}
                   x={pos.x - 3}
                   y={pos.y - 3.6}
                   width={6}

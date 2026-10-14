@@ -29,6 +29,8 @@ export interface ReplayLineup {
   cheer?: string;
   /** Vereinswappen (Anzeigetafel, Spielbericht) */
   crest?: Crest | null;
+  /** Shinys (Pokémon-IDs) – schillerndes Sprite */
+  shinies?: readonly number[];
 }
 
 export interface ReplayPlayer {

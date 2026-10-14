@@ -295,7 +295,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     },
     (m) => tx.roundNo(m.round),
     undefined,
-    (i) => (state.teams[i] ? { formation: state.teams[i].formation, ids: state.teams[i].slots, jerseys: cleanJerseys(state.teams[i].jerseys), captain: captainOf(state.teams[i]), kit: cleanKit(state.teams[i].kit), cheer: cleanCheer(state.teams[i].cheer), crest: cleanCrest(state.teams[i].crest) } : null),
+    (i) => (state.teams[i] ? { formation: state.teams[i].formation, ids: state.teams[i].slots, jerseys: cleanJerseys(state.teams[i].jerseys), captain: captainOf(state.teams[i]), kit: cleanKit(state.teams[i].kit), cheer: cleanCheer(state.teams[i].cheer), crest: cleanCrest(state.teams[i].crest), shinies: state.shinies } : null),
   );
 
   if (state.phase === 'setup') {

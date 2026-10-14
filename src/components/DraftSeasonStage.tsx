@@ -123,7 +123,7 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           startsAt={season.startsAt}
           stepMs={season.stepMs}
           clockOffset={room.clockOffset}
-          lineups={s.teams.map((tm) => ({ formation: tm.formation, ids: tm.slots, jerseys: tm.jerseys, captain: tm.captain, kit: cleanKit(tm.kit), cheer: tm.cheer, crest: cleanCrest(tm.crest) }))}
+          lineups={s.teams.map((tm) => ({ formation: tm.formation, ids: tm.slots, jerseys: tm.jerseys, captain: tm.captain, kit: cleanKit(tm.kit), cheer: tm.cheer, crest: cleanCrest(tm.crest), shinies: s.shinies }))}
           onDone={() => {
             setTicker(false);
             // Tab im Hintergrund: Saisonende melden (wie „Du bist dran" – nur mit Erlaubnis)
