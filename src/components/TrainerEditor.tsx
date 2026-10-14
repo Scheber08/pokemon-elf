@@ -36,6 +36,16 @@ export function trainerItemName(t: Messages, it: Pick<TrainerItem, 'slot' | 'id'
 
 const COLOR_SLOTS = new Set<TrainerSlot>(['skin', 'hairColor', 'outfitColor']);
 
+/** Zufälliger Look – nur aus Freiem und Gekauftem (also immer speicherbar) */
+export function randomLook(owned: ReadonlySet<string>, rnd: () => number = Math.random): TrainerLook {
+  const out = {} as TrainerLook;
+  for (const slot of TRAINER_SLOTS) {
+    const items = itemsOf(slot).filter((i) => i.price === 0 || owned.has(itemKey(slot, i.id)));
+    out[slot] = items[Math.floor(rnd() * items.length)].id;
+  }
+  return out;
+}
+
 interface Props {
   me: MeResponse;
   onMe: (me: MeResponse) => void;
@@ -121,6 +131,15 @@ export function TrainerEditor({ me, onMe }: Props) {
           <div className="trainer-editor__actions">
             <button type="button" className="btn btn--primary" disabled={!dirty || !!locked || busy != null} onClick={save}>
               {busy === 'save' ? tx.saving : tx.save}
+            </button>
+            <button
+              type="button"
+              className="btn btn--small"
+              disabled={busy != null}
+              title={tx.randomTitle}
+              onClick={() => setLook(randomLook(owned))}
+            >
+              🎲 {tx.random}
             </button>
             {dirty && (
               <button type="button" className="btn btn--ghost btn--small" disabled={busy != null} onClick={() => setLook(me.trainer)}>

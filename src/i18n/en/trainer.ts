@@ -32,6 +32,8 @@ const trainer: Messages['trainer'] = {
   saving: 'Saving …',
   saved: 'Trainer saved',
   reset: 'Reset',
+  random: 'Random',
+  randomTitle: 'Random trainer from everything you already own',
   unsaved: 'Unsaved changes',
   lockedNote: 'Your preview contains something you don’t own yet – buy it or pick something else, then you can save.',
   buy: (price) => `Buy for ${price} ◎`,

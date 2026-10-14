@@ -241,3 +241,19 @@ describe('Pixel-Trainer', () => {
     expect(parseLook({ hair: 'long' }).face).toBe('smile');
   });
 });
+
+describe('Zufälliger Trainer', () => {
+  it('nur Freies und Gekauftes – immer speicherbar', async () => {
+    const { randomLook } = await import('../src/components/TrainerEditor');
+    let seed = 1;
+    const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const owned = new Set(['hat:crown']);
+    let crowns = 0;
+    for (let i = 0; i < 200; i++) {
+      const look = randomLook(owned, rnd);
+      expect(lockedItem(look, owned)).toBeNull();
+      if (look.hat === 'crown') crowns++;
+    }
+    expect(crowns).toBeGreaterThan(0);
+  });
+});

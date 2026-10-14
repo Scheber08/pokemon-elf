@@ -30,6 +30,8 @@ const trainer = {
   saving: 'Wird gespeichert …',
   saved: 'Trainer gespeichert',
   reset: 'Zurücksetzen',
+  random: 'Zufällig',
+  randomTitle: 'Zufälliger Trainer aus allem, was du schon hast',
   unsaved: 'Ungespeicherte Änderungen',
   lockedNote: 'In deiner Vorschau ist noch etwas, das du nicht besitzt – kauf es oder wähle etwas anderes, dann kannst du speichern.',
   buy: (price: number) => `Kaufen für ${price} ◎`,
