@@ -1151,6 +1151,8 @@ button.draft-bench__slot {
 /* Manager-Saison */
 .manager {
   display: grid;
+  /* minmax(0, …): breite Inhalte (Auswahlfelder, Tabellen) dürfen die Spalte nicht über den Bildschirm drücken */
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
 }
 .manager__kickoff {
