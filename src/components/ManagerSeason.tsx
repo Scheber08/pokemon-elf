@@ -485,6 +485,13 @@ function LineupEditor({
         </button>
       </div>
       <p className="muted small">{lineup.auto ? tx.autoNote : tx.manualNote}</p>
+      {(() => {
+        // Startelf in schlechter Tagesform (nur bei eigener Aufstellung – automatisch rotiert ohnehin)
+        const weak = lineup.auto ? [] : lineup.slots.filter((id) => formOf(id) < 0);
+        if (!weak.length) return null;
+        const names = weak.map((id) => (byId.get(id) ? t.game.pokemon(byId.get(id)!) : `#${id}`));
+        return <p className="hint manager__formwarn">⚠️ {tx.formWarning(names)}</p>;
+      })()}
       <p className={`hint ${pick ? 'hint--active' : ''}`}>{pickedName ? tx.selected(pickedName) : tx.swapHint}</p>
       <div className="manager__pitch">
         <Pitch
