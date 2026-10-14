@@ -26,6 +26,16 @@ export const DEFAULT_CREST: Crest = { shape: 'shield', pattern: 'plain', primary
 
 const COLOR_IDS = new Set(KIT_COLORS.map((c) => c.id));
 
+/** Zufälliges Wappen (zwei verschiedene Farben; Wappentier aus `pokemon`, falls angegeben). */
+export function randomCrest(rnd: () => number, pokemon: readonly number[] = []): Crest {
+  const pick = <T,>(xs: readonly T[]): T => xs[Math.floor(rnd() * xs.length)];
+  const colors = KIT_COLORS.map((c) => c.id);
+  const primary = pick(colors);
+  const secondary = pick(colors.filter((c) => c !== primary));
+  const symbols = [...CREST_ICONS, ...pokemon.map((id) => `p:${id}`)];
+  return { shape: pick(CREST_SHAPES), pattern: pick(CREST_PATTERNS), primary, secondary, symbol: pick(symbols) };
+}
+
 /** Pokémon-ID eines Wappentiers („p:25“ → 25), sonst null */
 export function crestPokemon(symbol: string): number | null {
   const m = /^p:(\d{1,5})$/.exec(symbol);

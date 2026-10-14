@@ -10,6 +10,7 @@ const crest: Messages['crest'] = {
   secondary: 'Second colour',
   symbol: 'Symbol / mascot',
   reset: 'No custom crest',
+  random: 'Random crest',
   mascot: (name) => `Mascot: ${name}`,
   shapes: { shield: 'Shield', round: 'Round', square: 'Square', diamond: 'Diamond' },
   patterns: { plain: 'Plain', stripes: 'Stripes', halves: 'Halves', hoop: 'Hoop', diagonal: 'Diagonal' },

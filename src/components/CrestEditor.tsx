@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useT } from '../i18n';
-import { CREST_ICONS, CREST_PATTERNS, CREST_SHAPES, DEFAULT_CREST, type Crest as CrestData } from '../lib/crest';
+import { CREST_ICONS, CREST_PATTERNS, CREST_SHAPES, DEFAULT_CREST, randomCrest, type Crest as CrestData } from '../lib/crest';
 import { KIT_COLORS } from '../lib/kits';
 import { usePokemonData } from '../state/PokemonData';
 import { Crest } from './Crest';
@@ -88,11 +88,16 @@ export function CrestEditor({ crest, onChange, pokemon = [], disabled = false }:
           </fieldset>
         </div>
       </div>
-      {crest && (
-        <button type="button" className="btn btn--small btn--ghost" disabled={disabled} onClick={() => onChange(null)}>
-          {tx.reset}
+      <div className="jersey-editor__actions">
+        <button type="button" className="btn btn--small" disabled={disabled} onClick={() => onChange(randomCrest(Math.random, mons))}>
+          🎲 {tx.random}
         </button>
-      )}
+        {crest && (
+          <button type="button" className="btn btn--small btn--ghost" disabled={disabled} onClick={() => onChange(null)}>
+            {tx.reset}
+          </button>
+        )}
+      </div>
     </details>
   );
 }

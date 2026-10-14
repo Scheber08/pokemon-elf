@@ -8,6 +8,7 @@ const crest = {
   secondary: 'Zweite Farbe',
   symbol: 'Symbol / Wappentier',
   reset: 'Kein eigenes Wappen',
+  random: 'Zufallswappen',
   mascot: (name: string) => `Wappentier: ${name}`,
   shapes: { shield: 'Schild', round: 'Rund', square: 'Eckig', diamond: 'Raute' } as Record<string, string>,
   patterns: { plain: 'Einfarbig', stripes: 'Streifen', halves: 'Geteilt', hoop: 'Querband', diagonal: 'Schräg' } as Record<string, string>,
