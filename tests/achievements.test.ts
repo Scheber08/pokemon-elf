@@ -130,7 +130,7 @@ describe('Kennzahlen und /api/me', () => {
     expect(s.dailyStreak).toBe(3);
     expect(s.dailyWins).toBe(1);
     expect(s.bestPlace).toBe(1);
-    expect(s.draft).toEqual({ leagues: 1, titles: 0, cups: 1, manager: 0, podiums: 1, unbeaten: 0, seasons: 0, managerPodiums: 0, managerCups: 0 });
+    expect(s.draft).toEqual({ leagues: 1, titles: 0, cups: 1, manager: 0, podiums: 1, unbeaten: 0, seasons: 0, managerPodiums: 0, managerCups: 0, shinies: 0 });
     // Doppelt gespeichert (Neuversuch) zählt nicht doppelt
     expect(db.query('SELECT * FROM draft_results')).toHaveLength(1);
     // Manager-Saison als Zweiter: zählt als Saison, nicht als Titel
@@ -177,6 +177,25 @@ describe('Kennzahlen und /api/me', () => {
     const c = await achievementStats(db, dev, '2026-10-14');
     expect(c.draft).toMatchObject({ leagues: 3, seasons: 2, managerPodiums: 2, managerCups: 1, podiums: 3 });
     expect(achievementStates(c).find((a) => a.id === 'manager_cup')?.done).toBe(true);
+    // Shiny im Kader am Ende: eigene Zeile, zählt nur für den Shiny-Erfolg
+    await saveDraftResults(
+      db,
+      {
+        code: 'SHI234',
+        settings: { format: 'league' } as never,
+        teams: [{ id: 'c', cpu: true, slots: [], ss: null } as never, { id: 'h', cpu: false, slots: [129, 1], ss: null } as never],
+        owners: { h: dev },
+        league: { teams: [{ name: 'C', rating: 1 }, { name: 'H', rating: 1 }], matches: [], table: [
+          { team: 0, name: 'C', rating: 1, isUser: false, played: 2, w: 2, d: 0, l: 0, gf: 4, ga: 1, gd: 3, pts: 6 },
+          { team: 1, name: 'H', rating: 1, isUser: false, played: 2, w: 0, d: 0, l: 2, gf: 1, ga: 4, gd: -3, pts: 0 },
+        ] },
+        shinies: [129],
+      },
+      4,
+    );
+    const sh = await achievementStats(db, dev, '2026-10-14');
+    expect(sh.draft).toMatchObject({ leagues: 4, shinies: 1, podiums: 4 });
+    expect(achievementStates(sh).find((a) => a.id === 'shiny_first')?.done).toBe(true);
   });
 
   it('POST /api/me: Erfolge und Münzen des eigenen Geräts (neues Gerät: alles offen)', async () => {

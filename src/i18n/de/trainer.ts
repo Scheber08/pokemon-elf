@@ -221,6 +221,7 @@ const trainer = {
     manager_first: { name: 'Erste Saison', desc: 'Spiele eine Manager-Saison zu Ende.' },
     manager_podium: { name: 'Aufs Treppchen', desc: 'Beende eine Manager-Saison auf Platz 1 bis 3.' },
     manager_cup: { name: 'Pokalheld', desc: 'Gewinne den Pokal einer Manager-Saison.' },
+    shiny_first: { name: 'Schillernd', desc: 'Beende eine Online-Liga mit einem Shiny im Kader.' },
     manager_5: { name: 'Alter Hase', desc: 'Spiele 5 Manager-Saisons zu Ende.' },
     draft_manager: { name: 'Meistertrainer', desc: 'Gewinne eine Manager-Saison.' },
     draft_unbeaten: { name: 'Ungeschlagen', desc: 'Eine Online-Liga oder Manager-Saison ohne Niederlage.' },

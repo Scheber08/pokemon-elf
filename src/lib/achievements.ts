@@ -35,6 +35,8 @@ export interface AchievementStats {
     managerPodiums?: number;
     /** Pokalsiege in der Manager-Saison (fehlt bei älteren Antworten = 0) */
     managerCups?: number;
+    /** Gezogene Shinys in fertigen Online-Ligen (fehlt bei älteren Antworten = 0) */
+    shinies?: number;
   };
 }
 
@@ -89,6 +91,7 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'draft_cup', category: 'draft', coins: 300, goal: 1, value: (s) => s.draft.cups },
   { id: 'manager_first', category: 'draft', coins: 150, goal: 1, value: (s) => s.draft.seasons ?? 0 },
   { id: 'manager_podium', category: 'draft', coins: 250, goal: 1, value: (s) => s.draft.managerPodiums ?? 0 },
+  { id: 'shiny_first', category: 'draft', coins: 150, goal: 1, value: (s) => s.draft.shinies ?? 0 },
   { id: 'manager_cup', category: 'draft', coins: 350, goal: 1, value: (s) => s.draft.managerCups ?? 0 },
   { id: 'manager_5', category: 'draft', coins: 400, goal: 5, value: (s) => s.draft.seasons ?? 0 },
   { id: 'draft_manager', category: 'draft', coins: 400, goal: 1, value: (s) => s.draft.manager },

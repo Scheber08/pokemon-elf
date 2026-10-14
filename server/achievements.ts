@@ -15,6 +15,7 @@ import type { Db, Env } from './env';
 import { ApiError, json } from './http';
 import { ensureSchema } from './schema';
 import { CHALLENGE_KEYS, parseDeviceAuth, readJsonBody } from './validate';
+import { rosterOf } from '../src/lib/draftEngine';
 
 /** Tages-Wertungen ('YYYY-MM-DD') – Wochen o. Ä. zählen nicht als Tagessieg */
 const DAY_SCOPE_GLOB = '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]';
@@ -38,15 +39,16 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
       .bind(deviceId, today),
     db
       .prepare(
-        `SELECT SUM(CASE WHEN format != 'manager_cup' THEN 1 ELSE 0 END) AS leagues,
+        `SELECT SUM(CASE WHEN format NOT IN ('manager_cup', 'shiny') THEN 1 ELSE 0 END) AS leagues,
+           SUM(CASE WHEN format = 'shiny' THEN rank ELSE 0 END) AS shinies,
            SUM(CASE WHEN rank = 1 AND format = 'league' THEN 1 ELSE 0 END) AS titles,
            SUM(CASE WHEN rank = 1 AND format = 'manager_cup' THEN 1 ELSE 0 END) AS manager_cups,
            SUM(CASE WHEN rank = 1 AND format = 'cup' THEN 1 ELSE 0 END) AS cups,
            SUM(CASE WHEN rank = 1 AND format = 'manager' THEN 1 ELSE 0 END) AS manager,
-           SUM(CASE WHEN rank <= 3 AND format != 'manager_cup' THEN 1 ELSE 0 END) AS podiums,
+           SUM(CASE WHEN rank <= 3 AND format NOT IN ('manager_cup', 'shiny') THEN 1 ELSE 0 END) AS podiums,
            SUM(CASE WHEN format = 'manager' THEN 1 ELSE 0 END) AS seasons,
            SUM(CASE WHEN format = 'manager' AND rank <= 3 THEN 1 ELSE 0 END) AS manager_podiums,
-           SUM(CASE WHEN losses = 0 AND format NOT IN ('cup', 'manager_cup') AND wins + draws > 0 THEN 1 ELSE 0 END) AS unbeaten
+           SUM(CASE WHEN losses = 0 AND format NOT IN ('cup', 'manager_cup', 'shiny') AND wins + draws > 0 THEN 1 ELSE 0 END) AS unbeaten
          FROM draft_results WHERE device_id = ?`,
       )
       .bind(deviceId),
@@ -82,6 +84,7 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
       seasons: num(d.seasons),
       managerPodiums: num(d.manager_podiums),
       managerCups: num(d.manager_cups),
+      shinies: num(d.shinies),
     },
   };
 }
@@ -181,7 +184,7 @@ export async function buyItem(request: Request, env: Env): Promise<Response> {
  */
 export async function saveDraftResults(
   db: Db,
-  state: Pick<DraftState, 'code' | 'settings' | 'teams' | 'owners' | 'league' | 'manager'>,
+  state: Pick<DraftState, 'code' | 'settings' | 'teams' | 'owners' | 'league' | 'manager' | 'shinies'>,
   now: number,
 ): Promise<number> {
   const league = state.league;
@@ -218,6 +221,21 @@ export async function saveDraftResults(
            VALUES (?, ?, 'manager_cup', 1, ?, ?, 0, 0, 0, ?)`,
         )
         .bind(`${state.code}#cup`, winnerDevice, cup.bracket.length, games.length, now),
+    );
+  }
+  // Shinys je Mensch (eigene Zeile „…#shiny“, rank = Anzahl) – zählt nur für den Shiny-Erfolg
+  for (const team of state.shinies?.length ? state.teams : []) {
+    const device = !team.cpu ? state.owners[team.id] : undefined;
+    const count = device ? rosterOf(team).filter((id) => state.shinies?.includes(id)).length : 0;
+    if (!device || !count) continue;
+    stmts.push(
+      db
+        .prepare(
+          `INSERT INTO draft_results (code, device_id, format, rank, teams, wins, draws, losses, points, finished_at)
+           VALUES (?, ?, 'shiny', ?, 0, 0, 0, 0, 0, ?)
+           ON CONFLICT (code, device_id) DO UPDATE SET rank = excluded.rank`,
+        )
+        .bind(`${state.code}#shiny`, device, count, now),
     );
   }
   if (!stmts.length) return 0;
