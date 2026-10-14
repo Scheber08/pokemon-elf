@@ -54,6 +54,7 @@ import { positionFit, type Scale } from './fit';
 import { createRng, hashSeed, shuffle, streamRng, type Rng } from './rng';
 import { CUP_SIZE, simulateCup } from './cup';
 import type { ManagerState } from './manager';
+import type { TrainerLook } from './trainer';
 import { DRAFT_MODEL, opponentRatings, simulateLeague, type LeagueResult, type LeagueTeam } from './season';
 import { evaluateTeam } from './teamScore';
 
@@ -636,6 +637,19 @@ export function createDraft(args: {
     season: null,
     createdAt: args.now,
   };
+}
+
+/**
+ * Trainer des Geräts an sein Team hängen (null: entfernen). Gleicher Stand → dasselbe Objekt.
+ * Ohne Team (Zuschauer) passiert nichts.
+ */
+export function withTrainer(state: DraftState, deviceId: string, look: TrainerLook | null): DraftState {
+  const teamId = teamOfDevice(state, deviceId);
+  if (!teamId) return state;
+  const team = state.teams.find((t) => t.id === teamId)!;
+  if (JSON.stringify(team.trainer ?? null) === JSON.stringify(look)) return state;
+  const { trainer: _old, ...rest } = team;
+  return { ...state, teams: state.teams.map((t) => (t.id === teamId ? (look ? { ...rest, trainer: look } : rest) : t)) };
 }
 
 /** Team des Geräts oder null. */

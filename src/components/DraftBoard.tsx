@@ -4,7 +4,9 @@ import { DRAFT_BENCH_SLOT, type DraftSnapshot, type DraftTeam } from '../lib/api
 import { DRAFT_SS_SLOT, hasKind, isLegend, poolHasLegends, poolHasMegas, poolHasUltraBeasts } from '../lib/draftEngine';
 import { teamLabel, type FeedItem } from '../state/useDraftRoom';
 import type { Pokemon, PosCode } from '../types';
+import { parseLook } from '../lib/trainer';
 import { PosBadge, TypeBadge } from './Badges';
+import { TrainerAvatar } from './TrainerAvatar';
 import '../styles/draft.css';
 
 /** Kleine Marker an einem Team: Online-Punkt, Host, CPU, Du. */
@@ -72,7 +74,9 @@ export function DraftBoard({ state, byId, currentId }: Props) {
             className={`draft__col draft-board__col ${team.id === currentId ? 'is-current' : ''} ${team.id === state.you ? 'is-mine' : ''}`}
           >
             <h3 title={name}>
-              <span className="draft-board__no">{i + 1}</span> {name}
+              <span className="draft-board__no">{i + 1}</span>{' '}
+              {team.trainer && <TrainerAvatar look={parseLook(team.trainer)} size={22} companion={false} className="draft-trainer" />}
+              {name}
             </h3>
             <p className="draft-board__meta">
               <span>{team.formation}</span>

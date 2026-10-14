@@ -64,9 +64,11 @@ import {
   upgradeSettings,
   upgradeState,
   withLeague,
+  withTrainer,
   type DraftState,
 } from '../src/lib/draftEngine';
 import type { Scale } from '../src/lib/fit';
+import { lookFromJson, type TrainerLook } from '../src/lib/trainer';
 import { nextKickoff, playDueMatchdays, seasonEndsAt, setLineup, startManagerSeason } from '../src/lib/manager';
 import type { FormationId, Pokemon, TypeKey } from '../src/types';
 import { authenticateDevice, HOUR_MS, normalizeIp } from './auth';
@@ -142,6 +144,8 @@ export interface ConnAttachment {
   hellos: number;
   /** Angenommen um (ms) – für die Frist des hello (fehlt bei älteren Verbindungen) */
   acceptedAt?: number;
+  /** Trainer des Geräts (beim hello aus D1; undefined = unbekannt, z. B. D1-Fehler) – fürs Beitreten */
+  trainer?: TrainerLook | null;
 }
 
 /** Eine WebSocket-Verbindung, wie der Kern sie sieht. */
@@ -1345,7 +1349,9 @@ export class DraftRoomCore {
     if (LOBBY_CHANGES.has(msg.type) && !this.allowChange(att.deviceId, now)) {
       return this.sendError(conn, 'rate_limited', 'Zu viele Änderungen – bitte kurz warten', msg.type);
     }
-    const next = this.apply(rec.state, att.deviceId, msg, now);
+    const applied = this.apply(rec.state, att.deviceId, msg, now);
+    // Neu beigetreten: Trainer vom Anmelden mitnehmen
+    const next = msg.type === 'join' && att.trainer !== undefined ? withTrainer(applied, att.deviceId, att.trainer) : applied;
     // Nichts geändert (z. B. „leave" ohne Team, gleiche Einstellung): nur den aktuellen Stand zurück.
     if (sameState(next, rec.state)) return this.sendState(conn, rec.state, att.deviceId, now);
     if (msg.type === 'leave' && next.phase === 'lobby' && !next.teams.some((t) => !t.cpu)) return this.closeEmpty(now);
@@ -1379,10 +1385,12 @@ export class DraftRoomCore {
     // Liga schon weg: ohne D1 antworten
     if (this.loaded && !this.rec) return this.sendError(conn, 'not_found', 'Diese Liga gibt es nicht (mehr)');
     let auth: DeviceAuth;
+    let trainer: TrainerLook | null | undefined;
     this.authing.add(att.cid);
     try {
       auth = parseDeviceAuth({ ...msg });
       await this.verifyDevice(auth, this.ports.now(), att.ip);
+      trainer = await this.loadTrainer(auth.deviceId);
     } catch (err) {
       if (err instanceof DraftError || err instanceof ApiError) {
         try {
@@ -1397,7 +1405,20 @@ export class DraftRoomCore {
     } finally {
       this.authing.delete(att.cid);
     }
-    await this.exclusive(() => this.guarded(conn, 'hello', () => this.finishHello(conn, auth.deviceId)));
+    await this.exclusive(() => this.guarded(conn, 'hello', () => this.finishHello(conn, auth.deviceId, trainer)));
+  }
+
+  /** Trainer des Geräts aus D1 – undefined bei einem Fehler (dann bleibt alles, wie es ist). */
+  private async loadTrainer(deviceId: string): Promise<TrainerLook | null | undefined> {
+    try {
+      const db = this.ports.env.DB;
+      await ensureSchema(db);
+      const row = await db.prepare('SELECT look_json FROM trainers WHERE device_id = ?').bind(deviceId).first<{ look_json: string }>();
+      return lookFromJson(row?.look_json);
+    } catch (err) {
+      console.error('Draft-Raum: Trainer nicht geladen', err);
+      return undefined;
+    }
   }
 
   /** Gerät prüfen: zuerst der Cache dieses Isolates, sonst D1 (registriert auch neue Geräte). */
@@ -1434,7 +1455,7 @@ export class DraftRoomCore {
    * DRAFT_MAX_SPECTATORS_PER_IP Zuschauer; ist der Raum voll, verdrängt ein Team-Besitzer
    * den ältesten Zuschauer, ein Zuschauer bekommt keinen Platz.
    */
-  private async finishHello(conn: DraftConn, deviceId: string): Promise<void> {
+  private async finishHello(conn: DraftConn, deviceId: string, trainer?: TrainerLook | null): Promise<void> {
     if (!isOpen(conn)) return;
     const att = attachmentOf(conn);
     if (!att) return;
@@ -1485,10 +1506,11 @@ export class DraftRoomCore {
         safeClose(spectator.conn, DRAFT_CLOSE.full, 'room full');
       }
     }
-    conn.setAttachment({ ...att, deviceId, authed: true });
+    conn.setAttachment({ ...att, deviceId, authed: true, ...(trainer !== undefined ? { trainer } : {}) });
     this.sweepPending(now);
-    // Wieder da: Team online (alle sehen es) – sonst bekommt nur diese Verbindung den Stand.
-    const next = this.reconcile(rec.state, now);
+    // Wieder da: Team online (alle sehen es), Trainer aktuell – sonst bekommt nur diese Verbindung den Stand.
+    const dressed = trainer !== undefined ? withTrainer(rec.state, deviceId, trainer) : rec.state;
+    const next = this.reconcile(dressed, now);
     if (next !== rec.state) return this.commit(rec.state, next, now);
     this.sendState(conn, rec.state, deviceId, now);
   }

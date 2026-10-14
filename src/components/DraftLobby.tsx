@@ -22,6 +22,8 @@ import { DraftTeamTags } from './DraftBoard';
 import { DraftPresets } from './DraftPresets';
 import { DraftSettingsForm, DraftSettingsSummary, DraftTeamFields } from './DraftSettingsForm';
 import { EternalTable } from './EternalTable';
+import { TrainerAvatar } from './TrainerAvatar';
+import { parseLook } from '../lib/trainer';
 import '../styles/draft.css';
 
 /** QR-Code des Liga-Links – zum Scannen, wenn alle im selben Raum sitzen. */
@@ -263,9 +265,12 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
               return (
                 <li key={team.id} className={`draft-lobby__team ${team.id === s.you ? 'is-mine' : ''}`}>
                   <span className="draft__no">{i + 1}</span>
-                  <span className="draft-lobby__name">
-                    <strong>{name}</strong>
-                    <small>{team.formation}</small>
+                  <span className="draft-lobby__who">
+                    {team.trainer && <TrainerAvatar look={parseLook(team.trainer)} size={36} companion={false} />}
+                    <span className="draft-lobby__name">
+                      <strong>{name}</strong>
+                      <small>{team.formation}</small>
+                    </span>
                   </span>
                   <DraftTeamTags team={team} host={team.id === s.hostTeamId} you={team.id === s.you} />
                   {isHost && (

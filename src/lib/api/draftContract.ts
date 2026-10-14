@@ -26,6 +26,7 @@
 import { TYPE_KEYS } from '../../config/pokemonTypes';
 import type { FormationId, RegionFilter, TypeKey } from '../../types';
 import type { LeagueResult } from '../season';
+import type { TrainerLook } from '../trainer';
 import type { DeviceAuth } from './contract';
 
 export const DRAFT_LIMITS = {
@@ -251,6 +252,8 @@ export interface DraftTeam {
   ss: number | null;
   /** Manager-Saison: Bank (settings.bench Plätze, ab dem Start) – fehlt in den anderen Modi */
   bench?: (number | null)[];
+  /** Selbst gestalteter Trainer des Menschen (beim Anmelden aus D1 geladen) – fehlt sonst */
+  trainer?: TrainerLook;
 }
 
 /** Draft-Slot des ersten Bankplatzes (Manager-Saison): Bankplatz i = DRAFT_BENCH_SLOT + i */

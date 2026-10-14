@@ -410,6 +410,15 @@
   border-color: rgba(255, 203, 5, 0.55);
   background: rgba(255, 203, 5, 0.08);
 }
+.draft-lobby__who {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.draft-lobby__who .trainer-avatar svg {
+  border-radius: 8px;
+}
 .draft-lobby__name {
   display: grid;
   min-width: 0;
@@ -1187,4 +1196,13 @@ button.draft-bench__slot {
 }
 .manager-form--flat {
   color: var(--text-dim);
+}
+
+/* Trainer der Menschen im Draft (Board-Kopf) */
+.draft-trainer {
+  margin-right: 4px;
+  vertical-align: middle;
+}
+.draft-trainer svg {
+  border-radius: 5px;
 }

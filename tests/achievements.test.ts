@@ -191,3 +191,38 @@ describe('Kennzahlen und /api/me', () => {
     expect(profile.trainer).toMatchObject({ hat: 'beanie' });
   });
 });
+
+describe('Trainer im Online-Draft', () => {
+  it('beim Anmelden bzw. Beitreten hängt der Trainer am eigenen Team (Schnappschuss zeigt ihn)', async () => {
+    const { FakeNamespace, FakeRoom } = await import('./fakeSocket');
+    const { ALL } = await import('./helpers');
+    const { buildScale } = await import('../src/lib/fit');
+    const db = new D1Shim();
+    await ensureSchema(db);
+    const drafts = new FakeNamespace(() => new FakeRoom({ DB: db }, ALL, buildScale(ALL, 'all')));
+    const env = { DB: db, DRAFTS: drafts };
+    const host = { deviceId: crypto.randomUUID(), deviceSecret: hex(32) };
+    const guest = { deviceId: crypto.randomUUID(), deviceSecret: hex(32) };
+    const look = { ...DEFAULT_LOOK, hat: 'crown', companion: '25' };
+    const res = await handleApi(
+      new Request('http://localhost/api/drafts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...host, settings: { pickSeconds: 0 }, teamName: 'Host-Elf', formation: '4-3-3' }),
+      }),
+      env,
+    );
+    const { code } = (await res.json()) as { code: string };
+    db.update('INSERT INTO trainers (device_id, look_json, updated_at) VALUES (?, ?, 0)', host.deviceId, JSON.stringify(look));
+    db.update('INSERT INTO trainers (device_id, look_json, updated_at) VALUES (?, ?, 0)', guest.deviceId, JSON.stringify({ ...DEFAULT_LOOK, hair: 'long' }));
+    const room = drafts.room(code);
+    const a = room.connect(null);
+    await room.send(a, { type: 'hello', ...host });
+    expect(room.stored!.state.teams[0].trainer).toEqual(look);
+    expect(a.state!.teams[0].trainer).toEqual(look);
+    const b = room.connect(null);
+    await room.send(b, { type: 'hello', ...guest });
+    await room.send(b, { type: 'join', teamName: 'Gast-Elf', formation: '4-4-2' });
+    expect(room.stored!.state.teams[1].trainer).toMatchObject({ hair: 'long' });
+  });
+});
