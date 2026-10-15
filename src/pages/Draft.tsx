@@ -991,6 +991,25 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           <button type="button" className="btn btn--primary" onClick={() => setState((s) => ({ ...s, seed: randomSeed(), model: 'draft', cpuCaptains: true }))}>
             {tx.replay}
           </button>
+          <button
+            type="button"
+            className="btn"
+            title={tx.rematchTitle}
+            // Revanche: dieselben Teams (Namen, Formation, Mensch/CPU, Trikot, Wappen) und Pool-Einstellungen, leere Kader
+            onClick={() =>
+              setState((s) => ({
+                ...s,
+                phase: 'setup',
+                pick: 0,
+                selected: null,
+                seed: null,
+                shinies: [],
+                teams: s.teams.map((tm) => ({ ...tm, slots: emptySlots(tm.formation), captain: null })),
+              }))
+            }
+          >
+            {tx.rematch}
+          </button>
           <button type="button" className="btn" onClick={reset}>
             {tx.newDraft}
           </button>

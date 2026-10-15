@@ -92,6 +92,8 @@ const draft = {
     squads: 'Kader',
     squadAria: (team: string) => `Kader ${team}`,
     replay: 'Liga neu ausspielen',
+    rematch: 'Revanche',
+    rematchTitle: 'Neuer Draft mit denselben Teams und Einstellungen',
     newDraft: 'Neuer Draft',
     round: 'Runde',
     pick: 'Pick',

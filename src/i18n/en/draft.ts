@@ -91,6 +91,8 @@ const draft: Messages['draft'] = {
     squads: 'Squads',
     squadAria: (team) => `${team} squad`,
     replay: 'Replay league',
+    rematch: 'Rematch',
+    rematchTitle: 'New draft with the same teams and settings',
     newDraft: 'New draft',
     round: 'Round',
     pick: 'Pick',

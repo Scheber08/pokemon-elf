@@ -412,6 +412,28 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(played()).toEqual(['1', '1', '1', '1']);
   });
 
+  it('Liga: Revanche – gleiche Teams und Einstellungen, leere Kader, zurück zum Aufbau', async () => {
+    storeLang('en');
+    const pool = ALL.filter((p) => !p.leg && !p.myth);
+    const teams = [0, 1, 2].map((i) => {
+      const formation = FORMATION_IDS[i % FORMATION_IDS.length];
+      return { name: i === 0 ? 'Mein Team' : CLUB_NAMES[i], cpu: i !== 0, formation, slots: emptySlots(formation).map((_, j) => pool[i * 11 + j].id), captain: i === 0 ? pool[0].id : undefined };
+    });
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'league', teams, region: 0, legends: true, pick: 33, selected: null, seed: 7 }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const btn = container.querySelectorAll('button').find((b) => b.textContent === 'Rematch') as MiniElement;
+    await act(async () => btn.click());
+    await settle();
+    const saved = JSON.parse(localStorage.getItem('pokemon-elf:draft')!);
+    expect(saved.phase).toBe('setup');
+    expect(saved.legends).toBe(true);
+    expect(saved.teams.map((t: { name: string; cpu: boolean; formation: string }) => [t.name, t.cpu, t.formation])).toEqual(teams.map((t) => [t.name, t.cpu, t.formation]));
+    expect(saved.teams.every((t: { slots: (number | null)[]; captain: unknown }) => t.slots.every((x) => x == null) && t.captain == null)).toBe(true);
+    // Aufbau zeigt die Teams wieder
+    expect(container.querySelectorAll('.draft__teamrow')).toHaveLength(3);
+  });
+
   it('Liga: Deine Duelle – Bilanz gegen jeden Gegner, passend zu den Spielen', async () => {
     storeLang('en');
     const pool = ALL.filter((p) => !p.leg && !p.myth);
