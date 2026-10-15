@@ -321,6 +321,14 @@ export function SeasonResultView({
               </div>
             </dl>
             <p className="result-hero__verdict">{verdict(season, tr.verdict)}</p>
+            {(() => {
+              // Tore des Kapitäns (alle Positionen, an denen er getroffen hat)
+              const c = input.captain;
+              const p = c != null ? byId.get(c) : undefined;
+              if (!p) return null;
+              const goals = season.scorers.filter((sc) => sc.pokemonId === c).reduce((n, sc) => n + sc.goals, 0);
+              return <p className="result-hero__captain">{tr.captainGoals(t.game.pokemon(p), goals)}</p>;
+            })()}
             <p className="result-hero__weak">
               {tr.weakSpots}
               <strong>{weakCodes.join(', ')}</strong>

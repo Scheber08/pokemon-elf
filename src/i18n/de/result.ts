@@ -63,6 +63,8 @@ const result = {
     pts: 'Pkt',
   },
   topScorers: 'Torschützenliste',
+  captainGoals: (name: string, goals: number) =>
+    goals ? `Kapitän ${name}: ${goals === 1 ? '1 Tor' : `${goals} Tore`} in der Saison` : `Kapitän ${name}: kein Tor in der Saison`,
   noGoals: 'Keine Tore – autsch.',
   details: (n: number) => `Saisondetails – alle ${n} Spiele`,
   /** Heim/Auswärts-Kürzel in der Spielliste */

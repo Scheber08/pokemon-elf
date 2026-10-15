@@ -72,6 +72,7 @@ const result: Messages['result'] = {
     diffTitle: 'Goal difference',
     pts: 'Pts',
   },
+  captainGoals: (name, goals) => (goals ? `Captain ${name}: ${goals === 1 ? '1 goal' : `${goals} goals`} this season` : `Captain ${name}: no goal this season`),
   topScorers: 'Top scorers',
   noGoals: 'No goals – ouch.',
   details: (n) => `Season details – all ${n} matches`,

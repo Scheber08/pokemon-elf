@@ -426,6 +426,17 @@ describe('Saisonbilanz und Ticker', () => {
     );
   };
 
+  it('Kapitän: Tore der Saison im Ergebnis', async () => {
+    storeLang('de');
+    stubFetch();
+    const captain = input.slots[10]!;
+    const el = await render(
+      app(h(SeasonResultView, { challenge: 'c340', input: { ...input, captain }, scaleKind: 'all', sprite: 'pixel', entryId: null, onNewRun: () => {} })),
+    );
+    await settle();
+    expect(el.querySelector('.result-hero__captain')!.textContent).toMatch(/^Kapitän .+: (\d+ Tore?|kein Tor) in der Saison$/);
+  });
+
   it('Spielwiedergabe: Ergebnis öffnet den Bericht; „Aus“ macht die Ergebnisse wieder zu Text', async () => {
     const el = await resultView('de');
     await settle();
