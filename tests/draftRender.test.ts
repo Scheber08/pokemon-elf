@@ -696,6 +696,20 @@ describe('DraftLive', () => {
     expect(humans.container.querySelector('.draft-turnbar__cpuguess')).toBeNull();
   });
 
+  it('Fortschrittsbalken: erledigte Picks und die eigenen als Striche', async () => {
+    const s = autoPick(autoPick(drafting()));
+    const { container } = await renderLive(fakeRoom(snap(s, 'h')));
+    const bar = container.querySelector('.draft-progress')!;
+    const total = s.teams.length * engine.rounds(s.settings);
+    expect(bar.getAttribute('aria-valuenow')).toBe('2');
+    expect(bar.getAttribute('aria-valuemax')).toBe(String(total));
+    // 2 Teams, Snake: Host hat Pick 0, 3, 4, 7, 8 … → je Runde einer
+    const marks = bar.querySelectorAll('.draft-progress__mark');
+    expect(marks).toHaveLength(engine.rounds(s.settings));
+    expect(marks.filter((m) => m.className.includes('is-done'))).toHaveLength(1);
+    expect(bar.getAttribute('aria-label')).toBe(`Draft-Fortschritt: 2 von ${total} Picks – noch ${marks.length - 1} eigene Picks`);
+  });
+
   it('Turnbar: die nächsten drei Picks in Snake-Reihenfolge', async () => {
     const { container } = await renderLive(fakeRoom(snap(drafting(), 'h')));
     // 2 Teams, Snake: Pick 1 Host (jetzt), dann Team 1, Team 1, Host

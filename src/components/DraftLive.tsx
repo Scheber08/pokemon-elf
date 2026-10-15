@@ -47,6 +47,7 @@ import { JerseyEditor } from './JerseyEditor';
 import { DraftBoard, DraftPickFeed } from './DraftBoard';
 import { DraftQueue } from './DraftQueue';
 import { DraftCountdown } from './DraftCountdown';
+import { DraftProgress } from './DraftProgress';
 import { FilterBar, typingElsewhere, useFilteredPokemon, type PokemonFilters } from './FilterBar';
 import { Pitch, type SlotState } from './Pitch';
 import { PokemonGrid } from './PokemonGrid';
@@ -643,6 +644,14 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
             );
           })()}
         </div>
+        {(() => {
+          // Fortschritt des Drafts mit den eigenen Picks als Striche
+          const total = s.teams.length * engineRounds(s.settings);
+          const mine = me ? s.teams.findIndex((x) => x.id === me.id) : -1;
+          const marks: number[] = [];
+          if (mine >= 0) for (let p = 0; p < total; p++) if (teamIndexForPick(p, s.teams.length, s.settings.snake ?? true) === mine) marks.push(p);
+          return <DraftProgress done={Math.min(s.pickIndex, total)} total={total} marks={marks} />;
+        })()}
         <DraftCountdown
           deadline={s.deadline}
           pickSeconds={s.settings.pickSeconds}

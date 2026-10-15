@@ -1791,3 +1791,40 @@ button.draft-bench__slot {
   align-items: center;
   gap: 4px;
 }
+
+/* Draft: Fortschrittsbalken unter der Statusleiste, eigene Picks als Striche */
+.draft-progress {
+  position: relative;
+  flex: 1 0 100%;
+  width: 100%;
+  height: 6px;
+  margin: 6px 0 2px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.draft-progress__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--blue);
+  transition: width 0.3s ease;
+}
+.draft-progress__mark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--yellow);
+}
+.draft-progress__mark.is-done {
+  opacity: 0.35;
+}
+@media (prefers-reduced-motion: reduce) {
+  .draft-progress__fill {
+    transition: none;
+  }
+}
+:root[data-theme='light'] .draft-progress__mark {
+  background: #b45309;
+}

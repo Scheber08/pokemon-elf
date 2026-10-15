@@ -9,6 +9,7 @@ import { DraftPickFeed, DraftTypeChip, KindMarks, RoundBest } from '../component
 import type { FeedItem } from '../state/useDraftRoom';
 import { PoolStars, poolStars, StarsLanded } from '../components/PoolStars';
 import { TypeGoals } from '../components/TypeGoals';
+import { DraftProgress } from '../components/DraftProgress';
 import { Confetti } from '../components/Confetti';
 import { FilterBar, typingElsewhere, useFilteredPokemon, type PokemonFilters } from '../components/FilterBar';
 import { CaptainPicker } from '../components/CaptainPicker';
@@ -1656,6 +1657,12 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
             </span>
           )}
         </div>
+        {/* Fortschritt des Drafts mit den Picks des Teams am Zug als Striche (wie online) */}
+        <DraftProgress
+          done={state.pick}
+          total={totalPicks}
+          marks={Array.from({ length: totalPicks }, (_, p) => p).filter((p) => teamForPick(p, n) === currentTeam)}
+        />
         {(() => {
           // Letzter Pick (aus dem Verlauf) – wie im Online-Draft; zeigt v. a. die schnellen CPU-Picks
           const last = state.log?.at(-1);

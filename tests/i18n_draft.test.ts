@@ -1137,6 +1137,18 @@ describe('/draft an einem Gerät auf Englisch', () => {
     localStorage.removeItem('pokemon-elf:draft');
   });
 
+  it('Fortschrittsbalken: Picks des Teams am Zug als Striche', async () => {
+    const f = FORMATION_IDS[0];
+    const teams = [0, 1, 2].map((i) => ({ name: i ? CLUB_NAMES[i] : 'Mein Team', cpu: i > 0, formation: f, slots: emptySlots(f) }));
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: false, pick: 0, selected: null, seed: null, log: [] }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const bar = container.querySelector('.draft-progress')!;
+    expect(bar.getAttribute('aria-valuemax')).toBe(String(3 * 11));
+    expect(bar.querySelectorAll('.draft-progress__mark')).toHaveLength(11);
+    localStorage.removeItem('pokemon-elf:draft');
+  });
+
   it('Hot-Seat: „📱 Gerät an … weitergeben“ nur nach dem Pick eines anderen menschlichen Teams', async () => {
     const f = FORMATION_IDS[0];
     const empty = emptySlots(f);
