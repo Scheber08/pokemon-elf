@@ -1475,3 +1475,11 @@ button.draft-bench__slot {
 :root[data-theme='light'] .draft-feed__run {
   color: #b45309;
 }
+
+/* Manager-Saison: Zone des eigenen Platzes */
+.manager__zone--top {
+  color: #2e9a44;
+}
+.manager__zone--bottom {
+  color: var(--red);
+}

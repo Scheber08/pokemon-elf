@@ -3,7 +3,7 @@ import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
-import { leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass } from '../lib/leagueTimeline';
+import { leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -261,6 +261,17 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
                     : tx.behindTop(shown.table[0].pts - shown.table[at].pts)}
                 </span>
               )}
+              {(() => {
+                // Zone wie in der Tabelle: Aufstiegs-/Meisterplatz oben, Abstiegsplatz unten
+                const zone = tableZone(at + 1, shown.table.length, (s.career?.tier ?? 2) > 1 ? 3 : 1);
+                if (!zone) return null;
+                return (
+                  <span className={`manager__zone manager__zone--${zone}`}>
+                    {' · '}
+                    {zone === 'top' ? ((s.career?.tier ?? 2) > 1 ? tx.zonePromotion : tx.zoneChampion) : tx.zoneBottom}
+                  </span>
+                );
+              })()}
               {/* Hochrechnung aufs Saisonende (Punkteschnitt × alle Spiele), erst ab dem 3. Spieltag */}
               {m.played >= 3 && m.played < m.total && shown.table[at].played > 0 && (
                 <span className="muted manager__projection">

@@ -1099,6 +1099,12 @@ describe('ManagerSeason', () => {
     const row = s.league!.table.find((x) => x.team === idx)!;
     expect(row.played).toBe(4);
     expect(r.container.querySelector('.manager__projection')!.textContent).toContain(`Hochrechnung: ${Math.round((row.pts / 4) * s.manager!.total)} Pkt`);
+    // Zone des eigenen Platzes (Karriere-Start in Liga 2: Plätze 1–3 sind Aufstiegsplätze)
+    const place = s.league!.table.findIndex((x) => x.team === idx) + 1;
+    const zone = r.container.querySelector('.manager__zone');
+    if (place <= 3) expect(zone!.textContent).toContain('Aufstiegsplatz');
+    else if (place > s.league!.table.length - 3) expect(zone!.textContent).toContain('Abstiegsplatz');
+    else expect(zone).toBeNull();
   });
 
   it('Saisonende: Saisonrekorde mit Angriff, Abwehr und ggf. Remis-König', async () => {
