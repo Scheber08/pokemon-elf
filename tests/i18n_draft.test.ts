@@ -760,6 +760,32 @@ describe('/draft an einem Gerät auf Englisch', () => {
     const el = container.querySelectorAll('.draft__board .draft-board__fit');
     expect(el).toHaveLength(1);
     expect(el[0].textContent).toBe(`Ø ${avg}Average positional fit of the picks so far: ${avg}`);
+    // Nur ein Team mit Picks: keine Krone
+    expect(container.querySelector('.draft-board__top')).toBeNull();
+  });
+
+  it('Draft läuft: 👑 am Team mit dem alleinigen besten Ø Fit', async () => {
+    const { positionFit } = await import('../src/lib/fit');
+    const { FORMATIONS } = await import('../src/config/formations');
+    const [f, g] = [FORMATION_IDS[0], FORMATION_IDS[1]];
+    const kanto = ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth);
+    const fitOf = (form: typeof f, p: (typeof kanto)[number]) => positionFit(p, FORMATIONS[form].slots[0].pos, SCALE);
+    // Team 1 bekommt das Pokémon mit dem besseren Fit auf Slot 0
+    const [a, b] = kanto.slice(0, 40).reduce<[typeof kanto[number], typeof kanto[number]]>(
+      (acc, p) => [fitOf(f, p) > fitOf(f, acc[0]) ? p : acc[0], fitOf(g, p) < fitOf(g, acc[1]) ? p : acc[1]],
+      [kanto[0], kanto[1]],
+    );
+    expect(Math.round(fitOf(f, a))).toBeGreaterThan(Math.round(fitOf(g, b)));
+    const teams = [
+      { name: 'Mein Team', cpu: false, formation: f, slots: emptySlots(f).map((x, j) => (j === 0 ? a.id : x)) },
+      { name: CLUB_NAMES[0], cpu: true, formation: g, slots: emptySlots(g).map((x, j) => (j === 0 ? b.id : x)) },
+    ];
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: false, pick: 2, selected: null, seed: null }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const cols = container.querySelectorAll('.draft__board .draft__col');
+    expect(cols[0].querySelector('.draft-board__top')!.textContent).toBe('👑Bester Ø Fit bisher');
+    expect(cols[1].querySelector('.draft-board__top')).toBeNull();
   });
 
   it('Liga: Tabelle, Torjäger, Spiele, Kader', async () => {
@@ -876,6 +902,16 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     // Ø Fit je Team mit Picks
     expect(container.querySelectorAll('.draft-board__fit').length).toBeGreaterThanOrEqual(1);
     expect(container.querySelector('.draft-board__fit')!.textContent).toMatch(/^Ø \d+Average positional fit of the picks so far: \d+$/);
+    // 👑 erst, wenn mindestens zwei Teams einen Ø Fit haben – dann am alleinigen Bestwert
+    expect(container.querySelector('.draft-board__top')).toBeNull();
+    const s2 = snap(autoPick(st));
+    const { container: c2 } = await render(app(h(DraftBoard, { state: s2, byId, currentId: s2.teams[0].id })));
+    await settle();
+    const avgs = [...c2.querySelectorAll('.draft__col')].map((col) => Number(col.querySelector('.draft-board__fit [aria-hidden]')!.textContent!.slice(2)));
+    expect(avgs[0]).not.toBe(avgs[1]);
+    const top = avgs.indexOf(Math.max(...avgs));
+    expect(c2.querySelectorAll('.draft-board__top')).toHaveLength(1);
+    expect(c2.querySelectorAll('.draft__col')[top].querySelector('.draft-board__top')!.textContent).toBe('👑Best average fit so far');
     expect(all).toContain(clubEn(cpu.name));
     expect(germanLeft(container)).toEqual([]);
   });

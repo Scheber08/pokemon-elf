@@ -17,7 +17,7 @@ import { Segmented } from '../components/Segmented';
 import { Sprite } from '../components/Sprite';
 import { useT } from '../i18n';
 import { draftsSupported } from '../lib/api/draftClient';
-import { positionFit } from '../lib/fit';
+import { positionFit, soleTopIndex } from '../lib/fit';
 import { emptySlots } from '../lib/formation';
 import { biggestWin, draftGrades, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
 import { createRng, randomSeed, shuffle } from '../lib/rng';
@@ -177,6 +177,19 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     if (!board || !col || board.scrollWidth <= board.clientWidth) return;
     board.scrollTo?.({ left: Math.max(0, col.offsetLeft - (board.clientWidth - col.offsetWidth) / 2), behavior: 'smooth' });
   }, [currentTeam]);
+  // Ø Positions-Fit der gesetzten Elf je Team – grobe Live-Stärke wie im Online-Draft, 👑 am alleinigen Bestwert
+  const boardFits =
+    state.phase === 'drafting'
+      ? state.teams.map((tm) => {
+          const sc = scale('all');
+          const fits = FORMATIONS[tm.formation].slots.flatMap((d, j) => {
+            const p = tm.slots[j] != null ? byId.get(tm.slots[j]!) : undefined;
+            return p ? [positionFit(p, d.pos, sc)] : [];
+          });
+          return fits.length ? Math.round(fits.reduce((a, b) => a + b, 0) / fits.length) : null;
+        })
+      : [];
+  const boardTop = soleTopIndex(boardFits);
   const team = state.teams[currentTeam];
 
   const drafted = useMemo(
@@ -1465,24 +1478,20 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 }`}
               >
                 <h3>{teamName(tm.name)}</h3>
-                {(() => {
-                  // Ø Positions-Fit der gesetzten Elf – grobe Live-Stärke wie im Online-Draft
-                  const sc = scale('all');
-                  const fits = FORMATIONS[tm.formation].slots.flatMap((d, j) => {
-                    const p = tm.slots[j] != null ? byId.get(tm.slots[j]!) : undefined;
-                    return p ? [positionFit(p, d.pos, sc)] : [];
-                  });
-                  if (!fits.length) return null;
-                  const avg = Math.round(fits.reduce((a, b) => a + b, 0) / fits.length);
-                  return (
-                    <p className="draft-board__meta">
-                      <span className="draft-board__fit" title={t.draft.board.fitTitle(avg)}>
-                        <span aria-hidden="true">Ø {avg}</span>
-                        <span className="sr-only">{t.draft.board.fitTitle(avg)}</span>
+                {boardFits[i] != null && (
+                  <p className="draft-board__meta">
+                    <span className="draft-board__fit" title={t.draft.board.fitTitle(boardFits[i]!)}>
+                      <span aria-hidden="true">Ø {boardFits[i]}</span>
+                      <span className="sr-only">{t.draft.board.fitTitle(boardFits[i]!)}</span>
+                    </span>
+                    {boardTop === i && (
+                      <span className="draft-board__top" title={t.draft.board.topFit}>
+                        <span aria-hidden="true">👑</span>
+                        <span className="sr-only">{t.draft.board.topFit}</span>
                       </span>
-                    </p>
-                  );
-                })()}
+                    )}
+                  </p>
+                )}
                 <ol>
                   {FORMATIONS[tm.formation].slots.map((d, j) => {
                     const p = tm.slots[j] != null ? byId.get(tm.slots[j]!) : undefined;

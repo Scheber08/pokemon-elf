@@ -1575,3 +1575,6 @@ button.draft-bench__slot {
 .draft__titles li.is-user {
   font-weight: 600;
 }
+.draft-board__top {
+  white-space: nowrap;
+}

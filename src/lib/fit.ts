@@ -153,3 +153,11 @@ export function positionFit(p: Pokemon, pos: PosCode, scale: Scale): number {
 }
 
 export { STAT_KEYS };
+
+/** Index des alleinigen Bestwerts (z. B. Ø Fit auf dem Draft-Board) – nur bei mindestens zwei Werten, sonst null */
+export function soleTopIndex(values: (number | null)[]): number | null {
+  const present = values.filter((v): v is number => v != null);
+  if (present.length < 2) return null;
+  const max = Math.max(...present);
+  return present.filter((v) => v === max).length === 1 ? values.indexOf(max) : null;
+}

@@ -283,6 +283,8 @@ const draft = {
     ultraBeastsTitle: (n: number, max: number) => `${n} von höchstens ${max === 1 ? 'einer Ultrabestie' : `${max} Ultrabestien`}`,
     /** Megas im Team bei einem Limit („M 1/2") – Tooltip */
     fitTitle: (fit: number) => `Durchschnittlicher Positions-Fit der bisherigen Picks: ${fit}`,
+    /** Krone am Team mit dem alleinigen besten Ø Fit */
+    topFit: 'Bester Ø Fit bisher',
     feedRun: (pos: string, n: number, of: number) => `Run auf ${pos}: ${n} der letzten ${of} Picks`,
     feedFitTitle: (fit: number) => `Positions-Fit: ${fit}`,
     megasTitle: (n: number, max: number) => `${n} von höchstens ${max === 1 ? 'einem Mega' : `${max} Megas`}`,

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { PROFILES } from '../src/config/positions';
 import { TYPE_KEYS } from '../src/config/pokemonTypes';
 import { SCORING } from '../src/config/scoring';
-import { buildScale, cdf, compositeScore, positionFit, profileFit, typeBonus, weightScore } from '../src/lib/fit';
+import { buildScale, cdf, soleTopIndex, compositeScore, positionFit, profileFit, typeBonus, weightScore } from '../src/lib/fit';
 import type { ProfileKey } from '../src/types';
 import { ALL, byName, mon } from './helpers';
 
@@ -145,5 +145,14 @@ describe('Eigene Gen-1-Skalierung', () => {
         expect(f).toBeLessThanOrEqual(100);
       }
     }
+  });
+});
+
+describe('soleTopIndex (👑 auf dem Draft-Board)', () => {
+  it('nur der alleinige Bestwert bei mindestens zwei Werten', () => {
+    expect(soleTopIndex([50, null, 72, 60])).toBe(2);
+    expect(soleTopIndex([72, 72, 10])).toBeNull();
+    expect(soleTopIndex([80, null])).toBeNull();
+    expect(soleTopIndex([])).toBeNull();
   });
 });

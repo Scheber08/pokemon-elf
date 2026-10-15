@@ -6,7 +6,7 @@ import { DRAFT_SS_SLOT, hasKind, isLegend, poolHasLegends, poolHasMegas, poolHas
 import { teamLabel, type FeedItem } from '../state/useDraftRoom';
 import type { Pokemon, PosCode } from '../types';
 import { parseLook } from '../lib/trainer';
-import { positionFit } from '../lib/fit';
+import { positionFit, soleTopIndex } from '../lib/fit';
 import { usePokemonData } from '../state/PokemonData';
 import { PosBadge, TypeBadge } from './Badges';
 import { TrainerAvatar } from './TrainerAvatar';
@@ -63,6 +63,16 @@ export function DraftBoard({ state, byId, currentId, nextId }: Props) {
   const ultraBeastLimit = maxUltraBeasts != null && poolHasUltraBeasts(state.settings) ? maxUltraBeasts : null;
   const maxMegas = state.settings.maxMegas;
   const megaLimit = maxMegas != null && poolHasMegas(state.settings) ? maxMegas : null;
+  // Ø Positions-Fit der gesetzten Elf je Team (Bank und Standardschütze zählen nicht) – grobe Live-Stärke im Draft
+  const avgFits = state.teams.map((team) => {
+    const fits = FORMATIONS[team.formation].slots.flatMap((d, j) => {
+      const id = team.slots[j];
+      const p = id != null ? byId.get(id) : undefined;
+      return p ? [positionFit(p, d.pos, sc)] : [];
+    });
+    return fits.length ? Math.round(fits.reduce((a, b) => a + b, 0) / fits.length) : null;
+  });
+  const topFit = soleTopIndex(avgFits);
   return (
     <section className="draft__board draft-board" aria-label={t.draft.draftBoard} ref={boardRef}>
       {state.teams.map((team, i) => {
@@ -83,12 +93,7 @@ export function DraftBoard({ state, byId, currentId, nextId }: Props) {
           }).length;
         const ultraBeasts = ofKind('ub');
         const megas = ofKind('mega');
-        // Ø Positions-Fit der gesetzten Elf (Bank und Standardschütze zählen nicht) – grobe Live-Stärke im Draft
-        const fits = rows.flatMap((r) => {
-          const p = r.id != null && r.pos && r.pos !== 'SS' ? byId.get(r.id) : undefined;
-          return p && r.pos ? [positionFit(p, r.pos, sc)] : [];
-        });
-        const avgFit = fits.length ? Math.round(fits.reduce((a, b) => a + b, 0) / fits.length) : null;
+        const avgFit = avgFits[i];
         const shinyCount = rows.filter((r) => r.id != null && state.shinies?.includes(r.id)).length;
         // Vereinsnamen der CPU-Teams erst bei der Anzeige übersetzen
         const name = teamLabel(team, t);
@@ -145,6 +150,12 @@ export function DraftBoard({ state, byId, currentId, nextId }: Props) {
                 <span className="draft-board__fit" title={t.draft.board.fitTitle(avgFit)}>
                   <span aria-hidden="true">Ø {avgFit}</span>
                   <span className="sr-only">{t.draft.board.fitTitle(avgFit)}</span>
+                </span>
+              )}
+              {topFit === i && (
+                <span className="draft-board__top" title={t.draft.board.topFit}>
+                  <span aria-hidden="true">👑</span>
+                  <span className="sr-only">{t.draft.board.topFit}</span>
                 </span>
               )}
               {shinyCount > 0 && (
