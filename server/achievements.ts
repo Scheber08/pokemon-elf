@@ -15,7 +15,7 @@ import type { Db, Env } from './env';
 import { ApiError, json } from './http';
 import { ensureSchema } from './schema';
 import { CHALLENGE_KEYS, parseDeviceAuth, readJsonBody } from './validate';
-import { rosterOf } from '../src/lib/draftEngine';
+import { goalReached, rosterOf } from '../src/lib/draftEngine';
 
 /** Tages-Wertungen ('YYYY-MM-DD') – Wochen o. Ä. zählen nicht als Tagessieg */
 const DAY_SCOPE_GLOB = '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]';
@@ -39,17 +39,18 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
       .bind(deviceId, today),
     db
       .prepare(
-        `SELECT SUM(CASE WHEN format NOT IN ('manager_cup', 'shiny', 'captain') THEN 1 ELSE 0 END) AS leagues,
+        `SELECT SUM(CASE WHEN format NOT IN ('manager_cup', 'shiny', 'captain', 'goal') THEN 1 ELSE 0 END) AS leagues,
            SUM(CASE WHEN format = 'shiny' THEN rank ELSE 0 END) AS shinies,
            MAX(CASE WHEN format = 'captain' THEN rank ELSE 0 END) AS captain_goals,
+           SUM(CASE WHEN format = 'goal' THEN 1 ELSE 0 END) AS goals_reached,
            SUM(CASE WHEN rank = 1 AND format = 'league' THEN 1 ELSE 0 END) AS titles,
            SUM(CASE WHEN rank = 1 AND format = 'manager_cup' THEN 1 ELSE 0 END) AS manager_cups,
            SUM(CASE WHEN rank = 1 AND format = 'cup' THEN 1 ELSE 0 END) AS cups,
            SUM(CASE WHEN rank = 1 AND format = 'manager' THEN 1 ELSE 0 END) AS manager,
-           SUM(CASE WHEN rank <= 3 AND format NOT IN ('manager_cup', 'shiny', 'captain') THEN 1 ELSE 0 END) AS podiums,
+           SUM(CASE WHEN rank <= 3 AND format NOT IN ('manager_cup', 'shiny', 'captain', 'goal') THEN 1 ELSE 0 END) AS podiums,
            SUM(CASE WHEN format = 'manager' THEN 1 ELSE 0 END) AS seasons,
            SUM(CASE WHEN format = 'manager' AND rank <= 3 THEN 1 ELSE 0 END) AS manager_podiums,
-           SUM(CASE WHEN losses = 0 AND format NOT IN ('cup', 'manager_cup', 'shiny', 'captain') AND wins + draws > 0 THEN 1 ELSE 0 END) AS unbeaten
+           SUM(CASE WHEN losses = 0 AND format NOT IN ('cup', 'manager_cup', 'shiny', 'captain', 'goal') AND wins + draws > 0 THEN 1 ELSE 0 END) AS unbeaten
          FROM draft_results WHERE device_id = ?`,
       )
       .bind(deviceId),
@@ -87,6 +88,7 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
       managerCups: num(d.manager_cups),
       shinies: num(d.shinies),
       captainGoals: num(d.captain_goals),
+      goalsReached: num(d.goals_reached),
     },
   };
 }
@@ -262,6 +264,22 @@ export async function saveDraftResults(
         .bind(`${state.code}#captain`, device, goals, now),
     );
   });
+  // Erreichte Saisonziele (eigene Zeile „…#goal“) – nur Liga und Manager-Saison, zählt nur für den Ziel-Erfolg
+  if (format !== 'cup') {
+    league.table.forEach((r, i) => {
+      const team = state.teams[r.team];
+      const device = team && !team.cpu ? state.owners[team.id] : undefined;
+      if (!device || !team.goal || !goalReached(team.goal, i + 1, league.table.length)) return;
+      stmts.push(
+        db
+          .prepare(
+            `INSERT OR IGNORE INTO draft_results (code, device_id, format, rank, teams, wins, draws, losses, points, finished_at)
+             VALUES (?, ?, 'goal', ?, ?, 0, 0, 0, 0, ?)`,
+          )
+          .bind(`${state.code}#goal`, device, i + 1, league.table.length, now),
+      );
+    });
+  }
   if (!stmts.length) return 0;
   await ensureSchema(db);
   await db.batch(stmts);
