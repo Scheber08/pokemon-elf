@@ -615,6 +615,11 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                   </span>
                 </header>
                 <p className="draft-results__roster-meta muted small">{tx.rosterMeta(team.formation, r.pts, r.gf, r.ga)}</p>
+                {!cup && team.goal && (
+                  <p className="small draft-results__roster-goal">
+                    🎯 {t.online.goal[team.goal]} {goalReached(team.goal, i + 1, table.length) ? '✓' : '✗'}
+                  </p>
+                )}
                 {(() => {
                   // Shinys dieses Teams mit ihrem Team-Bonus
                   const own = rosterOf(team).filter((id) => shinies?.includes(id));

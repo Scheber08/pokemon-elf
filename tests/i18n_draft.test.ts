@@ -409,6 +409,7 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     const all = texts(container).join(' | ');
     expect(all).toContain('Online draft K7MPQ2');
     expect(all).toContain('Season goal missed: Win the title');
+    expect(container.querySelector('.draft-results__roster-goal')!.textContent).toBe('🎯 Win the title ✗');
     expect(all).toContain('Champions: ');
     expect(all).toContain('Final table');
     expect(all).toContain('Top scorers');
