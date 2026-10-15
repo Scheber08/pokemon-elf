@@ -3,7 +3,7 @@ import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
-import { currentRun, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset } from '../lib/leagueTimeline';
+import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -678,6 +678,14 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
               {pokemonName(star.pokemonId)} <span className="muted">({nameOf(star.teamIndex)})</span> – {tx.starLine(star.goals, star.assists)}
             </p>
           )}
+          {liveMin == null &&
+            hatTricks(last).map((h) => (
+              // Hattricks des Spieltags (wie im Saison-Ticker)
+              <p key={`${h.team}-${h.pokemonId}`} className={`manager__hat ${h.team === you ? 'is-you' : ''}`}>
+                <span aria-hidden="true">🎩 </span>
+                {t.draft.ticker.hatTrick(pokemonName(h.pokemonId), nameOf(h.team), h.goals)}
+              </p>
+            ))}
           {liveMin == null && (() => {
             // Überraschung des Spieltags (wie im Saison-Ticker): Sieg des Außenseiters mit dem größten Rückstand
             const upset = biggestUpset(last, shown.teams.map((tm) => tm.rating));

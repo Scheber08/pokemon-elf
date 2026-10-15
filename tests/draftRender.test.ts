@@ -1673,6 +1673,21 @@ describe('ManagerSeason', () => {
     const r4 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(patched, 'h')), readOnly: false })));
     await settle();
     expect(r4.container.querySelector('.manager__late')!.textContent).toContain("Siegtor in der 89'");
+    // Gezielt: drei Tore desselben Pokémon → „🎩 Hattrick“ beim letzten Spieltag
+    const hat = {
+      ...s,
+      league: {
+        ...raw,
+        matches: raw.matches.map((x, i) =>
+          i === k2 ? { ...x, hg: 3, ag: 0, homeScorers: [goal(ids[0], 10), goal(ids[0], 50), goal(ids[0], 70)], awayScorers: [] } : x,
+        ),
+      },
+    };
+    const r5 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(hat, 'h')), readOnly: false })));
+    await settle();
+    const hatEl = r5.container.querySelectorAll('.manager__hat').find((e) => e.textContent!.includes(ALL.find((p) => p.id === ids[0])!.de))!;
+    expect(hatEl.textContent).toMatch(/^🎩 Hattrick: .+ \(.+\) trifft 3-mal$/);
+    expect(hatEl.className.includes('is-you')).toBe(raw.matches[k2].home === idx);
   });
 
   it('Saisonende: Saisonrekorde mit Angriff, Abwehr und ggf. Remis-König', async () => {
