@@ -32,6 +32,7 @@ import type { FormationId, Pokemon, RegionFilter, Slots } from '../types';
 import { DraftOnline } from './DraftOnline';
 import { TableLegend } from '../components/LeagueTicker';
 import { PlaceChart } from '../components/PlaceChart';
+import { TableTimeTravel } from '../components/TableTimeTravel';
 import { SaveImageButton } from '../components/SaveImageButton';
 import { ReplayToggle, useMatchReport } from '../components/MatchReport';
 import '../styles/draft.css';
@@ -679,6 +680,20 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 {t.draft.results.placeChart}
               </h2>
               <PlaceChart places={days.map((d) => d.places[you])} teams={league.teams.length} />
+            </section>
+          );
+        })()}
+        {(() => {
+          // Zeitreise: Tabelle nach jedem Spieltag – wie im Online-Draft
+          const days = leagueTimeline(league);
+          if (days.length < 2) return null;
+          const you = state.teams.findIndex((tm) => !tm.cpu);
+          return (
+            <section className="card" aria-labelledby="draft-local-timetravel">
+              <h2 id="draft-local-timetravel" className="section-title">
+                {t.draft.results.timeTravel}
+              </h2>
+              <TableTimeTravel days={days} you={you < 0 ? null : you} nameOf={(i) => teamName(state.teams[i].name)} />
             </section>
           );
         })()}

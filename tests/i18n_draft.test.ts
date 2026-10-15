@@ -46,6 +46,9 @@ const { emptySlots } = await import('../src/lib/formation');
 const { buildScale } = await import('../src/lib/fit');
 const engine = await import('../src/lib/draftEngine');
 const timeline = await import('../src/lib/leagueTimeline');
+/** Zeilen der Haupttabelle der lokalen Liga (die Zeitreise hat eine eigene Tabelle) */
+const mainRows = (root: MiniElement) =>
+  (root.querySelectorAll('section').find((x) => x.getAttribute('aria-labelledby') === 'draft-table') as MiniElement).querySelectorAll('tbody tr');
 
 const { act, createElement: h } = React;
 const SCALE = buildScale(ALL, 'all');
@@ -334,7 +337,7 @@ describe('/draft an einem Gerät auf Englisch', () => {
     localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'league', teams, region: 0, legends: false, pick: 66, selected: null, seed: 7 }));
     const { container } = await render(app(h(Draft)));
     await settle();
-    const rows = container.querySelectorAll('.league-table tbody tr');
+    const rows = mainRows(container);
     expect(rows).toHaveLength(6);
     expect(rows[0].className).toContain('is-zone-top');
     expect(rows.some((r) => r.className.includes('is-zone-bottom'))).toBe(false);
@@ -357,9 +360,36 @@ describe('/draft an einem Gerät auf Englisch', () => {
     const labels = rows.map((r) => r[0]);
     expect(labels.slice(0, 2)).toEqual(['Best attack', 'Best defence']);
     expect(labels).toContain('Biggest win');
-    const goals = Math.max(...container.querySelectorAll('.league-table tbody tr').map((r) => Number(r.querySelectorAll('td')[8].textContent!.split(':')[0])));
+    const goals = Math.max(...mainRows(container).map((r) => Number(r.querySelectorAll('td')[8].textContent!.split(':')[0])));
     expect(rows[0][1]).toContain(`${goals} goals`);
     expect(section.textContent).not.toContain('Mein Team');
+  });
+
+  it('Liga: Zeitreise zeigt die Tabelle nach jedem Spieltag', async () => {
+    storeLang('en');
+    const pool = ALL.filter((p) => !p.leg && !p.myth);
+    const teams = [0, 1, 2, 3].map((i) => {
+      const formation = FORMATION_IDS[i % FORMATION_IDS.length];
+      return { name: i === 0 ? 'Mein Team' : CLUB_NAMES[i], cpu: i !== 0, formation, slots: emptySlots(formation).map((_, j) => pool[i * 11 + j].id) };
+    });
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'league', teams, region: 0, legends: false, pick: 44, selected: null, seed: 7 }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const section = container.querySelectorAll('section').find((s) => s.getAttribute('aria-labelledby') === 'draft-local-timetravel') as MiniElement;
+    expect(section).toBeTruthy();
+    expect(section.querySelector('label')!.textContent).toBe('Table after matchday 6 (of 6)');
+    const played = () => section.querySelectorAll('tbody tr').map((r) => r.querySelectorAll('td')[2].textContent);
+    expect(played()).toEqual(['6', '6', '6', '6']);
+    expect(section.querySelectorAll('tbody tr').filter((r) => r.className.includes('is-user'))).toHaveLength(1);
+    const range = section.querySelector('input') as MiniElement;
+    await act(async () => {
+      // Schieberegler-Ereignisse erreichen React im Mini-DOM nicht – onChange direkt aufrufen
+      range.value = '1';
+      const k = Object.keys(range).find((x) => x.startsWith('__reactProps'))!;
+      (range as unknown as Record<string, { onChange: (e: unknown) => void }>)[k].onChange({ target: range });
+    });
+    expect(section.querySelector('label')!.textContent).toBe('Table after matchday 1 (of 6)');
+    expect(played()).toEqual(['1', '1', '1', '1']);
   });
 
   it('Liga: Umschalter Heim/Auswärts zeigt nur die halbe Saison, ohne Zonen und Legende', async () => {
@@ -372,13 +402,13 @@ describe('/draft an einem Gerät auf Englisch', () => {
     localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'league', teams, region: 0, legends: false, pick: 66, selected: null, seed: 7 }));
     const { container } = await render(app(h(Draft)));
     await settle();
-    const played = () => container.querySelectorAll('.league-table tbody tr').map((r) => r.querySelectorAll('td')[4].textContent);
+    const played = () => mainRows(container).map((r) => r.querySelectorAll('td')[4].textContent);
     expect(played()).toEqual(Array(6).fill('10'));
     for (const label of ['Home', 'Away']) {
       const radio = container.querySelectorAll('[role="radio"]').find((b) => b.textContent === label) as MiniElement;
       await act(async () => radio.click());
       expect(played()).toEqual(Array(6).fill('5'));
-      expect(container.querySelectorAll('.league-table tbody tr').some((r) => r.className.includes('is-zone'))).toBe(false);
+      expect(mainRows(container).some((r) => r.className.includes('is-zone'))).toBe(false);
       expect(container.querySelector('.table-legend')).toBeNull();
     }
   });
