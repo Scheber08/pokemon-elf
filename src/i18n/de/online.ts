@@ -218,6 +218,7 @@ const online = {
   pool: 'Pool',
   poolFree: (n: number) => `(${n} frei)`,
   suggest: 'Vorschlag',
+  suggestKey: 'Taste V',
   showTaken: 'Vergebene zeigen',
   takenBy: (team: string) => `Vergeben an ${team}`,
   readOnlyLive: 'Nur Ansicht – die Live-Verbindung steht noch nicht. Sobald sie da ist, kannst du hier wieder mitmachen.',

@@ -94,7 +94,7 @@ const scouting = {
     },
     {
       q: 'Gibt es Tastenkürzel im Draft?',
-      a: '„/“ springt in die Pokémon-Suche, „W“ setzt das ausgewählte Pokémon auf deine Wunschliste (oder nimmt es herunter). Mit den Pfeiltasten geht es durchs Raster, Enter wählt ein Pokémon aus. Beim Tippen in einem Feld greifen die Kürzel nicht.',
+      a: '„/“ springt in die Pokémon-Suche, „W“ setzt das ausgewählte Pokémon auf deine Wunschliste (oder nimmt es herunter), „V“ holt einen Vorschlag. Mit den Pfeiltasten geht es durchs Raster, Enter wählt ein Pokémon aus. Beim Tippen in einem Feld greifen die Kürzel nicht.',
     },
     {
       q: 'Was macht der Standardschütze?',

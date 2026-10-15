@@ -42,7 +42,7 @@ import { JerseyEditor } from './JerseyEditor';
 import { DraftBoard, DraftPickFeed } from './DraftBoard';
 import { DraftQueue } from './DraftQueue';
 import { DraftCountdown } from './DraftCountdown';
-import { FilterBar, useFilteredPokemon, type PokemonFilters } from './FilterBar';
+import { FilterBar, typingElsewhere, useFilteredPokemon, type PokemonFilters } from './FilterBar';
 import { Pitch, type SlotState } from './Pitch';
 import { PokemonGrid } from './PokemonGrid';
 import { RunNotice } from './RunBoard';
@@ -345,6 +345,21 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     }
   };
 
+  // Taste „V“: Vorschlag (wie der Knopf; nicht beim Tippen)
+  const suggestRef = useRef(suggest);
+  suggestRef.current = suggest;
+  useEffect(() => {
+    if (readOnly) return;
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.key !== 'v' && e.key !== 'V') || e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
+      if (typingElsewhere(e.target)) return;
+      e.preventDefault();
+      suggestRef.current();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [readOnly]);
+
   const onSlotClick = (i: number) => {
     if (!me) return;
     if (slotFilled(me, i)) return;
@@ -515,7 +530,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
               </h2>
               <p className={`hint ${myTurn || selectedMon ? 'hint--active' : ''}`}>{hint}</p>
               <div className="draft-pooltools">
-                <button type="button" className="btn btn--small" onClick={suggest} disabled={!mySlots.length}>
+                <button type="button" className="btn btn--small" onClick={suggest} disabled={!mySlots.length} title={t.online.suggestKey} aria-keyshortcuts="V">
                   {t.online.suggest}
                 </button>
                 {restricted && (

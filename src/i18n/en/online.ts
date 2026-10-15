@@ -203,6 +203,7 @@ const online: Messages['online'] = {
   pool: 'Pool',
   poolFree: (n) => `(${n} available)`,
   suggest: 'Suggest',
+  suggestKey: 'Key V',
   showTaken: 'Show taken',
   takenBy: (team) => `Taken by ${team}`,
   readOnlyLive: 'View only – the live connection isn’t up yet. Once it is, you can join in again here.',

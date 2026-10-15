@@ -575,6 +575,16 @@ describe('DraftLive', () => {
     expect(room.setQueue).toHaveBeenCalledWith([id]);
   });
 
+  it('Taste V holt einen Vorschlag (wie der Knopf)', async () => {
+    const st = drafting();
+    const { container } = await renderLive(fakeRoom(snap(st, 'h')));
+    const choice = engine.autoPickChoice(st, 'h', ALL, SCALE, false);
+    const ev = Object.assign(new MiniEvent('keydown', { bubbles: true, cancelable: true }), { key: 'v', ctrlKey: false, metaKey: false, altKey: false });
+    await act(async () => void window.dispatchEvent(ev as unknown as Event));
+    expect(container.querySelector('.draft-live .hint strong')!.textContent).toBe(ALL.find((p) => p.id === choice.pokemonId)!.de);
+    expect(container.querySelector('.draft-pooltools button')!.getAttribute('aria-keyshortcuts')).toBe('V');
+  });
+
   it('Wunschliste im Raster: „★ Wunsch n“ auf den Karten', async () => {
     const { DraftLive } = await import('../src/components/DraftLive');
     const st = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
