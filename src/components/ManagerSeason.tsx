@@ -318,12 +318,17 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             </>
           );
         })()}
-        {m.played >= 3 && (() => {
-          // Führungsserie des Tabellenführers (wie im Saison-Ticker)
+        {m.played >= 2 && (() => {
+          // Führungsserie des Tabellenführers (wie im Saison-Ticker) bzw. Wechsel an der Spitze
           const days = leagueTimeline(shown);
           const last = days.at(-1);
           const n = last ? leaderSince(days, last.round) : 0;
-          if (!last || n < 3) return null;
+          if (!last) return null;
+          // Wechsel an der Spitze am letzten Spieltag
+          const prev = days.at(-2);
+          if (n === 1 && prev)
+            return <p className="small manager__leader is-new">👑 {t.draft.ticker.newLeader(nameOf(last.leader.team), nameOf(prev.leader.team))}</p>;
+          if (n < 3) return null;
           return <p className="small muted manager__leader">👑 {t.draft.ticker.leaderStreak(nameOf(last.leader.team), n)}</p>;
         })()}
         {/* Karriere: frühere Saisons des eigenen Teams */}

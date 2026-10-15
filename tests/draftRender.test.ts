@@ -1166,6 +1166,26 @@ describe('ManagerSeason', () => {
     else expect(line).toBeUndefined();
   });
 
+  it('Manager: Wechsel an der Tabellenspitze nach dem Spieltag', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    const { storedLeague, leagueTimeline } = await import('../src/lib/leagueTimeline');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    // Bis zum ersten Spieltag (ab 2) mit neuem Tabellenführer spielen – der positive Fall muss vorkommen
+    let days: ReturnType<typeof leagueTimeline> = [];
+    while (s.manager!.played < s.manager!.total) {
+      s = playMatchday(s, ALL, SCALE);
+      days = leagueTimeline(storedLeague(s.league, s.teams.length)!);
+      if (days.length >= 2 && days.at(-1)!.leader.team !== days.at(-2)!.leader.team) break;
+    }
+    expect(days.at(-1)!.leader.team).not.toBe(days.at(-2)!.leader.team);
+    const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    expect(container.querySelector('.manager__leader.is-new')!.textContent).toMatch(/^👑 Neuer Tabellenführer: .+ löst .+ ab$/);
+  });
+
   it('Manager: nächster Gegner zeigt seine Bilanz am Spielort', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday, scheduleOf } = await import('../src/lib/manager');

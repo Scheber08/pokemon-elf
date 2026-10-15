@@ -238,6 +238,11 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
           <span style={{ width: `${total ? (md / total) * 100 : 0}%` }} />
         </div>
       </div>
+      {!cup && day && !finale && day.round >= 2 && leaderSince(days, day.round) === 1 && days[day.round - 2] && (
+        <p className="league-ticker__leader small is-new">
+          👑 {tx.newLeader(nameOf(day.leader.team), nameOf(days[day.round - 2].leader.team))}
+        </p>
+      )}
       {!cup && day && !finale && leaderSince(days, day.round) >= 3 && (
         <p className="league-ticker__leader small muted">
           👑 {tx.leaderStreak(nameOf(day.leader.team), leaderSince(days, day.round))}

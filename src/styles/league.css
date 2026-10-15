@@ -1150,3 +1150,9 @@
 .league-ticker__series.is-down {
   color: var(--red);
 }
+
+/* Wechsel an der Tabellenspitze */
+.league-ticker__leader.is-new,
+.manager__leader.is-new {
+  color: var(--yellow);
+}

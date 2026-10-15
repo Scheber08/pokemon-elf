@@ -410,6 +410,7 @@ const draft = {
       `${outcome} ${gf}:${ga} ${home ? 'gegen' : 'bei'} ${opponent}, Platz ${place}.`,
     bye: (place: number) => `Dein Team ist spielfrei, Platz ${place}.`,
     championLine: (team: string, pts: number) => `Meister: ${team} mit ${pts} Punkten.`,
+    newLeader: (team: string, prev: string) => `Neuer Tabellenführer: ${team} löst ${prev} ab`,
     leaderStreak: (team: string, n: number) => `${team} führt seit ${n} Spieltagen die Tabelle an`,
     leaderLine: (team: string, pts: number, since = 0) =>
       `Tabellenführer: ${team} mit ${pts} Punkten${since >= 3 ? ` (seit ${since} Spieltagen vorn)` : ''}.`,

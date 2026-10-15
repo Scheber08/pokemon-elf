@@ -857,6 +857,27 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     expect((await renderAt(2)).querySelector('.league-ticker__series')).toBeNull();
   });
 
+  it('Ticker: Wechsel an der Tabellenspitze wird gemeldet', async () => {
+    storeLang('en');
+    const s = snap(finishedDraft());
+    const league = s.league!;
+    const names = s.teams.map((t) => (t.cpu ? clubEn(t.name) : t.name));
+    const total = timeline.matchdayCount(league);
+    const days = timeline.leagueTimeline(league);
+    // Ersten Spieltag (ab 2, vor dem Ende) mit neuem Tabellenführer suchen
+    const k = days.findIndex((d, i) => i >= 1 && i < total - 1 && d.leader.team !== days[i - 1].leader.team);
+    expect(k).toBeGreaterThan(0);
+    const md = k + 1;
+    const step = 60_000;
+    const { container } = await render(
+      app(h(LeagueTicker, { league, teamNames: names, highlight: 0, startsAt: Date.now() - (md - 0.5) * step, stepMs: step, clockOffset: 0, onDone: () => {} })),
+    );
+    await settle();
+    const el = container.querySelector('.league-ticker__leader.is-new');
+    const nameOf = (i: number) => names[i] ?? clubEn(league.teams[i].name);
+    expect(el!.textContent).toBe(`👑 New leaders: ${nameOf(days[k].leader.team)} take over from ${nameOf(days[k - 1].leader.team)}`);
+  });
+
   it('Ticker: Countdown, laufender Spieltag und Abpfiff', async () => {
     storeLang('en');
     const s = snap(finishedDraft());
