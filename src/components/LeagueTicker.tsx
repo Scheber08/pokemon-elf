@@ -10,6 +10,7 @@ import {
   tableRowClass,
   tableZone,
   leaderSince,
+  currentRun,
   TABLE_BOTTOM_ZONE,
   titleRace,
   titleTieNote,
@@ -313,6 +314,16 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
           })()}
         </dl>
       )}
+      {!cup && day && !finale && you != null && (() => {
+        // Serie des eigenen Teams bis zum aktuellen Spieltag (ab 3 Spielen) – wie in der Manager-Saison
+        const run = currentRun(league.matches.filter((m) => m.round <= md), you);
+        if (!run) return null;
+        return run.kind === 'unbeaten' ? (
+          <p className="league-ticker__series small is-up">🔥 {t.draft.manager.seriesUnbeaten(run.length)}</p>
+        ) : (
+          <p className="league-ticker__series small is-down">🥶 {t.draft.manager.seriesWinless(run.length)}</p>
+        );
+      })()}
 
       <div className="league-ticker__grid">
         <div className="league-ticker__main">

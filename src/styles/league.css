@@ -1139,3 +1139,14 @@
 .league-ticker__leader {
   margin: 6px 0 0;
 }
+
+/* Saison-Ticker: Serie des eigenen Teams */
+.league-ticker__series {
+  margin: 4px 0 0;
+}
+.league-ticker__series.is-up {
+  color: var(--green);
+}
+.league-ticker__series.is-down {
+  color: var(--red);
+}

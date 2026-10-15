@@ -642,6 +642,32 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     expect(germanLeft(container)).toEqual([]);
   });
 
+  it('Ticker: Serie des eigenen Teams (ab 3 Spielen), nicht am Saisonende', async () => {
+    storeLang('en');
+    const s = snap(finishedDraft());
+    const league = s.league!;
+    const names = s.teams.map((t) => (t.cpu ? clubEn(t.name) : t.name));
+    const total = timeline.matchdayCount(league);
+    const step = 60_000;
+    const runAt = (md: number) => timeline.currentRun(league.matches.filter((m) => m.round <= md), 0);
+    // Ersten Spieltag mit Serie suchen – der positive Fall muss vorkommen
+    let md = 3;
+    while (md < total && !runAt(md)) md++;
+    expect(md).toBeLessThan(total);
+    const renderAt = async (k: number) => {
+      const { container } = await render(
+        app(h(LeagueTicker, { league, teamNames: names, highlight: 0, startsAt: Date.now() - (k - 0.5) * step, stepMs: step, clockOffset: 0, onDone: () => {} })),
+      );
+      await settle();
+      return container;
+    };
+    const run = runAt(md)!;
+    const el = (await renderAt(md)).querySelector('.league-ticker__series');
+    expect(el!.textContent).toBe(run.kind === 'unbeaten' ? `🔥 Unbeaten in ${run.length} games` : `🥶 Winless in ${run.length} games`);
+    // Spieltag 2: zu früh für eine Serie
+    expect((await renderAt(2)).querySelector('.league-ticker__series')).toBeNull();
+  });
+
   it('Ticker: Countdown, laufender Spieltag und Abpfiff', async () => {
     storeLang('en');
     const s = snap(finishedDraft());
