@@ -988,6 +988,29 @@ describe('ManagerSeason', () => {
     expect(container.querySelector('.manager__rival-out')!.textContent).toContain(ALL.find((p) => p.id === hurt)!.de);
   });
 
+  it('Nächster Gegner: sein bester Torschütze steht dabei (gedraftete Gegner)', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday, managerSchedule } = await import('../src/lib/manager');
+    const { storedLeague } = await import('../src/lib/leagueTimeline');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    const me = s.teams.findIndex((t) => t.id === 'h');
+    const rival = s.teams.findIndex((t) => t.id !== 'h');
+    // Spieltag des Duells der beiden gedrafteten Teams – bis dahin spielen (mindestens ein paar Spieltage)
+    const k = managerSchedule(18).findIndex((round) => round.some(([a, b]) => (a === me && b === rival) || (a === rival && b === me)));
+    while (s.manager!.played < k) s = playMatchday(s, ALL, SCALE);
+    const goals = new Map<number, number>();
+    for (const m of storedLeague(s.league, s.teams.length)!.matches)
+      for (const g of m.home === rival ? m.homeScorers : m.away === rival ? m.awayScorers : []) goals.set(g.pokemonId, (goals.get(g.pokemonId) ?? 0) + 1);
+    const best = Math.max(0, ...goals.values());
+    const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    const el = container.querySelector('.manager__rival-scorer');
+    expect(best).toBeGreaterThanOrEqual(2);
+    expect(el!.textContent).toContain(`(${best} Tore)`);
+  });
+
   it('Nach dem letzten Pick: Kapitän bis zum Anpfiff wählbar (mit Countdown), danach nicht mehr', async () => {
     const { DraftSeasonStage } = await import('../src/components/DraftSeasonStage');
     let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);

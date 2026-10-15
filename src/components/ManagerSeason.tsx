@@ -337,6 +337,13 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
               <FormDots form={recentForm(shown.matches, rival, m.played)} />
             </p>
           )}
+          {(() => {
+            // Bester Torschütze des Gegners (ab 2 Toren)
+            let top: [number, number] | null = null;
+            for (const [id, n] of goalsOf(league, rival)) if (!top || n > top[1]) top = [id, n];
+            if (!top || top[1] < 2) return null;
+            return <p className="small manager__rival-scorer">⚽ {tx.rivalScorer(pokemonName(top[0]), top[1])}</p>;
+          })()}
           {s.teams[rival] && (() => {
             // Ausfälle des Gegners zum nächsten Spieltag
             const absent = absentAt({ out: m.out ?? {} }, m.played + 1);

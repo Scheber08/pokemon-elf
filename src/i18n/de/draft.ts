@@ -545,6 +545,7 @@ const draft = {
     rivalTitle: 'Nächster Gegner',
     rivalHome: 'Heimspiel',
     rivalAway: 'Auswärtsspiel',
+    rivalScorer: (pokemon: string, goals: number) => `Gefährlichster Torschütze: ${pokemon} (${goals} Tore)`,
     rivalPlace: (n: number) => `Platz ${n}`,
     compareYou: 'Du',
     compareTitle: 'Stärke der besten Elf aus dem Kader (ohne Tagesform)',

@@ -503,6 +503,7 @@ const draft: Messages['draft'] = {
     compareYou: 'You',
     compareTitle: 'Strength of the best eleven from the squad (without daily form)',
     compareAria: (share) => `Strength comparison: ${share}% to ${100 - share}%`,
+    rivalScorer: (pokemon, goals) => `Most dangerous scorer: ${pokemon} (${goals} goals)`,
     rivalPlace: (n) => `${n}${n % 10 === 1 && n % 100 !== 11 ? 'st' : n % 10 === 2 && n % 100 !== 12 ? 'nd' : n % 10 === 3 && n % 100 !== 13 ? 'rd' : 'th'} place`,
     starLine: (goals, assists) =>
       [goals ? `${goals} ${goals === 1 ? 'goal' : 'goals'}` : '', assists ? `${assists} ${assists === 1 ? 'assist' : 'assists'}` : '']
