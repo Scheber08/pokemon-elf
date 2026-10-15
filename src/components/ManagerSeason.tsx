@@ -290,6 +290,25 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             </p>
           );
         })()}
+        {you != null && m.played >= 3 && (() => {
+          // Aktuelle Serie des eigenen Teams: ungeschlagen bzw. sieglos (ab 3 Spielen)
+          const own = shown.matches.filter((x) => x.home === you || x.away === you).sort((a, b) => b.round - a.round);
+          const res = own.map((x) => {
+            const gf = x.home === you ? x.hg : x.ag;
+            const ga = x.home === you ? x.ag : x.hg;
+            return gf > ga ? 1 : gf === ga ? 0 : -1;
+          });
+          const run = (ok: (r: number) => boolean) => {
+            let n = 0;
+            while (n < res.length && ok(res[n])) n++;
+            return n;
+          };
+          const unbeaten = run((r) => r >= 0);
+          const winless = run((r) => r <= 0);
+          if (unbeaten >= 3) return <p className="small manager__series is-up">🔥 {tx.seriesUnbeaten(unbeaten)}</p>;
+          if (winless >= 3) return <p className="small manager__series is-down">🥶 {tx.seriesWinless(winless)}</p>;
+          return null;
+        })()}
         {you != null && m.played >= 3 && m.total - m.played >= 2 && (() => {
           // Restprogramm: Ø aktueller Tabellenplatz der noch ausstehenden Gegner (leicht/mittel/schwer)
           const placeOf = (i: number) => shown.table.findIndex((r) => r.team === i) + 1;

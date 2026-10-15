@@ -1105,6 +1105,36 @@ describe('ManagerSeason', () => {
     expect(el!.textContent).toContain(`(${best} Tore)`);
   });
 
+  it('Manager: aktuelle Serie des eigenen Teams (ungeschlagen/sieglos ab 3 Spielen)', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    const { storedLeague } = await import('../src/lib/leagueTimeline');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    const me = s.teams.findIndex((t) => t.id === 'h');
+    const seriesOf = () => {
+      const res = storedLeague(s.league, s.teams.length)!
+        .matches.filter((m) => m.home === me || m.away === me)
+        .sort((a, b) => b.round - a.round)
+        .map((m) => Math.sign(m.home === me ? m.hg - m.ag : m.ag - m.hg));
+      const run = (ok: (r: number) => boolean) => res.findIndex((r) => !ok(r)) < 0 ? res.length : res.findIndex((r) => !ok(r));
+      const up = run((r) => r >= 0);
+      const down = run((r) => r <= 0);
+      return up >= 3 ? `Seit ${up} Spielen ungeschlagen` : down >= 3 ? `Seit ${down} Spielen sieglos` : null;
+    };
+    // Bis zum ersten Spieltag mit einer Serie spielen (der positive Fall muss vorkommen)
+    let expected: string | null = null;
+    while (s.manager!.played < s.manager!.total) {
+      s = playMatchday(s, ALL, SCALE);
+      if (s.manager!.played >= 3 && (expected = seriesOf())) break;
+    }
+    expect(expected).not.toBeNull();
+    const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    expect(container.querySelector('.manager__series')!.textContent).toContain(expected!);
+  });
+
   it('Manager: nächster Gegner zeigt seine Bilanz am Spielort', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday, scheduleOf } = await import('../src/lib/manager');

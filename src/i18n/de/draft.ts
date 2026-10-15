@@ -577,6 +577,8 @@ const draft = {
     rest: (avg: string, games: number, level: string) => `Restprogramm: Ø Platz ${avg} der ${games} Gegner – ${level}`,
     restTitle: 'Durchschnittlicher aktueller Tabellenplatz deiner restlichen Gegner',
     restLevel: { easy: 'eher leicht', medium: 'mittel', hard: 'eher schwer' },
+    seriesUnbeaten: (n: number) => `Seit ${n} Spielen ungeschlagen`,
+    seriesWinless: (n: number) => `Seit ${n} Spielen sieglos`,
     projection: (pts: number) => `Hochrechnung: ${pts} Pkt`,
     behindTop: (n: number) => (n === 0 ? 'punktgleich mit der Spitze' : `${n} Pkt hinter Platz 1`),
     colAssists: 'Vorl.',

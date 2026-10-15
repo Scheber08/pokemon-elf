@@ -1290,6 +1290,17 @@ button.draft-bench__slot {
   height: 32px;
 }
 
+/* Manager-Saison: eigene Serie */
+.manager__series {
+  margin: 4px 0 0;
+}
+.manager__series.is-up {
+  color: var(--green);
+}
+.manager__series.is-down {
+  color: var(--red);
+}
+
 /* Manager-Saison: nächster Gegner */
 .manager__rival p {
   margin: 4px 0 0;

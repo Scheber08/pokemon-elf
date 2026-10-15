@@ -532,6 +532,8 @@ const draft: Messages['draft'] = {
     rest: (avg, games, level) => `Run-in: opponents' avg. place ${avg} (${games} games) – ${level}`,
     restTitle: 'Average current table place of your remaining opponents',
     restLevel: { easy: 'fairly easy', medium: 'medium', hard: 'fairly tough' },
+    seriesUnbeaten: (n) => `Unbeaten in ${n} games`,
+    seriesWinless: (n) => `Winless in ${n} games`,
     projection: (pts) => `Projection: ${pts} pts`,
     behindTop: (n) => (n === 0 ? 'level on points with the top' : `${n} pts behind 1st`),
     colAssists: 'Ast.',
