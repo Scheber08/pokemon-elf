@@ -493,8 +493,9 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
               room={room}
               selected={selected}
               onSelect={(id) => {
-                setSelected(id);
-                setSuggestSlot(null);
+                // Wie ein Tipp im Raster (auf dem Handy springt die Ansicht zum Feld)
+                const p = byId.get(id);
+                if (p) choose(p);
               }}
             />
           )}
