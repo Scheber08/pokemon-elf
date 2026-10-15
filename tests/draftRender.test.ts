@@ -1029,6 +1029,22 @@ describe('ManagerSeason', () => {
     expect(r.container.querySelector('.manager__projection')!.textContent).toContain(`Hochrechnung: ${Math.round((row.pts / 4) * s.manager!.total)} Pkt`);
   });
 
+  it('Saisonende: Saisonrekorde mit Angriff, Abwehr und ggf. Remis-König', async () => {
+    const { DraftSeasonStage } = await import('../src/components/DraftSeasonStage');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = engine.withLeague(s, ALL, SCALE);
+    const done = { ...s, season: { ...s.season!, startsAt: Date.now() - 30 * 86_400_000 } };
+    const { container } = await render(app(h(DraftSeasonStage, { room: fakeRoom(snap(done, 'h')) })));
+    await settle();
+    const rec = container.querySelector('.draft-records')!;
+    expect(rec.textContent).toMatch(/Bester Angriff.+ – \d+ Tore/);
+    const most = Math.max(...s.league!.table.map((r) => r.d));
+    expect(most).toBeGreaterThanOrEqual(4);
+    expect(rec.textContent).toContain(`Remis-König`);
+    expect(rec.textContent).toContain(`${most} Unentschieden`);
+  });
+
   it('Nach dem letzten Pick: Kapitän bis zum Anpfiff wählbar (mit Countdown), danach nicht mehr', async () => {
     const { DraftSeasonStage } = await import('../src/components/DraftSeasonStage');
     let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);

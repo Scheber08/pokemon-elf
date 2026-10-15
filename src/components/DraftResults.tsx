@@ -496,6 +496,8 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
               {(() => {
                 const attack = table.reduce((a, b) => (b.gf > a.gf ? b : a));
                 const defense = table.reduce((a, b) => (b.ga < a.ga ? b : a));
+                // Meiste Unentschieden (ab 4) – bei Gleichstand das besser platzierte Team
+                const draws = table.reduce((a, b) => (b.d > a.d ? b : a));
                 return (
                   <>
                     <div>
@@ -506,6 +508,12 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                       <dt>{tx.recordDefense}</dt>
                       <dd>{tx.recordConceded(nameOf(defense.team), defense.ga)}</dd>
                     </div>
+                    {draws.d >= 4 && (
+                      <div>
+                        <dt>{tx.recordDraws}</dt>
+                        <dd>{tx.recordDrawsLine(nameOf(draws.team), draws.d)}</dd>
+                      </div>
+                    )}
                   </>
                 );
               })()}

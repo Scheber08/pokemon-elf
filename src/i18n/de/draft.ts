@@ -307,6 +307,8 @@ const draft = {
     recordDefense: 'Beste Abwehr',
     recordWin: 'Höchster Sieg',
     recordFest: 'Torreichstes Spiel',
+    recordDraws: 'Remis-König',
+    recordDrawsLine: (team: string, n: number) => `${team} – ${n} Unentschieden`,
     recordStreak: 'Längste Siegesserie',
     recordSurprise: 'Überraschung der Saison',
     recordFlop: 'Enttäuschung der Saison',
