@@ -343,6 +343,10 @@ describe('Tabellen-Zonen', () => {
     expect(tableZone(16, 18)).toBe('bottom');
     expect(tableZone(18, 18)).toBe('bottom');
     expect(tableZone(1, 4)).toBeNull();
+    // Kleine Liga: nur der Meister, unten keine rote Zone
+    expect(tableZone(1, 8)).toBe('top');
+    expect(tableZone(8, 8)).toBeNull();
+    expect(tableZone(10, 10)).toBe('bottom');
     expect(tableRowClass(true, 18, 18)).toBe('is-user is-zone-bottom');
     expect(tableRowClass(false, 9, 18)).toBe('');
   });

@@ -19,7 +19,7 @@ import { useT } from '../i18n';
 import { draftsSupported } from '../lib/api/draftClient';
 import { positionFit } from '../lib/fit';
 import { emptySlots } from '../lib/formation';
-import { draftGrades, seasonEleven } from '../lib/leagueTimeline';
+import { draftGrades, seasonEleven, tableRowClass } from '../lib/leagueTimeline';
 import { createRng, gaussian, randomSeed, shuffle } from '../lib/rng';
 import { CLASSIC_MODEL, DRAFT_MODEL, formatRecord, simulateLeague, type LeagueTeam } from '../lib/season';
 import { scorerSummary } from '../lib/seasonTimeline';
@@ -29,6 +29,7 @@ import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import type { FormationId, Pokemon, RegionFilter, Slots } from '../types';
 import { DraftOnline } from './DraftOnline';
+import { TableLegend } from '../components/LeagueTicker';
 import { ReplayToggle, useMatchReport } from '../components/MatchReport';
 import '../styles/draft.css';
 import '../styles/league.css';
@@ -578,7 +579,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 </thead>
                 <tbody>
                   {league.table.map((r, i) => (
-                    <tr key={r.team} className={r.isUser ? 'is-user' : ''}>
+                    <tr key={r.team} className={tableRowClass(r.isUser, i + 1, league.table.length)}>
                       <td>{i + 1}</td>
                       <td className="left">
                         {cleanCrest(state.teams[r.team].crest) && (
@@ -606,6 +607,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 </tbody>
               </table>
             </div>
+            <TableLegend total={league.table.length} />
           </section>
           <section className="card" aria-labelledby="draft-scorers">
             <h2 id="draft-scorers" className="section-title">

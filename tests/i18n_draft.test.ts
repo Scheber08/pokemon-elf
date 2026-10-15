@@ -311,6 +311,23 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(germanLeft(container)).toEqual([]);
   });
 
+  it('Liga mit 6 Teams: Meister grün markiert, unten keine rote Zone, Legende nur „Champions“', async () => {
+    storeLang('en');
+    const pool = ALL.filter((p) => !p.leg && !p.myth);
+    const teams = [0, 1, 2, 3, 4, 5].map((i) => {
+      const formation = FORMATION_IDS[i % FORMATION_IDS.length];
+      return { name: i === 0 ? 'Mein Team' : CLUB_NAMES[i], cpu: i !== 0, formation, slots: emptySlots(formation).map((_, j) => pool[i * 11 + j].id) };
+    });
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'league', teams, region: 0, legends: false, pick: 66, selected: null, seed: 7 }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const rows = container.querySelectorAll('.league-table tbody tr');
+    expect(rows).toHaveLength(6);
+    expect(rows[0].className).toContain('is-zone-top');
+    expect(rows.some((r) => r.className.includes('is-zone-bottom'))).toBe(false);
+    expect(container.querySelector('.table-legend')!.textContent).toBe('Champions');
+  });
+
   it('Draft läuft: Board zeigt den Ø Fit der gesetzten Picks', async () => {
     storeLang('en');
     const { positionFit } = await import('../src/lib/fit');
