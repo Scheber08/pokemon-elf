@@ -945,6 +945,12 @@ describe('Lobby-Helfer', () => {
     expect(withFit[0].fit).toBe(Math.round(positionFit(byId.get(s.picks[2].pokemonId)!, pos, SCALE)));
     expect(feed[0].pos).toBe(pos);
     expect(feed[0].fit).toBeUndefined();
+    // 🏅 höchster Fit aller Picks (bei Gleichstand der frühere), nur mit Skala
+    const all = pickFeed(snap, byId, 8, undefined, SCALE);
+    const best = Math.max(...all.map((f) => f.fit ?? -1));
+    expect(all.filter((f) => f.top).map((f) => f.no)).toEqual([Math.min(...all.filter((f) => f.fit === best).map((f) => f.no))]);
+    expect(pickFeed(snap, byId, 8).some((f) => f.top)).toBe(false);
+    expect(pickFeed(snapshotOf(autoPick(startDraft(lobby(2), 'dev-h', 0, ALL), 0), 'h', 0), byId, 8, undefined, SCALE)[0].top).toBeUndefined();
   });
 });
 

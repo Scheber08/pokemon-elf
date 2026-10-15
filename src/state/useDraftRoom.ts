@@ -251,6 +251,8 @@ export interface FeedItem {
   fit?: number;
   /** Blitz-Pick: selbst gewählt höchstens FAST_PICK_SECONDS nach dem vorigen Pick (Sekunden) */
   fast?: number;
+  /** Höchster Positions-Fit aller bisherigen Picks (bei Gleichstand der frühere; nur mit Skala) */
+  top?: boolean;
 }
 
 /** Bis zu so vielen Sekunden nach dem vorigen Pick gilt ein eigener (nicht automatischer) Pick als Blitz-Pick ⚡ */
@@ -269,6 +271,22 @@ export function pickFeed(s: DraftSnapshot, byId: Map<number, Pokemon>, limit = 8
   const names = new Map(s.teams.map((tm) => [tm.id, teamLabel(tm, t)]));
   const teams = new Map(s.teams.map((tm) => [tm.id, tm]));
   const atOf = new Map(s.picks.map((p) => [p.pick, p.at]));
+  // Fit eines Picks an seiner jetzigen Position (Feldslot); Bank und Standardschütze zählen nicht
+  const fitOf = (p: DraftSnapshot['picks'][number]): number | null => {
+    const team = teams.get(p.teamId);
+    const mon = byId.get(p.pokemonId);
+    const at = team ? team.slots.indexOf(p.pokemonId) : -1;
+    const pos = team && at >= 0 ? FORMATIONS[team.formation]?.slots[at]?.pos : undefined;
+    return mon && pos && scale ? positionFit(mon, pos, scale) : null;
+  };
+  let topPick: number | null = null;
+  if (scale && s.picks.length >= 2) {
+    let best = -1;
+    for (const p of s.picks) {
+      const fit = fitOf(p);
+      if (fit != null && fit > best) [best, topPick] = [fit, p.pick];
+    }
+  }
   return s.picks
     .slice(-limit)
     .reverse()
@@ -284,6 +302,7 @@ export function pickFeed(s: DraftSnapshot, byId: Map<number, Pokemon>, limit = 8
       };
       if (p.roll) item.roll = { region: t.game.region[p.roll.gen] ?? '?', type: p.roll.type };
       if (p.shiny) item.shiny = true;
+      if (p.pick === topPick) item.top = true;
       const prevAt = atOf.get(p.pick - 1);
       if (!p.auto && prevAt != null) {
         const secs = Math.max(0, Math.round((p.at - prevAt) / 1000));

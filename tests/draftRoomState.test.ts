@@ -279,6 +279,10 @@ describe('Ansage pro Pick', () => {
     const html = renderToStaticMarkup(createElement(DraftPickFeed, { items, you: null }));
     expect(html.match(/draft-feed__fast/g)).toHaveLength(1);
     expect(html).toContain('Blitz-Pick: nach 3 Sekunden');
+    // 🏅 mit Skala genau einmal im Verlauf
+    const withTop = renderToStaticMarkup(createElement(DraftPickFeed, { items: pickFeed(snap(s), byId, 8, undefined, SCALE), you: null }));
+    expect(withTop.match(/draft-feed__top/g)).toHaveLength(1);
+    expect(withTop).toContain('Bester Positions-Fit des Drafts bisher');
   });
 
   it('Verlauf und Timer sind keine Live-Regionen mehr', () => {

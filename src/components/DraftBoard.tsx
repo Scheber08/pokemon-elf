@@ -262,6 +262,13 @@ export function DraftPickFeed({ items, you }: { items: FeedItem[]; you: string |
                 </span>
               )}
               {f.auto && <span className="draft-feed__auto">{tx.auto}</span>}
+              {f.top && (
+                <span className="draft-feed__top" title={tx.feedTop}>
+                  {' '}
+                  <span aria-hidden="true">🏅</span>
+                  <span className="sr-only">{tx.feedTop}</span>
+                </span>
+              )}
               {f.fast != null && (
                 <span className="draft-feed__fast" title={tx.feedFast(f.fast)}>
                   {' '}
