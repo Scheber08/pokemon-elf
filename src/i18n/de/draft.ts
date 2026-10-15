@@ -602,6 +602,8 @@ const draft = {
     restLevel: { easy: 'eher leicht', medium: 'mittel', hard: 'eher schwer' },
     seriesUnbeaten: (n: number) => `Seit ${n} Spielen ungeschlagen`,
     seriesWinless: (n: number) => `Seit ${n} Spielen sieglos`,
+    /** Eigener bester Torschütze mit Platz in der Torjägerliste */
+    ownScorer: (name: string, goals: number, rank: number) => `Dein Torjäger: ${name} – ${goals} ${goals === 1 ? 'Tor' : 'Tore'} (Platz ${rank} der Torjägerliste)`,
     upNext: (list: string) => `Die nächsten Gegner: ${list}`,
     toSafety: (n: number) => (n === 0 ? 'punktgleich mit dem rettenden Platz' : `${n} Pkt bis zum rettenden Platz`),
     aboveDrop: (n: number) => (n === 0 ? 'punktgleich mit der Abstiegszone' : `${n} Pkt vor der Abstiegszone`),

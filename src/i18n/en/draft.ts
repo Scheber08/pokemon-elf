@@ -553,6 +553,7 @@ const draft: Messages['draft'] = {
     restLevel: { easy: 'fairly easy', medium: 'medium', hard: 'fairly tough' },
     seriesUnbeaten: (n) => `Unbeaten in ${n} games`,
     seriesWinless: (n) => `Winless in ${n} games`,
+    ownScorer: (name, goals, rank) => `Your top scorer: ${name} – ${goals} ${goals === 1 ? 'goal' : 'goals'} (#${rank} in the scoring chart)`,
     upNext: (list) => `Next opponents: ${list}`,
     toSafety: (n) => (n === 0 ? 'level with safety' : `${n} pts from safety`),
     aboveDrop: (n) => (n === 0 ? 'level with the drop zone' : `${n} pts above the drop zone`),

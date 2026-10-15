@@ -339,6 +339,16 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             </>
           );
         })()}
+        {(() => {
+          // Eigener Torjäger und sein Platz in der Torjägerliste der Liga (geteilte Plätze bei Gleichstand)
+          if (you == null) return null;
+          let top: [number, number] | null = null;
+          for (const [id, n] of goalsOf(league, you)) if (!top || n > top[1]) top = [id, n];
+          if (!top) return null;
+          const all = shown.teams.flatMap((_, i) => [...goalsOf(league, i).values()]);
+          const rank = 1 + all.filter((n) => n > top![1]).length;
+          return <p className="small muted manager__ownscorer">⚽ {tx.ownScorer(pokemonName(top[0]), top[1], rank)}</p>;
+        })()}
         {m.played >= 2 && (() => {
           // Führungsserie des Tabellenführers (wie im Saison-Ticker) bzw. Wechsel an der Spitze
           const days = leagueTimeline(shown);

@@ -1348,6 +1348,41 @@ describe('ManagerSeason', () => {
     expect(r2.container.querySelector('.manager__formation-tip')).toBeNull();
   });
 
+  it('Eigener Torjäger mit Platz in der Torjägerliste', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    const { storedLeague } = await import('../src/lib/leagueTimeline');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    // Vor dem ersten Spieltag: keine Zeile
+    let r = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    expect(r.container.querySelector('.manager__ownscorer')).toBeNull();
+    const idx = s.teams.findIndex((t) => t.id === 'h');
+    // So lange spielen, bis das eigene Team getroffen hat
+    const goals = () => {
+      const lg = storedLeague(s.league, s.teams.length)!;
+      const per = new Map<string, number>();
+      for (const m of lg.matches)
+        for (const [team, list] of [[m.home, m.homeScorers], [m.away, m.awayScorers]] as const)
+          for (const g of list ?? []) per.set(`${team}:${g.pokemonId}`, (per.get(`${team}:${g.pokemonId}`) ?? 0) + 1);
+      return per;
+    };
+    for (let k = 0; k < 6 && ![...goals().keys()].some((key) => key.startsWith(`${idx}:`)); k++) s = playMatchday(s, ALL, SCALE);
+    const per = goals();
+    const own = [...per].filter(([key]) => key.startsWith(`${idx}:`)).sort((a, b) => b[1] - a[1]);
+    expect(own.length).toBeGreaterThan(0);
+    const [key, n] = own[0];
+    const rank = 1 + [...per.values()].filter((x) => x > n).length;
+    r = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    const name = ALL.find((p) => p.id === Number(key.split(':')[1]))!.de;
+    expect(r.container.querySelector('.manager__ownscorer')!.textContent).toBe(
+      `⚽ Dein Torjäger: ${name} – ${n} ${n === 1 ? 'Tor' : 'Tore'} (Platz ${rank} der Torjägerliste)`,
+    );
+  });
+
   it('Eigener Platz: Hochrechnung der Punkte aufs Saisonende ab dem 3. Spieltag', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
