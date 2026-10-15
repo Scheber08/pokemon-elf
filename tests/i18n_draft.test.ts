@@ -434,6 +434,39 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(container.querySelectorAll('.draft__teamrow')).toHaveLength(3);
   });
 
+  it('Liga: Titelsammlung zählt Meister je Seed einmal, ab zwei Ligen sichtbar', async () => {
+    storeLang('en');
+    const pool = ALL.filter((p) => !p.leg && !p.myth);
+    const teams = [0, 1, 2].map((i) => {
+      const formation = FORMATION_IDS[i % FORMATION_IDS.length];
+      return { name: i === 0 ? 'Mein Team' : CLUB_NAMES[i], cpu: i !== 0, formation, slots: emptySlots(formation).map((_, j) => pool[i * 11 + j].id) };
+    });
+    localStorage.removeItem('pokemon-elf:draft-champions');
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'league', teams, region: 0, legends: false, pick: 33, selected: null, seed: 7 }));
+    let r = await render(app(h(Draft)));
+    await settle();
+    const first = JSON.parse(localStorage.getItem('pokemon-elf:draft-champions')!);
+    expect(first).toHaveLength(1);
+    // Eine Liga allein: noch keine Karte
+    expect(r.container.querySelectorAll('section').some((x) => x.getAttribute('aria-labelledby') === 'draft-local-titles')).toBe(false);
+    // Gleicher Seed erneut: kein zweiter Eintrag
+    r = await render(app(h(Draft)));
+    await settle();
+    expect(JSON.parse(localStorage.getItem('pokemon-elf:draft-champions')!)).toHaveLength(1);
+    // Zweite Liga (anderer Seed) → Karte mit zwei Titeln insgesamt
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'league', teams, region: 0, legends: false, pick: 33, selected: null, seed: 8 }));
+    r = await render(app(h(Draft)));
+    await settle();
+    const all = JSON.parse(localStorage.getItem('pokemon-elf:draft-champions')!) as { name: string }[];
+    expect(all).toHaveLength(2);
+    const card = r.container.querySelectorAll('section').find((x) => x.getAttribute('aria-labelledby') === 'draft-local-titles') as MiniElement;
+    expect(card.textContent).toContain('Trophy cabinet');
+    expect(card.textContent).toContain('Champions of 2 local leagues');
+    const total = card.querySelectorAll('li strong').reduce((sum, x) => sum + Number(x.textContent!.match(/\d+/)![0]), 0);
+    expect(total).toBe(2);
+    localStorage.removeItem('pokemon-elf:draft-champions');
+  });
+
   it('Liga: Deine Duelle – Bilanz gegen jeden Gegner, passend zu den Spielen', async () => {
     storeLang('en');
     const pool = ALL.filter((p) => !p.leg && !p.myth);

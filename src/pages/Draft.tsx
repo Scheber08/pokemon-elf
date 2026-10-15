@@ -135,6 +135,12 @@ function teamForPick(pick: number, n: number): number {
   return round % 2 === 0 ? idx : n - 1 - idx;
 }
 
+/** Meister einer ausgespielten lokalen Liga (gespeicherter Teamname, deutsch) */
+interface LocalChampion {
+  seed: number;
+  name: string;
+}
+
 /** Hot-Seat-Draft an einem Gerät (Modus „An einem Gerät"). */
 function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   const t = useT();
@@ -342,6 +348,21 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     }
     return { ...result, scorers: [...scorers.values()].sort((a, b) => b.goals - a.goals).slice(0, 10) };
   }, [state.phase, state.seed, state.model, state.teams, state.shinies, state.cpuCaptains, byId, scale]);
+
+  // Titelsammlung: Meister jeder ausgespielten lokalen Liga (einmal je Seed, die letzten 50)
+  const [champions, setChampions] = useState<LocalChampion[]>(() => load<LocalChampion[]>(STORAGE_KEYS.draftChampions, []));
+  useEffect(() => {
+    if (!league || state.seed == null || !league.table.length) return;
+    const seed = state.seed;
+    const name = state.teams[league.table[0].team]?.name;
+    if (!name) return;
+    setChampions((list) => {
+      if (list.some((c) => c.seed === seed)) return list;
+      const next = [...list, { seed, name }].slice(-50);
+      save(STORAGE_KEYS.draftChampions, next);
+      return next;
+    });
+  }, [league, state.seed, state.teams]);
 
   // Spielwiedergabe (2D/Bericht) der lokalen Liga – jedes Team mit seiner gedrafteten Elf
   const report = useMatchReport(
@@ -821,6 +842,27 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   </div>
                 )}
               </dl>
+            </section>
+          );
+        })()}
+        {champions.length >= 2 && (() => {
+          // Titelsammlung über alle lokalen Ligen auf diesem Gerät (ab zwei Ligen)
+          const counts = new Map<string, number>();
+          for (const c of champions) counts.set(c.name, (counts.get(c.name) ?? 0) + 1);
+          const rows = [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 8);
+          return (
+            <section className="card" aria-labelledby="draft-local-titles">
+              <h2 id="draft-local-titles" className="section-title">
+                {tx.titlesTitle}
+              </h2>
+              <ol className="draft__titles">
+                {rows.map(([name, n]) => (
+                  <li key={name}>
+                    <span>{teamName(name)}</span> <strong>{tx.titlesCount(n)}</strong>
+                  </li>
+                ))}
+              </ol>
+              <p className="muted small">{tx.titlesNote(champions.length)}</p>
             </section>
           );
         })()}

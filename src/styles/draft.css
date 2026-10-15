@@ -1522,3 +1522,16 @@ button.draft-bench__slot {
   font-size: 14px;
   font-weight: 600;
 }
+
+/* Lokale Liga: Titelsammlung */
+.draft__titles {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+.draft__titles li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 0;
+}

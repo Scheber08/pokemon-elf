@@ -9,6 +9,8 @@ export const STORAGE_KEYS = {
   leaderboard: 'leaderboard',
   playerName: 'player-name',
   draft: 'draft',
+  /** Lokaler Draft: bisherige Meister (Seed → Meister), für die Titelsammlung */
+  draftChampions: 'draft-champions',
   /** Builder: gespeicherte Elfen (Meine Teams) */
   savedTeams: 'saved-teams',
   /** Trainer: schon gesehene Erfolge (für „Neu") */
