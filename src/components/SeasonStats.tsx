@@ -17,10 +17,12 @@ interface Props {
   tabs?: Tab[];
   /** So viele Spieler je Liste */
   limit?: number;
+  /** Kapitän je Liga-Team (Pokémon-ID) – bekommt das C-Abzeichen */
+  captains?: readonly (number | null | undefined)[];
 }
 
 /** Statistiken einer Saison: Torjäger, Vorlagen, Scorerpunkte und Teamwerte (Schüsse, xG, Ballbesitz). */
-export function SeasonStats({ league, you, nameOf, tabs = ['goals', 'assists', 'points', 'teams'], limit = 10 }: Props) {
+export function SeasonStats({ league, you, nameOf, tabs = ['goals', 'assists', 'points', 'teams'], limit = 10, captains }: Props) {
   const t = useT();
   const tx = t.draft.stats;
   const { byId } = usePokemonData();
@@ -103,7 +105,15 @@ export function SeasonStats({ league, you, nameOf, tabs = ['goals', 'assists', '
                 <span className="draft-results__rank">{i + 1}.</span>
                 {mon ? <Sprite pokemon={mon} style={sprite} className="scorers__sprite" /> : <span aria-hidden="true" />}
                 <span className="scorers__name">
-                  {mon ? t.game.pokemon(mon) : `#${p.pokemonId}`} <small className="muted">{nameOf(p.teamIndex)}</small>
+                  {mon ? t.game.pokemon(mon) : `#${p.pokemonId}`}{' '}
+                  {captains?.[p.teamIndex] === p.pokemonId && (
+                    <>
+                      <span className="captain-badge" title={t.captain.title}>
+                        C<span className="sr-only"> – {t.captain.title}</span>
+                      </span>{' '}
+                    </>
+                  )}
+                  <small className="muted">{nameOf(p.teamIndex)}</small>
                 </span>
                 <span className="scorers__goals" title={tx.split(p.goals, p.assists)}>
                   {key(p)}

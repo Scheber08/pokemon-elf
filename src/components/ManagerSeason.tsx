@@ -481,7 +481,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
         </section>
       )}
 
-      {m.played > 0 && <SeasonStats league={shown} you={you} nameOf={nameOf} />}
+      {m.played > 0 && <SeasonStats league={shown} you={you} nameOf={nameOf} captains={s.teams.map((tm) => tm.captain)} />}
 
       {you != null && m.played >= 2 && (
         <section className="card" aria-labelledby="manager-places">

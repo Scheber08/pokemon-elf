@@ -472,7 +472,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
           )}
         </section>
 
-        <SeasonStats league={league} you={you} nameOf={nameOf} tabs={['assists', 'points', 'teams']} />
+        <SeasonStats league={league} you={you} nameOf={nameOf} tabs={['assists', 'points', 'teams']} captains={teams.map((tm) => tm?.captain)} />
 
         {!cup && table.length > 1 && (
           <section className="card" aria-labelledby="draft-results-records">
