@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
@@ -33,6 +33,7 @@ import { CrestEditor } from './CrestEditor';
 import { cleanCrest } from '../lib/crest';
 import { poolOf, rosterOf, rounds as draftRounds } from '../lib/draftEngine';
 import { Crest } from './Crest';
+import { PoolStars } from './PoolStars';
 
 /** QR-Code des Liga-Links – zum Scannen, wenn alle im selben Raum sitzen. */
 function DraftQr({ link }: { link: string }) {
@@ -264,9 +265,11 @@ function MyTeamCard({ room }: { room: DraftRoom }) {
 
 /** Lobby: Code teilen, Teams, eigenes Team, Einstellungen (Host live), Start. readOnly: öffentliche Vorschau ohne Live-Verbindung. */
 export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOnly?: boolean }) {
-  const { all: list } = usePokemonData();
+  const { all: list, scale } = usePokemonData();
   const t = useT();
   const s = room.state!;
+  // Pool der aktuellen Einstellungen (für die „Stars im Pool“)
+  const pool = useMemo(() => (list.length ? poolOf(s.settings, list) : []), [s.settings, list]);
   const { me } = room;
   // Host-Werkzeuge nur mit Live-Verbindung (die Vorschau kennt die eigene Rolle nicht)
   const isHost = room.isHost && !readOnly;
@@ -514,6 +517,7 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
             </>
           )}
         </section>
+        {pool.length > 0 && <PoolStars pool={pool} scale={scale('all')} />}
         {isHost && (
           <section className="card draft-start">
             <button

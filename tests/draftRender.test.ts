@@ -867,6 +867,35 @@ describe('DraftLobby', () => {
     stubFetch();
   });
 
+  it('Stars im Pool: die fünf stärksten Pokémon der Einstellungen mit bester Position', async () => {
+    const { poolStars } = await import('../src/components/PoolStars');
+    const { poolOf } = await import('../src/lib/draftEngine');
+    const { positionFit } = await import('../src/lib/fit');
+    const st = lobby(2, { gens: [1, 7], legendary: true, maxTeams: 6 });
+    const pool = poolOf(st.settings, ALL);
+    const stars = poolStars(pool, SCALE);
+    expect(stars).toHaveLength(5);
+    // Absteigend, und keiner außerhalb ist besser als der fünfte
+    const total = (p: (typeof ALL)[number]) => p.hp + p.atk + p.def + p.spa + p.spd + p.spe;
+    for (let i = 1; i < 5; i++) {
+      expect(stars[i - 1].fit).toBeGreaterThanOrEqual(stars[i].fit);
+      // Gleicher Fit: höhere Basiswert-Summe zuerst
+      if (stars[i - 1].fit === stars[i].fit) expect(total(stars[i - 1].pokemon)).toBeGreaterThanOrEqual(total(stars[i].pokemon));
+    }
+    const bestOf = (id: number) => Math.round(Math.max(...(['TW', 'IV', 'ST', 'ZM', 'OM', 'DM'] as const).map((pos) => positionFit(ALL.find((p) => p.id === id)!, pos, SCALE))));
+    for (const p of pool.slice(0, 50)) if (!stars.some((x) => x.pokemon.id === p.id)) expect(bestOf(p.id)).toBeLessThanOrEqual(stars[4].fit);
+    expect(stars[0].fit).toBe(Math.round(positionFit(stars[0].pokemon, stars[0].pos, SCALE)));
+    // Anzeige in der Lobby (für alle): fünf Einträge, Legendäre mit ★
+    const { container } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) })));
+    await settle();
+    const items = container.querySelectorAll('.pool-stars li');
+    expect(items).toHaveLength(5);
+    expect(items[0].textContent).toContain(stars[0].pokemon.de);
+    const { limitKindsOf } = await import('../src/lib/draftEngine');
+    expect(items.filter((li) => li.querySelector('.draft-feed__kind')).length).toBe(stars.filter((x) => limitKindsOf(x.pokemon).length > 0).length);
+    expect(stars.some((x) => x.pokemon.leg)).toBe(true);
+  });
+
   it('neuer Mitspieler: „👋 … ist dabei“ (nicht beim ersten Laden, nicht für CPU-Teams)', async () => {
     let st = lobby(2, { region: 1, maxTeams: 6 });
     const { container, root } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) })));

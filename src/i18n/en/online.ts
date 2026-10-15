@@ -168,6 +168,8 @@ const online: Messages['online'] = {
   startTimer: (s) => `If the ${s}-second timer runs out, the server picks automatically.`,
   startNoTimer: 'Without a timer you can have absent teams’ picks made automatically.',
   duration: (draft, season) => `Duration: draft at most ~${draft} min, then the season ticker ~${season} min.`,
+  poolStars: 'Stars in the pool',
+  poolStarsNote: 'The five strongest Pokémon with these settings – at their best position.',
   poolLine: (pool, picks) => `Pool: ${pool} Pokémon for ${picks} picks.`,
   durationNoTimer: (season) => `After the draft the season ticker runs ~${season} min.`,
   draftRunning: 'The draft is already under way',
