@@ -293,6 +293,12 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(container.querySelectorAll('.hint').map((e) => e.textContent).find((x) => x?.includes('you’re up'))).toMatch(/Still open: .+\.$/);
     expect(all).toContain(clubEn(CLUB_NAMES[0]));
     expect(all).toContain('Cancel draft');
+    // „Suggest“ wählt ein Pokémon aus (Hinweis zeigt es fett)
+    const btn = container.querySelectorAll('.draft-pooltools button').find((b) => b.textContent === 'Suggest') as MiniElement;
+    await act(async () => btn.click());
+    const chosen = container.querySelectorAll('.hint strong').map((e) => e.textContent);
+    expect(chosen.length).toBe(1);
+    expect(ALL.some((p) => p.en === chosen[0] && p.gen === 1)).toBe(true);
     // Noch keine Picks: kein Ø Fit auf dem Board
     expect(container.querySelector('.draft__board .draft-board__fit')).toBeNull();
     expect(germanLeft(container)).toEqual([]);

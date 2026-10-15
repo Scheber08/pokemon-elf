@@ -806,6 +806,28 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   </>
                 )}
               </p>
+              <div className="draft-pooltools">
+                <button
+                  type="button"
+                  className="btn btn--small"
+                  onClick={() => {
+                    // Vorschlag wie der CPU-Pick, nur ohne Zufall: bestes Pokémon für einen freien Platz
+                    if (!team) return;
+                    const sc = scale('all');
+                    let best: { score: number; id: number } | null = null;
+                    for (const [slot, d] of FORMATIONS[team.formation].slots.entries()) {
+                      if (team.slots[slot] != null) continue;
+                      for (const p of pool) {
+                        const score = positionFit(p, d.pos, sc) * (0.92 + 0.08 * POSITIONS[d.pos].teamWeight);
+                        if (!best || score > best.score) best = { score, id: p.id };
+                      }
+                    }
+                    if (best) setState((s) => ({ ...s, selected: best!.id }));
+                  }}
+                >
+                  {t.online.suggest}
+                </button>
+              </div>
               <FilterBar filters={filters} onChange={setFilters} showRegion={state.region === 0} resultCount={filtered.length} slashFocus />
               <PokemonGrid
                 items={filtered}
