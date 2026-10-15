@@ -72,6 +72,10 @@ const scouting: Messages['scouting'] = {
       a: 'Every draft pick has a 2% chance to be shiny. A shiny plays better itself and lifts the whole team’s score – the weaker the Pokémon, the more: a shiny Magikarp adds up to +40, a shiny Mewtwo only about +4. So even a weak Pokémon can pay off. In the manager season, a new signing from the transfer market can be shiny too. Prefer playing without? Turn shinies off before the draft.',
     },
     {
+      q: 'What do the season goal and “I’m ready” do in the lobby?',
+      a: 'With “I’m ready” the host sees who is set to go – if the host changes the rules afterwards, mark yourself ready again. Everyone sees your season goal (title, top 3, top half or staying out of the bottom 3); the results show whether you made it, and your first reached goal unlocks the “Mission accomplished” achievement.',
+    },
+    {
       q: 'Are there keyboard shortcuts in the draft?',
       a: '“/” jumps to the Pokémon search, “W” puts the selected Pokémon on your wishlist (or takes it off). Arrow keys move through the grid, Enter selects a Pokémon. While typing in a field, the shortcuts are off.',
     },
