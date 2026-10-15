@@ -11,6 +11,7 @@ import {
   DRAFT_SS_SLOT,
   effectiveRoll,
   fastPickCounts,
+  isLegend,
   freeSlots,
   legendsOf,
   pickAllowed,
@@ -660,6 +661,19 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
             <section aria-labelledby="draft-pool-title">
               <h2 id="draft-pool-title" className="section-title">
                 {t.online.pool} <span className="muted">{t.online.poolFree(pool.length - owners.size)}</span>
+                {(() => {
+                  // Noch freie Legendäre/Mysteriöse im Pool (nur wenn der Pool welche hat)
+                  const legends = pool.filter((p) => isLegend(p)).length;
+                  if (!legends) return null;
+                  const free = pool.filter((p) => isLegend(p) && !owners.has(p.id)).length;
+                  return (
+                    <span className="muted draft-pool__legends" title={t.online.legendsFreeTitle(free)}>
+                      {' '}
+                      <span aria-hidden="true">★ {free}</span>
+                      <span className="sr-only">{t.online.legendsFreeTitle(free)}</span>
+                    </span>
+                  );
+                })()}
               </h2>
               <p className={`hint ${myTurn || selectedMon ? 'hint--active' : ''}`}>{hint}</p>
               {myTurn &&

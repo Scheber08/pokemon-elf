@@ -207,6 +207,7 @@ const online: Messages['online'] = {
   autoTag: ' (auto)',
   yourTurn: 'It’s your turn!',
   pool: 'Pool',
+  legendsFreeTitle: (n) => (n === 1 ? 'One legendary/mythical still available' : `${n} legendaries/mythicals still available`),
   poolFree: (n) => `(${n} available)`,
   randomPick: 'Random',
   randomPickTitle: 'Pre-select a random fitting Pokémon – tap the highlighted slot to take it',
