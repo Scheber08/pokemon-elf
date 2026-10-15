@@ -684,6 +684,23 @@ describe('DraftLive', () => {
     expect(container.querySelector('.draft-pooltools button')!.getAttribute('aria-keyshortcuts')).toBe('V');
   });
 
+  it('Statusleiste: eigene Blitz-Picks ⚡ n/5', async () => {
+    const pickAt = (st: DraftState, at: number, auto = false) => {
+      const team = engine.currentTeam(st)!;
+      const c = engine.autoPickChoice(st, team.id, ALL, SCALE, false);
+      return engine.applyPick(st, team.id, c.pokemonId, c.slot, auto, at, ALL);
+    };
+    // Host 1 s (erster Pick, kein Blitz), Team 1 zweimal automatisch, Host zweimal je 1 s danach
+    let st = pickAt(drafting(), 1000);
+    expect(engine.currentTeam(st)!.id).toBe('t1');
+    const r0 = await renderLive(fakeRoom(snap(st, 'h')));
+    expect(r0.container.querySelector('.draft-turnbar__blitz')).toBeNull();
+    st = pickAt(pickAt(st, 2000, true), 3000, true);
+    st = pickAt(pickAt(st, 4000), 5000);
+    const { container } = await renderLive(fakeRoom(snap(st, 'h')));
+    expect(container.querySelector('.draft-turnbar__blitz')!.textContent).toBe('⚡ 2/5 – 2 Blitz-Picks – ab 5 gibt es den Erfolg „Blitzdrafter“');
+  });
+
   it('🎲 Zufall merkt ein zufälliges erlaubtes Pokémon vor', async () => {
     const st = drafting();
     const { container } = await renderLive(fakeRoom(snap(st, 'h')));

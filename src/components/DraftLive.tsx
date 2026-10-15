@@ -10,6 +10,7 @@ import {
   canReroll,
   DRAFT_SS_SLOT,
   effectiveRoll,
+  fastPickCounts,
   freeSlots,
   legendsOf,
   pickAllowed,
@@ -559,6 +560,18 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
               </strong>
             </span>
           )}
+          {me && (() => {
+            // Eigene Blitz-Picks ⚡ – Fortschritt zum Erfolg „Blitzdrafter“ (5)
+            const n = fastPickCounts(s.picks).get(me.id) ?? 0;
+            if (!n) return null;
+            return (
+              <span className="statusline__item draft-turnbar__blitz" title={t.online.blitzTitle(n)}>
+                <span aria-hidden="true">⚡ </span>
+                <strong>{n >= 5 ? n : `${n}/5`}</strong>
+                <span className="sr-only"> – {t.online.blitzTitle(n)}</span>
+              </span>
+            );
+          })()}
         </div>
         <DraftCountdown
           deadline={s.deadline}
