@@ -250,6 +250,18 @@ describe('Ansage pro Pick', () => {
     expect(pickAnnouncement(snap(s, next.id), byId)).not.toContain('Am Zug');
   });
 
+  it('Verlauf: Hinweis auf einen Positions-Run (3 der letzten 5 Picks)', () => {
+    const item = (no: number, pos?: 'IV' | 'ST' | 'SS') => ({ key: String(no), no, pokemon: 'X', team: 'T', teamId: 't', auto: false, ...(pos ? { pos } : {}) });
+    const run = renderToStaticMarkup(
+      createElement(DraftPickFeed, { items: [item(9, 'IV'), item(8, 'ST'), item(7, 'IV'), item(6), item(5, 'IV'), item(4, 'IV')], you: null }),
+    );
+    expect(run).toContain('Run auf Innenverteidiger: 3 der letzten 5 Picks');
+    const none = renderToStaticMarkup(
+      createElement(DraftPickFeed, { items: [item(5, 'IV'), item(4, 'SS'), item(3, 'SS'), item(2, 'SS'), item(1, 'IV')], you: null }),
+    );
+    expect(none).not.toContain('Run auf');
+  });
+
   it('Verlauf und Timer sind keine Live-Regionen mehr', () => {
     let s = startDraft(lobby(2), 'dev-h', 0, ALL);
     s = autoPick(autoPick(s));

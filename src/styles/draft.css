@@ -1466,3 +1466,12 @@ button.draft-bench__slot {
   color: var(--text-dim);
   white-space: nowrap;
 }
+
+/* Letzte Picks: Hinweis auf einen Positions-Run */
+.draft-feed__run {
+  margin: 0 0 6px;
+  color: var(--yellow);
+}
+:root[data-theme='light'] .draft-feed__run {
+  color: #b45309;
+}

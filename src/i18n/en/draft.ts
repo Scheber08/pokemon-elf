@@ -239,6 +239,7 @@ const draft: Messages['draft'] = {
     legendsTitle: (n, max) => `${n} of at most ${plural(max, 'legendary/mythical', 'legendaries/mythicals')}`,
     ultraBeastsTitle: (n, max) => `${n} of at most ${plural(max, 'Ultra Beast', 'Ultra Beasts')}`,
     fitTitle: (fit) => `Average positional fit of the picks so far: ${fit}`,
+    feedRun: (pos, n, of) => `Run on ${pos}: ${n} of the last ${of} picks`,
     feedFitTitle: (fit) => `Positional fit: ${fit}`,
     megasTitle: (n, max) => `${n} of at most ${plural(max, 'Mega', 'Megas')}`,
     rollTitle: (region, type) => `Roll: ${region} + ${type}`,

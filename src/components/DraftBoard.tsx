@@ -192,6 +192,14 @@ export function DraftPickFeed({ items, you }: { items: FeedItem[]; you: string |
       <h2 id="draft-feed-title" className="section-title">
         {tx.recentPicks}
       </h2>
+      {(() => {
+        // Positions-Run: mindestens 3 der letzten 5 Picks auf derselben Position (Standardschütze zählt nicht)
+        const counts = new Map<PosCode, number>();
+        for (const f of items.slice(0, 5)) if (f.pos && f.pos !== 'SS') counts.set(f.pos, (counts.get(f.pos) ?? 0) + 1);
+        const run = [...counts].sort((a, b) => b[1] - a[1])[0];
+        if (!run || run[1] < 3) return null;
+        return <p className="draft-feed__run small">🔥 {tx.feedRun(t.game.posName[run[0]], run[1], Math.min(5, items.length))}</p>;
+      })()}
       <ol>
         {items.map((f, i) => (
           <li key={f.key} className={`${i === 0 ? 'is-latest' : ''} ${f.teamId === you ? 'is-mine' : ''}`}>
