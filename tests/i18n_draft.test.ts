@@ -295,6 +295,13 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(all).toContain('Cancel draft');
     // „Suggest“ wählt ein Pokémon aus (Hinweis zeigt es fett)
     const btn = container.querySelectorAll('.draft-pooltools button').find((b) => b.textContent === 'Suggest') as MiniElement;
+    expect(btn.getAttribute('aria-keyshortcuts')).toBe('V');
+    // Taste V wirkt wie der Knopf
+    const { MiniEvent } = await import('./miniDom');
+    const ev = Object.assign(new MiniEvent('keydown', { bubbles: true, cancelable: true }), { key: 'v', ctrlKey: false, metaKey: false, altKey: false });
+    await act(async () => void window.dispatchEvent(ev as unknown as Event));
+    expect(container.querySelectorAll('.hint strong')).toHaveLength(1);
+    // Nochmal per Knopf (wählt dasselbe – bleibt ausgewählt)
     await act(async () => btn.click());
     const chosen = container.querySelectorAll('.hint strong').map((e) => e.textContent);
     expect(chosen.length).toBe(1);

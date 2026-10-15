@@ -5,7 +5,7 @@ import { POSITIONS } from '../config/positions';
 import { REGIONS } from '../config/regions';
 import { CLUB_NAMES } from '../config/season';
 import { PosBadge } from '../components/Badges';
-import { FilterBar, useFilteredPokemon, type PokemonFilters } from '../components/FilterBar';
+import { FilterBar, typingElsewhere, useFilteredPokemon, type PokemonFilters } from '../components/FilterBar';
 import { CaptainPicker } from '../components/CaptainPicker';
 import { JerseyEditor } from '../components/JerseyEditor';
 import { KitPicker } from '../components/KitPicker';
@@ -207,6 +207,35 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     const mon = byId.get(id);
     if (mon) toast(t.shiny.picked(t.game.pokemon(mon), shinyTeamBoost(mon)));
   }, [shinyCount]);
+
+  const suggest = () => {
+    // Vorschlag wie der CPU-Pick, nur ohne Zufall: bestes Pokémon für einen freien Platz
+    if (!team || team.cpu) return;
+    const sc = scale('all');
+    let best: { score: number; id: number } | null = null;
+    for (const [slot, d] of FORMATIONS[team.formation].slots.entries()) {
+      if (team.slots[slot] != null) continue;
+      for (const p of pool) {
+        const score = positionFit(p, d.pos, sc) * (0.92 + 0.08 * POSITIONS[d.pos].teamWeight);
+        if (!best || score > best.score) best = { score, id: p.id };
+      }
+    }
+    if (best) setState((s) => ({ ...s, selected: best!.id }));
+  };
+  // Taste „V“: Vorschlag (wie online; nicht beim Tippen)
+  const suggestRef = useRef(suggest);
+  suggestRef.current = suggest;
+  useEffect(() => {
+    if (state.phase !== 'drafting') return;
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.key !== 'v' && e.key !== 'V') || e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
+      if (typingElsewhere(e.target)) return;
+      e.preventDefault();
+      suggestRef.current();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [state.phase]);
 
   // CPU-Picks: beste Kombination aus Pokémon und freiem Slot nach Fit – mit etwas Zufall.
   useEffect(() => {
@@ -810,20 +839,9 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 <button
                   type="button"
                   className="btn btn--small"
-                  onClick={() => {
-                    // Vorschlag wie der CPU-Pick, nur ohne Zufall: bestes Pokémon für einen freien Platz
-                    if (!team) return;
-                    const sc = scale('all');
-                    let best: { score: number; id: number } | null = null;
-                    for (const [slot, d] of FORMATIONS[team.formation].slots.entries()) {
-                      if (team.slots[slot] != null) continue;
-                      for (const p of pool) {
-                        const score = positionFit(p, d.pos, sc) * (0.92 + 0.08 * POSITIONS[d.pos].teamWeight);
-                        if (!best || score > best.score) best = { score, id: p.id };
-                      }
-                    }
-                    if (best) setState((s) => ({ ...s, selected: best!.id }));
-                  }}
+                  onClick={suggest}
+                  title={t.online.suggestKey}
+                  aria-keyshortcuts="V"
                 >
                   {t.online.suggest}
                 </button>
