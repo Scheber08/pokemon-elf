@@ -1122,6 +1122,8 @@ describe('ManagerSeason', () => {
     const el = container.querySelector('.manager__rival-scorer');
     expect(best).toBeGreaterThanOrEqual(2);
     expect(el!.textContent).toContain(`(${best} Tore)`);
+    // Gedrafteter Gegner: seine aktuelle Formation steht neben dem Namen
+    expect(container.querySelector('.manager__rival-formation')!.textContent).toBe(` · spielt ${s.manager!.lineups[s.teams[rival].id].formation}`);
   });
 
   it('Manager: aktuelle Serie des eigenen Teams (ungeschlagen/sieglos ab 3 Spielen)', async () => {
@@ -1187,6 +1189,11 @@ describe('ManagerSeason', () => {
     const el = container.querySelector('.manager__rival-venue');
     expect(row.played).toBeGreaterThan(0);
     expect(el!.textContent).toBe(`${side === 'home' ? 'Zu Hause' : 'Auswärts'}: ${formatRecord(row)} (S–U–N, ${row.played === 1 ? '1 Spiel' : `${row.played} Spiele`})`);
+    // Formation des Gegners (nur gedraftete Teams haben eine Aufstellung)
+    const lineup = s.teams[rival] ? s.manager!.lineups[s.teams[rival].id] : undefined;
+    const f = container.querySelector('.manager__rival-formation');
+    if (lineup) expect(f!.textContent).toBe(` · spielt ${lineup.formation}`);
+    else expect(f).toBeNull();
   });
 
   it('Aufstellung: Tipp für eine stärkere Formation, Knopf übernimmt sie', async () => {

@@ -379,6 +379,10 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           </h2>
           <p>
             <strong>{nameOf(rival)}</strong> <span className="muted">({myNext.home === you ? tx.rivalHome : tx.rivalAway})</span>
+            {/* Aktuelle Formation des Gegners (Aufstellungen stehen für alle im Schnappschuss; Auffüllteams haben keine) */}
+            {s.teams[rival] && m.lineups[s.teams[rival].id] && (
+              <span className="small muted manager__rival-formation"> · {tx.rivalFormation(m.lineups[s.teams[rival].id].formation)}</span>
+            )}
           </p>
           {m.played > 0 && (
             <p className="manager__rival-line">
