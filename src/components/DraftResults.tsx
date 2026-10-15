@@ -4,7 +4,7 @@ import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftTeam, ManagerTransfer } from '../lib/api/draftContract';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { bestTransfer, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, headToHead, leagueTimeline, longestWinStreak, recentForm, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { bestTransfer, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { formatRecord, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -520,6 +520,25 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                   <dd>{tx.recordFastestLine(nameOf(fastestTeam), Math.max(1, Math.round(fastest.avgMs / 1000)))}</dd>
                 </div>
               )}
+              {(() => {
+                const { up, down } = seasonSwings(table.map((r) => r.team), teams.map((_, i) => ratingOf(i)));
+                return (
+                  <>
+                    {up && up.delta >= 2 && (
+                      <div>
+                        <dt>{tx.recordSurprise}</dt>
+                        <dd>{tx.recordSwingLine(nameOf(up.team), up.delta)}</dd>
+                      </div>
+                    )}
+                    {down && down.delta <= -2 && (
+                      <div>
+                        <dt>{tx.recordFlop}</dt>
+                        <dd>{tx.recordSwingLine(nameOf(down.team), down.delta)}</dd>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
               {streak && streak.length >= 3 && (
                 <div>
                   <dt>{tx.recordStreak}</dt>

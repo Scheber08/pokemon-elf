@@ -391,3 +391,15 @@ describe('Deine Duelle (direkter Vergleich)', () => {
     expect(headToHead({ matches, table }, 9)).toEqual([]);
   });
 });
+
+describe('Überraschung/Enttäuschung der Saison', () => {
+  it('vergleicht Abschlussplatz mit Team-Score-Rang (nur gedraftete Teams)', async () => {
+    const { seasonSwings } = await import('../src/lib/leagueTimeline');
+    // Team-Score: 0 > 1 > 2 > 3; Tabelle: 3, 0, 1, 2 (Auffüllteam 4 dazwischen wird ignoriert)
+    expect(seasonSwings([3, 4, 0, 1, 2], [900, 850, 800, 700])).toEqual({ up: { team: 3, delta: 3 }, down: { team: 2, delta: -1 } });
+    // Alles wie erwartet
+    expect(seasonSwings([0, 1, 2], [900, 850, 800])).toEqual({ up: null, down: null });
+    // Gleich starke Teams teilen sich den Rang
+    expect(seasonSwings([1, 0], [800, 800])).toEqual({ up: null, down: null });
+  });
+});

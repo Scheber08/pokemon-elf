@@ -558,6 +558,33 @@ export function draftGrades(ratings: readonly number[]): string[] {
   return ratings.map((r) => DRAFT_GRADES[Math.round(((max - r) / spread) * last)]);
 }
 
+/** Überraschung bzw. Enttäuschung der Saison: Team und wie viele Plätze es über/unter seinem Team-Score-Rang landete */
+export interface SeasonSwing {
+  team: number;
+  delta: number;
+}
+
+/**
+ * Vergleicht die Abschlussreihenfolge (order: Teamindizes, Erster zuerst) mit der Rangfolge nach Team-Score –
+ * nur unter den gedrafteten Teams (Index < ratings.length). Gleich starke Teams dürfen sich untereinander tauschen.
+ * up = am weitesten nach oben (delta > 0), down = am weitesten nach unten (delta < 0); bei Gleichstand das
+ * besser platzierte Team bzw. das schlechter platzierte. null, wenn niemand abweicht.
+ */
+export function seasonSwings(order: readonly number[], ratings: readonly number[]): { up: SeasonSwing | null; down: SeasonSwing | null } {
+  const drafted = order.filter((i) => i >= 0 && i < ratings.length);
+  let up: SeasonSwing | null = null;
+  let down: SeasonSwing | null = null;
+  drafted.forEach((team, place) => {
+    // Gleich starke Teams: erwarteter Platz ist ein Bereich (bester bis schlechtester geteilter Rang)
+    const best = ratings.filter((r) => r > ratings[team]).length;
+    const worst = best + ratings.filter((r) => r === ratings[team]).length - 1;
+    const delta = place < best ? best - place : place > worst ? worst - place : 0;
+    if (delta > 0 && (!up || delta > up.delta)) up = { team, delta };
+    if (delta < 0 && (!down || delta <= down.delta)) down = { team, delta };
+  });
+  return { up, down };
+}
+
 /** Schnäppchen des Drafts: ein später Pick, der besonders gut auf seine Position passt. */
 export interface DraftSteal {
   pick: number;
