@@ -1076,6 +1076,19 @@ export function teamIndexForPick(pick: number, teamCount: number, snake = true):
   return !snake || round % 2 === 0 ? idx : teamCount - 1 - idx;
 }
 
+/** Pick-Nummern (1-basiert) eines Teams an Position index in der Reihenfolge – höchstens max Stück */
+export function pickNumbers(index: number, teamCount: number, totalPicks: number, snake = true, max = 5): number[] {
+  const out: number[] = [];
+  for (let p = 0; p < totalPicks && out.length < max; p++) if (teamIndexForPick(p, teamCount, snake) === index) out.push(p + 1);
+  return out;
+}
+
+/** „1, 6, 7, 12 …“ – die ersten vier Pick-Nummern, „…“ wenn es mehr gibt */
+export function pickNumbersLabel(index: number, teamCount: number, totalPicks: number, snake = true): string {
+  const all = pickNumbers(index, teamCount, totalPicks, snake, 5);
+  return all.slice(0, 4).join(', ') + (all.length > 4 ? ' …' : '');
+}
+
 export function currentTeam(state: DraftView): DraftTeam | null {
   if (state.phase !== 'drafting') return null;
   return state.teams[teamIndexForPick(state.pickIndex, state.teams.length, state.settings.snake ?? true)] ?? null;

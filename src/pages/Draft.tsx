@@ -46,7 +46,7 @@ import { cleanCheer } from '../lib/cheer';
 import { cleanCrest, type Crest as CrestData } from '../lib/crest';
 import { Crest } from '../components/Crest';
 import { CrestEditor } from '../components/CrestEditor';
-import { cpuCaptain, limitKindsOf } from '../lib/draftEngine';
+import { cpuCaptain, limitKindsOf, pickNumbersLabel } from '../lib/draftEngine';
 import { SHINY_CHANCE, SHINY_FIT_BONUS, SHINY_PARTY_CHANCE, shinyBonus, shinyRoll, shinyTeamBoost } from '../lib/shiny';
 import { useToast } from '../state/Toast';
 import { downloadBlob } from '../lib/exportImage';
@@ -571,6 +571,14 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
             >
               {t.online.shuffleOrder}
             </button>
+            {/* Pick-Nummern der menschlichen Teams (Reihenfolge der Liste, Snake) */}
+            {state.teams.some((tm) => !tm.cpu) && (
+              <ul className="small draft__teampicks">
+                {state.teams.map((tm, i) =>
+                  tm.cpu ? null : <li key={i}>{tx.teamPicks(teamName(tm.name), pickNumbersLabel(i, n, n * ROUNDS))}</li>,
+                )}
+              </ul>
+            )}
             <p className="muted small">{tx.hotSeatNote}</p>
           </section>
           <section className="card" aria-labelledby="draft-pool">

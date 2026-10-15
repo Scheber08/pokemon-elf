@@ -68,6 +68,7 @@ const draft: Messages['draft'] = {
     teamNameAria: (no) => `Team ${no} name`,
     teamFormationAria: (no) => `Team ${no} formation`,
     human: 'Human',
+    teamPicks: (team, picks) => `${team}: picks ${picks}`,
     hotSeatNote: 'Human teams pick in turn on the same device (hot seat).',
     region: 'Region',
     legendsLabel: 'Pokémon / Legendaries',

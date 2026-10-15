@@ -596,6 +596,13 @@ describe('/draft an einem Gerät auf Englisch', () => {
     // Setup: „Stars in the pool“ mit fünf Pokémon
     expect(r.container.querySelector('.pool-stars h2')!.textContent).toBe('⭐ Stars in the pool');
     expect(r.container.querySelectorAll('.pool-stars li')).toHaveLength(5);
+    // Pick-Nummern der menschlichen Teams (Snake, Reihenfolge der Liste)
+    {
+      const n = r.container.querySelectorAll('.draft__teamrow').length;
+      const rows = r.container.querySelectorAll('.draft__teampicks li');
+      expect(rows.length).toBeGreaterThan(0);
+      expect(rows[0].textContent).toBe(`My Team: picks 1, ${2 * n}, ${2 * n + 1}, ${4 * n} …`);
+    }
     const start = r.container.querySelectorAll('button').find((b) => b.textContent === 'Start draft') as MiniElement;
     await act(async () => start.click());
     await settle();

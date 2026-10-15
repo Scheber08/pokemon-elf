@@ -67,6 +67,7 @@ const draft = {
     teamNameAria: (no: number) => `Name Team ${no}`,
     teamFormationAria: (no: number) => `Formation Team ${no}`,
     human: 'Mensch',
+    teamPicks: (team: string, picks: string) => `${team}: Picks ${picks}`,
     hotSeatNote: 'Menschliche Teams wählen nacheinander am selben Gerät (Hot-Seat).',
     region: 'Region',
     legendsLabel: 'Pokémon / Legendäre',

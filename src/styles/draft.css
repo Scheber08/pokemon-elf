@@ -1648,3 +1648,9 @@ button.draft-bench__slot {
 :root[data-theme='light'] .draft-results__stars li.is-you strong {
   color: #b45309;
 }
+
+/* Lokales Setup: Pick-Nummern der menschlichen Teams */
+.draft__teampicks {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}

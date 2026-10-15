@@ -1063,3 +1063,15 @@ describe('CPU-Stärke (cpuLevel)', () => {
     expect(agreeHard).toBeGreaterThan(agreeEasy);
   });
 });
+
+describe('pickNumbers', () => {
+  it('eigene Pick-Nummern in Snake- und fester Reihenfolge', async () => {
+    const { pickNumbers, pickNumbersLabel } = await import('../src/lib/draftEngine');
+    expect(pickNumbers(0, 3, 33)).toEqual([1, 6, 7, 12, 13]);
+    expect(pickNumbers(2, 3, 33, true, 3)).toEqual([3, 4, 9]);
+    expect(pickNumbers(1, 3, 33, false, 4)).toEqual([2, 5, 8, 11]);
+    expect(pickNumbersLabel(0, 3, 33)).toBe('1, 6, 7, 12 …');
+    // Nur vier Picks insgesamt: ohne „…“
+    expect(pickNumbersLabel(0, 1, 4)).toBe('1, 2, 3, 4');
+  });
+});
