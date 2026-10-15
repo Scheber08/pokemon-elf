@@ -33,6 +33,7 @@ import { DraftOnline } from './DraftOnline';
 import { TableLegend } from '../components/LeagueTicker';
 import { PlaceChart } from '../components/PlaceChart';
 import { TableTimeTravel } from '../components/TableTimeTravel';
+import { SeasonStats } from '../components/SeasonStats';
 import { SaveImageButton } from '../components/SaveImageButton';
 import { ReplayToggle, useMatchReport } from '../components/MatchReport';
 import '../styles/draft.css';
@@ -716,6 +717,17 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
             </ol>
           </section>
         </div>
+        {/* Vorlagen, Scorerpunkte und Teamwerte wie im Online-Draft (Torjäger stehen schon oben) */}
+        <SeasonStats
+          league={league}
+          you={(() => {
+            const i = state.teams.findIndex((tm) => !tm.cpu);
+            return i < 0 ? null : i;
+          })()}
+          nameOf={(i) => teamName(state.teams[i].name)}
+          tabs={['assists', 'points', 'teams']}
+          captains={state.teams.map((tm) => captainOf(tm))}
+        />
         {(() => {
           // Saisonverlauf des (ersten) menschlichen Teams – wie im Online-Draft
           const you = state.teams.findIndex((tm) => !tm.cpu);

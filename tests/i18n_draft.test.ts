@@ -480,6 +480,23 @@ describe('/draft an einem Gerät auf Englisch', () => {
     localStorage.removeItem('pokemon-elf:draft-champions');
   });
 
+  it('Liga: Saisonstatistik (Vorlagen, Scorer, Teams) im Draft-Spielmodell', async () => {
+    storeLang('en');
+    const pool = ALL.filter((p) => !p.leg && !p.myth);
+    const teams = [0, 1, 2, 3].map((i) => {
+      const formation = FORMATION_IDS[i % FORMATION_IDS.length];
+      return { name: i === 0 ? 'Mein Team' : CLUB_NAMES[i], cpu: i !== 0, formation, slots: emptySlots(formation).map((_, j) => pool[i * 11 + j].id) };
+    });
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'league', teams, region: 0, legends: false, pick: 44, selected: null, seed: 7, model: 'draft' }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const card = container.querySelectorAll('section').find((x) => x.getAttribute('aria-labelledby') === 'season-stats-title') as MiniElement;
+    expect(card).toBeTruthy();
+    const tabs = card.querySelectorAll('[role="radio"], [role="tab"], button').map((b) => b.textContent);
+    expect(tabs.some((x) => /Assists/i.test(x ?? ''))).toBe(true);
+    expect(tabs.some((x) => /Goals/.test(x ?? '') && !/Assists/.test(x ?? ''))).toBe(false);
+  });
+
   it('Liga: Deine Duelle – Bilanz gegen jeden Gegner, passend zu den Spielen', async () => {
     storeLang('en');
     const pool = ALL.filter((p) => !p.leg && !p.myth);
