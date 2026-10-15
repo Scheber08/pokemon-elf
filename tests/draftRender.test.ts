@@ -817,6 +817,14 @@ describe('DraftLobby', () => {
     st = engine.joinDraft(st, { teamId: 't9', deviceId: 'dev-9', name: 'Neue Elf', formation: '4-4-2' });
     await act(async () => root.render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) }))));
     expect(toasts()).toEqual(['👋 Neue Elf ist dabei']);
+    // Verlässt die Lobby → Abschied (CPU-Team entfernen bleibt still)
+    st = engine.leaveDraft(st, 'dev-9');
+    await act(async () => root.render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) }))));
+    expect(toasts()).toContain('🚪 Neue Elf ist nicht mehr dabei');
+    const n = toasts().length;
+    st = engine.removeTeam(st, 'dev-h', 'cpu1');
+    await act(async () => root.render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) }))));
+    expect(toasts()).toHaveLength(n);
   });
 
   it('Host-Hinweis: Pool-Größe und Picks, Draft-Dauer mit Bankrunden (Manager)', async () => {

@@ -284,13 +284,17 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
 
   // Neuer Mitspieler in der Lobby: kurz begrüßen (nicht beim ersten Laden, nicht das eigene Team)
   const toast = useToast();
-  const humans = s.teams.filter((tm) => !tm.cpu).map((tm) => tm.id);
+  // … und beim Gehen (verlassen oder vom Host entfernt) kurz verabschieden
+  const humans = s.teams.filter((tm) => !tm.cpu).map((tm) => ({ id: tm.id, name: tm.name }));
   const seenHumans = useRef(humans);
   useEffect(() => {
-    const fresh = s.teams.filter((tm) => !tm.cpu && !seenHumans.current.includes(tm.id) && tm.id !== me?.id);
+    const before = seenHumans.current;
+    const fresh = humans.filter((tm) => !before.some((x) => x.id === tm.id) && tm.id !== me?.id);
+    const gone = before.filter((tm) => !humans.some((x) => x.id === tm.id) && tm.id !== me?.id);
     seenHumans.current = humans;
     for (const tm of fresh) toast(t.online.joinedLobby(tm.name));
-  }, [humans.join('|')]);
+    for (const tm of gone) toast(t.online.leftLobby(tm.name));
+  }, [humans.map((tm) => tm.id).join('|')]);
 
   useEffect(() => {
     if (leagueName == null || leagueName === s.settings.name) return;
