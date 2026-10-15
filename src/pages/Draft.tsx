@@ -19,7 +19,7 @@ import { useT } from '../i18n';
 import { draftsSupported } from '../lib/api/draftClient';
 import { positionFit } from '../lib/fit';
 import { emptySlots } from '../lib/formation';
-import { biggestWin, draftGrades, draftSteal, goalFest, headToHead, leagueTimeline, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
+import { biggestWin, draftGrades, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
 import { createRng, randomSeed, shuffle } from '../lib/rng';
 import { cpuLevelOf, cpuPickChoice } from '../lib/localCpu';
 import { buildTable, CLASSIC_MODEL, DRAFT_MODEL, formatRecord, sideTable, simulateLeague, type LeagueTeam } from '../lib/season';
@@ -30,7 +30,7 @@ import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import type { FormationId, Pokemon, RegionFilter, Slots } from '../types';
 import { DraftOnline } from './DraftOnline';
-import { TableLegend } from '../components/LeagueTicker';
+import { FormDots, TableLegend } from '../components/LeagueTicker';
 import { PlaceChart } from '../components/PlaceChart';
 import { TableTimeTravel } from '../components/TableTimeTravel';
 import { SeasonStats } from '../components/SeasonStats';
@@ -706,6 +706,9 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     <th>{c.goals}</th>
                     <th>{c.diff}</th>
                     <th>{c.pts}</th>
+                    <th title={c.formTitle} className="league-live__form-col">
+                      {c.form}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -732,6 +735,9 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                       <td>{r.gd > 0 ? `+${r.gd}` : r.gd}</td>
                       <td>
                         <strong>{r.pts}</strong>
+                      </td>
+                      <td className="league-live__form-col">
+                        <FormDots form={recentForm(tableView === 'all' ? league.matches : league.matches.filter((m) => (tableView === 'home' ? m.home : m.away) === r.team), r.team, Infinity)} />
                       </td>
                     </tr>
                   ))}

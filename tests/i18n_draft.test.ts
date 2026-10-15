@@ -640,10 +640,14 @@ describe('/draft an einem Gerät auf Englisch', () => {
     await settle();
     const played = () => mainRows(container).map((r) => r.querySelectorAll('td')[4].textContent);
     expect(played()).toEqual(Array(6).fill('10'));
+    // Form-Spalte: letzte fünf Spiele je Team, passend zu recentForm
+    for (const row of mainRows(container)) expect(row.querySelectorAll('.league-form__dot')).toHaveLength(5);
     for (const label of ['Home', 'Away']) {
       const radio = container.querySelectorAll('[role="radio"]').find((b) => b.textContent === label) as MiniElement;
       await act(async () => radio.click());
       expect(played()).toEqual(Array(6).fill('5'));
+      // Form in der Teilansicht: nur Heim- bzw. Auswärtsspiele (5 je Team)
+      for (const row of mainRows(container)) expect(row.querySelectorAll('.league-form__dot')).toHaveLength(5);
       expect(mainRows(container).some((r) => r.className.includes('is-zone'))).toBe(false);
       expect(container.querySelector('.table-legend')).toBeNull();
     }
