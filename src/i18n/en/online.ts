@@ -192,6 +192,7 @@ const online: Messages['online'] = {
   anotherTeam: 'Another team',
   hintOpen: (list) => ` Still open: ${list}.`,
   restMax: (min) => `draft ends within ~${min} min`,
+  nextNeeds: (team, list) => `${team} still needs: ${list}`,
   nextUp: (list) => `Then: ${list}`,
   hintUntil: (n) => (n === 1 ? ' You’re up next.' : ` ${n} picks until your turn.`),
   round: 'Round',

@@ -547,11 +547,26 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
           let humanLeft = 0;
           for (let p = s.pickIndex + 1; p < total; p++) if (!s.teams[teamIndexForPick(p, s.teams.length, s.settings.snake ?? true)]?.cpu) humanLeft++;
           const restMin = s.settings.pickSeconds > 0 && humanLeft > 0 ? Math.ceil((humanLeft * s.settings.pickSeconds) / 60) : 0;
+          // Wer als Nächstes wählt (nicht man selbst): welche Feldpositionen ihm noch fehlen – zum Wegschnappen
+          const nextTeam = s.pickIndex + 1 < total ? s.teams[teamIndexForPick(s.pickIndex + 1, s.teams.length, s.settings.snake ?? true)] : undefined;
+          const needs = new Map<string, number>();
+          if (nextTeam && nextTeam.id !== me?.id) {
+            FORMATIONS[nextTeam.formation].slots.forEach((d, j) => {
+              if (nextTeam.slots[j] == null) needs.set(t.game.posShort[d.pos], (needs.get(t.game.posShort[d.pos]) ?? 0) + 1);
+            });
+          }
           return (
-            <p className="draft-turnbar__last draft-turnbar__next">
-              {t.online.nextUp(next.join(' → '))}
-              {restMin > 0 && <span className="draft-turnbar__rest"> · {t.online.restMax(restMin)}</span>}
-            </p>
+            <>
+              <p className="draft-turnbar__last draft-turnbar__next">
+                {t.online.nextUp(next.join(' → '))}
+                {restMin > 0 && <span className="draft-turnbar__rest"> · {t.online.restMax(restMin)}</span>}
+              </p>
+              {nextTeam && needs.size > 0 && (
+                <p className="draft-turnbar__last draft-turnbar__needs">
+                  {t.online.nextNeeds(teamLabel(nextTeam, t), [...needs].map(([pos, n]) => (n > 1 ? `${n}× ${pos}` : pos)).join(', '))}
+                </p>
+              )}
+            </>
           );
         })()}
         {s.settings.shinies !== false && s.settings.shinyParty && <p className="draft-turnbar__last">{t.shiny.note(Math.round(SHINY_PARTY_CHANCE * 100))}</p>}

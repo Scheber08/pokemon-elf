@@ -596,6 +596,17 @@ describe('DraftLive', () => {
     const { container } = await renderLive(fakeRoom(snap(drafting(), 'h')));
     // 2 Teams, Snake: Pick 1 Host (jetzt), dann Team 1, Team 1, Host
     expect(container.querySelector('.draft-turnbar__next')!.textContent).toBe('Danach: Team 1 → Team 1 → Du');
+    // Bedarf des nächsten Teams (alle Feldpositionen seiner Formation, noch kein Pick)
+    const st = drafting();
+    const t1 = st.teams.find((t) => t.id === 't1')!;
+    const { FORMATIONS } = await import('../src/config/formations');
+    const kinds = new Set(FORMATIONS[t1.formation].slots.map((d) => d.pos));
+    const needs = container.querySelector('.draft-turnbar__needs')!.textContent!;
+    expect(needs.startsWith('Team 1 braucht noch: ')).toBe(true);
+    expect(needs.slice('Team 1 braucht noch: '.length).split(', ')).toHaveLength(kinds.size);
+    // Ist man selbst als Nächstes dran, gibt es keine Zeile
+    const other = await renderLive(fakeRoom(snap(drafting(), 't1')));
+    expect(other.container.querySelector('.draft-turnbar__needs')).toBeNull();
   });
 
   it('Turnbar: höchstens verbleibende Draft-Dauer bei Pick-Uhr', async () => {
