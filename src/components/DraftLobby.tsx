@@ -8,6 +8,8 @@ import { copyText } from '../lib/exportImage';
 import { qrPath, type QrPath } from '../lib/qr';
 import { usePokemonData } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
+import { useSettings } from '../state/Settings';
+import { showNotify } from '../lib/notify';
 import {
   cleanTeamName,
   forgetLeague,
@@ -241,6 +243,14 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
   const blocker = startBlocker(s, list, t);
   /** Liganame tippt der Host lokal; gesendet wird kurz nach der letzten Taste */
   const [leagueName, setLeagueName] = useState<string | null>(null);
+  // Alle Mitspieler bereit: den Host benachrichtigen (Tab im Hintergrund, nur mit Erlaubnis)
+  const { notify } = useSettings();
+  const others = s.teams.filter((tm) => !tm.cpu && tm.id !== s.hostTeamId);
+  const allReady = others.length > 0 && others.every((tm) => tm.ready);
+  useEffect(() => {
+    if (!allReady || !isHost || !notify) return;
+    showNotify(s.settings.name || t.online.leagueFallback(s.code), t.online.readyNotify(others.length), `draft-ready-${s.code}`);
+  }, [allReady]);
 
   useEffect(() => {
     if (leagueName == null || leagueName === s.settings.name) return;
