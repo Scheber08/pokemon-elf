@@ -237,6 +237,7 @@ const trainer: Messages['trainer'] = {
     blitz_5: { name: 'Lightning drafter', desc: 'Five lightning picks ⚡ in one online league – each within 5 seconds of the previous pick.' },
     clean_10: { name: 'Fortress', desc: '10 clean sheets in one online league or manager season.' },
     goals_80: { name: 'Goal factory', desc: 'Score 80 goals in one online league or manager season.' },
+    hattrick_1: { name: 'Hat-trick hero', desc: 'A Pokémon of your team scores three times in one match of an online league or manager season.' },
     goal_reached: { name: 'Mission accomplished', desc: 'Reach your season goal in an online league or manager season.' },
     manager_5: { name: 'Old hand', desc: 'Finish 5 manager seasons.' },
     draft_manager: { name: 'Master trainer', desc: 'Win a manager season.' },

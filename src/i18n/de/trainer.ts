@@ -236,6 +236,7 @@ const trainer = {
     blitz_5: { name: 'Blitzdrafter', desc: 'Fünf Blitz-Picks ⚡ in einer Online-Liga – jeweils höchstens 5 Sekunden nach dem vorigen Pick.' },
     clean_10: { name: 'Bollwerk', desc: '10 Spiele ohne Gegentor in einer Online-Liga oder Manager-Saison.' },
     goals_80: { name: 'Torfabrik', desc: 'Erziele 80 Tore in einer Online-Liga oder Manager-Saison.' },
+    hattrick_1: { name: 'Hattrick-Held', desc: 'Ein Pokémon deines Teams trifft in einem Spiel einer Online-Liga oder Manager-Saison dreimal.' },
     goal_reached: { name: 'Plan erfüllt', desc: 'Erreiche dein Saisonziel in einer Online-Liga oder Manager-Saison.' },
     manager_5: { name: 'Alter Hase', desc: 'Spiele 5 Manager-Saisons zu Ende.' },
     draft_manager: { name: 'Meistertrainer', desc: 'Gewinne eine Manager-Saison.' },

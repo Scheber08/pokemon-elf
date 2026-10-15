@@ -45,6 +45,8 @@ export interface AchievementStats {
     cleanSheets?: number;
     /** Meiste eigene Tore in einer Online-Liga bzw. Manager-Saison */
     mostGoals?: number;
+    /** Eigene Hattricks in Online-Ligen bzw. Manager-Saisons (Summe) */
+    hatTricks?: number;
     /** Erreichte Saisonziele in Online-Ligen */
     goalsReached?: number;
   };
@@ -108,6 +110,7 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'blitz_5', category: 'draft', coins: 150, goal: 5, value: (s) => s.draft.blitz ?? 0 },
   { id: 'clean_10', category: 'draft', coins: 250, goal: 10, value: (s) => s.draft.cleanSheets ?? 0 },
   { id: 'goals_80', category: 'draft', coins: 250, goal: 80, value: (s) => s.draft.mostGoals ?? 0 },
+  { id: 'hattrick_1', category: 'draft', coins: 150, goal: 1, value: (s) => s.draft.hatTricks ?? 0 },
   { id: 'goal_reached', category: 'draft', coins: 150, goal: 1, value: (s) => s.draft.goalsReached ?? 0 },
   { id: 'manager_5', category: 'draft', coins: 400, goal: 5, value: (s) => s.draft.seasons ?? 0 },
   { id: 'draft_manager', category: 'draft', coins: 400, goal: 1, value: (s) => s.draft.manager },
