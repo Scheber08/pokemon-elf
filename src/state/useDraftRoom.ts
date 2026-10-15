@@ -4,7 +4,7 @@
  * die Draft-Engine dient hier nur der Anzeige und einer Vorprüfung (Pick am falschen
  * Platz, nicht dran …), damit Fehler sofort und ohne Umweg über den Server erscheinen.
  */
-import { FAST_PICK_SECONDS } from '../lib/draftEngine';
+import { FAST_PICK_SECONDS, limitKindsOf, type LimitKind } from '../lib/draftEngine';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ApiRequestError } from '../lib/api/client';
 import {
@@ -254,6 +254,8 @@ export interface FeedItem {
   fast?: number;
   /** Höchster Positions-Fit aller bisherigen Picks (bei Gleichstand der frühere; nur mit Skala) */
   top?: boolean;
+  /** Begrenzte Kategorien des Pokémon (Legendär/Mysteriös, Ultrabestie, Mega) */
+  kinds?: readonly LimitKind[];
 }
 
 export { FAST_PICK_SECONDS };
@@ -303,6 +305,8 @@ export function pickFeed(s: DraftSnapshot, byId: Map<number, Pokemon>, limit = 8
       if (p.roll) item.roll = { region: t.game.region[p.roll.gen] ?? '?', type: p.roll.type };
       if (p.shiny) item.shiny = true;
       if (p.pick === topPick) item.top = true;
+      const kinds = mon ? limitKindsOf(mon) : [];
+      if (kinds.length) item.kinds = kinds;
       const prevAt = atOf.get(p.pick - 1);
       if (!p.auto && prevAt != null) {
         const secs = Math.max(0, Math.round((p.at - prevAt) / 1000));

@@ -285,6 +285,22 @@ describe('Ansage pro Pick', () => {
     expect(withTop).toContain('Bester Positions-Fit des Drafts bisher');
   });
 
+  it('Pick-Verlauf: ★ Legendär und UB Ultrabestie', () => {
+    let s = startDraft(lobby(2, { gens: [1, 7], legendary: true, maxTeams: 4 }), 'dev-h', 0, ALL);
+    const pickId = (st: typeof s, id: number) => {
+      const team = currentTeam(st)!;
+      return applyPick(st, team.id, id, team.slots.indexOf(null), false, 0, ALL);
+    };
+    // Mewtu (legendär), Anego (Ultrabestie), Bisasam (nichts)
+    s = pickId(pickId(pickId(s, 150), 793), 1);
+    const items = pickFeed(snap(s), byId);
+    expect(items.map((f) => f.kinds)).toEqual([undefined, ['ub'], ['legend']]);
+    const html = renderToStaticMarkup(createElement(DraftPickFeed, { items, you: null }));
+    expect(html.match(/draft-feed__kind /g)).toHaveLength(2);
+    expect(html).toContain('>★</span><span class="sr-only">Legendär/Mysteriös</span>');
+    expect(html).toContain('>UB</span><span class="sr-only">Ultrabestie</span>');
+  });
+
   it('Verlauf und Timer sind keine Live-Regionen mehr', () => {
     let s = startDraft(lobby(2), 'dev-h', 0, ALL);
     s = autoPick(autoPick(s));

@@ -290,6 +290,7 @@ const draft = {
     /** Blitz-Pick im Verlauf (⚡) */
     feedFast: (s: number) => `Blitz-Pick: nach ${s} ${s === 1 ? 'Sekunde' : 'Sekunden'}`,
     /** Pick mit dem höchsten Positions-Fit des Drafts bisher (🏅) */
+    feedKind: { legend: 'Legendär/Mysteriös', ub: 'Ultrabestie', mega: 'Mega' },
     feedTop: 'Bester Positions-Fit des Drafts bisher',
     feedRun: (pos: string, n: number, of: number) => `Run auf ${pos}: ${n} der letzten ${of} Picks`,
     feedFitTitle: (fit: number) => `Positions-Fit: ${fit}`,

@@ -835,6 +835,15 @@
 .draft-feed__auto {
   color: var(--text-dim);
 }
+/* Legendär ★, Ultrabestie UB, Mega M im Pick-Verlauf */
+.draft-feed__kind {
+  color: var(--yellow);
+  font-size: 12px;
+  font-weight: 700;
+}
+:root[data-theme='light'] .draft-feed__kind {
+  color: #b45309;
+}
 /* Wurf, unter dem gewählt wurde */
 .draft-feed__roll {
   margin-left: auto;

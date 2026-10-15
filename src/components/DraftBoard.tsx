@@ -252,7 +252,15 @@ export function DraftPickFeed({ items, you }: { items: FeedItem[]; you: string |
               <strong>
                 {f.shiny && <span title={t.shiny.title}>✨ </span>}
                 {f.pokemon}
-              </strong>{' '}
+              </strong>
+              {f.kinds?.map((k) => (
+                // Legendär/Mysteriös ★, Ultrabestie UB, Mega M (wie im Pool-Kopf)
+                <span key={k} className={`draft-feed__kind draft-feed__kind--${k}`} title={tx.feedKind[k]}>
+                  {' '}
+                  <span aria-hidden="true">{k === 'legend' ? '★' : k === 'ub' ? 'UB' : 'M'}</span>
+                  <span className="sr-only">{tx.feedKind[k]}</span>
+                </span>
+              ))}{' '}
               → {f.team}
               {f.pos && (
                 <span className="draft-feed__pos">
