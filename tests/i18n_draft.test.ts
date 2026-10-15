@@ -497,6 +497,49 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(tabs.some((x) => /Goals/.test(x ?? '') && !/Assists/.test(x ?? ''))).toBe(false);
   });
 
+  it('Pick-Verlauf: Start legt ihn an, jeder Pick wird angehängt; Liga zeigt das Schnäppchen des Drafts', async () => {
+    storeLang('en');
+    localStorage.removeItem('pokemon-elf:draft');
+    let r = await render(app(h(Draft)));
+    await settle();
+    const start = r.container.querySelectorAll('button').find((b) => b.textContent === 'Start draft') as MiniElement;
+    await act(async () => start.click());
+    await settle();
+    expect(JSON.parse(localStorage.getItem('pokemon-elf:draft')!).log).toEqual([]);
+    const auto = r.container.querySelectorAll('.draft-pooltools button').find((b) => /^Pick automatically for /.test(b.textContent ?? '')) as MiniElement;
+    await act(async () => auto.click());
+    const saved = JSON.parse(localStorage.getItem('pokemon-elf:draft')!);
+    expect(saved.log).toHaveLength(saved.pick);
+    expect(saved.log[0].team).toBe(0);
+    expect(saved.teams[0].slots[saved.log[0].slot]).toBe(saved.log[0].id);
+
+    // Fertige Liga mit vollständigem Verlauf (Snake, 3 Teams × 11 Runden)
+    const pool = ALL.filter((p) => !p.leg && !p.myth);
+    const teams = [0, 1, 2].map((i) => {
+      const formation = FORMATION_IDS[i % FORMATION_IDS.length];
+      return { name: i === 0 ? 'Mein Team' : CLUB_NAMES[i], cpu: i !== 0, formation, slots: emptySlots(formation).map((_, j) => pool[i * 11 + j].id) };
+    });
+    const log: { team: number; slot: number; id: number }[] = [];
+    for (let k = 0; k < 33; k++) {
+      const round = Math.floor(k / 3);
+      const team = round % 2 === 0 ? k % 3 : 2 - (k % 3);
+      log.push({ team, slot: round, id: teams[team].slots[round]! });
+    }
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'league', teams, region: 0, legends: false, pick: 33, selected: null, seed: 7, log }));
+    r = await render(app(h(Draft)));
+    await settle();
+    const byIdAll = new Map(ALL.map((p) => [p.id, p]));
+    const steal = timeline.draftSteal(
+      log.map((x, i) => ({ pick: i, teamId: String(x.team), pokemonId: x.id, slot: x.slot })),
+      teams.map((tm, i) => ({ id: String(i), formation: tm.formation })),
+      byIdAll,
+      SCALE,
+    )!;
+    expect(steal).toBeTruthy();
+    const line = r.container.querySelector('.draft-results__steal')!.textContent!;
+    expect(line).toMatch(new RegExp(`^Steal of the draft: .+ \\(pick ${steal.pick + 1}\\) for `));
+  });
+
   it('Liga: Deine Duelle – Bilanz gegen jeden Gegner, passend zu den Spielen', async () => {
     storeLang('en');
     const pool = ALL.filter((p) => !p.leg && !p.myth);

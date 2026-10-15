@@ -19,7 +19,7 @@ import { useT } from '../i18n';
 import { draftsSupported } from '../lib/api/draftClient';
 import { positionFit } from '../lib/fit';
 import { emptySlots } from '../lib/formation';
-import { biggestWin, draftGrades, goalFest, headToHead, leagueTimeline, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
+import { biggestWin, draftGrades, draftSteal, goalFest, headToHead, leagueTimeline, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
 import { createRng, randomSeed, shuffle } from '../lib/rng';
 import { cpuLevelOf, cpuPickChoice } from '../lib/localCpu';
 import { buildTable, CLASSIC_MODEL, DRAFT_MODEL, formatRecord, sideTable, simulateLeague, type LeagueTeam } from '../lib/season';
@@ -94,6 +94,8 @@ interface DraftState {
   shinySalt?: number;
   /** Shinys dieses Drafts (Pokémon-IDs) */
   shinies?: number[];
+  /** Pick-Verlauf (Team-Index, Platz, Pokémon) – fehlt bei älteren gespeicherten Drafts */
+  log?: { team: number; slot: number; id: number }[];
   /** Shinys ausgeschaltet (Einstellung vor dem Draft) */
   noShinies?: true;
   /** Shiny-Party: 10 % statt 2 % */
@@ -231,6 +233,8 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
         ...s,
         teams,
         pick,
+        // Verlauf nur, wenn er von Anfang an mitläuft (sonst stimmten die Pick-Nummern nicht)
+        ...(s.log && s.log.length === s.pick ? { log: [...s.log, { team: teamIdx, slot, id: pokemonId }] } : {}),
         ...(shiny ? { shinies: [...(s.shinies ?? []), pokemonId] } : {}),
         selected: null,
         phase: pick >= s.teams.length * ROUNDS ? (s.teams.some((x) => !x.cpu) ? 'captains' : 'league') : 'drafting',
@@ -301,6 +305,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
       seed: null,
       shinySalt: s.noShinies ? undefined : randomSeed(),
       shinies: [],
+      log: [],
       teams: s.teams.map((tm) => ({ ...tm, slots: emptySlots(tm.formation) })),
     }));
     setFilters({ query: '', type: null, region: state.region });
@@ -830,6 +835,24 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               <h2 id="draft-local-records" className="section-title">
                 {r.records}
               </h2>
+              {(() => {
+                // Schnäppchen des Drafts (bester Pick der zweiten Hälfte nach Fit) – nur mit vollständigem Pick-Verlauf
+                const log = state.log;
+                if (!log || log.length !== state.teams.length * ROUNDS) return null;
+                const steal = draftSteal(
+                  log.map((x, i) => ({ pick: i, teamId: String(x.team), pokemonId: x.id, slot: x.slot })),
+                  state.teams.map((tm, i) => ({ id: String(i), formation: tm.formation })),
+                  byId,
+                  scale('all'),
+                );
+                const mon = steal ? byId.get(steal.pokemonId) : undefined;
+                if (!steal || !mon) return null;
+                return (
+                  <p className="draft-results__steal">
+                    {r.steal(t.game.pokemon(mon), steal.pick + 1, nameOf(Number(steal.teamId)), t.game.posName[steal.pos])}
+                  </p>
+                );
+              })()}
               <dl className="draft-records">
                 <div>
                   <dt>{r.recordAttack}</dt>
@@ -1092,6 +1115,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 selected: null,
                 seed: null,
                 shinies: [],
+                log: undefined,
                 teams: s.teams.map((tm) => ({ ...tm, slots: emptySlots(tm.formation), captain: null })),
               }))
             }
