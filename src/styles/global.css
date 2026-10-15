@@ -95,6 +95,8 @@ select {
 
 .sr-only {
   position: absolute !important;
+  /* Links verankert: in schmalen Scroll-Bereichen ragt der Text sonst seitlich hinaus und die Seite scrollt */
+  left: 0;
   width: 1px;
   height: 1px;
   padding: 0;
