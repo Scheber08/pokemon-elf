@@ -1569,6 +1569,17 @@ button.draft-bench__slot {
   color: var(--red);
 }
 
+/* Manager-Saison: rechnerischer Titelkampf */
+.manager__race {
+  margin: 2px 0 0;
+}
+.manager__race--clinched {
+  font-weight: 700;
+}
+.manager__race--out {
+  color: var(--text-dim);
+}
+
 /* Lokaler Draft: Vorschau der nächsten Picks und Bedarf des nächsten Teams eng untereinander */
 .draft__last,
 .draft__next,

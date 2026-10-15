@@ -1575,6 +1575,30 @@ describe('ManagerSeason', () => {
     else expect(f).toBeNull();
   });
 
+  it('Manager: 🏆 rechnerischer Titelkampf erst ab der Saisonhälfte', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    const { storedLeague, titleChance } = await import('../src/lib/leagueTimeline');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    const me = s.teams.findIndex((t) => t.id === 'h');
+    s = playMatchday(s, ALL, SCALE);
+    const early = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    expect(early.container.querySelector('.manager__race')).toBeNull();
+    while (s.manager!.played * 2 < s.manager!.total) s = playMatchday(s, ALL, SCALE);
+    const league = storedLeague(s.league, s.teams.length)!;
+    const { buildTable } = await import('../src/lib/season');
+    const table = buildTable(league.teams, league.matches.filter((x) => x.round <= s.manager!.played));
+    const chance = titleChance(table, me, s.manager!.total)!;
+    const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    const el = container.querySelector('.manager__race')!;
+    expect(el.className).toContain(`manager__race--${chance}`);
+    expect(el.textContent).toMatch(/^🏆 Platz 1 /);
+  });
+
   it('Aufstellung: Tipp für eine stärkere Formation, Knopf übernimmt sie', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, bestLineup, lineupScore } = await import('../src/lib/manager');

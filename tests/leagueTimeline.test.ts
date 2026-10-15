@@ -464,3 +464,21 @@ describe('Lokale Liga teilen', () => {
     );
   });
 });
+
+describe('Titelkampf (rechnerisch)', () => {
+  const row = (team: number, pts: number, played: number) =>
+    ({ team, name: `T${team}`, rating: 0, isUser: false, played, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts });
+  it('sicher, noch möglich oder nicht mehr erreichbar', async () => {
+    const { titleChance } = await import('../src/lib/leagueTimeline');
+    // 10 Spiele, 8 gespielt: 2 Restspiele = 6 Punkte
+    const t = [row(0, 20, 8), row(1, 14, 8), row(2, 13, 8)];
+    expect(titleChance(t, 0, 10)).toBe('open'); // Team 1 kann noch auf 20 kommen
+    expect(titleChance(t, 1, 10)).toBe('open'); // genau gleichziehen
+    expect(titleChance(t, 2, 10)).toBe('out'); // 19 < 20
+    expect(titleChance([row(0, 21, 8), row(1, 14, 8)], 0, 10)).toBe('clinched');
+    // Mit Spielen im Rückstand zählt jedes Restspiel
+    expect(titleChance([row(0, 21, 8), row(1, 11, 7)], 0, 10)).toBe('clinched');
+    expect(titleChance([row(0, 21, 8), row(1, 12, 7)], 0, 10)).toBe('open');
+    expect(titleChance(t, 9, 10)).toBeNull();
+  });
+});

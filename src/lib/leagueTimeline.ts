@@ -467,6 +467,24 @@ export function titleRace(table: readonly TableRow[]): TitleRace | null {
   return other;
 }
 
+/** Rechnerischer Titelkampf eines Teams: schon sicher vorn, noch möglich oder nicht mehr erreichbar */
+export type TitleChance = 'clinched' | 'open' | 'out';
+
+/**
+ * Rechnerische Titelchance von team bei games Spielen je Team (3 Punkte je Sieg): 'clinched', wenn kein anderes
+ * Team mit allen Restspielen gewonnen noch gleichziehen kann; 'out', wenn team selbst mit allen Siegen unter der
+ * Spitze bleibt; sonst 'open'. null für ein unbekanntes Team.
+ */
+export function titleChance(table: readonly TableRow[], team: number, games: number): TitleChance | null {
+  const me = table.find((r) => r.team === team);
+  if (!me) return null;
+  const max = (r: TableRow) => r.pts + 3 * Math.max(0, games - r.played);
+  const others = table.filter((r) => r !== me);
+  if (others.every((r) => max(r) < me.pts)) return 'clinched';
+  if (others.some((r) => r.pts > max(me))) return 'out';
+  return 'open';
+}
+
 /** „A", „A und B", „A, B und C" (Bindewort in der aktiven Sprache) */
 function joinNames(names: string[]): string {
   if (names.length <= 1) return names.join('');

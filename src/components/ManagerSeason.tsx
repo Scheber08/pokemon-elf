@@ -4,7 +4,7 @@ import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
 import { loadTips, MATCH_TIPS, saveTip, tipScore } from '../lib/managerTips';
-import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf } from '../lib/leagueTimeline';
+import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -331,6 +331,23 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
               )}
             </p>
           );
+        })()}
+        {you != null && m.played * 2 >= m.total && m.played < m.total && (() => {
+          // 🏆 Rechnerischer Titelkampf ab der Saisonhälfte (jedes Team spielt jeden Spieltag)
+          const chance = titleChance(shown.table, you, m.total);
+          const row = shown.table.find((r) => r.team === you);
+          if (!chance || !row) return null;
+          const max = (r: { pts: number; played: number }) => r.pts + 3 * Math.max(0, m.total - r.played);
+          const lead = shown.table[0].team === you;
+          const text =
+            chance === 'clinched'
+              ? tx.raceClinched
+              : chance === 'out'
+                ? tx.raceOut
+                : lead
+                  ? tx.raceLeading(Math.max(...shown.table.filter((r) => r.team !== you).map(max)))
+                  : tx.raceOpen(max(row), shown.table[0].pts);
+          return <p className={`small manager__race manager__race--${chance}`}>🏆 {text}</p>;
         })()}
         {you != null && m.played >= 3 && (() => {
           // Aktuelle Serie des eigenen Teams: ungeschlagen bzw. sieglos (ab 3 Spielen)
