@@ -590,6 +590,8 @@ const draft = {
     seriesUnbeaten: (n: number) => `Seit ${n} Spielen ungeschlagen`,
     seriesWinless: (n: number) => `Seit ${n} Spielen sieglos`,
     upNext: (list: string) => `Die nächsten Gegner: ${list}`,
+    toSafety: (n: number) => (n === 0 ? 'punktgleich mit dem rettenden Platz' : `${n} Pkt bis zum rettenden Platz`),
+    aboveDrop: (n: number) => (n === 0 ? 'punktgleich mit der Abstiegszone' : `${n} Pkt vor der Abstiegszone`),
     projection: (pts: number) => `Hochrechnung: ${pts} Pkt`,
     behindTop: (n: number) => (n === 0 ? 'punktgleich mit der Spitze' : `${n} Pkt hinter Platz 1`),
     colAssists: 'Vorl.',

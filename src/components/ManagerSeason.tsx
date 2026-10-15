@@ -3,7 +3,7 @@ import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
-import { currentRun, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset } from '../lib/leagueTimeline';
+import { currentRun, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -272,6 +272,27 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
                     {zone === 'top' ? ((s.career?.tier ?? 2) > 1 ? tx.zonePromotion : tx.zoneChampion) : tx.zoneBottom}
                   </span>
                 );
+              })()}
+              {(() => {
+                // Abstiegskampf: Abstand zum rettenden Platz bzw. Vorsprung auf die rote Zone (bis 3 Plätze darüber)
+                const n = shown.table.length;
+                if (n < TABLE_BOTTOM_MIN || m.played < 3 || m.played >= m.total) return null;
+                const firstBottom = n - TABLE_BOTTOM_ZONE;
+                if (at >= firstBottom)
+                  return (
+                    <span className="manager__drop is-in">
+                      {' · '}
+                      {tx.toSafety(shown.table[firstBottom - 1].pts - shown.table[at].pts)}
+                    </span>
+                  );
+                if (at >= firstBottom - 3)
+                  return (
+                    <span className="manager__drop">
+                      {' · '}
+                      {tx.aboveDrop(shown.table[at].pts - shown.table[firstBottom].pts)}
+                    </span>
+                  );
+                return null;
               })()}
               {/* Hochrechnung aufs Saisonende (Punkteschnitt × alle Spiele), erst ab dem 3. Spieltag */}
               {m.played >= 3 && m.played < m.total && shown.table[at].played > 0 && (

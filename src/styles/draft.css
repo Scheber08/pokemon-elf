@@ -1544,3 +1544,8 @@ button.draft-bench__slot {
   gap: 6px;
   margin: 6px 0 8px;
 }
+
+/* Manager-Saison: Abstand zur Abstiegszone */
+.manager__drop.is-in {
+  color: var(--red);
+}

@@ -545,6 +545,8 @@ const draft: Messages['draft'] = {
     seriesUnbeaten: (n) => `Unbeaten in ${n} games`,
     seriesWinless: (n) => `Winless in ${n} games`,
     upNext: (list) => `Next opponents: ${list}`,
+    toSafety: (n) => (n === 0 ? 'level with safety' : `${n} pts from safety`),
+    aboveDrop: (n) => (n === 0 ? 'level with the drop zone' : `${n} pts above the drop zone`),
     projection: (pts) => `Projection: ${pts} pts`,
     behindTop: (n) => (n === 0 ? 'level on points with the top' : `${n} pts behind 1st`),
     colAssists: 'Ast.',

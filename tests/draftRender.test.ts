@@ -1186,6 +1186,40 @@ describe('ManagerSeason', () => {
     expect(container.querySelector('.manager__leader.is-new')!.textContent).toMatch(/^👑 Neuer Tabellenführer: .+ löst .+ ab$/);
   });
 
+  it('Manager: Abstand zur Abstiegszone im eigenen Platz', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    const { TABLE_BOTTOM_ZONE } = await import('../src/lib/leagueTimeline');
+    const { buildTable } = await import('../src/lib/season');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    for (let k = 0; k < 4; k++) s = playMatchday(s, ALL, SCALE);
+    const me = s.teams.findIndex((t) => t.id === 'h');
+    // Gedraftete Teams sind stark – eigene Spiele als klare Niederlagen umschreiben (Tabelle neu)
+    const raw = s.league!;
+    const matches = raw.matches.map((x) =>
+      x.home === me ? { ...x, hg: 0, ag: 6, homeScorers: [], awayScorers: [] } : x.away === me ? { ...x, hg: 6, ag: 0, homeScorers: [], awayScorers: [] } : x,
+    );
+    const table = buildTable(raw.teams, matches);
+    const patched = { ...s, league: { ...raw, matches, table } };
+    const at = table.findIndex((r) => r.team === me);
+    const firstBottom = table.length - TABLE_BOTTOM_ZONE;
+    expect(at).toBeGreaterThanOrEqual(firstBottom);
+    const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(patched, 'h')), readOnly: false })));
+    await settle();
+    const el = container.querySelector('.manager__drop')!;
+    const gap = table[firstBottom - 1].pts - table[at].pts;
+    expect(el.textContent).toBe(` · ${gap === 0 ? 'punktgleich mit dem rettenden Platz' : `${gap} Pkt bis zum rettenden Platz`}`);
+    expect(el.className).toContain('is-in');
+    // Ungepatcht (Mittelfeld bzw. oben): keine Angabe, solange das Team nicht nah an der Zone steht
+    const { container: c2 } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    const t2 = s.league!.table;
+    const at2 = t2.findIndex((r) => r.team === me);
+    if (at2 < firstBottom - 3) expect(c2.querySelector('.manager__drop')).toBeNull();
+  });
+
   it('Manager: nächster Gegner zeigt seine Bilanz am Spielort', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday, scheduleOf } = await import('../src/lib/manager');
