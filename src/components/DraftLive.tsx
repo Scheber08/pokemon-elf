@@ -403,6 +403,15 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
         const n = picksUntilTurn(s, me.id);
         return n != null && n > 0 ? t.online.hintUntil(n) : null;
       })()}
+      {me && (() => {
+        // Noch offene Feldpositionen der eigenen Elf (gruppiert, Reihenfolge der Formation)
+        const open = new Map<string, number>();
+        FORMATIONS[me.formation].slots.forEach((d, j) => {
+          if (me.slots[j] == null) open.set(t.game.posShort[d.pos], (open.get(t.game.posShort[d.pos]) ?? 0) + 1);
+        });
+        if (!open.size) return null;
+        return t.online.hintOpen([...open].map(([pos, n]) => (n > 1 ? `${n}× ${pos}` : pos)).join(', '));
+      })()}
     </>
   );
 

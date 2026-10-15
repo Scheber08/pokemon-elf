@@ -443,7 +443,7 @@ describe('DraftLive (en)', () => {
     expect(container.querySelector('.draft-hostauto button')!.textContent).toBe('Pick automatically for Team 1');
     expect(container.querySelector('p.hint')!.textContent).toBe(
       // Snake mit zwei Teams: Team 1 wählt zweimal hintereinander
-      'Team 1 is on the clock. You can already browse and shortlist a favourite. 2 picks until your turn.',
+      'Team 1 is on the clock. You can already browse and shortlist a favourite. 2 picks until your turn. Still open: LB, 2× CB, RB, 2× CM, DM, LW, ST, RW.',
     );
     expectEnglishIn(container, '.draft-turnbar, .draft-live [aria-live], .draft-hostauto, p.hint, .draft-timer');
   });

@@ -549,6 +549,20 @@ describe('DraftLive', () => {
     expect(live()[0].textContent).toMatch(/^Pick 2: .+ an Team 1 \(automatisch\)\. Am Zug: Team 1\.$/);
   });
 
+  it('Wartehinweis nennt die noch offenen Positionen der eigenen Elf', async () => {
+    const { FORMATIONS } = await import('../src/config/formations');
+    const s = autoPick(drafting());
+    const { container } = await renderLive(fakeRoom(snap(s, 'h')));
+    const me = s.teams.find((t) => t.id === 'h')!;
+    const open = FORMATIONS[me.formation].slots.filter((_, j) => me.slots[j] == null);
+    expect(open).toHaveLength(10);
+    const hint = container.querySelector('.draft-live .hint')!.textContent!;
+    expect(hint).toMatch(/Noch offen: .+\.$/);
+    // Mehrfach vorkommende Positionen gruppiert
+    const ivs = open.filter((d) => d.pos === 'IV').length;
+    if (ivs > 1) expect(hint).toContain(`${ivs}× IV`);
+  });
+
   it('Wunschliste: Taste W setzt das ausgewählte Pokémon drauf', async () => {
     const { DraftQueue } = await import('../src/components/DraftQueue');
     const st = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
