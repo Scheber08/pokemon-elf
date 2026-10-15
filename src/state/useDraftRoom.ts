@@ -39,10 +39,11 @@ import {
   teamIndexForPick,
   type DraftState,
 } from '../lib/draftEngine';
-import { DEFAULT_FORMATION, FORMATION_IDS } from '../config/formations';
+import { DEFAULT_FORMATION, FORMATION_IDS, FORMATIONS } from '../config/formations';
+import { positionFit, type Scale } from '../lib/fit';
 import { currentLang, LANGS, messages, type Lang, type Messages } from '../i18n';
 import { load, save } from '../lib/storage';
-import type { FormationId, Pokemon, TypeKey } from '../types';
+import type { FormationId, Pokemon, PosCode, TypeKey } from '../types';
 import { usePokemonData } from './PokemonData';
 import type { Crest } from '../lib/crest';
 
@@ -244,6 +245,10 @@ export interface FeedItem {
   roll?: { region: string; type: TypeKey };
   /** Shiny-Pick */
   shiny?: boolean;
+  /** Aktuelle Position im Team (Feldslot oder SS; fehlt auf der Bank) */
+  pos?: PosCode;
+  /** Positions-Fit dort (nur Feldslots und nur mit Skala) */
+  fit?: number;
 }
 
 /**
@@ -255,8 +260,9 @@ export function teamLabel(team: Pick<DraftTeam, 'name' | 'cpu'>, t: Messages = m
 }
 
 /** Die letzten Picks, neuester zuerst (Pokémon- und CPU-Vereinsnamen in der Sprache von t). */
-export function pickFeed(s: DraftSnapshot, byId: Map<number, Pokemon>, limit = 8, t: Messages = messages()): FeedItem[] {
+export function pickFeed(s: DraftSnapshot, byId: Map<number, Pokemon>, limit = 8, t: Messages = messages(), scale?: Scale): FeedItem[] {
   const names = new Map(s.teams.map((tm) => [tm.id, teamLabel(tm, t)]));
+  const teams = new Map(s.teams.map((tm) => [tm.id, tm]));
   return s.picks
     .slice(-limit)
     .reverse()
@@ -272,6 +278,16 @@ export function pickFeed(s: DraftSnapshot, byId: Map<number, Pokemon>, limit = 8
       };
       if (p.roll) item.roll = { region: t.game.region[p.roll.gen] ?? '?', type: p.roll.type };
       if (p.shiny) item.shiny = true;
+      // Position, an der das Pokémon jetzt steht (nach Tauschen), statt des ursprünglichen Slots
+      const team = teams.get(p.teamId);
+      const at = team ? team.slots.indexOf(p.pokemonId) : -1;
+      if (team && at >= 0) {
+        const pos = FORMATIONS[team.formation]?.slots[at]?.pos;
+        if (pos) {
+          item.pos = pos;
+          if (mon && scale) item.fit = Math.round(positionFit(mon, pos, scale));
+        }
+      } else if (team?.ss === p.pokemonId) item.pos = 'SS';
       return item;
     });
 }

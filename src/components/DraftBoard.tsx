@@ -202,6 +202,13 @@ export function DraftPickFeed({ items, you }: { items: FeedItem[]; you: string |
                 {f.pokemon}
               </strong>{' '}
               → {f.team}
+              {f.pos && (
+                <span className="draft-feed__pos">
+                  {' '}
+                  <PosBadge pos={f.pos} />
+                  {f.fit != null && <span title={tx.feedFitTitle(f.fit)}> {f.fit}</span>}
+                </span>
+              )}
               {f.auto && <span className="draft-feed__auto">{tx.auto}</span>}
             </span>
             {f.roll && (

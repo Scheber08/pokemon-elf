@@ -37,7 +37,8 @@ import {
   totalPicks,
   type DraftState,
 } from '../src/lib/draftEngine';
-import { buildScale } from '../src/lib/fit';
+import { buildScale, positionFit } from '../src/lib/fit';
+import { FORMATIONS } from '../src/config/formations';
 import {
   cleanTeamName,
   draftRoomView,
@@ -936,6 +937,14 @@ describe('Lobby-Helfer', () => {
     const owners = ownerOfPicks(snap);
     expect(owners.size).toBe(3);
     expect(owners.get(s.picks[0].pokemonId)?.id).toBe(s.picks[0].teamId);
+    // Position (wo das Pokémon jetzt steht) und Fit mit Skala; ohne Skala nur die Position
+    const withFit = pickFeed(snap, byId, 2, undefined, SCALE);
+    const team = s.teams.find((t) => t.id === s.picks[2].teamId)!;
+    const pos = FORMATIONS[team.formation].slots[team.slots.indexOf(s.picks[2].pokemonId)].pos;
+    expect(withFit[0].pos).toBe(pos);
+    expect(withFit[0].fit).toBe(Math.round(positionFit(byId.get(s.picks[2].pokemonId)!, pos, SCALE)));
+    expect(feed[0].pos).toBe(pos);
+    expect(feed[0].fit).toBeUndefined();
   });
 });
 

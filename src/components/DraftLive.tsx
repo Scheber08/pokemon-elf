@@ -263,7 +263,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     [filters, regionShown, gens.join(',')],
   );
   const filtered = useFilteredPokemon(items, effFilters);
-  const feed = useMemo(() => pickFeed(s, byId, undefined, t), [s, byId, t]);
+  const feed = useMemo(() => pickFeed(s, byId, undefined, t, scale('all')), [s, byId, t, scale]);
   // Raster nur bei anderem Filter/Pool/Wurf wieder von vorn – ein Pick nimmt nur eine Karte heraus
   const gridKey = `${poolKey}|${showTaken}|${bestFirst ? `best:${freeKey}` : ''}|${fitOnly ? rollKey || 'fit' : ''}|${effFilters.region}|${effFilters.type ?? ''}|${effFilters.query}`;
   const filtering = !!effFilters.query.trim() || !!effFilters.type || effFilters.region !== 0;
