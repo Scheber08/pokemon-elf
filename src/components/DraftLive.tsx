@@ -437,7 +437,14 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   const lastPick = room.lastPick;
   const lastMon = lastPick ? byId.get(lastPick.pokemonId) : undefined;
   const lastTeam = lastPick ? s.teams.find((tm) => tm.id === lastPick.teamId) : undefined;
-  const pitchTeam = me ?? current;
+  // 👀 Feld eines anderen Teams ansehen (nur Ansicht; null = eigenes bzw. das am Zug)
+  const [peekId, setPeekId] = useState<string | null>(null);
+  const peek = peekId ? s.teams.find((x) => x.id === peekId) : undefined;
+  const pitchTeam = peek ?? me ?? current;
+  // Am eigenen Zug zurück aufs eigene Feld (dort wird gewählt)
+  useEffect(() => {
+    if (myTurn) setPeekId(null);
+  }, [myTurn]);
   const mySlots = me ? freeSlots(me, s.settings) : [];
 
   const choose = (p: Pokemon) => {
@@ -862,6 +869,22 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
               <h2 className="section-title">
                 {pitchTeam === me ? t.online.yourTeam : teamLabel(pitchTeam, t)} · {pitchTeam.formation}
               </h2>
+              {s.teams.length > 1 && (
+                <label className="draft-peek small">
+                  <span aria-hidden="true">👀 </span>
+                  <span className="muted">{t.online.peekLabel}</span>{' '}
+                  <select className="input select" value={peek ? peek.id : ''} onChange={(e) => setPeekId(e.target.value || null)}>
+                    <option value="">{me ? t.online.yourTeam : t.online.peekCurrent}</option>
+                    {s.teams
+                      .filter((x) => x.id !== me?.id)
+                      .map((x) => (
+                        <option key={x.id} value={x.id}>
+                          {teamLabel(x, t)}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+              )}
               <Pitch
                 formation={pitchTeam.formation}
                 slots={pitchTeam.slots}

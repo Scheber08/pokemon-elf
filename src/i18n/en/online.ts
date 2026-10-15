@@ -190,6 +190,8 @@ const online: Messages['online'] = {
   elevenDone: (avg) => `✅ Your eleven is complete – avg fit ${avg}`,
   progressLabel: (done, total, left) => `Draft progress: ${done} of ${total} picks${left > 0 ? ` – ${left} ${left === 1 ? 'pick' : 'picks'} of yours to go` : ''}`,
   slotBest: (fit) => `best free fit here: ${fit}`,
+  peekLabel: 'Pitch of',
+  peekCurrent: 'Team on the clock',
   legendFirst: (name, team) => `★ First legendary of the draft: ${name} (${team})`,
   legendLast: (name, team) => `★ The last legendary is gone: ${name} (${team})`,
   favouriteGone: (name, team) => `${name} is gone – ${team} got there first.`,

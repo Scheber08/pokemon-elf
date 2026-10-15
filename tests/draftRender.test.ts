@@ -725,6 +725,25 @@ describe('DraftLive', () => {
     expect(bar.getAttribute('aria-label')).toBe(`Draft-Fortschritt: 2 von ${total} Picks – noch ${marks.length - 1} eigene Picks`);
   });
 
+  it('👀 Feld eines anderen Teams ansehen (nur Ansicht), am eigenen Zug zurück', async () => {
+    let s = autoPick(drafting());
+    // Pick 1: Team 1 ist dran → Host kann zuschauen
+    const { container, root } = await renderLive(fakeRoom(snap(s, 'h')));
+    const select = container.querySelector('.draft-peek select') as MiniElement;
+    expect(select.querySelectorAll('option').map((o) => o.textContent)).toEqual(['Dein Team', 'Team 1']);
+    const { MiniEvent } = await import('./miniDom');
+    (select as unknown as { value: string }).value = 't1';
+    await act(async () => void select.dispatchEvent(new MiniEvent('change', { bubbles: true })));
+    const title = () => container.querySelector('.challenge__pitch h2')!.textContent;
+    expect(title()).toMatch(/^Team 1 · /);
+    // Fremdes Feld: keine Plaketten, keine Ziele
+    expect(container.querySelector('.challenge__pitch .slot__best')).toBeNull();
+    // Team 1 wählt zweimal (Snake) → Host am Zug → wieder das eigene Feld
+    s = autoPick(autoPick(s));
+    await act(async () => root.render(app(h(DraftLive, { room: fakeRoom(snap(s, 'h')) }))));
+    expect(title()).toMatch(/^Dein Team · /);
+  });
+
   it('Turnbar: die nächsten drei Picks in Snake-Reihenfolge', async () => {
     const { container } = await renderLive(fakeRoom(snap(drafting(), 'h')));
     // 2 Teams, Snake: Pick 1 Host (jetzt), dann Team 1, Team 1, Host
