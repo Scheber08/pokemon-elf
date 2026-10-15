@@ -1125,6 +1125,24 @@ describe('ManagerSeason', () => {
     if (place <= 3) expect(zone!.textContent).toContain('Aufstiegsplatz');
     else if (place > s.league!.table.length - 3) expect(zone!.textContent).toContain('Abstiegsplatz');
     else expect(zone).toBeNull();
+    // Führungsserie: ab 3 Spieltagen in Folge an der Spitze
+    const tl = await import('../src/lib/leagueTimeline');
+    const days = tl.leagueTimeline(tl.storedLeague(s.league, s.teams.length)!);
+    const n = tl.leaderSince(days, days.at(-1)!.round);
+    const lead = r.container.querySelector('.manager__leader');
+    if (n >= 3) expect(lead!.textContent).toContain(`führt seit ${n} Spieltagen die Tabelle an`);
+    else expect(lead).toBeNull();
+    // Weiterspielen, bis jemand 3 Spieltage in Folge vorn steht
+    let k = n;
+    while (k < 3 && s.manager!.played < s.manager!.total - 1) {
+      s = playMatchday(s, ALL, SCALE);
+      const d = tl.leagueTimeline(tl.storedLeague(s.league, s.teams.length)!);
+      k = tl.leaderSince(d, d.at(-1)!.round);
+    }
+    expect(k).toBeGreaterThanOrEqual(3);
+    const r3 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    expect(r3.container.querySelector('.manager__leader')!.textContent).toContain(`führt seit ${k} Spieltagen die Tabelle an`);
   });
 
   it('Saisonende: Saisonrekorde mit Angriff, Abwehr und ggf. Remis-König', async () => {

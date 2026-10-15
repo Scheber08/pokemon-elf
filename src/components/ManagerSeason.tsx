@@ -3,7 +3,7 @@ import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
-import { leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone } from '../lib/leagueTimeline';
+import { leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -288,6 +288,14 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
               )}
             </p>
           );
+        })()}
+        {m.played >= 3 && (() => {
+          // Führungsserie des Tabellenführers (wie im Saison-Ticker)
+          const days = leagueTimeline(shown);
+          const last = days.at(-1);
+          const n = last ? leaderSince(days, last.round) : 0;
+          if (!last || n < 3) return null;
+          return <p className="small muted manager__leader">👑 {t.draft.ticker.leaderStreak(nameOf(last.leader.team), n)}</p>;
         })()}
         {/* Karriere: frühere Saisons des eigenen Teams */}
         {(() => {
