@@ -1063,6 +1063,24 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(r.container.querySelectorAll('.toast').filter((e) => e.textContent!.startsWith('🔔'))).toHaveLength(0);
   });
 
+  it('Auswahl: bester freier Platz und Ø Fit vorher → nachher (wie online)', async () => {
+    const f = FORMATION_IDS[0];
+    const kanto = ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth);
+    const teams = [
+      { name: 'Mein Team', cpu: false, formation: f, slots: emptySlots(f).map((x, j) => (j === 0 ? kanto[0].id : x)) },
+      { name: 'Zweites Team', cpu: false, formation: f, slots: emptySlots(f).map((x, j) => (j === 0 ? kanto[1].id : x)) },
+    ];
+    // Pick 2 (Snake): das zweite Team ist noch einmal dran, Pokémon ausgewählt
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: false, pick: 2, selected: kanto[5].id, seed: null }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const { fitImpact } = await import('../src/lib/fit');
+    const { FORMATIONS } = await import('../src/config/formations');
+    const x = fitImpact(kanto[5], FORMATIONS[f].slots, teams[1].slots, new Map(ALL.map((p) => [p.id, p])), SCALE)!;
+    expect(container.querySelector('.draft-hint__impact')!.textContent).toBe(`${x.pos} Fit ${x.fit} · Ø Fit ${x.before} → ${x.after}`);
+    localStorage.removeItem('pokemon-elf:draft');
+  });
+
   it('Hot-Seat: „📱 Gerät an … weitergeben“ nur nach dem Pick eines anderen menschlichen Teams', async () => {
     const f = FORMATION_IDS[0];
     const empty = emptySlots(f);

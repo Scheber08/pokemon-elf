@@ -21,7 +21,7 @@ import { Segmented } from '../components/Segmented';
 import { Sprite } from '../components/Sprite';
 import { useT } from '../i18n';
 import { draftsSupported } from '../lib/api/draftClient';
-import { positionFit, roundBestPicks, soleTopIndex } from '../lib/fit';
+import { fitImpact, positionFit, roundBestPicks, soleTopIndex } from '../lib/fit';
 import { rankingNames } from '../lib/rankingNames';
 import { emptySlots } from '../lib/formation';
 import { biggestWin, comebackOf, missedChance, draftGrades, hatTricks, localShareText, mostCleanSheets, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
@@ -1703,6 +1703,11 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   <>
                     <strong>{t.game.pokemon(selected)}</strong>
                     {tx.selectedHint}
+                    {team && !team.cpu && (() => {
+                      // Bester freier Platz und Ø Fit des Teams am Zug vorher → nachher (wie online)
+                      const x = fitImpact(selected, FORMATIONS[team.formation].slots, team.slots, byId, scale('all'));
+                      return x && <span className="draft-hint__impact">{t.online.hintImpact(t.game.posShort[x.pos], x.fit, x.before, x.after)}</span>;
+                    })()}
                   </>
                 ) : (
                   <>

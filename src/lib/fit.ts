@@ -180,3 +180,35 @@ export function roundBestPicks(fits: readonly (number | null)[], perRound: numbe
   }
   return out;
 }
+
+/**
+ * Auswahl-Vorschau im Draft: bester freier Feldplatz von p (Positions-Fit) und der Ø Fit der gesetzten Elf vorher
+ * (null ohne gesetzte Spieler) und nachher. null, wenn kein Feldplatz mehr frei ist.
+ */
+export function fitImpact(
+  p: Pokemon,
+  defs: readonly { pos: PosCode }[],
+  slots: readonly (number | null | undefined)[],
+  byId: Map<number, Pokemon>,
+  scale: Scale,
+): { pos: PosCode; fit: number; before: number | null; after: number } | null {
+  let sum = 0;
+  let n = 0;
+  let best: { pos: PosCode; fit: number } | null = null;
+  defs.forEach((d, j) => {
+    const id = slots[j];
+    if (id != null) {
+      const q = byId.get(id);
+      if (q) {
+        sum += positionFit(q, d.pos, scale);
+        n++;
+      }
+      return;
+    }
+    const fit = positionFit(p, d.pos, scale);
+    if (!best || fit > best.fit) best = { pos: d.pos, fit };
+  });
+  if (!best) return null;
+  const b: { pos: PosCode; fit: number } = best;
+  return { pos: b.pos, fit: Math.round(b.fit), before: n ? Math.round(sum / n) : null, after: Math.round((sum + b.fit) / (n + 1)) };
+}

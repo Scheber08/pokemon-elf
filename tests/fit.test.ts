@@ -177,3 +177,29 @@ describe('roundBestPicks', () => {
     expect([...roundBestPicks([1, 2, 3, 4, 5], 2)]).toEqual([1, 3, 4]);
   });
 });
+
+describe('fitImpact', () => {
+  it('bester freier Platz und Ø Fit vorher → nachher', async () => {
+    const { fitImpact, positionFit, buildScale } = await import('../src/lib/fit');
+    const { ALL } = await import('./helpers');
+    const sc = buildScale(ALL, 'all');
+    const byId = new Map(ALL.map((p) => [p.id, p]));
+    const defs = [{ pos: 'TW' as const }, { pos: 'ST' as const }, { pos: 'IV' as const }];
+    const a = ALL[5];
+    const p = ALL[100];
+    // Leeres Team: kein Vorher
+    const empty = fitImpact(p, defs, [null, null, null], byId, sc)!;
+    const best = defs.map((d) => positionFit(p, d.pos, sc)).reduce((x, y) => Math.max(x, y));
+    expect(empty.fit).toBe(Math.round(best));
+    expect(empty.before).toBeNull();
+    expect(empty.after).toBe(Math.round(best));
+    // TW besetzt: nur ST/IV frei, Ø aus TW-Fit und neuem Fit
+    const one = fitImpact(p, defs, [a.id, null, null], byId, sc)!;
+    expect(['ST', 'IV']).toContain(one.pos);
+    const tw = positionFit(a, 'TW', sc);
+    expect(one.before).toBe(Math.round(tw));
+    expect(one.after).toBe(Math.round((tw + positionFit(p, one.pos, sc)) / 2));
+    // Alles voll: null
+    expect(fitImpact(p, defs, [a.id, ALL[6].id, ALL[7].id], byId, sc)).toBeNull();
+  });
+});

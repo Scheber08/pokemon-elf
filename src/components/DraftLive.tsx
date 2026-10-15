@@ -27,7 +27,7 @@ import {
   rounds as engineRounds,
   teamIndexForPick,
 } from '../lib/draftEngine';
-import { positionFit } from '../lib/fit';
+import { fitImpact, positionFit } from '../lib/fit';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import {
@@ -492,29 +492,8 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
 
   // Auswahl: bester freier Feldplatz des Pokémon und was er aus dem Ø Fit der eigenen Elf macht
   const impact = (() => {
-    if (!me || !selectedMon) return null;
-    const sc = scale('all');
-    const defs = FORMATIONS[me.formation].slots;
-    const filled = defs.flatMap((d, j) => {
-      const p = me.slots[j] != null ? byId.get(me.slots[j]!) : undefined;
-      return p ? [positionFit(p, d.pos, sc)] : [];
-    });
-    let best: { pos: PosCode; fit: number } | null = null;
-    defs.forEach((d, j) => {
-      if (me.slots[j] != null) return;
-      const fit = positionFit(selectedMon, d.pos, sc);
-      if (!best || fit > best.fit) best = { pos: d.pos, fit };
-    });
-    if (!best) return null;
-    const b: { pos: PosCode; fit: number } = best;
-    const sum = filled.reduce((x, y) => x + y, 0);
-    const before = filled.length ? Math.round(sum / filled.length) : null;
-    const after = Math.round((sum + b.fit) / (filled.length + 1));
-    return (
-      <span className="draft-hint__impact">
-        {t.online.hintImpact(t.game.posShort[b.pos], Math.round(b.fit), before, after)}
-      </span>
-    );
+    const x = me && selectedMon ? fitImpact(selectedMon, FORMATIONS[me.formation].slots, me.slots, byId, scale('all')) : null;
+    return x && <span className="draft-hint__impact">{t.online.hintImpact(t.game.posShort[x.pos], x.fit, x.before, x.after)}</span>;
   })();
 
   const hint = !me ? null : myTurn ? (
