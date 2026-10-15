@@ -20,7 +20,8 @@ import { draftsSupported } from '../lib/api/draftClient';
 import { positionFit } from '../lib/fit';
 import { emptySlots } from '../lib/formation';
 import { draftGrades, seasonEleven, tableRowClass } from '../lib/leagueTimeline';
-import { createRng, gaussian, randomSeed, shuffle } from '../lib/rng';
+import { createRng, randomSeed, shuffle } from '../lib/rng';
+import { cpuLevelOf, cpuPickChoice } from '../lib/localCpu';
 import { CLASSIC_MODEL, DRAFT_MODEL, formatRecord, simulateLeague, type LeagueTeam } from '../lib/season';
 import { scorerSummary } from '../lib/seasonTimeline';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
@@ -98,8 +99,6 @@ interface DraftState {
   cpuLevel?: 'easy' | 'hard';
 }
 
-/** CPU-Pick je Stärke: aus wie vielen Top-Kandidaten je Platz gewählt wird und wie viel Zufall mitspielt */
-const CPU_LEVELS = { easy: { top: 12, noise: 18 }, normal: { top: 4, noise: 5 }, hard: { top: 1, noise: 0 } } as const;
 
 function defaultTeams(n: number): DraftTeam[] {
   const names = shuffle(Math.random, CLUB_NAMES);
@@ -258,23 +257,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   useEffect(() => {
     if (state.phase !== 'drafting' || !team?.cpu) return;
     const timer = window.setTimeout(() => {
-      const sc = scale('all');
-      const defs = FORMATIONS[team.formation].slots;
-      const rng = createRng(randomSeed());
-      // Unbekannte Werte (z. B. alter oder kaputter Speicherstand) zählen als „normal“
-      const level = CPU_LEVELS[state.cpuLevel === 'easy' || state.cpuLevel === 'hard' ? state.cpuLevel : 'normal'];
-      let best: { score: number; slot: number; id: number } | null = null;
-      for (const [slot, d] of defs.entries()) {
-        if (team.slots[slot] != null) continue;
-        const top = pool
-          .map((p) => ({ p, fit: positionFit(p, d.pos, sc) }))
-          .sort((a, b) => b.fit - a.fit)
-          .slice(0, level.top);
-        for (const { p, fit } of top) {
-          const score = fit * (0.92 + 0.08 * POSITIONS[d.pos].teamWeight) + gaussian(rng) * level.noise;
-          if (!best || score > best.score) best = { score, slot, id: p.id };
-        }
-      }
+      const best = cpuPickChoice(team, pool, scale('all'), cpuLevelOf(state.cpuLevel), createRng(randomSeed()));
       if (best) lock(currentTeam, best.slot, best.id);
     }, 550);
     return () => window.clearTimeout(timer);
