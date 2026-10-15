@@ -102,6 +102,13 @@ const online: Messages['online'] = {
 
   // ------------------------------------------------ Lobby
   codeAria: (spelled) => `League code ${spelled}`,
+  inviteCopy: 'Copy invite',
+  inviteCopied: 'Invite copied – off to the chat!',
+  inviteAllRegions: 'all regions',
+  inviteTeams: (n, max) => `${n}/${max} teams`,
+  invitePick: (sec) => `${sec} s per pick`,
+  inviteNoTimer: 'no pick timer',
+  inviteText: (name, code, rules, link) => `⚽ Join my Pokémon Elf draft league${name ? ` “${name}”` : ''}!\n${rules}\nCode: ${code}\n${link}`,
   linkCopied: 'Link copied',
   copyFailed: 'Couldn’t copy',
   copyLink: 'Copy link',

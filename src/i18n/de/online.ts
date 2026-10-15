@@ -108,6 +108,14 @@ const online = {
 
   // ------------------------------------------------ Lobby
   codeAria: (spelled: string) => `Liga-Code ${spelled}`,
+  inviteCopy: 'Einladung kopieren',
+  inviteCopied: 'Einladung kopiert – ab in den Chat!',
+  inviteAllRegions: 'alle Regionen',
+  inviteTeams: (n: number, max: number) => `${n}/${max} Teams`,
+  invitePick: (sec: number) => `${sec} s je Pick`,
+  inviteNoTimer: 'ohne Pick-Uhr',
+  inviteText: (name: string, code: string, rules: string, link: string) =>
+    `⚽ Komm in meine Pokémon-Elf-Draft-Liga${name ? ` „${name}“` : ''}!\n${rules}\nCode: ${code}\n${link}`,
   linkCopied: 'Link kopiert',
   copyFailed: 'Kopieren hat nicht geklappt',
   copyLink: 'Link kopieren',

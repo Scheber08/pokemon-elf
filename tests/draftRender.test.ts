@@ -986,6 +986,23 @@ describe('DraftLobby', () => {
     stubFetch();
   });
 
+  it('📋 Einladung kopieren: Liganame, Regeln, Code und Link', async () => {
+    const st = lobby(2, { region: 1, maxTeams: 6, pickSeconds: 60, name: 'Montagsliga' });
+    const writes: string[] = [];
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (x: string) => void writes.push(x) }, configurable: true });
+    const { container } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) })));
+    await settle();
+    const btn = container.querySelectorAll('.draft-code button').find((b) => b.textContent === '📋 Einladung kopieren') as MiniElement;
+    await act(async () => btn.click());
+    await settle();
+    expect(writes).toHaveLength(1);
+    const lines = writes[0].split('\n');
+    expect(lines[0]).toBe(`⚽ Komm in meine Pokémon-Elf-Draft-Liga${st.settings.name ? ` „${st.settings.name}“` : ''}!`);
+    expect(lines[1]).toBe(`Kanto · 2/6 Teams · ${st.settings.pickSeconds > 0 ? `${st.settings.pickSeconds} s je Pick` : 'ohne Pick-Uhr'}`);
+    expect(lines[2]).toBe(`Code: ${st.code}`);
+    expect(lines[3]).toMatch(new RegExp(`${st.code}$`));
+  });
+
   it('🎲 Zufällige Formation: wählt eine andere Formation fürs eigene Team', async () => {
     const st = lobby(2, { region: 1, maxTeams: 6 });
     const room = fakeRoom(snap(st, 'h'));

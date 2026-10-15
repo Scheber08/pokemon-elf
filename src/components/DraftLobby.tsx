@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
-import { DRAFT_GOALS, DRAFT_LIMITS, type DraftGoal, type DraftSettings } from '../lib/api/draftContract';
+import { DRAFT_GOALS, DRAFT_LIMITS, type DraftGoal, type DraftSettings, type DraftSnapshot } from '../lib/api/draftContract';
 import { CUP_SIZE } from '../lib/cup';
 import { copyText } from '../lib/exportImage';
 import { qrPath, type QrPath } from '../lib/qr';
@@ -78,7 +78,7 @@ function DraftQr({ link }: { link: string }) {
 }
 
 /** Liga-Code groß + Link kopieren / Teilen. */
-function DraftCodeCard({ code, name = '' }: { code: string; name?: string }) {
+function DraftCodeCard({ code, name = '', settings, teams }: { code: string; name?: string; settings?: DraftSnapshot['settings']; teams?: number }) {
   const t = useT();
   const toast = useToast();
   const link = draftLink(code);
@@ -100,6 +100,21 @@ function DraftCodeCard({ code, name = '' }: { code: string; name?: string }) {
         >
           {t.online.copyLink}
         </button>
+        {settings && (
+          <button
+            type="button"
+            className="btn"
+            onClick={async () => {
+              // Einladung mit den wichtigsten Regeln – fertig für den Gruppenchat
+              const regions = settings.gens.length >= 9 ? t.online.inviteAllRegions : settings.gens.map((g) => t.game.region[g] ?? g).join(', ');
+              const rules = [regions, t.online.inviteTeams(teams ?? 0, settings.maxTeams), settings.pickSeconds > 0 ? t.online.invitePick(settings.pickSeconds) : t.online.inviteNoTimer];
+              const text = t.online.inviteText(name, code, rules.join(' · '), link);
+              toast((await copyText(text)) ? t.online.inviteCopied : t.online.copyFailed);
+            }}
+          >
+            📋 {t.online.inviteCopy}
+          </button>
+        )}
         {canShare && (
           <button
             type="button"
@@ -346,7 +361,7 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
   return (
     <div className="draft-lobby">
       <div className="draft-lobby__main">
-        <DraftCodeCard code={s.code} name={s.settings.name} />
+        <DraftCodeCard code={s.code} name={s.settings.name} settings={s.settings} teams={s.teams.length} />
         {s.career && (
           <section className="card draft-career" aria-label={t.online.careerTitle}>
             <p className="kicker">{t.online.careerTitle}</p>
