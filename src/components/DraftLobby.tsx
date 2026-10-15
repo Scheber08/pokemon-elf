@@ -349,7 +349,8 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
                   </span>
                   <DraftTeamTags team={team} host={team.id === s.hostTeamId} you={team.id === s.you} />
                   {isHost && (
-                    <span className="draft-lobby__tools">
+                    // Nur ein Knopf (Entfernen, ohne Pfeile): passt auch auf dem Handy in die Zeile
+                    <span className={`draft-lobby__tools ${s.settings.order !== 'host' ? 'draft-lobby__tools--single' : ''}`}>
                       {s.settings.order === 'host' && (
                         <>
                           <button

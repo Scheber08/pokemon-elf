@@ -879,6 +879,12 @@
     grid-column: 2 / -1;
     justify-self: end;
   }
+  .draft-lobby__team:has(.draft-lobby__tools--single) {
+    grid-template-columns: 1.6em minmax(0, 1fr) auto auto;
+  }
+  .draft-lobby__team .draft-lobby__tools--single {
+    grid-column: auto;
+  }
   .draft-lobbies__item {
     flex-wrap: wrap;
   }
