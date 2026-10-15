@@ -763,6 +763,23 @@ export function setTeamCheer(state: DraftState, deviceId: string, raw: unknown):
   };
 }
 
+/** „Bereit“ in der Lobby melden bzw. zurücknehmen – reine Anzeige für den Host. */
+export function setTeamReady(state: DraftState, deviceId: string, ready: boolean): DraftState {
+  requireLobby(state);
+  const teamId = teamOfDevice(state, deviceId) ?? fail('not_joined', 'Du bist in dieser Liga noch nicht dabei');
+  return {
+    ...state,
+    teams: state.teams.map((t) => {
+      if (t.id !== teamId) return t;
+      if (!ready) {
+        const { ready: _drop, ...rest } = t;
+        return rest;
+      }
+      return { ...t, ready: true as const };
+    }),
+  };
+}
+
 /** Trikotfarben des eigenen Teams (null = Standard) – jederzeit, reine Optik. */
 export function setTeamKit(state: DraftState, deviceId: string, raw: unknown): DraftState {
   const teamId = teamOfDevice(state, deviceId) ?? fail('not_joined', 'Du bist in dieser Liga nicht dabei');

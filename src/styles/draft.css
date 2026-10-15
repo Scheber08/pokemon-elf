@@ -1422,3 +1422,12 @@ button.draft-bench__slot {
   font-weight: 700;
   text-decoration: underline;
 }
+
+/* Lobby: bereit gemeldet */
+.draft-lobby__ready-mark {
+  color: var(--green);
+  font-weight: 700;
+}
+.draft-lobby__ready {
+  margin-bottom: 0.5rem;
+}

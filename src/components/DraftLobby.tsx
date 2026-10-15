@@ -201,6 +201,14 @@ function MyTeamCard({ room }: { room: DraftRoom }) {
       <h2 id="draft-me-title" className="section-title">
         {t.online.yourTeam}
       </h2>
+      <button
+        type="button"
+        className={`btn btn--small ${me.ready ? 'btn--primary' : ''} draft-lobby__ready`}
+        aria-pressed={!!me.ready}
+        onClick={() => room.setReady(!me.ready)}
+      >
+        {me.ready ? t.online.readyOn : t.online.readyOff}
+      </button>
       <DraftTeamFields
         name={nameDraft ?? me.name}
         formation={me.formation}
@@ -289,7 +297,10 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
                     {cleanCrest(team.crest) && <Crest crest={cleanCrest(team.crest)!} size={24} />}
                     <span className="draft-lobby__name">
                       <strong>{name}</strong>
-                      <small>{team.formation}</small>
+                      <small>
+                        {team.formation}
+                        {team.ready && <span className="draft-lobby__ready-mark"> · ✓ {t.online.readyMark}</span>}
+                      </small>
                     </span>
                   </span>
                   <DraftTeamTags team={team} host={team.id === s.hostTeamId} you={team.id === s.you} />

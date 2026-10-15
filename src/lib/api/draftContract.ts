@@ -270,6 +270,8 @@ export interface DraftTeam {
   cheer?: string;
   /** Vereinswappen (src/lib/crest.ts) – fehlt: keins */
   crest?: { shape: string; pattern: string; primary: string; secondary: string; symbol: string };
+  /** In der Lobby „bereit“ gemeldet (nur Menschen, reine Anzeige) */
+  ready?: true;
 }
 
 /** Draft-Slot des ersten Bankplatzes (Manager-Saison): Bankplatz i = DRAFT_BENCH_SLOT + i */
@@ -550,6 +552,8 @@ export type DraftClientMessage =
   | { type: 'kit'; kit: { home: string; away: string } | null }
   /** Torjubel setzen ('' = keiner) – jederzeit, reine Optik */
   | { type: 'cheer'; text: string }
+  /** Lobby: eigenes Team bereit / nicht bereit */
+  | { type: 'ready'; ready: boolean }
   /** Wappen setzen (null = keins) – jederzeit, reine Optik */
   | { type: 'crest'; crest: Record<string, unknown> | null }
   | { type: 'offer-reply'; id: number; accept: boolean }

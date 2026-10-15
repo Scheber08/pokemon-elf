@@ -131,6 +131,9 @@ const online: Messages['online'] = {
   orderRandom: 'The draft order is drawn at the start.',
   orderHost: 'Draft order as listed (round 2 in reverse – snake draft).',
   orderHostFixed: 'Draft order as listed – the same every round.',
+  readyOff: 'I’m ready',
+  readyOn: '✓ Ready – undo',
+  readyMark: 'ready',
   addCpu: 'Add CPU team',
   fillCpu: (n) => `Fill with CPU (${n})`,
   readOnlyLobby:
