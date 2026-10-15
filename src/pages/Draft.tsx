@@ -564,6 +564,14 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               <strong>{teamName(champion.name)}</strong> · {t.draft.results.heroLine(champion, champion.rating)}
             </p>
           )}
+          {/* Platz jedes menschlichen Teams (Hot-Seat: auch mehrere) */}
+          {league.table.map((r, i) =>
+            state.teams[r.team] && !state.teams[r.team].cpu ? (
+              <p key={r.team} className="draft__you">
+                {t.draft.results.yourPlace(teamName(r.name), i + 1, r.pts)}
+              </p>
+            ) : null,
+          )}
         </header>
         <div className="result-grid">
           <section className="card" aria-labelledby="draft-table">

@@ -1092,6 +1092,10 @@
 .draft__champion span {
   color: var(--yellow);
 }
+.draft__you {
+  margin: 4px 0 0;
+  font-weight: 600;
+}
 .draft__grade {
   font-family: var(--font-head);
   font-weight: 700;

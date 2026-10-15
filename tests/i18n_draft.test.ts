@@ -391,6 +391,9 @@ describe('/draft an einem Gerät auf Englisch', () => {
     // Meister-Zeile und Draft-Note
     expect(all).toMatch(/Champions: \| [^|]+ \| · \| \d+ pts/);
     expect(all).toContain('Grade');
+    // Platz des eigenen (menschlichen) Teams im Kopf
+    const ownAt = container.querySelectorAll('.league-table tbody tr').findIndex((r) => r.textContent?.includes('My Team'));
+    expect(container.querySelector('.draft__you')!.textContent).toMatch(new RegExp(`^Your team My Team: ${['1st', '2nd', '3rd'][ownAt]} place · \\d+ pts?$`));
     // Elf der Saison (englisch): Feld und elf Namen
     expect(texts(container).join(' | ')).toContain('Team of the season');
     expect(container.querySelectorAll('.draft-results__eleven-list li')).toHaveLength(11);
