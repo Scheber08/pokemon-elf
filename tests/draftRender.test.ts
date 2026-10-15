@@ -891,11 +891,16 @@ describe('ManagerSeason', () => {
     s = playMatchday(startManagerSeason(s, ALL, SCALE), ALL, SCALE);
     const me = s.teams.find((t) => t.id === 'h')!;
     const inn = engine.rosterOf(me)[0];
-    const st = { ...s, manager: { ...s.manager!, transfers: [{ matchday: 1, teamId: 'h', in: inn, out: 9999, shiny: true }] } };
+    const st = {
+      ...s,
+      teams: s.teams.map((t) => (t.id === 'h' ? { ...t, goal: 'stay' as const } : t)),
+      manager: { ...s.manager!, transfers: [{ matchday: 1, teamId: 'h', in: inn, out: 9999, shiny: true }] },
+    };
     const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(st, 'h')), readOnly: false })));
     await settle();
     expect(container.querySelector('.manager__shiny')!.textContent).toContain(ALL.find((p) => p.id === inn)!.de);
     expect(container.querySelector('.manager__place')!.textContent).toMatch(/^Dein Team: Platz \d+ · \d+ Pkt.* · (\d+ Pkt (Vorsprung|hinter Platz 1)|punktgleich)/);
+    expect(container.querySelector('.manager__goal')!.textContent).toContain('🎯 Nicht auf den letzten 3 Plätzen');
     // Kader-Tabelle: Tore dieser Saison je Pokémon (Summe = eigene Tore am 1. Spieltag)
     const idx = st.teams.findIndex((t) => t.id === 'h');
     const m1 = st.league!.matches.find((m) => m.round === 1 && (m.home === idx || m.away === idx))!;

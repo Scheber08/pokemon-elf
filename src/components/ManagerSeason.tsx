@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
-import { rosterOf } from '../lib/draftEngine';
+import { goalReached, rosterOf } from '../lib/draftEngine';
 import { leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
@@ -259,6 +259,13 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
                   {at === 0
                     ? tx.leadBy(shown.table[0].pts - shown.table[1].pts)
                     : tx.behindTop(shown.table[0].pts - shown.table[at].pts)}
+                </span>
+              )}
+              {s.teams[you]?.goal && (
+                <span className="manager__goal">
+                  {' · 🎯 '}
+                  {t.online.goal[s.teams[you].goal!]}
+                  {goalReached(s.teams[you].goal!, at + 1, shown.table.length) ? ' ✓' : ''}
                 </span>
               )}
             </p>
