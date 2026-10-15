@@ -708,6 +708,12 @@ describe('/draft an einem Gerät auf Englisch', () => {
       const { container } = await render(app(h(Draft)));
       const btn = container.querySelectorAll('.cpu-thinking button').find((b) => b.textContent === '⏩ Faster until the next turn') as MiniElement;
       expect(btn).toBeTruthy();
+      // Offene Positionen der CPU (Formation in Reihenfolge, gruppiert)
+      const { FORMATIONS } = await import('../src/config/formations');
+      const { messages } = await import('../src/i18n');
+      const counts = new Map<string, number>();
+      for (const d of FORMATIONS[f1].slots) counts.set(messages().game.posShort[d.pos], (counts.get(messages().game.posShort[d.pos]) ?? 0) + 1);
+      expect(container.querySelector('.draft__cpuneeds')!.textContent).toBe(` (still looking for: ${[...counts].map(([p, k]) => (k > 1 ? `${k}× ${p}` : p)).join(', ')})`);
       await act(async () => btn.click());
       // Zwei CPU-Picks à 40 ms – weit unter der normalen Bedenkzeit (2 × 550 ms)
       for (let i = 0; i < 4; i++) await act(async () => void vi.advanceTimersByTime(60));

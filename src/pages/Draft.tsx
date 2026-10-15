@@ -1476,6 +1476,20 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           {team?.cpu ? (
             <div className="card cpu-thinking" aria-live="polite">
               <span className="boot__ball boot__ball--small" aria-hidden="true" /> {tx.cpuScouting(teamName(team.name))}
+              {(() => {
+                // Was der CPU noch fehlt (offene Feldpositionen, gruppiert in Reihenfolge der Formation)
+                const open = new Map<string, number>();
+                FORMATIONS[team.formation].slots.forEach((d, j) => {
+                  if (team.slots[j] == null) open.set(t.game.posShort[d.pos], (open.get(t.game.posShort[d.pos]) ?? 0) + 1);
+                });
+                if (!open.size) return null;
+                return (
+                  <span className="small muted draft__cpuneeds">
+                    {' '}
+                    {tx.cpuNeeds([...open].map(([pos, k]) => (k > 1 ? `${k}× ${pos}` : pos)).join(', '))}
+                  </span>
+                );
+              })()}
               {!fastCpu && (
                 <button type="button" className="btn btn--small btn--ghost draft__fastcpu" onClick={() => setFastCpu(true)}>
                   {tx.fastCpu}

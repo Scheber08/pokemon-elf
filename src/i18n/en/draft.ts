@@ -112,6 +112,7 @@ const draft: Messages['draft'] = {
     onTheClock: 'On the clock:',
     cpuTag: '(CPU)',
     cpuScouting: (team) => `${team} is scouting …`,
+    cpuNeeds: (positions) => `(still looking for: ${positions})`,
     pickTitle: 'Pick a Pokémon',
     selectedHint: ' selected. Click a free spot on the pitch.',
     yourTurn: (team) => `${team}, you’re up.`,

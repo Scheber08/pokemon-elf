@@ -1688,3 +1688,15 @@ button.draft-bench__slot {
 .manager__tip-score {
   flex-basis: 100%;
 }
+
+/* Lokaler Draft: offene Positionen der CPU – eigene Zeile unter „… scoutet“ */
+.cpu-thinking:has(.draft__cpuneeds) {
+  flex-wrap: wrap;
+}
+.draft__cpuneeds {
+  order: 3;
+  flex-basis: 100%;
+  font-family: var(--font-body);
+  font-size: 13px;
+  text-transform: none;
+}

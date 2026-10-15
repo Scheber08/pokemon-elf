@@ -113,6 +113,7 @@ const draft = {
     onTheClock: 'Am Zug:',
     cpuTag: '(CPU)',
     cpuScouting: (team: string) => `${team} scoutet …`,
+    cpuNeeds: (positions: string) => `(sucht noch: ${positions})`,
     pickTitle: 'Wähle ein Pokémon',
     /** Folgt auf den fett gesetzten Pokémon-Namen */
     selectedHint: ' gewählt. Klicke auf einen freien Platz auf dem Feld.',
