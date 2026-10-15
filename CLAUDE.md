@@ -62,7 +62,10 @@ Kapitän in allen Modi (zählt doppelt; Rangliste dafür einmalig neu gestartet)
 Pick (automatisch der bestpassende, „Beste Wahl“, Ersatzkapitän der CPU), „Mit CPU auffüllen“ in der Lobby, Vibration bei
 knapper Pick-Zeit, Shinys und Pokalsiege im Profil, Karriere-Verlauf, „Ich bin bereit“ in der Lobby, Wunschliste mit
 Taste W/„★ Wunsch n“/Vergebene entfernen, sortierbare Kader-Tabelle mit Toren und Vorlagen, Teambild auch im lokalen Draft,
-alle Picks und bester Kapitän im Ergebnis, Erfolg „Spielführer“.
+alle Picks und bester Kapitän im Ergebnis, Erfolg „Spielführer“, Ø Fit auf dem Board, Position/Fit und „Run“ im
+Pick-Verlauf, offene Positionen im Wartehinweis, Pool-Größe in der Lobby, weitere Saisonrekorde (Herbstmeister,
+Rückrunde, Überraschung/Enttäuschung, torreichstes Spiel, Remis-König), nächster Gegner im Ticker, Formations-Tipp,
+beste Position der Bankspieler, Punkte-Hochrechnung und Torjäger des Gegners in der Manager-Saison.
 
 1. Weitere Saisons im Shop (z. B. Muttertag, Schulanfang) – neue Einträge mit `seasonal(...)` in `src/lib/trainer.ts`
 2. Shiny-Party-Badge in der Liste öffentlicher Lobbys (braucht Feld in der Lobby-Zeile – Schema nur additiv)

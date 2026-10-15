@@ -16,6 +16,9 @@ const info = {
     /** „Was ist neu?" – die wichtigsten Neuerungen, neueste zuerst */
     newsTitle: 'Was ist neu?',
     news: [
+      'Online-Draft: Ø Fit je Team auf dem Board, Position und Fit im Verlauf samt „Run“-Hinweis, offene Positionen im Wartehinweis',
+      'Saisonergebnis: Herbstmeister, bestes Team der Rückrunde, Überraschung/Enttäuschung, torreichstes Spiel und deine höchsten Siege/Niederlagen',
+      'Manager-Saison: Formations-Tipp, beste Position der Bankspieler, Punkte-Hochrechnung und der gefährlichste Torschütze des nächsten Gegners',
       'Neu: Shinys im Draft – 2 % Chance je Pick (oder 10 % als „Shiny-Party“), je schwächer das Pokémon, desto größer der Team-Bonus',
       'Neu: Kapitän in allen Modi – seine Passung zählt doppelt, „Beste Wahl“ sucht ihn aus, im Online-Draft automatisch und bis zum Anpfiff wechselbar',
       'Neu: Trikotnummern, Trikotfarben, Torjubel und Vereinswappen für dein Team',

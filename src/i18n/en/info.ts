@@ -14,6 +14,9 @@ const info: Messages['info'] = {
     guidePost: '.',
     newsTitle: 'What’s new?',
     news: [
+      'Online draft: average fit per team on the board, position and fit in the pick feed with a “run” alert, open positions in the waiting hint',
+      'Season result: half-season champions, best team of the second half, surprise/disappointment, highest-scoring game and your biggest win/defeat',
+      'Manager season: formation tip, best position for bench players, points projection and the next opponent’s most dangerous scorer',
       'New: shinies in the draft – 2% chance per pick (or 10% as “shiny party”), the weaker the Pokémon, the bigger the team bonus',
       'New: captain in every mode – their fit counts double, “Best choice” finds them, automatic in the online draft and changeable until kickoff',
       'New: jersey numbers, kit colours, goal celebrations and club crests for your team',
