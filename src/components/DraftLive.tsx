@@ -337,6 +337,21 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     }
   }, [s.picks.length]);
 
+  // ✅ Eigene Elf vollständig (alle Feldplätze besetzt): einmal mit Ø Fit feiern – nicht beim Laden
+  const myFieldDone = !!me && FORMATIONS[me.formation].slots.every((_, j) => me.slots[j] != null);
+  const fieldDoneSeen = useRef(myFieldDone);
+  useEffect(() => {
+    const was = fieldDoneSeen.current;
+    fieldDoneSeen.current = myFieldDone;
+    if (was || !myFieldDone || !me) return;
+    const sc = scale('all');
+    const fits = FORMATIONS[me.formation].slots.flatMap((d, j) => {
+      const p = byId.get(me.slots[j]!);
+      return p ? [positionFit(p, d.pos, sc)] : [];
+    });
+    if (fits.length) setInfo(t.online.elevenDone(Math.round(fits.reduce((a, b) => a + b, 0) / fits.length)));
+  }, [myFieldDone]);
+
   // ★ Erstes legendäres Pokémon des Drafts und das letzte freie: kurz ansagen (einmal je Pick, nicht beim Laden)
   const legendSeen = useRef(s.picks.length);
   useEffect(() => {

@@ -201,6 +201,7 @@ const online = {
   favouriteFallback: 'Dein Favorit',
   /** Eigener Pick mit dem besten Positions-Fit des Drafts bisher (🏅) */
   recordPick: (name: string, fit: number, pos: string) => `🏅 Draft-Rekord: ${name} passt mit ${fit} als ${pos} – bester Fit bisher!`,
+  elevenDone: (avg: number) => `✅ Deine Elf steht – Ø Fit ${avg}`,
   legendFirst: (name: string, team: string) => `★ Erstes legendäres Pokémon des Drafts: ${name} (${team})`,
   legendLast: (name: string, team: string) => `★ Das letzte legendäre Pokémon ist vergeben: ${name} (${team})`,
   favouriteGone: (name: string, team: string) => `${name} ist weg – ${team} war schneller.`,

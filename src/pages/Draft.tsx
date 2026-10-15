@@ -234,6 +234,25 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   );
   /** Teamname für die Anzeige: Vorgabe „Mein Team" und Vereinsnamen (CPU) in der aktiven Sprache */
   const teamName = (name: string) => (name === OWN_TEAM ? tx.myTeam : t.game.club(name));
+  // ✅ Elf eines menschlichen Teams vollständig (letzter Pick dieses Teams): Ø Fit als Toast
+  const elevenPickRef = useRef(state.pick);
+  useEffect(() => {
+    const before = elevenPickRef.current;
+    elevenPickRef.current = state.pick;
+    const last = state.log?.at(-1);
+    if (state.pick !== before + 1 || !last || state.log!.length !== state.pick) return;
+    const tm = state.teams[last.team];
+    if (!tm || tm.cpu || tm.slots.some((x) => x == null)) return;
+    const sc = scale('all');
+    const fits = FORMATIONS[tm.formation].slots.flatMap((d, j) => {
+      const p = byId.get(tm.slots[j]!);
+      return p ? [positionFit(p, d.pos, sc)] : [];
+    });
+    if (!fits.length) return;
+    const avg = Math.round(fits.reduce((a, b) => a + b, 0) / fits.length);
+    toast(tm.name === OWN_TEAM ? t.online.elevenDone(avg) : tx.elevenDone(teamName(tm.name), avg));
+  }, [state.pick]);
+
   // ★ Erstes legendäres Pokémon des Drafts und das letzte freie (wie online; nur beim Vorwärtsdraften)
   const legendPickRef = useRef(state.pick);
   useEffect(() => {

@@ -99,6 +99,7 @@ const draft = {
     titlesCount: (n: number) => (n === 1 ? '🏆 1 Titel' : `🏆 ${n} Titel`),
     titlesNote: (n: number) => `Meister aus ${n} lokalen Ligen auf diesem Gerät (gleicher Teamname = gleicher Verein).`,
     bestFree: 'Beste Freie:',
+    elevenDone: (team: string, avg: number) => `✅ Die Elf von ${team} steht – Ø Fit ${avg}`,
     roundDone: (round: number, name: string, team: string, fit: number) =>
       `🔔 Runde ${round} vorbei – Top-Pick: ${name} (${team}, Fit ${fit})`,
     bestFreeTitle: (name: string, pos: string, fit: number) => `${name} auswählen – bester Freier für ${pos} (Fit ${fit})`,

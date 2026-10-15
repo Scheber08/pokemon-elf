@@ -579,6 +579,27 @@ describe('DraftLive', () => {
     expect(container.querySelector('.run-notice__text')!.textContent).toMatch(new RegExp(`^🏅 Draft-Rekord: ${best.de} passt mit ${fit} als .+ – bester Fit bisher!$`));
   });
 
+  it('✅ eigene Elf vollständig: Hinweis mit Ø Fit (einmal, nicht beim Laden)', async () => {
+    const { FORMATIONS } = await import('../src/config/formations');
+    const { positionFit } = await import('../src/lib/fit');
+    const full = (st: DraftState) => {
+      const me = st.teams.find((t) => t.id === 'h')!;
+      return FORMATIONS[me.formation].slots.every((_, j) => me.slots[j] != null);
+    };
+    let prev = drafting();
+    let next = autoPick(prev);
+    while (!full(next)) [prev, next] = [next, autoPick(next)];
+    const { container, root } = await renderLive(fakeRoom(snap(prev, 'h')));
+    expect(container.querySelector('.run-notice')).toBeNull();
+    await act(async () => root.render(app(h(DraftLive, { room: fakeRoom(snap(next, 'h')) }))));
+    const me = next.teams.find((t) => t.id === 'h')!;
+    const fits = FORMATIONS[me.formation].slots.map((d, j) => positionFit(ALL.find((p) => p.id === me.slots[j])!, d.pos, SCALE));
+    const avg = Math.round(fits.reduce((a, b) => a + b, 0) / fits.length);
+    expect(container.querySelector('.run-notice__text')!.textContent).toBe(`✅ Deine Elf steht – Ø Fit ${avg}`);
+    const fresh = await renderLive(fakeRoom(snap(next, 'h')));
+    expect(fresh.container.querySelector('.run-notice')).toBeNull();
+  });
+
   it('★ erstes legendäres Pokémon des Drafts wird angesagt (nicht beim Laden)', async () => {
     let s = engine.startDraft(lobby(2, { gens: [1], legendary: true, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
     const { container, root } = await renderLive(fakeRoom(snap(s, 'h')));

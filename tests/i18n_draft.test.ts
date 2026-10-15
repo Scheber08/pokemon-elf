@@ -1063,6 +1063,31 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(r.container.querySelectorAll('.toast').filter((e) => e.textContent!.startsWith('🔔'))).toHaveLength(0);
   });
 
+  it('✅ Elf eines menschlichen Teams vollständig: Toast mit Ø Fit', async () => {
+    const f = FORMATION_IDS[0];
+    const kanto = ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth);
+    // Zwei Menschen, je zehn Spieler; letzte Runde (Snake: Pick 20 → Team 0), ein Platz frei
+    const teams = [0, 1].map((i) => ({ name: i ? 'Zweites Team' : 'Mein Team', cpu: false, formation: f, slots: emptySlots(f).map((_, j) => (j < 10 ? kanto[i * 10 + j].id : null)) }));
+    const log: { team: number; slot: number; id: number }[] = [];
+    for (let k = 0; k < 20; k++) {
+      const round = Math.floor(k / 2);
+      const team = round % 2 === 0 ? k % 2 : 1 - (k % 2);
+      log.push({ team, slot: round, id: teams[team].slots[round]! });
+    }
+    const pickMon = kanto[30];
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: false, pick: 20, selected: pickMon.id, seed: null, log }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    await act(async () => (container.querySelector('.pitch .slot--target') as MiniElement).click());
+    const { FORMATIONS } = await import('../src/config/formations');
+    const { positionFit } = await import('../src/lib/fit');
+    const ids = [...teams[0].slots.slice(0, 10), pickMon.id];
+    const fits = FORMATIONS[f].slots.map((d, j) => positionFit(ALL.find((p) => p.id === ids[j])!, d.pos, SCALE));
+    const avg = Math.round(fits.reduce((a, b) => a + b, 0) / fits.length);
+    expect(container.querySelectorAll('.toast').map((e) => e.textContent)).toContain(`✅ Deine Elf steht – Ø Fit ${avg}`);
+    localStorage.removeItem('pokemon-elf:draft');
+  });
+
   it('★ das letzte freie legendäre Pokémon wird angesagt', async () => {
     const { isLegend } = await import('../src/lib/draftEngine');
     const f = FORMATION_IDS[0];
