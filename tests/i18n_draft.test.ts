@@ -911,6 +911,31 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(cols[1].querySelector('.draft-board__rainbow')).toBeNull();
   });
 
+  it('Hot-Seat: „📱 Gerät an … weitergeben“ nur nach dem Pick eines anderen menschlichen Teams', async () => {
+    const f = FORMATION_IDS[0];
+    const empty = emptySlots(f);
+    const humans = [
+      { name: 'Mein Team', cpu: false, formation: f, slots: [1, ...empty.slice(1)] },
+      { name: 'Zweites Team', cpu: false, formation: f, slots: [4, ...empty.slice(1)] },
+    ];
+    // Pick 3 (Snake): Team 1 hat eben gewählt, jetzt ist Team 1 noch einmal dran → kein Hinweis
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams: humans, region: 1, legends: false, pick: 2, selected: null, seed: null }));
+    let r = await render(app(h(Draft)));
+    await settle();
+    expect(r.container.querySelector('.draft__handover')).toBeNull();
+    // Pick 2: Team 0 hat gewählt, Team 1 ist dran → Hinweis mit seinem Namen
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams: humans, region: 1, legends: false, pick: 1, selected: null, seed: null }));
+    r = await render(app(h(Draft)));
+    await settle();
+    expect(r.container.querySelector('.draft__handover')!.textContent).toBe('📱 Gerät an Zweites Team weitergeben!');
+    // Vorher eine CPU: kein Hinweis
+    const withCpu = [{ ...humans[0], cpu: true, name: CLUB_NAMES[0] }, humans[1]];
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams: withCpu, region: 1, legends: false, pick: 1, selected: null, seed: null }));
+    r = await render(app(h(Draft)));
+    await settle();
+    expect(r.container.querySelector('.draft__handover')).toBeNull();
+  });
+
   it('Draft läuft: „🐍 Double pick“ an der Snake-Wende', async () => {
     storeLang('en');
     const [f, g] = [FORMATION_IDS[0], FORMATION_IDS[1]];

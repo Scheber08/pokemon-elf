@@ -1484,6 +1484,18 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               <h2 id="draft-pick-title" className="section-title">
                 {tx.pickTitle}
               </h2>
+              {(() => {
+                // Hot-Seat: Hat gerade ein anderes menschliches Team gewählt, Gerät weitergeben
+                if (state.pick < 1 || !team) return null;
+                const prev = state.teams[teamForPick(state.pick - 1, n)];
+                if (!prev || prev.cpu || prev === team) return null;
+                return (
+                  <p className="notice draft__handover" role="status">
+                    <span aria-hidden="true">📱 </span>
+                    {tx.handover(teamName(team.name))}
+                  </p>
+                );
+              })()}
               <p className={`hint ${selected ? 'hint--active' : ''}`} aria-live="polite">
                 {selected ? (
                   <>

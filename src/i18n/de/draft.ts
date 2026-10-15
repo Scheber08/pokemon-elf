@@ -117,6 +117,8 @@ const draft = {
     /** Folgt auf den fett gesetzten Pokémon-Namen */
     selectedHint: ' gewählt. Klicke auf einen freien Platz auf dem Feld.',
     yourTurn: (team: string) => `${team}, du bist dran.`,
+    /** Hot-Seat: ein anderes menschliches Team ist jetzt dran */
+    handover: (team: string) => `Gerät an ${team} weitergeben!`,
     abortConfirm: 'Draft abbrechen?',
     abort: 'Draft abbrechen',
   },

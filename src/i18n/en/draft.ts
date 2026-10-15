@@ -115,6 +115,7 @@ const draft: Messages['draft'] = {
     pickTitle: 'Pick a Pokémon',
     selectedHint: ' selected. Click a free spot on the pitch.',
     yourTurn: (team) => `${team}, you’re up.`,
+    handover: (team) => `Pass the device to ${team}!`,
     abortConfirm: 'Cancel the draft?',
     abort: 'Cancel draft',
   },
