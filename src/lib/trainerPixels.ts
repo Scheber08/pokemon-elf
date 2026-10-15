@@ -402,6 +402,14 @@ function hat(c: Canvas, id: string, cloth: string) {
       }
       c.dots([[15, 4], [16, 5]], '#7a5236');
       break;
+    case 'advent':
+      // Adventskranz (Advent): Tannengrün-Reif mit roten Beeren und vier Kerzen, eine davon brennt
+      c.fill(and(ellipse(15.5, 8.5, 9, 2.6), (_x, y) => y >= 7), '#2f7a3a', '#1c4f25');
+      c.dots([[9, 9], [14, 10], [19, 10], [23, 9]], '#d8342a');
+      for (const x of [9, 13, 18, 22]) c.rect(x, 3, 2, 5, '#f3efe4');
+      c.rect(9, 1, 2, 2, '#f7a21b');
+      c.dots([[9, 0]], '#ffd84a');
+      break;
     case 'snowcap':
       // Schneeflockenmütze (Winterzauber): hellblaue Strickmütze mit weißen Flocken, Umschlag und großem Bommel
       c.fill(and(ellipse(15.5, 10, 8.8, 7.5), above(10)), '#7fb8e6', '#4a7fb0');

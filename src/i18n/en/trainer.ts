@@ -120,6 +120,7 @@ const trainer: Messages['trainer'] = {
       mitre: 'Mitre',
       wheat: 'Harvest wreath',
       snowcap: 'Snowflake beanie',
+      advent: 'Advent wreath',
       jester: 'Jester cap',
       tyrolean: 'Tyrolean hat',
       leaves: 'Autumn wreath',

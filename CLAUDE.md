@@ -56,7 +56,7 @@ Saison auf 18 Teams mit Ranglisten-Teams aufgefüllt, KO-Turnier mit optionaler 
 Cosmetics-Shop (auch in Rangliste, Profil und Draft), Transfermarkt und Erinnerung vor dem Anpfiff in der
 Manager-Saison, eigener Menüpunkt „Manager", Spielbericht + 2D-Wiedergabe in allen Modi (einstellbar),
 Erfolge für die Manager-Saison, Hinweis „Erfolg freigeschaltet" nach Runs und Ligen, Saisonartikel im Shop
-(Halloween, Weihnachten, Frühling/Ostern, Sommer, Neujahr, Valentinstag, Herbst, Fußball-Sommer, Oktoberfest, Karneval, Muttertag, Schulanfang, Sankt Martin, Nikolaus, Erntedank, Winterzauber), Spieler des Spieltags, Tausch-Angebote zwischen Teams in der Manager-Saison,
+(Halloween, Weihnachten, Frühling/Ostern, Sommer, Neujahr, Valentinstag, Herbst, Fußball-Sommer, Oktoberfest, Karneval, Muttertag, Schulanfang, Sankt Martin, Nikolaus, Erntedank, Winterzauber, Advent), Spieler des Spieltags, Tausch-Angebote zwischen Teams in der Manager-Saison,
 Trikotnummern in allen Modi,
 Kapitän in allen Modi (zählt doppelt; Rangliste dafür einmalig neu gestartet), Trikotfarben, Torjubel und Vereinswappen in allen Modi, Verletzungen, Sperren, Pokal und Karriere (Auf-/Abstieg) und Live-Spieltag in der Manager-Saison, Shinys im Draft (an/aus/Party, auch vom Transfermarkt, Erfolg „Shiny-Sammler“), Kapitän im Vorlauf nach dem letzten
 Pick (automatisch der bestpassende, „Beste Wahl“, Ersatzkapitän der CPU), „Mit CPU auffüllen“ und „🎲 Überraschung“-Vorlage in der Lobby, Vibration bei
