@@ -332,16 +332,32 @@ export function DraftSettingsForm({ value, onChange, list, teamsJoined = 0, disa
         <label className="field__label" htmlFor={nameId}>
           {tx.leagueName} <small>{tx.optional}</small>
         </label>
-        <input
-          id={nameId}
-          className="input"
-          value={value.name}
-          maxLength={DRAFT_LIMITS.leagueNameMax}
-          placeholder={tx.leagueNamePlaceholder}
-          disabled={disabled}
-          autoComplete="off"
-          onChange={(e) => onChange({ name: e.target.value })}
-        />
+        <div className="input-row">
+          <input
+            id={nameId}
+            className="input"
+            value={value.name}
+            maxLength={DRAFT_LIMITS.leagueNameMax}
+            placeholder={tx.leagueNamePlaceholder}
+            disabled={disabled}
+            autoComplete="off"
+            onChange={(e) => onChange({ name: e.target.value })}
+          />
+          {/* 🎲 Zufälliger Liganame (Vorschläge in der aktiven Sprache, nicht derselbe noch einmal) */}
+          <button
+            type="button"
+            className="btn btn--ghost random-name"
+            disabled={disabled}
+            title={tx.randomLeagueName}
+            aria-label={tx.randomLeagueName}
+            onClick={() => {
+              const ideas = tx.leagueNameIdeas.filter((n) => n !== value.name);
+              onChange({ name: ideas[Math.floor(Math.random() * ideas.length)] });
+            }}
+          >
+            <span aria-hidden="true">🎲</span>
+          </button>
+        </div>
       </div>
 
       <fieldset className="draft-settings__group">

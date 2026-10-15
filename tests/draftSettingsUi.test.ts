@@ -248,6 +248,19 @@ describe('DraftSettingsForm', () => {
   }
   const pressed = (b: MiniElement) => b.getAttribute('aria-pressed') === 'true';
 
+  it('🎲 Liganame: setzt einen Vorschlag (nie denselben noch einmal)', async () => {
+    const { messages } = await import('../src/i18n');
+    const ideas = messages('de').draft.settings.leagueNameIdeas;
+    const { container, changes } = await renderForm({ name: ideas[0] });
+    const dice = container.querySelectorAll('button').find((b) => b.getAttribute('aria-label') === 'Zufälliger Liganame') as MiniElement;
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    await click(dice);
+    vi.restoreAllMocks();
+    // Der erste Vorschlag ist schon gesetzt → der zweite
+    expect(changes.at(-1)).toEqual({ name: ideas[1] });
+    for (const n of ideas) expect(n.length).toBeLessThanOrEqual(40);
+  });
+
   it('Generationen: Mehrfachauswahl, „Alle", die letzte lässt sich nicht abwählen', async () => {
     const { container, changes } = await renderForm();
     const gens = () => field(container, 'Generationen');

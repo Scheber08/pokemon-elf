@@ -142,6 +142,12 @@ const draft = {
   settings: {
     leagueName: 'Liganame',
     optional: '(optional)',
+    randomLeagueName: 'Zufälliger Liganame',
+    leagueNameIdeas: [
+      'Indigo-Liga', 'Kanto-Cup', 'Silberpokal', 'Elite-Vier-Liga', 'Orange-Archipel-Cup', 'Pokéball-Bundesliga',
+      'Meisterklasse', 'Arena-Liga', 'Champions-Runde', 'Feierabendliga', 'Sonntagsliga', 'Legendenpokal',
+      'Safari-Cup', 'Kampfzonen-Liga', 'Glitzerliga', 'Turmduell', 'Regenbogenpokal', 'Vulkanliga',
+    ],
     leagueNamePlaceholder: 'z. B. Montagsliga',
     poolTooSmall: (teams: number) => `Pool zu klein für ${teams} Teams`,
     poolNote: (size: number, capacity: number) => `${size} Pokémon, reicht für bis zu ${capacity} Teams`,

@@ -135,6 +135,12 @@ const draft: Messages['draft'] = {
   settings: {
     leagueName: 'League name',
     optional: '(optional)',
+    randomLeagueName: 'Random league name',
+    leagueNameIdeas: [
+      'Indigo League', 'Kanto Cup', 'Silver Trophy', 'Elite Four League', 'Orange Islands Cup', 'Poké Ball Premier League',
+      'Master Class', 'Gym League', 'Champions Round', 'After-Work League', 'Sunday League', 'Legends Cup',
+      'Safari Cup', 'Battle Zone League', 'Sparkle League', 'Tower Duel', 'Rainbow Trophy', 'Volcano League',
+    ],
     leagueNamePlaceholder: 'e.g. Monday League',
     poolTooSmall: (teams) => `Pool too small for ${teams} teams`,
     poolNote: (size, capacity) => `${size} Pokémon, enough for up to ${plural(capacity, 'team', 'teams')}`,
