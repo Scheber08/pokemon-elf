@@ -60,7 +60,9 @@ Erfolge für die Manager-Saison, Hinweis „Erfolg freigeschaltet" nach Runs und
 Trikotnummern in allen Modi,
 Kapitän in allen Modi (zählt doppelt; Rangliste dafür einmalig neu gestartet), Trikotfarben, Torjubel und Vereinswappen in allen Modi, Verletzungen, Sperren, Pokal und Karriere (Auf-/Abstieg) und Live-Spieltag in der Manager-Saison, Shinys im Draft (an/aus/Party, auch vom Transfermarkt, Erfolg „Shiny-Sammler“), Kapitän im Vorlauf nach dem letzten
 Pick (automatisch der bestpassende, „Beste Wahl“, Ersatzkapitän der CPU), „Mit CPU auffüllen“ in der Lobby, Vibration bei
-knapper Pick-Zeit, Shinys und Pokalsiege im Profil, Karriere-Verlauf.
+knapper Pick-Zeit, Shinys und Pokalsiege im Profil, Karriere-Verlauf, „Ich bin bereit“ in der Lobby, Wunschliste mit
+Taste W/„★ Wunsch n“/Vergebene entfernen, sortierbare Kader-Tabelle mit Toren und Vorlagen, Teambild auch im lokalen Draft,
+alle Picks und bester Kapitän im Ergebnis, Erfolg „Spielführer“.
 
 1. Weitere Saisons im Shop (z. B. Muttertag, Schulanfang) – neue Einträge mit `seasonal(...)` in `src/lib/trainer.ts`
 2. Shiny-Party-Badge in der Liste öffentlicher Lobbys (braucht Feld in der Lobby-Zeile – Schema nur additiv)
