@@ -341,6 +341,7 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
                       <strong>{name}</strong>
                       <small>
                         {team.formation}
+                        {team.goal && <span title={t.online.goalLabel}> · 🎯 {t.online.goal[team.goal]}</span>}
                         {team.ready && <span className="draft-lobby__ready-mark"> · ✓ {t.online.readyMark}</span>}
                       </small>
                     </span>

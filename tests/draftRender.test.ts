@@ -671,12 +671,13 @@ describe('DraftLobby', () => {
   });
 
   it('Lobby: Host sieht, wie viele Mitspieler bereit sind', async () => {
-    const st = engine.setTeamReady(lobby(3), 'dev-1', true);
+    const st = engine.setTeamGoal(engine.setTeamReady(lobby(3), 'dev-1', true), 'dev-2', 'title');
     const { container } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) })));
     await settle();
     expect(container.querySelector('.draft-start')!.textContent).toContain('1/2 Mitspieler bereit');
     expect(container.textContent).toContain('✓ bereit');
     expect(container.querySelector('.draft-lobby__goal select')).toBeTruthy();
+    expect(container.textContent).toContain('🎯 Meister werden');
     expect(container.querySelectorAll('.draft-start--go')).toHaveLength(0);
     const all = engine.setTeamReady(st, 'dev-2', true);
     const r2 = await render(app(h(DraftLobby, { room: fakeRoom(snap(all, 'h')) })));
