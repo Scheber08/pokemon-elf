@@ -1130,6 +1130,16 @@ describe('ManagerSeason', () => {
     const row = s.league!.table.find((x) => x.team === idx)!;
     expect(row.played).toBe(4);
     expect(r.container.querySelector('.manager__projection')!.textContent).toContain(`Hochrechnung: ${Math.round((row.pts / 4) * s.manager!.total)} Pkt`);
+    // Topspiel des nächsten Spieltags: beste Platzsumme
+    {
+      const { scheduleOf } = await import('../src/lib/manager');
+      const table = s.league!.table;
+      const placeOf = (i: number) => table.findIndex((x) => x.team === i) + 1;
+      const next = scheduleOf(s.manager, table.length)[s.manager!.played];
+      const top = [...next].sort((a, b) => placeOf(a[0]) + placeOf(a[1]) - (placeOf(b[0]) + placeOf(b[1])))[0];
+      expect(r.container.querySelector('.manager__topgame')!.textContent).toContain(`Topspiel: ${placeOf(top[0])}. `);
+      expect(r.container.querySelector('.manager__topgame')!.textContent).toContain(` – ${placeOf(top[1])}. `);
+    }
     // Zone des eigenen Platzes (Karriere-Start in Liga 2: Plätze 1–3 sind Aufstiegsplätze)
     const place = s.league!.table.findIndex((x) => x.team === idx) + 1;
     const zone = r.container.querySelector('.manager__zone');

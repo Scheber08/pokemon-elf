@@ -514,6 +514,17 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           <h2 id="manager-next" className="section-title">
             {tx.upcoming(nextNo)}
           </h2>
+          {m.played > 0 && (() => {
+            // Topspiel: die Paarung mit der besten Platzsumme (aktuelle Tabelle)
+            const placeOf = (i: number) => shown.table.findIndex((r) => r.team === i) + 1;
+            const top = [...upcoming].sort((a, b) => placeOf(a.home) + placeOf(a.away) - (placeOf(b.home) + placeOf(b.away)))[0];
+            if (!top) return null;
+            return (
+              <p className="manager__topgame">
+                🔥 {tx.topGame(`${placeOf(top.home)}. ${nameOf(top.home)}`, `${placeOf(top.away)}. ${nameOf(top.away)}`)}
+              </p>
+            );
+          })()}
           <FixtureList matches={upcoming} you={you} nameOf={nameOf} pokemonName={pokemonName} upcoming />
         </section>
       )}

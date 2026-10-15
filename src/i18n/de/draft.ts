@@ -588,6 +588,7 @@ const draft = {
       [goals ? `${goals} ${goals === 1 ? 'Tor' : 'Tore'}` : '', assists ? `${assists} ${assists === 1 ? 'Vorlage' : 'Vorlagen'}` : '']
         .filter(Boolean)
         .join(', '),
+    topGame: (home: string, away: string) => `Topspiel: ${home} – ${away}`,
     upcoming: (n: number) => `Spieltag ${n} – die Paarungen`,
     tableTitle: 'Tabelle',
     spectator: 'Du schaust zu – Aufstellungen stellen nur die Teams dieser Liga.',

@@ -543,6 +543,7 @@ const draft: Messages['draft'] = {
       [goals ? `${goals} ${goals === 1 ? 'goal' : 'goals'}` : '', assists ? `${assists} ${assists === 1 ? 'assist' : 'assists'}` : '']
         .filter(Boolean)
         .join(', '),
+    topGame: (home, away) => `Top game: ${home} vs ${away}`,
     upcoming: (n) => `Matchday ${n} – fixtures`,
     tableTitle: 'Table',
     spectator: 'You’re watching – only the teams of this league set lineups.',
