@@ -525,6 +525,8 @@ const draft = {
     fitTitle: 'Fit auf seiner Position samt Tagesform (Bank: beste Position der Formation)',
     colForm: 'Form',
     colGoals: 'Tore',
+    colAssists: 'Vorl.',
+    assistsTitle: 'Vorlagen in dieser Saison',
     goalsTitle: 'Tore in dieser Saison',
     formTitle: (n: number) => (n > 0 ? `Tagesform +${n}` : n < 0 ? `Tagesform ${n}` : 'Tagesform normal'),
     formNote: (fit: number) => `Jede Formstufe verschiebt den Fit um ${fit} Punkte. Die Form gilt für den nächsten Spieltag.`,

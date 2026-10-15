@@ -351,6 +351,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           next={m.played + 1}
           shinies={s.shinies}
           goals={goalsOf(league, meIndex)}
+          assists={assistsOf(league, meIndex)}
         />
       ) : (
         <p className="notice">{tx.spectator}</p>
@@ -512,6 +513,16 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
 
 /** Eigene Aufstellung: tauschen (Feld, Standardschütze, Bank), Formation, automatisch, Kader mit Tagesform. */
 /** Saisontore je Pokémon eines Liga-Teams (gespielte Spiele) */
+/** Saisonvorlagen je Pokémon eines Liga-Teams */
+function assistsOf(league: LeagueResult | null | undefined, team: number): Map<number, number> {
+  const out = new Map<number, number>();
+  for (const m of league?.matches ?? []) {
+    const own = m.home === team ? m.homeScorers : m.away === team ? m.awayScorers : [];
+    for (const g of own) if (g.assist != null) out.set(g.assist, (out.get(g.assist) ?? 0) + 1);
+  }
+  return out;
+}
+
 function goalsOf(league: LeagueResult | null | undefined, team: number): Map<number, number> {
   const out = new Map<number, number>();
   for (const m of league?.matches ?? []) {
@@ -531,6 +542,7 @@ function LineupEditor({
   next,
   shinies,
   goals,
+  assists,
 }: {
   team: DraftTeam;
   lineup: ManagerLineup;
@@ -545,6 +557,8 @@ function LineupEditor({
   shinies?: readonly number[];
   /** Saisontore je Pokémon des eigenen Teams */
   goals?: ReadonlyMap<number, number>;
+  /** Saisonvorlagen je Pokémon des eigenen Teams */
+  assists?: ReadonlyMap<number, number>;
 }) {
   const t = useT();
   const tx = t.draft.manager;
@@ -726,6 +740,9 @@ function LineupEditor({
               <th scope="col" title={tx.goalsTitle}>
                 {tx.colGoals}
               </th>
+              <th scope="col" title={tx.assistsTitle}>
+                {tx.colAssists}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -769,6 +786,7 @@ function LineupEditor({
                   <FormMark value={formOf(r.p.id)} />
                 </td>
                 <td>{goals?.get(r.p.id) || '–'}</td>
+                <td>{assists?.get(r.p.id) || '–'}</td>
               </tr>
             ))}
           </tbody>
