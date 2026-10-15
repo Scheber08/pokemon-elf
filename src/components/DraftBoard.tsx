@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { FORMATIONS } from '../config/formations';
 import { useT } from '../i18n';
 import { DRAFT_BENCH_SLOT, type DraftSnapshot, type DraftTeam } from '../lib/api/draftContract';
@@ -43,6 +44,16 @@ export function DraftBoard({ state, byId, currentId }: Props) {
   const t = useT();
   const { scale } = usePokemonData();
   const sc = scale('all');
+  // Team am Zug ins Bild: nur die Tafel seitlich scrollen (die Seite selbst springt nicht)
+  const boardRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const board = boardRef.current;
+    const col = board?.querySelector<HTMLElement>('.draft-board__col.is-current');
+    if (!board || !col || board.scrollWidth <= board.clientWidth) return;
+    // Die Tafel ist position: relative – offsetLeft der Spalte zählt also ab ihrem Rand
+    const left = col.offsetLeft - (board.clientWidth - col.offsetWidth) / 2;
+    board.scrollTo?.({ left: Math.max(0, left), behavior: 'smooth' });
+  }, [currentId]);
   const last = state.picks.length ? state.picks[state.picks.length - 1] : null;
   const maxLegends = state.settings.maxLegends;
   const legendLimit = maxLegends != null && poolHasLegends(state.settings) ? maxLegends : null;
@@ -51,7 +62,7 @@ export function DraftBoard({ state, byId, currentId }: Props) {
   const maxMegas = state.settings.maxMegas;
   const megaLimit = maxMegas != null && poolHasMegas(state.settings) ? maxMegas : null;
   return (
-    <section className="draft__board draft-board" aria-label={t.draft.draftBoard}>
+    <section className="draft__board draft-board" aria-label={t.draft.draftBoard} ref={boardRef}>
       {state.teams.map((team, i) => {
         const defs = FORMATIONS[team.formation].slots;
         const rows: { slot: number; pos: PosCode | null; id: number | null }[] = defs.map((d, j) => ({ slot: j, pos: d.pos, id: team.slots[j] }));
