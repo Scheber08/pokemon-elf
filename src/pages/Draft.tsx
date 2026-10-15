@@ -1938,6 +1938,13 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 shinies={state.shinies}
                 slotState={slotState}
                 positionTips
+                emptyBadge={(i) => {
+                  // Bester noch freier Fit dieser Position (wie online; nur für menschliche Teams am Zug)
+                  const b = defs[i] ? bestFree.find((x) => x.pos === defs[i].pos) : undefined;
+                  if (!b) return null;
+                  const fit = Math.round(b.fit);
+                  return { text: String(fit), tone: fit >= 90 ? 'good' : fit >= 80 ? 'ok' : 'bad', title: t.online.slotBest(fit) };
+                }}
                 onSlotClick={(i) => {
                   if (team.cpu || state.selected == null || team.slots[i] != null || !defs[i]) return;
                   lock(currentTeam, i, state.selected);

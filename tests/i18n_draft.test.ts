@@ -1146,6 +1146,10 @@ describe('/draft an einem Gerät auf Englisch', () => {
     const bar = container.querySelector('.draft-progress')!;
     expect(bar.getAttribute('aria-valuemax')).toBe(String(3 * 11));
     expect(bar.querySelectorAll('.draft-progress__mark')).toHaveLength(11);
+    // Leere Slots des menschlichen Teams am Zug: bester freier Fit (eine Plakette je Platz)
+    const badges = container.querySelectorAll('.slot__best');
+    expect(badges).toHaveLength(11);
+    for (const b of badges) expect(Number(b.textContent)).toBeGreaterThan(0);
     localStorage.removeItem('pokemon-elf:draft');
   });
 
