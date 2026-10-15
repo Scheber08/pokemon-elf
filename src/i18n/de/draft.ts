@@ -445,6 +445,7 @@ const draft = {
     /** Außenseitersieg des Spieltags; score aus Sicht des Siegers */
     topGame: (home: string, score: string, away: string) => `Topspiel: ${home} ${score} ${away}`,
     rout: (winner: string, loser: string, score: string) => `Kantersieg: ${winner} schlägt ${loser} ${score}`,
+    comeback: (winner: string, loser: string, behind: string, score: string) => `Comeback: ${winner} dreht ein ${behind} gegen ${loser} zum ${score}`,
     lateWinner: (winner: string, loser: string, score: string, minute: string) => `Last-Minute-Sieg: ${winner} schlägt ${loser} ${score} – Siegtor in der ${minute}`,
     upset: (winner: string, loser: string, score: string) => `Überraschung: ${winner} schlägt ${loser} ${score}`,
     title: 'Saison-Ticker',

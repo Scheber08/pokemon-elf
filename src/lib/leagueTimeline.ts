@@ -927,6 +927,49 @@ export function lateWinner(matches: readonly Match[]): LateWinner | null {
   return best;
 }
 
+/** Mindestrückstand für ein Comeback */
+export const COMEBACK_DEFICIT = 2;
+
+export interface Comeback {
+  match: Match;
+  winner: number;
+  loser: number;
+  /** Größter Rückstand des Siegers: Tore des Siegers und des Gegners in diesem Moment */
+  behind: [number, number];
+}
+
+/**
+ * Comeback unter den Spielen: Sieg nach mindestens COMEBACK_DEFICIT Toren Rückstand – der größte Rückstand,
+ * bei Gleichstand das erste Spiel. Nur vollständig erfasste Spiele (Tore mit Minuten); null ohne.
+ */
+export function comebackOf(matches: readonly Match[]): Comeback | null {
+  let best: Comeback | null = null;
+  for (const m of matches) {
+    if (m.hg === m.ag) continue;
+    const homeWon = m.hg > m.ag;
+    const goals = [
+      ...m.homeScorers.map((g) => ({ home: true, minute: g.minute })),
+      ...m.awayScorers.map((g) => ({ home: false, minute: g.minute })),
+    ];
+    if (goals.length !== m.hg + m.ag || goals.some((g) => g.minute == null)) continue;
+    goals.sort((a, b) => a.minute! - b.minute!);
+    let w = 0;
+    let l = 0;
+    let behind: [number, number] = [0, 0];
+    for (const g of goals) {
+      if (g.home === homeWon) w++;
+      else l++;
+      if (l - w > behind[1] - behind[0]) behind = [w, l];
+    }
+    const deficit = behind[1] - behind[0];
+    if (deficit < COMEBACK_DEFICIT) continue;
+    if (!best || deficit > best.behind[1] - best.behind[0]) {
+      best = { match: m, winner: homeWon ? m.home : m.away, loser: homeWon ? m.away : m.home, behind };
+    }
+  }
+  return best;
+}
+
 /** Mindestabstand für einen Kantersieg */
 export const ROUT_MARGIN = 4;
 

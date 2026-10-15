@@ -1164,6 +1164,39 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     if (quiet >= 0) expect((await renderAt(quiet + 1)).querySelector('.league-board__rout')).toBeNull();
   });
 
+  it('Ticker: 🔄 Comeback auf der Ergebnistafel des Spieltags', async () => {
+    storeLang('en');
+    const s = snap(finishedDraft());
+    const raw = s.league!;
+    const names = s.teams.map((t) => (t.cpu ? clubEn(t.name) : t.name));
+    // Erstes Spiel des 2. Spieltags: Gast liegt 0:2 zurück und gewinnt 3:2
+    const k = raw.matches.findIndex((m) => m.round === 2);
+    const g = (minute: number) => ({ pokemonId: ALL[0].id, pos: 'ST' as const, minute });
+    const league = {
+      ...raw,
+      matches: raw.matches.map((m, i) => (i === k ? { ...m, hg: 2, ag: 3, homeScorers: [g(5), g(20)], awayScorers: [g(50), g(60), g(70)] } : m)),
+    };
+    const cb = timeline.comebackOf(league.matches.filter((m) => m.round === 2));
+    expect(cb).toBeTruthy();
+    const step = 60_000;
+    const renderAt = async (md: number) => {
+      const { container } = await render(
+        app(h(LeagueTicker, { league, teamNames: names, highlight: 0, startsAt: Date.now() - (md - 0.5) * step, stepMs: step, clockOffset: 0, onDone: () => {} })),
+      );
+      await settle();
+      return container;
+    };
+    const nameOf = (i: number) => names[i] ?? clubEn(league.teams[i].name);
+    const score = cb!.match.home === cb!.winner ? `${cb!.match.hg}:${cb!.match.ag}` : `${cb!.match.ag}:${cb!.match.hg}`;
+    expect((await renderAt(2)).querySelector('.league-board__comeback')!.textContent).toBe(
+      `🔄 Comeback: ${nameOf(cb!.winner)} – from ${cb!.behind[0]}:${cb!.behind[1]} down to a ${score} win against ${nameOf(cb!.loser)}`,
+    );
+    // Ein Spieltag ohne Comeback: keine Zeile
+    const total = timeline.matchdayCount(league);
+    const quiet = Array.from({ length: total - 1 }, (_, i) => i + 1).find((r) => !timeline.comebackOf(league.matches.filter((m) => m.round === r)));
+    if (quiet) expect((await renderAt(quiet)).querySelector('.league-board__comeback')).toBeNull();
+  });
+
   it('Ticker: Wechsel an der Tabellenspitze wird gemeldet', async () => {
     storeLang('en');
     const s = snap(finishedDraft());

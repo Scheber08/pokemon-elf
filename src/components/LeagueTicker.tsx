@@ -19,6 +19,7 @@ import {
   playerOfRound,
   hatTricks,
   routOf,
+  comebackOf,
   lateWinner,
   type Matchday,
 } from '../lib/leagueTimeline';
@@ -450,6 +451,18 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
                     <p className={`league-board__rout ${rout.winner === you || rout.loser === you ? 'is-you' : ''}`}>
                       <span aria-hidden="true">💥 </span>
                       {tx.rout(nameOf(rout.winner), nameOf(rout.loser), score)}
+                    </p>
+                  );
+                })()}
+                {(() => {
+                  // Comeback des Spieltags: Sieg nach mindestens zwei Toren Rückstand
+                  const cb = comebackOf(day.matches);
+                  if (!cb) return null;
+                  const score = cb.match.home === cb.winner ? `${cb.match.hg}:${cb.match.ag}` : `${cb.match.ag}:${cb.match.hg}`;
+                  return (
+                    <p className={`league-board__comeback ${cb.winner === you || cb.loser === you ? 'is-you' : ''}`}>
+                      <span aria-hidden="true">🔄 </span>
+                      {tx.comeback(nameOf(cb.winner), nameOf(cb.loser), `${cb.behind[0]}:${cb.behind[1]}`, score)}
                     </p>
                   );
                 })()}

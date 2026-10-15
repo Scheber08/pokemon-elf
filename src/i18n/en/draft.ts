@@ -406,6 +406,7 @@ const draft: Messages['draft'] = {
     sharedSeason: 'Shared season',
     topGame: (home, score, away) => `Top game: ${home} ${score} ${away}`,
     rout: (winner, loser, score) => `Thrashing: ${winner} beat ${loser} ${score}`,
+    comeback: (winner, loser, behind, score) => `Comeback: ${winner} – from ${behind} down to a ${score} win against ${loser}`,
     lateWinner: (winner, loser, score, minute) => `Late winner: ${winner} beat ${loser} ${score} – winning goal in the ${minute}`,
     upset: (winner, loser, score) => `Upset: ${winner} beat ${loser} ${score}`,
     title: 'Season ticker',

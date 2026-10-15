@@ -433,3 +433,25 @@ describe('Kantersieg', () => {
     expect(routOf([a])).toEqual({ match: a, winner: 0, loser: 1 });
   });
 });
+
+describe('Comeback', () => {
+  const g = (minute: number) => ({ pokemonId: 1, pos: 'ST' as const, minute });
+  const m = (home: number, away: number, hs: number[], as: number[]) => ({
+    round: 1, home, away, hg: hs.length, ag: as.length, homeScorers: hs.map(g), awayScorers: as.map(g),
+  });
+  it('Sieg nach mindestens zwei Toren Rückstand, der größte Rückstand gewinnt', async () => {
+    const { comebackOf } = await import('../src/lib/leagueTimeline');
+    // 1:0 → 1:1 → 2:1: nur ein Tor Rückstand nie → nichts
+    expect(comebackOf([m(0, 1, [10, 80], [50])])).toBeNull();
+    // Gast liegt 0:2 zurück und gewinnt 3:2
+    const a = m(0, 1, [5, 20], [50, 60, 70]);
+    expect(comebackOf([a])).toEqual({ match: a, winner: 1, loser: 0, behind: [0, 2] });
+    // Heim liegt 0:3 zurück (erster Moment des größten Rückstands) und gewinnt 5:4 → größerer Rückstand gewinnt
+    const b = m(2, 3, [10, 60, 70, 80, 89], [1, 2, 3, 40]);
+    expect(comebackOf([a, b])!.behind).toEqual([0, 3]);
+    // 0:2 und Remis bzw. Niederlage: nichts; ohne Minuten: nichts
+    expect(comebackOf([m(0, 1, [50, 60], [5, 20])])).toBeNull();
+    expect(comebackOf([m(0, 1, [], [5, 20])])).toBeNull();
+    expect(comebackOf([{ ...a, awayScorers: a.awayScorers.map((x) => ({ pokemonId: x.pokemonId, pos: x.pos })) }])).toBeNull();
+  });
+});
