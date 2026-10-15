@@ -578,6 +578,20 @@ describe('DraftLive', () => {
     expect(room.setQueue).toHaveBeenCalledWith([id]);
   });
 
+  it('Beste Freie: ein Chip je offener Feldposition, Klick wählt aus', async () => {
+    const st = drafting();
+    const { container } = await renderLive(fakeRoom(snap(st, 'h')));
+    const me = st.teams.find((t) => t.id === 'h')!;
+    const { FORMATIONS } = await import('../src/config/formations');
+    const chips = container.querySelectorAll('.draft__bestfree button');
+    expect(chips).toHaveLength(new Set(FORMATIONS[me.formation].slots.map((d) => d.pos)).size);
+    await act(async () => (chips[0] as MiniElement).click());
+    expect(container.querySelectorAll('.draft__bestfree button')[0].className).toContain('is-active');
+    // Zuschauer (ohne Team) sehen keine Chips
+    const view = await renderLive(fakeRoom(snap(st, null)));
+    expect(view.container.querySelector('.draft__bestfree')).toBeNull();
+  });
+
   it('Turnbar: die nächsten drei Picks in Snake-Reihenfolge', async () => {
     const { container } = await renderLive(fakeRoom(snap(drafting(), 'h')));
     // 2 Teams, Snake: Pick 1 Host (jetzt), dann Team 1, Team 1, Host

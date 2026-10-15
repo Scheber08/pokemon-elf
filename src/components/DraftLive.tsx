@@ -257,6 +257,25 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     );
     return [...shown].sort((a, b) => score.get(b.id)! - score.get(a.id)! || a.id - b.id);
   }, [pool, owners, showTaken, fitOnly, allowed, bestFirst, freeKey, me?.formation]);
+  /** Beste Freie: je noch offener Feldposition das wählbare Pokémon mit dem besten Fit (wie im lokalen Draft) */
+  const bestFree = useMemo(() => {
+    if (!me || readOnly) return [];
+    const sc = scale('all');
+    const candidates = pool.filter((p) => !owners.has(p.id) && (!allowed || allowed.has(p.id)));
+    const seen = new Set<string>();
+    const out: { pos: PosCode; p: Pokemon; fit: number }[] = [];
+    FORMATIONS[me.formation].slots.forEach((d, j) => {
+      if (me.slots[j] != null || seen.has(d.pos)) return;
+      seen.add(d.pos);
+      let best: { p: Pokemon; fit: number } | null = null;
+      for (const p of candidates) {
+        const fit = positionFit(p, d.pos, sc);
+        if (!best || fit > best.fit) best = { p, fit };
+      }
+      if (best) out.push({ pos: d.pos, ...best });
+    });
+    return out;
+  }, [pool, owners, allowed, freeKey, me?.formation, readOnly]);
   // Bestpassender freier Feldplatz eines Pokémon (Position und Fit) – für die Notiz auf den Karten
   const freeFieldPos = useMemo(() => {
     if (!me) return [];
@@ -597,6 +616,22 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                   {t.online.bestFirst}
                 </label>
               </div>
+              {bestFree.length > 0 && (
+                <p className="draft__bestfree small">
+                  <span className="muted">{t.draft.local.bestFree}</span>{' '}
+                  {bestFree.map((b) => (
+                    <button
+                      key={b.pos}
+                      type="button"
+                      className={`chip ${selected === b.p.id ? 'is-active' : ''}`}
+                      title={t.draft.local.bestFreeTitle(t.game.pokemon(b.p), t.game.posShort[b.pos], Math.round(b.fit))}
+                      onClick={() => choose(b.p)}
+                    >
+                      <strong>{t.game.posShort[b.pos]}</strong> {t.game.pokemon(b.p)} {Math.round(b.fit)}
+                    </button>
+                  ))}
+                </p>
+              )}
               <FilterBar
                 filters={filters}
                 onChange={setFilters}
