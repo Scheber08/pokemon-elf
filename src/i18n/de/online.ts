@@ -144,6 +144,7 @@ const online = {
   readyOff: 'Ich bin bereit',
   readyOn: '✓ Bereit – zurücknehmen',
   readyMark: 'bereit',
+  readyReset: 'Der Host hat die Regeln geändert – melde dich bitte erneut bereit.',
   readyNotify: (n: number) => (n === 1 ? 'Dein Mitspieler ist bereit – starte den Draft!' : `Alle ${n} Mitspieler sind bereit – starte den Draft!`),
   readyCount: (ready: number, total: number) => (ready === total ? `✓ Alle Mitspieler bereit (${total})` : `${ready}/${total} Mitspieler bereit`),
   fillCpu: (n: number) => `Mit CPU auffüllen (${n})`,

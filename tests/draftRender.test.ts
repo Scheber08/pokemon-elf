@@ -654,6 +654,20 @@ describe('DraftLobby', () => {
   });
 
   // CLIENT-5
+  it('Lobby: vom Host zurückgesetztes „bereit“ meldet sich als Hinweis', async () => {
+    const ready = engine.setTeamReady(lobby(2), 'dev-1', true);
+    const container = doc.createElement('div');
+    doc.body.appendChild(container);
+    const root = createRoot(container as unknown as Element);
+    await act(async () => root.render(app(h(DraftLobby, { room: fakeRoom(snap(ready, 't1')) }))));
+    await settle();
+    const reset = engine.updateSettings(ready, 'dev-h', { pickSeconds: 30 }, ALL);
+    await act(async () => root.render(app(h(DraftLobby, { room: fakeRoom(snap(reset, 't1')) }))));
+    await settle();
+    expect(container.querySelector('.toasts')!.textContent).toContain('melde dich bitte erneut bereit');
+    await act(async () => root.unmount());
+  });
+
   it('Lobby: Host sieht, wie viele Mitspieler bereit sind', async () => {
     const st = engine.setTeamReady(lobby(3), 'dev-1', true);
     const { container } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) })));

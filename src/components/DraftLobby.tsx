@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
@@ -177,6 +177,15 @@ function MyTeamCard({ room }: { room: DraftRoom }) {
     if (nameDraft != null && cleanTeamName(nameDraft) === me.name) setNameDraft(null);
   }, [me.name]);
 
+  // „Bereit“ vom Server zurückgesetzt (Host hat die Regeln geändert) – kurz Bescheid geben
+  const selfUnready = useRef(false);
+  const wasReady = useRef(!!me.ready);
+  useEffect(() => {
+    if (wasReady.current && !me.ready && !selfUnready.current) toast(t.online.readyReset);
+    wasReady.current = !!me.ready;
+    selfUnready.current = false;
+  }, [me.ready]);
+
   const commit = (value: string | null = nameDraft) => {
     if (value == null) return;
     const clean = cleanTeamName(value);
@@ -209,7 +218,10 @@ function MyTeamCard({ room }: { room: DraftRoom }) {
           type="button"
           className={`btn btn--small ${me.ready ? 'btn--primary' : ''} draft-lobby__ready`}
           aria-pressed={!!me.ready}
-          onClick={() => room.setReady(!me.ready)}
+          onClick={() => {
+            if (me.ready) selfUnready.current = true;
+            room.setReady(!me.ready);
+          }}
         >
           {me.ready ? t.online.readyOn : t.online.readyOff}
         </button>
