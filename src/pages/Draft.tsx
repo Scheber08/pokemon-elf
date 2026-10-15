@@ -466,6 +466,19 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     maxLength={28}
                     onChange={(e) => updateTeam(i, { name: e.target.value })}
                   />
+                  <button
+                    type="button"
+                    className="btn btn--ghost random-name"
+                    title={t.common.randomName}
+                    aria-label={t.common.randomName}
+                    // Gespeichert wird der deutsche Vereinsname (übersetzt erst bei der Anzeige), keiner doppelt
+                    onClick={() => {
+                      const free = CLUB_NAMES.filter((c) => !state.teams.some((x) => x.name === c));
+                      if (free.length) updateTeam(i, { name: free[Math.floor(Math.random() * free.length)] });
+                    }}
+                  >
+                    <span aria-hidden="true">🎲</span>
+                  </button>
                   <select
                     className="input select"
                     aria-label={tx.teamFormationAria(i + 1)}

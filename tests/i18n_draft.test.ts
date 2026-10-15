@@ -282,6 +282,19 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(JSON.parse(localStorage.getItem('pokemon-elf:draft')!).cpuLevel).toBe('hard');
   });
 
+  it('Aufbau: 🎲 setzt einen freien Vereinsnamen (gespeichert deutsch)', async () => {
+    storeLang('en');
+    localStorage.removeItem('pokemon-elf:draft');
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const dice = container.querySelectorAll('.draft__teamrow .random-name');
+    expect(dice.length).toBeGreaterThanOrEqual(2);
+    await act(async () => (dice[0] as MiniElement).click());
+    const teams = JSON.parse(localStorage.getItem('pokemon-elf:draft')!).teams as { name: string }[];
+    expect(CLUB_NAMES).toContain(teams[0].name);
+    expect(new Set(teams.map((t) => t.name)).size).toBe(teams.length);
+  });
+
   it('Aufbau: „Shuffle order“ mischt die Teamliste (= Draft-Reihenfolge)', async () => {
     storeLang('en');
     const { container } = await render(app(h(Draft)));
