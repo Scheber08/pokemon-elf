@@ -19,6 +19,7 @@ import { Sprite } from '../components/Sprite';
 import { useT } from '../i18n';
 import { draftsSupported } from '../lib/api/draftClient';
 import { positionFit, soleTopIndex } from '../lib/fit';
+import { rankingNames } from '../lib/rankingNames';
 import { emptySlots } from '../lib/formation';
 import { biggestWin, draftGrades, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
 import { createRng, randomSeed, shuffle } from '../lib/rng';
@@ -106,10 +107,26 @@ interface DraftState {
 }
 
 
+/**
+ * Namen für CPU-Teams: zuerst Teams aus den Online-Ranglisten (sofern geladen), dann Vereinsnamen –
+ * ohne schon vergebene Namen (Groß/klein egal).
+ */
+function cpuNames(taken: readonly string[] = []): string[] {
+  const used = new Set(taken.map((x) => x.trim().toLowerCase()));
+  const out: string[] = [];
+  for (const name of [...shuffle(Math.random, rankingNames()), ...shuffle(Math.random, CLUB_NAMES)]) {
+    const key = name.trim().toLowerCase();
+    if (used.has(key)) continue;
+    used.add(key);
+    out.push(name);
+  }
+  return out;
+}
+
 function defaultTeams(n: number): DraftTeam[] {
-  const names = shuffle(Math.random, CLUB_NAMES);
+  const names = cpuNames([OWN_TEAM]);
   return Array.from({ length: n }, (_, i) => ({
-    name: i === 0 ? OWN_TEAM : names[i],
+    name: i === 0 ? OWN_TEAM : names[i - 1],
     cpu: i !== 0,
     formation: i === 0 ? DEFAULT_FORMATION : FORMATION_IDS[i % FORMATION_IDS.length],
     slots: emptySlots(i === 0 ? DEFAULT_FORMATION : FORMATION_IDS[i % FORMATION_IDS.length]),
@@ -375,7 +392,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   const setTeamCount = (count: number) =>
     setState((s) => {
       const teams = s.teams.slice(0, count);
-      const free = shuffle(Math.random, CLUB_NAMES).filter((name) => !teams.some((tm) => tm.name === name));
+      const free = cpuNames(teams.map((tm) => tm.name));
       while (teams.length < count) {
         const formation = FORMATION_IDS[teams.length % FORMATION_IDS.length];
         teams.push({ name: free.shift() ?? `Team ${teams.length + 1}`, cpu: true, formation, slots: emptySlots(formation) });
@@ -506,10 +523,10 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     className="btn btn--ghost random-name"
                     title={t.common.randomName}
                     aria-label={t.common.randomName}
-                    // Gespeichert wird der deutsche Vereinsname (übersetzt erst bei der Anzeige), keiner doppelt
+                    // Ranglisten-Team oder deutscher Vereinsname (übersetzt erst bei der Anzeige), keiner doppelt
                     onClick={() => {
-                      const free = CLUB_NAMES.filter((c) => !state.teams.some((x) => x.name === c));
-                      if (free.length) updateTeam(i, { name: free[Math.floor(Math.random() * free.length)] });
+                      const free = cpuNames(state.teams.map((x) => x.name));
+                      if (free.length) updateTeam(i, { name: free[0] });
                     }}
                   >
                     <span aria-hidden="true">🎲</span>
