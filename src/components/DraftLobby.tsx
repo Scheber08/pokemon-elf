@@ -201,14 +201,17 @@ function MyTeamCard({ room }: { room: DraftRoom }) {
       <h2 id="draft-me-title" className="section-title">
         {t.online.yourTeam}
       </h2>
-      <button
-        type="button"
-        className={`btn btn--small ${me.ready ? 'btn--primary' : ''} draft-lobby__ready`}
-        aria-pressed={!!me.ready}
-        onClick={() => room.setReady(!me.ready)}
-      >
-        {me.ready ? t.online.readyOn : t.online.readyOff}
-      </button>
+      {/* Der Host startet selbst – „bereit“ melden nur die Mitspieler */}
+      {me.id !== room.state?.hostTeamId && (
+        <button
+          type="button"
+          className={`btn btn--small ${me.ready ? 'btn--primary' : ''} draft-lobby__ready`}
+          aria-pressed={!!me.ready}
+          onClick={() => room.setReady(!me.ready)}
+        >
+          {me.ready ? t.online.readyOn : t.online.readyOff}
+        </button>
+      )}
       <DraftTeamFields
         name={nameDraft ?? me.name}
         formation={me.formation}
