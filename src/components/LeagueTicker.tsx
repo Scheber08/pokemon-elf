@@ -18,6 +18,7 @@ import {
   biggestUpset,
   playerOfRound,
   hatTricks,
+  routOf,
   lateWinner,
   type Matchday,
 } from '../lib/leagueTimeline';
@@ -437,6 +438,18 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
                     <p className="league-board__late">
                       <span aria-hidden="true">⏱ </span>
                       {tx.lateWinner(nameOf(late.winner), nameOf(late.loser), score, formatMinute(late.minute))}
+                    </p>
+                  );
+                })()}
+                {(() => {
+                  // Kantersieg des Spieltags (mindestens vier Tore Abstand)
+                  const rout = routOf(day.matches);
+                  if (!rout) return null;
+                  const score = rout.match.home === rout.winner ? `${rout.match.hg}:${rout.match.ag}` : `${rout.match.ag}:${rout.match.hg}`;
+                  return (
+                    <p className={`league-board__rout ${rout.winner === you || rout.loser === you ? 'is-you' : ''}`}>
+                      <span aria-hidden="true">💥 </span>
+                      {tx.rout(nameOf(rout.winner), nameOf(rout.loser), score)}
                     </p>
                   );
                 })()}

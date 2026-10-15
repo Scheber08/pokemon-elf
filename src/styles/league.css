@@ -988,12 +988,14 @@
 }
 .league-board__upset,
 .league-board__late,
+.league-board__rout,
 .league-board__top,
 .league-board__star,
 .league-board__hat {
   margin: 0;
 }
-.league-board__hat.is-you {
+.league-board__hat.is-you,
+.league-board__rout.is-you {
   font-weight: 600;
 }
 

@@ -420,3 +420,16 @@ describe('currentRun', () => {
     expect(currentRun([g(1, 0, 1, 1, 1), g(2, 0, 1, 0, 0), g(3, 1, 0, 2, 2)], 0)).toEqual({ kind: 'unbeaten', length: 3 });
   });
 });
+
+describe('Kantersieg', () => {
+  const m = (home: number, away: number, hg: number, ag: number) => ({ round: 1, home, away, hg, ag, homeScorers: [], awayScorers: [] });
+  it('höchster Sieg ab vier Toren Abstand, bei Gleichstand mehr Tore des Siegers', async () => {
+    const { routOf } = await import('../src/lib/leagueTimeline');
+    expect(routOf([m(0, 1, 3, 0), m(2, 3, 4, 2)])).toBeNull();
+    const a = m(0, 1, 4, 0);
+    const b = m(2, 3, 1, 5);
+    expect(routOf([a, b])).toEqual({ match: b, winner: 3, loser: 2 });
+    expect(routOf([a, m(4, 5, 0, 6), b])!.winner).toBe(5);
+    expect(routOf([a])).toEqual({ match: a, winner: 0, loser: 1 });
+  });
+});

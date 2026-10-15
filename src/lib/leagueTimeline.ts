@@ -927,6 +927,28 @@ export function lateWinner(matches: readonly Match[]): LateWinner | null {
   return best;
 }
 
+/** Mindestabstand für einen Kantersieg */
+export const ROUT_MARGIN = 4;
+
+/** Höchster Sieg unter den Spielen (mindestens ROUT_MARGIN Tore Abstand, bei Gleichstand mehr Tore des Siegers, dann das erste) – null ohne. */
+export function routOf(matches: readonly Match[]): { match: Match; winner: number; loser: number } | null {
+  let best: { match: Match; winner: number; loser: number } | null = null;
+  let bestMargin = 0;
+  let bestGoals = 0;
+  for (const m of matches) {
+    const margin = Math.abs(m.hg - m.ag);
+    if (margin < ROUT_MARGIN) continue;
+    const goals = Math.max(m.hg, m.ag);
+    if (margin > bestMargin || (margin === bestMargin && goals > bestGoals)) {
+      const homeWon = m.hg > m.ag;
+      best = { match: m, winner: homeWon ? m.home : m.away, loser: homeWon ? m.away : m.home };
+      bestMargin = margin;
+      bestGoals = goals;
+    }
+  }
+  return best;
+}
+
 /** Größte Überraschung unter den Spielen (Rückstand mindestens minGap) – null ohne. */
 export function biggestUpset(matches: readonly Match[], ratings: readonly number[], minGap = 100): Upset | null {
   let best: Upset | null = null;

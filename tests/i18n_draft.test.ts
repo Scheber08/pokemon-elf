@@ -1134,6 +1134,36 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     if (quiet) expect((await renderAt(quiet)).querySelector('.league-board__hat')).toBeNull();
   });
 
+  it('Ticker: 💥 Kantersieg auf der Ergebnistafel des Spieltags', async () => {
+    storeLang('en');
+    const s = snap(finishedDraft());
+    const league = s.league!;
+    const names = s.teams.map((t) => (t.cpu ? clubEn(t.name) : t.name));
+    const total = timeline.matchdayCount(league);
+    const rounds = Array.from({ length: total - 1 }, (_, i) => i + 1);
+    const routs = rounds.map((r) => timeline.routOf(league.matches.filter((m) => m.round === r)));
+    // Ein Spieltag (vor dem Ende) mit Kantersieg – der positive Fall muss vorkommen
+    const k = routs.findIndex(Boolean);
+    expect(k).toBeGreaterThanOrEqual(0);
+    const step = 60_000;
+    const renderAt = async (md: number) => {
+      const { container } = await render(
+        app(h(LeagueTicker, { league, teamNames: names, highlight: 0, startsAt: Date.now() - (md - 0.5) * step, stepMs: step, clockOffset: 0, onDone: () => {} })),
+      );
+      await settle();
+      return container;
+    };
+    const r = routs[k]!;
+    const nameOf = (i: number) => names[i] ?? clubEn(league.teams[i].name);
+    const score = r.match.home === r.winner ? `${r.match.hg}:${r.match.ag}` : `${r.match.ag}:${r.match.hg}`;
+    expect((await renderAt(k + 1)).querySelector('.league-board__rout')!.textContent).toBe(
+      `💥 Thrashing: ${nameOf(r.winner)} beat ${nameOf(r.loser)} ${score}`,
+    );
+    // Ein Spieltag ohne Kantersieg: keine Zeile
+    const quiet = routs.findIndex((x) => !x);
+    if (quiet >= 0) expect((await renderAt(quiet + 1)).querySelector('.league-board__rout')).toBeNull();
+  });
+
   it('Ticker: Wechsel an der Tabellenspitze wird gemeldet', async () => {
     storeLang('en');
     const s = snap(finishedDraft());
