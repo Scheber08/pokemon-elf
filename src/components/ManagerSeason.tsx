@@ -1196,6 +1196,12 @@ function LineupEditor({
       <div className="manager__pitch">
         <Pitch
           highlight={weak ? [weak.index] : undefined}
+          filledBadge={(i) => {
+            // ⚽ Saisontore des Starters (ab 1)
+            const id = i === SS_INDEX ? lineup.ss : lineup.slots[i];
+            const n = id != null ? (goals?.get(id) ?? 0) : 0;
+            return n > 0 ? { text: `⚽ ${n}`, title: tx.slotGoals(n) } : null;
+          }}
           formation={lineup.formation}
           slots={lineup.slots}
           ss={setPiece ? lineup.ss : undefined}

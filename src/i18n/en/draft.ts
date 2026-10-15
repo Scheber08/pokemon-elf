@@ -620,6 +620,7 @@ const draft: Messages['draft'] = {
     stripLabel: 'Season run: all matchdays',
     stripPlayed: (round, opp, score) => `Matchday ${round}: ${score} vs ${opp}`,
     stripNext: (round, opp, place) => `Matchday ${round}: vs ${opp}${place ? ` (${place}.)` : ''}`,
+    slotGoals: (n) => (n === 1 ? '1 goal this season' : `${n} goals this season`),
     projection: (pts) => `Projection: ${pts} pts`,
     behindTop: (n) => (n === 0 ? 'level on points with the top' : `${n} pts behind 1st`),
     colAssists: 'Ast.',

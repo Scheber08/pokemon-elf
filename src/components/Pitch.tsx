@@ -29,6 +29,8 @@ interface Props {
   highlight?: number[];
   /** Kleine Plakette auf leeren Slots (z. B. bester freier Fit im Draft); null = keine */
   emptyBadge?: (index: number) => { text: string; tone: 'good' | 'ok' | 'bad'; title: string } | null;
+  /** Kleine Plakette auf besetzten Slots (z. B. Saisontore in der Manager-Aufstellung); null = keine */
+  filledBadge?: (index: number) => { text: string; title: string } | null;
   tooltips?: boolean;
   /**
    * Positions-Hinweise (Standard: an): Hover/Long-Press auf einen leeren Slot zeigt, welche
@@ -75,6 +77,7 @@ export function Pitch({
   slotState,
   highlight,
   emptyBadge,
+  filledBadge,
   tooltips = true,
   positionTips = true,
   ariaLabel,
@@ -253,7 +256,12 @@ export function Pitch({
       ? t.builder.pitch.filled(t.game.posName[pos], t.game.pokemon(pokemon), !!onSlotClick)
       : t.builder.pitch.empty(t.game.posName[pos], !!onSlotClick);
     const number = pokemon && numbers ? (numbers.get(pokemon.id) ?? null) : null;
-    const badge = !pokemon ? (emptyBadge?.(index) ?? null) : null;
+    const badge = !pokemon
+      ? (emptyBadge?.(index) ?? null)
+      : (() => {
+          const b = filledBadge?.(index);
+          return b ? { ...b, tone: 'goal' as const } : null;
+        })();
     const slotLabel = badge ? `${label} – ${badge.title}` : label;
     const content = (
       <>

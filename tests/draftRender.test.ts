@@ -1793,6 +1793,27 @@ describe('ManagerSeason', () => {
     expect(el.textContent).toMatch(/^🏆 Platz 1 /);
   });
 
+  it('Aufstellung: ⚽ Saisontore auf den Startern', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    const { storedLeague } = await import('../src/lib/leagueTimeline');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    for (let i = 0; i < 6; i++) s = playMatchday(s, ALL, SCALE);
+    const me = s.teams.findIndex((t) => t.id === 'h');
+    const goals = new Map<number, number>();
+    for (const m of storedLeague(s.league, s.teams.length)!.matches)
+      for (const g of m.home === me ? m.homeScorers : m.away === me ? m.awayScorers : []) goals.set(g.pokemonId, (goals.get(g.pokemonId) ?? 0) + 1);
+    const lineup = s.manager!.lineups.h;
+    const starters = [...lineup.slots, ...(lineup.ss != null ? [lineup.ss] : [])].filter((id) => (goals.get(id) ?? 0) > 0);
+    const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    const badges = container.querySelector('.manager__lineup .pitch')!.querySelectorAll('.slot__best--goal');
+    expect(badges).toHaveLength(starters.length);
+    expect(badges.map((b) => b.textContent).sort()).toEqual(starters.map((id) => `⚽ ${goals.get(id)}`).sort());
+  });
+
   it('Aufstellung: Schwachstelle der Startelf markiert, ggf. mit Bank-Alternative zum Einwechseln', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason } = await import('../src/lib/manager');
