@@ -21,7 +21,7 @@ import { positionFit } from '../lib/fit';
 import { emptySlots } from '../lib/formation';
 import { draftGrades } from '../lib/leagueTimeline';
 import { createRng, gaussian, randomSeed, shuffle } from '../lib/rng';
-import { CLASSIC_MODEL, DRAFT_MODEL, simulateLeague, type LeagueTeam } from '../lib/season';
+import { CLASSIC_MODEL, DRAFT_MODEL, formatRecord, simulateLeague, type LeagueTeam } from '../lib/season';
 import { scorerSummary } from '../lib/seasonTimeline';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
 import { bestCaptain, evaluateTeam } from '../lib/teamScore';
@@ -38,6 +38,8 @@ import { CrestEditor } from '../components/CrestEditor';
 import { cpuCaptain } from '../lib/draftEngine';
 import { SHINY_CHANCE, SHINY_FIT_BONUS, SHINY_PARTY_CHANCE, shinyBonus, shinyRoll, shinyTeamBoost } from '../lib/shiny';
 import { useToast } from '../state/Toast';
+import { downloadBlob } from '../lib/exportImage';
+import { lineupImage, slugify } from '../lib/lineupImage';
 
 const ROUNDS = 11;
 
@@ -670,6 +672,45 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 });
                 return <p className="small">✨ {parts.join(', ')}</p>;
               })()}
+              {!tm.cpu && (
+                <button
+                  type="button"
+                  className="btn btn--small"
+                  onClick={async () => {
+                    // Teambild wie im Builder – mit Bilanz und Platz dieser Liga
+                    const at = league.table.findIndex((r) => r.team === i);
+                    const row = league.table[at];
+                    try {
+                      const blob = await lineupImage({
+                        formation: tm.formation,
+                        slots: tm.slots,
+                        sprite,
+                        byId,
+                        teamName: teamName(tm.name),
+                        subtitle: tm.formation,
+                        result: row && {
+                          record: formatRecord({ w: row.w, d: row.d, l: row.l }),
+                          points: row.pts,
+                          score: league.teams[i]?.rating ?? 0,
+                          position: at + 1,
+                          label: tx.localKicker,
+                        },
+                        jerseys: cleanJerseys(tm.jerseys),
+                        captain: captainOf(tm),
+                        crest: cleanCrest(tm.crest),
+                        shinies: state.shinies,
+                      });
+                      downloadBlob(blob, `${slugify(teamName(tm.name) || 'pokemon-elf')}.png`);
+                      toast(t.builder.imageSaved);
+                    } catch (e) {
+                      console.error(e);
+                      toast(t.builder.imageFailed);
+                    }
+                  }}
+                >
+                  {t.builder.saveImage}
+                </button>
+              )}
               {!tm.cpu && (
                 <KitPicker
                   kit={cleanKit(tm.kit)}

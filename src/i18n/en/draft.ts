@@ -57,6 +57,7 @@ const draft: Messages['draft'] = {
   modeOnline: 'Online league',
   modeLocal: 'One device',
   local: {
+    localKicker: 'Draft on one device',
     myTeam: 'My Team',
     title: 'Fantasy Draft',
     lead: '2–8 teams, one shared pool, snake draft over 11 rounds. Then everyone plays everyone – home and away.',

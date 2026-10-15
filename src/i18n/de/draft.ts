@@ -55,6 +55,7 @@ const draft = {
   modeOnline: 'Online-Liga',
   modeLocal: 'An einem Gerät',
   local: {
+    localKicker: 'Draft an einem Gerät',
     /** Anzeige des gespeicherten Vorgabe-Namens „Mein Team" */
     myTeam: 'Mein Team',
     title: 'Fantasy-Draft',
