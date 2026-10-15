@@ -270,6 +270,13 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(all).toContain('Start draft');
     expect(all).toContain('Unova');
     expect(germanLeft(container)).toEqual([]);
+    // CPU-Stärke: Standard „Normal“, „Hard“ wird gemerkt
+    expect(all).toContain('CPU strength');
+    const hard = container.querySelectorAll('[role="radio"]').find((b) => b.textContent === 'Hard') as MiniElement;
+    expect(container.querySelectorAll('[role="radio"]').find((b) => b.textContent === 'Normal')!.getAttribute('aria-checked')).toBe('true');
+    await act(async () => hard.click());
+    expect(hard.getAttribute('aria-checked')).toBe('true');
+    expect(JSON.parse(localStorage.getItem('pokemon-elf:draft')!).cpuLevel).toBe('hard');
   });
 
   it('Draft läuft: Statuszeile, Board, Hinweis', async () => {

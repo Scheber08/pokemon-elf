@@ -94,7 +94,12 @@ interface DraftState {
   noShinies?: true;
   /** Shiny-Party: 10 % statt 2 % */
   shinyParty?: true;
+  /** Stärke der CPU-Teams beim Picken (fehlt = normal) */
+  cpuLevel?: 'easy' | 'hard';
 }
+
+/** CPU-Pick je Stärke: aus wie vielen Top-Kandidaten je Platz gewählt wird und wie viel Zufall mitspielt */
+const CPU_LEVELS = { easy: { top: 12, noise: 18 }, normal: { top: 4, noise: 5 }, hard: { top: 1, noise: 0 } } as const;
 
 function defaultTeams(n: number): DraftTeam[] {
   const names = shuffle(Math.random, CLUB_NAMES);
@@ -249,22 +254,24 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [state.phase]);
 
-  // CPU-Picks: beste Kombination aus Pokémon und freiem Slot nach Fit – mit etwas Zufall.
+  // CPU-Picks: beste Kombination aus Pokémon und freiem Slot nach Fit – mit etwas Zufall (je nach CPU-Stärke).
   useEffect(() => {
     if (state.phase !== 'drafting' || !team?.cpu) return;
     const timer = window.setTimeout(() => {
       const sc = scale('all');
       const defs = FORMATIONS[team.formation].slots;
       const rng = createRng(randomSeed());
+      // Unbekannte Werte (z. B. alter oder kaputter Speicherstand) zählen als „normal“
+      const level = CPU_LEVELS[state.cpuLevel === 'easy' || state.cpuLevel === 'hard' ? state.cpuLevel : 'normal'];
       let best: { score: number; slot: number; id: number } | null = null;
       for (const [slot, d] of defs.entries()) {
         if (team.slots[slot] != null) continue;
         const top = pool
           .map((p) => ({ p, fit: positionFit(p, d.pos, sc) }))
           .sort((a, b) => b.fit - a.fit)
-          .slice(0, 4);
+          .slice(0, level.top);
         for (const { p, fit } of top) {
-          const score = fit * (0.92 + 0.08 * POSITIONS[d.pos].teamWeight) + gaussian(rng) * 5;
+          const score = fit * (0.92 + 0.08 * POSITIONS[d.pos].teamWeight) + gaussian(rng) * level.noise;
           if (!best || score > best.score) best = { score, slot, id: p.id };
         }
       }
@@ -472,6 +479,16 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 { value: 'off', label: t.common.off },
                 { value: 'on', label: t.common.on, title: t.draft.settings.shiniesTitle },
                 { value: 'party', label: t.draft.settings.shinyParty, title: t.draft.settings.shinyPartyTitle },
+              ]}
+            />
+            <Segmented
+              label={tx.cpuLevel}
+              value={state.cpuLevel ?? 'normal'}
+              onChange={(v) => setState(({ cpuLevel: _l, ...s }) => (v === 'normal' ? s : { ...s, cpuLevel: v }))}
+              options={[
+                { value: 'easy', label: tx.cpuLevels.easy, title: tx.cpuLevelTitles.easy },
+                { value: 'normal', label: tx.cpuLevels.normal, title: tx.cpuLevelTitles.normal },
+                { value: 'hard', label: tx.cpuLevels.hard, title: tx.cpuLevelTitles.hard },
               ]}
             />
             {poolTooSmall && <p className="notice notice--error">{tx.poolTooSmall(poolSize, n, ROUNDS, n * ROUNDS)}</p>}
