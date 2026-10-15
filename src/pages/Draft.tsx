@@ -568,7 +568,8 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           {league.table.map((r, i) =>
             state.teams[r.team] && !state.teams[r.team].cpu ? (
               <p key={r.team} className="draft__you">
-                {t.draft.results.yourPlace(teamName(r.name), i + 1, r.pts)}
+                {/* Standardname „Mein Team“: ohne Namen, sonst hieße es „Dein Team Mein Team“ */}
+                {r.name === OWN_TEAM ? t.draft.manager.yourPlace(i + 1, r.pts) : t.draft.results.yourPlace(teamName(r.name), i + 1, r.pts)}
               </p>
             ) : null,
           )}
