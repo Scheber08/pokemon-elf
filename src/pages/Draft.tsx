@@ -890,6 +890,18 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 >
                   {t.online.suggest}
                 </button>
+                <button
+                  type="button"
+                  className="btn btn--small btn--ghost"
+                  onClick={() => {
+                    // Sofort-Pick für das Team am Zug: bester Pick wie eine starke CPU
+                    if (!team || team.cpu) return;
+                    const best = cpuPickChoice(team, pool, scale('all'), 'hard', () => 0.5);
+                    if (best) lock(currentTeam, best.slot, best.id);
+                  }}
+                >
+                  {t.online.autoPickFor(teamName(String(team?.name)))}
+                </button>
               </div>
               <FilterBar filters={filters} onChange={setFilters} showRegion={state.region === 0} resultCount={filtered.length} slashFocus />
               <PokemonGrid

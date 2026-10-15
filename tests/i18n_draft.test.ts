@@ -316,6 +316,12 @@ describe('/draft an einem Gerät auf Englisch', () => {
     // Noch keine Picks: kein Ø Fit auf dem Board
     expect(container.querySelector('.draft__board .draft-board__fit')).toBeNull();
     expect(germanLeft(container)).toEqual([]);
+    // „Pick automatically …“: sofortiger Pick für das eigene Team
+    const auto = container.querySelectorAll('.draft-pooltools button').find((b) => b.textContent === 'Pick automatically for My Team') as MiniElement;
+    await act(async () => auto.click());
+    const saved = JSON.parse(localStorage.getItem('pokemon-elf:draft')!);
+    expect(saved.pick).toBe(1);
+    expect(saved.teams[0].slots.filter((x: number | null) => x != null)).toHaveLength(1);
   });
 
   it('Liga mit 6 Teams: Meister grün markiert, unten keine rote Zone, Legende nur „Champions“', async () => {
