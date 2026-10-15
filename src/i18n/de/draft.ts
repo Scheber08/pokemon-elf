@@ -114,6 +114,8 @@ const draft = {
     cpuTag: '(CPU)',
     cpuScouting: (team: string) => `${team} scoutet …`,
     cpuNeeds: (positions: string) => `(sucht noch: ${positions})`,
+    /** Setup: Pick-Uhr für menschliche Teams */
+    pickClock: 'Pick-Uhr',
     /** Kapitänsphase: Ränge der menschlichen Teams nach Team-Score */
     humanRanks: (list: string) => `Team-Score-Platz – ${list}`,
     /** Schnellstart-Vorlagen im lokalen Setup (Titel) */

@@ -1700,3 +1700,8 @@ button.draft-bench__slot {
   font-size: 13px;
   text-transform: none;
 }
+
+/* Lokaler Draft: Pick-Uhr des menschlichen Teams am Zug */
+.draft__clock.is-urgent strong {
+  color: var(--red);
+}

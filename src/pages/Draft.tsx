@@ -107,6 +107,8 @@ interface DraftState {
   shinyParty?: true;
   /** Stärke der CPU-Teams beim Picken (fehlt = normal) */
   cpuLevel?: 'easy' | 'hard';
+  /** Pick-Uhr für menschliche Teams in Sekunden (fehlt = aus); läuft sie ab, wird automatisch gewählt */
+  pickSeconds?: number;
 }
 
 
@@ -164,6 +166,9 @@ const LOCAL_PRESETS: Record<LocalPresetId, { region: RegionFilter; legends: bool
   shinyParty: { region: 0, legends: false, forms: false, megas: 0, shinyParty: true },
 };
 const LOCAL_PRESET_IDS = Object.keys(LOCAL_PRESETS) as LocalPresetId[];
+
+/** Pick-Uhr im lokalen Draft (0 = aus) */
+const LOCAL_PICK_SECONDS = [0, 30, 60, 90];
 
 /** Snake-Draft: Runde 1 vorwärts, Runde 2 rückwärts … */
 function teamForPick(pick: number, n: number): number {
@@ -376,6 +381,33 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [state.phase]);
+
+  // Pick-Uhr (optional): je menschlichem Zug neu; bei 0 wählt der Draft automatisch (wie „Automatisch für … wählen“)
+  const [clockLeft, setClockLeft] = useState<number | null>(null);
+  const autoRef = useRef<() => void>(() => {});
+  autoRef.current = () => {
+    if (!team || team.cpu) return;
+    const best = cpuPickChoice(team, pool, scale('all'), 'hard', () => 0.5);
+    if (best) lock(currentTeam, best.slot, best.id);
+  };
+  useEffect(() => {
+    const secs = state.pickSeconds;
+    if (state.phase !== 'drafting' || !secs || !team || team.cpu) {
+      setClockLeft(null);
+      return;
+    }
+    const deadline = Date.now() + secs * 1000;
+    setClockLeft(secs);
+    const timer = window.setInterval(() => {
+      const left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      setClockLeft(left);
+      if (left === 0) {
+        window.clearInterval(timer);
+        autoRef.current();
+      }
+    }, 250);
+    return () => window.clearInterval(timer);
+  }, [state.phase, state.pick, state.pickSeconds]);
 
   // „Schneller“: CPU-Picks bis zum nächsten menschlichen Zug ohne Bedenkzeit (gilt nur bis dahin)
   const [fastCpu, setFastCpu] = useState(false);
@@ -693,6 +725,12 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 { value: 'normal', label: tx.cpuLevels.normal, title: tx.cpuLevelTitles.normal },
                 { value: 'hard', label: tx.cpuLevels.hard, title: tx.cpuLevelTitles.hard },
               ]}
+            />
+            <Segmented
+              label={tx.pickClock}
+              value={state.pickSeconds ?? 0}
+              onChange={(v) => setState(({ pickSeconds: _p, ...s }) => (v ? { ...s, pickSeconds: v } : s))}
+              options={LOCAL_PICK_SECONDS.map((v) => ({ value: v, label: v ? t.online.timerSeconds(v) : t.common.off }))}
             />
             {poolTooSmall && <p className="notice notice--error">{tx.poolTooSmall(poolSize, n, ROUNDS, n * ROUNDS)}</p>}
             <button type="button" className="btn btn--primary btn--big" onClick={start} disabled={poolTooSmall}>
@@ -1527,6 +1565,12 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           <span className="statusline__item">
             {tx.onTheClock} <strong>{team && teamName(team.name)}</strong> {team?.cpu ? tx.cpuTag : ''}
           </span>
+          {clockLeft != null && (
+            // Pick-Uhr des menschlichen Teams am Zug
+            <span className={`statusline__item draft__clock ${clockLeft <= 10 ? 'is-urgent' : ''}`} role="timer">
+              ⏱ <strong>{clockLeft} s</strong>
+            </span>
+          )}
         </div>
         {(() => {
           // Letzter Pick (aus dem Verlauf) – wie im Online-Draft; zeigt v. a. die schnellen CPU-Picks

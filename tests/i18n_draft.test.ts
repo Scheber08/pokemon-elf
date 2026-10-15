@@ -987,6 +987,33 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(cols[1].querySelector('.draft-board__rainbow')).toBeNull();
   });
 
+  it('Lokale Pick-Uhr: zählt herunter und wählt beim Ablauf automatisch', async () => {
+    const f = FORMATION_IDS[0];
+    const humans = [
+      { name: 'Mein Team', cpu: false, formation: f, slots: emptySlots(f) },
+      { name: 'Zweites Team', cpu: false, formation: f, slots: emptySlots(f) },
+    ];
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams: humans, region: 1, legends: false, pick: 0, selected: null, seed: null, log: [], pickSeconds: 30 }));
+    vi.useFakeTimers();
+    try {
+      const { container } = await render(app(h(Draft)));
+      await act(async () => void (await vi.advanceTimersByTimeAsync(300)));
+      expect(container.querySelector('.draft__clock')!.textContent).toBe('⏱ 30 s');
+      await act(async () => void (await vi.advanceTimersByTimeAsync(25_000)));
+      expect(container.querySelector('.draft__clock')!.textContent).toBe('⏱ 5 s');
+      expect(container.querySelector('.draft__clock')!.className).toContain('is-urgent');
+      await act(async () => void (await vi.advanceTimersByTimeAsync(6_000)));
+      const saved = JSON.parse(localStorage.getItem('pokemon-elf:draft')!);
+      expect(saved.pick).toBe(1);
+      expect(saved.teams[0].slots.filter((x: number | null) => x != null)).toHaveLength(1);
+      // Jetzt ist Team 2 dran – die Uhr startet neu
+      expect(container.querySelector('.draft__clock')!.textContent).toBe('⏱ 30 s');
+    } finally {
+      vi.useRealTimers();
+      localStorage.removeItem('pokemon-elf:draft');
+    }
+  });
+
   it('Hot-Seat: „📱 Gerät an … weitergeben“ nur nach dem Pick eines anderen menschlichen Teams', async () => {
     const f = FORMATION_IDS[0];
     const empty = emptySlots(f);
