@@ -275,6 +275,8 @@ const online = {
   readyLobby: (team: string) => `✅ ${team} ist bereit`,
   /** Eigene Blitz-Picks in der Statusleiste */
   blitzTitle: (n: number) => `${n} ${n === 1 ? 'Blitz-Pick' : 'Blitz-Picks'} – ab 5 gibt es den Erfolg „Blitzdrafter“`,
+  /** Snake-Wende: zwei Picks hintereinander */
+  doublePick: 'Doppelpick – du bist gleich noch einmal dran.',
   presets: 'Schnellstart',
   presetName: { classic: 'Klassisch', allRegions: 'Alle Regionen', megaChaos: 'Mega-Chaos', blitz: 'Blitz', cup: 'KO-Turnier', shinyParty: 'Shiny-Party' } as Record<
     DraftPresetId,

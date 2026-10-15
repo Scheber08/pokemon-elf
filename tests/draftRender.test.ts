@@ -684,6 +684,20 @@ describe('DraftLive', () => {
     expect(container.querySelector('.draft-pooltools button')!.getAttribute('aria-keyshortcuts')).toBe('V');
   });
 
+  it('Snake-Wende: „🐍 Doppelpick“, wenn man gleich noch einmal dran ist', async () => {
+    // 2 Teams, Snake: h, t1, t1, h, h, …
+    let st = drafting();
+    const r0 = await renderLive(fakeRoom(snap(st, 'h')));
+    expect(r0.container.querySelector('.draft-double')).toBeNull();
+    st = autoPick(autoPick(autoPick(st)));
+    expect(engine.currentTeam(st)!.id).toBe('h');
+    const { container } = await renderLive(fakeRoom(snap(st, 'h')));
+    expect(container.querySelector('.draft-double')!.textContent).toBe('🐍 Doppelpick – du bist gleich noch einmal dran.');
+    // Zuschauer bzw. anderes Team: kein Hinweis
+    const other = await renderLive(fakeRoom(snap(st, 't1')));
+    expect(other.container.querySelector('.draft-double')).toBeNull();
+  });
+
   it('Statusleiste: eigene Blitz-Picks ⚡ n/5', async () => {
     const pickAt = (st: DraftState, at: number, auto = false) => {
       const team = engine.currentTeam(st)!;

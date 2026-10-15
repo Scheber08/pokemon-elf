@@ -654,6 +654,13 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                 {t.online.pool} <span className="muted">{t.online.poolFree(pool.length - owners.size)}</span>
               </h2>
               <p className={`hint ${myTurn || selectedMon ? 'hint--active' : ''}`}>{hint}</p>
+              {myTurn &&
+                me &&
+                s.pickIndex + 1 < s.teams.length * engineRounds(s.settings) &&
+                s.teams[teamIndexForPick(s.pickIndex + 1, s.teams.length, s.settings.snake ?? true)]?.id === me.id && (
+                  // Snake-Wende: gleich noch einmal dran
+                  <p className="small draft-double">🐍 {t.online.doublePick}</p>
+                )}
               <div className="draft-pooltools">
                 <button type="button" className="btn btn--small" onClick={suggest} disabled={!mySlots.length} title={t.online.suggestKey} aria-keyshortcuts="V">
                   {t.online.suggest}
