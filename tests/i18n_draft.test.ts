@@ -422,6 +422,7 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     expect(all).toMatch(/All \d+ picks/);
     // Nur eigene Picks: Liste schrumpft auf die eigenen
     const allPicks = container.querySelectorAll('.draft-results__picklist li').length;
+    expect(container.querySelector('.draft-results__picklist li')!.textContent).toMatch(/^#1 · R1 /);
     const mine = container.querySelector('.draft-results__mine input') as unknown as { click(): void; checked: boolean };
     await act(async () => {
       mine.checked = true;

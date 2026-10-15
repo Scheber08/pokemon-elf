@@ -267,6 +267,7 @@ const draft = {
   results: {
     allPicks: (n: number) => `Alle ${n} Picks`,
     onlyMyPicks: 'Nur meine Picks',
+    pickRound: (n: number) => `Runde ${n}`,
     none: 'Für diese Liga gibt es noch kein Ergebnis.',
     copied: 'Ergebnis kopiert',
     copyFailed: 'Kopieren nicht möglich',
