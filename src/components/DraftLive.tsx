@@ -490,6 +490,33 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
       : null;
   const suggestLabel = suggestPos ? t.game.posName[suggestPos] : suggestSlot != null && suggestSlot >= DRAFT_BENCH_SLOT ? t.draft.bench.label : null;
 
+  // Auswahl: bester freier Feldplatz des Pokémon und was er aus dem Ø Fit der eigenen Elf macht
+  const impact = (() => {
+    if (!me || !selectedMon) return null;
+    const sc = scale('all');
+    const defs = FORMATIONS[me.formation].slots;
+    const filled = defs.flatMap((d, j) => {
+      const p = me.slots[j] != null ? byId.get(me.slots[j]!) : undefined;
+      return p ? [positionFit(p, d.pos, sc)] : [];
+    });
+    let best: { pos: PosCode; fit: number } | null = null;
+    defs.forEach((d, j) => {
+      if (me.slots[j] != null) return;
+      const fit = positionFit(selectedMon, d.pos, sc);
+      if (!best || fit > best.fit) best = { pos: d.pos, fit };
+    });
+    if (!best) return null;
+    const b: { pos: PosCode; fit: number } = best;
+    const sum = filled.reduce((x, y) => x + y, 0);
+    const before = filled.length ? Math.round(sum / filled.length) : null;
+    const after = Math.round((sum + b.fit) / (filled.length + 1));
+    return (
+      <span className="draft-hint__impact">
+        {t.online.hintImpact(t.game.posShort[b.pos], Math.round(b.fit), before, after)}
+      </span>
+    );
+  })();
+
   const hint = !me ? null : myTurn ? (
     selectedMon ? (
       <>
@@ -497,6 +524,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
         {t.online.hintChosen}
         {suggestLabel ? t.online.hintSuggestion(suggestLabel) : null}
         {t.online.hintClickSlot}
+        {impact}
       </>
     ) : (
       <>
@@ -508,6 +536,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     <>
       <strong>{t.game.pokemon(selectedMon)}</strong>
       {t.online.hintQueued}
+      {impact}
     </>
   ) : (
     <>

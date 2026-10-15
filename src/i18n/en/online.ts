@@ -195,6 +195,7 @@ const online: Messages['online'] = {
   hintSuggestion: (pos) => ` – suggestion: ${pos}`,
   hintClickSlot: '. Click a free spot on your pitch.',
   hintChoose: 'Choose a Pokémon from the pool, then a free spot on your pitch.',
+  hintImpact: (pos, fit, before, after) => `${pos} fit ${fit} · avg fit ${before == null ? after : `${before} → ${after}`}`,
   hintQueued: ' is shortlisted. Once it’s your turn, click a free spot.',
   hintWaiting: (team) => `${team} is on the clock. You can already browse and shortlist a favourite.`,
   anotherTeam: 'Another team',

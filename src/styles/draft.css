@@ -1750,3 +1750,11 @@ button.draft-bench__slot {
 .draft__missed p {
   margin: 0;
 }
+
+/* Online-Draft: Auswahl – bester freier Platz und Ø Fit der eigenen Elf (eigene Zeile) */
+.draft-hint__impact {
+  display: block;
+  margin-top: 2px;
+  font-weight: 600;
+  white-space: nowrap;
+}

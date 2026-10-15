@@ -633,6 +633,10 @@ describe('DraftLive', () => {
     expect(chips).toHaveLength(new Set(FORMATIONS[me.formation].slots.map((d) => d.pos)).size);
     await act(async () => (chips[0] as MiniElement).click());
     expect(container.querySelectorAll('.draft__bestfree button')[0].className).toContain('is-active');
+    // Auswahl: bester freier Platz und Ø Fit der eigenen Elf (noch kein Pick → nur der neue Wert)
+    const impact = container.querySelector('.draft-hint__impact')!.textContent!;
+    expect(impact).toMatch(/^\S+ Fit \d+ · Ø Fit \d+$/);
+    expect(impact.split('Fit ')[1].split(' ')[0]).toBe(impact.split('Ø Fit ')[1]);
     // Zuschauer (ohne Team) sehen keine Chips
     const view = await renderLive(fakeRoom(snap(st, null)));
     expect(view.container.querySelector('.draft__bestfree')).toBeNull();

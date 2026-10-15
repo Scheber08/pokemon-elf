@@ -430,7 +430,7 @@ describe('DraftLive (en)', () => {
     const suggest = container.querySelectorAll('.draft-pooltools button').find((b) => b.textContent === 'Suggest')!;
     await act(async () => suggest.click());
     const hint = container.querySelector('p.hint')!.textContent;
-    expect(hint).toMatch(/^.+ selected – suggestion: .+\. Click a free spot on your pitch\.$/);
+    expect(hint).toMatch(/^.+ selected – suggestion: .+\. Click a free spot on your pitch\.\S+ fit \d+ · avg fit \d+$/);
     expectEnglish(hint);
   });
 

@@ -212,6 +212,9 @@ const online = {
   hintSuggestion: (pos: string) => ` – Vorschlag: ${pos}`,
   hintClickSlot: '. Klicke auf einen freien Platz auf deinem Feld.',
   hintChoose: 'Wähle ein Pokémon aus dem Pool und dann einen freien Platz auf deinem Feld.',
+  /** Auswahl: bester freier Platz mit Fit und Ø Fit der eigenen Elf vorher → nachher */
+  hintImpact: (pos: string, fit: number, before: number | null, after: number) =>
+    `${pos} Fit ${fit} · Ø Fit ${before == null ? after : `${before} → ${after}`}`,
   hintQueued: ' ist vorgemerkt. Sobald du dran bist, klickst du auf einen freien Platz.',
   hintWaiting: (team: string) => `${team} ist dran. Du kannst schon stöbern und einen Favoriten vormerken.`,
   anotherTeam: 'Ein anderes Team',
