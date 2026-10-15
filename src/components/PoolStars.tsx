@@ -67,3 +67,41 @@ export function PoolStars({ pool, scale }: { pool: readonly Pokemon[]; scale: Sc
     </section>
   );
 }
+
+export interface LandedStar {
+  pokemon: Pokemon;
+  /** Team, das den Star bekam (Anzeigename), und Pick-Nummer (1-basiert) – fehlt: nicht gedraftet */
+  team?: string;
+  pick?: number;
+  /** Eigenes Team */
+  mine?: boolean;
+}
+
+/** Ergebnis: „Wo landeten die Stars?" – die Stars des Pools mit Team und Pick (online und lokal). */
+export function StarsLanded({ stars }: { stars: readonly LandedStar[] }) {
+  const t = useT();
+  const tx = t.draft.results;
+  const { sprite } = useSettings();
+  if (!stars.length) return null;
+  return (
+    <section className="card draft-results__stars" aria-labelledby="draft-results-stars-title">
+      <h2 id="draft-results-stars-title" className="section-title">
+        ⭐ {tx.starsTitle}
+      </h2>
+      <ol className="pool-stars__list">
+        {stars.map((x) => (
+          <li key={x.pokemon.id} className={x.mine ? 'is-you' : ''}>
+            <Sprite pokemon={x.pokemon} style={sprite} className="pool-stars__sprite" />
+            <span className="pool-stars__name">
+              <strong>{t.game.pokemon(x.pokemon)}</strong>
+              <KindMarks kinds={limitKindsOf(x.pokemon)} />
+            </span>
+            <span className="pool-stars__pos small">
+              {x.team != null && x.pick != null ? tx.starsPick(x.team, x.pick) : <span className="muted">{tx.starsFree}</span>}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}

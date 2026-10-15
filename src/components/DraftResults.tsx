@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftSettings, DraftTeam, ManagerTransfer } from '../lib/api/draftContract';
-import { poolStars } from './PoolStars';
+import { poolStars, StarsLanded } from './PoolStars';
 import { copyText, downloadBlob } from '../lib/exportImage';
 import { bestTransfer, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
@@ -845,28 +845,12 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
       </section>
 
       {stars.length > 0 && (
-        <section className="card draft-results__stars" aria-labelledby="draft-results-stars-title">
-          <h2 id="draft-results-stars-title" className="section-title">
-            ⭐ {tx.starsTitle}
-          </h2>
-          <ol className="pool-stars__list">
-            {stars.map((x) => {
-              const ti = x.pick ? teams.findIndex((tm) => tm.id === x.pick!.teamId) : -1;
-              return (
-                <li key={x.pokemon.id} className={ti >= 0 && ti === you ? 'is-you' : ''}>
-                  <Sprite pokemon={x.pokemon} style={sprite} className="pool-stars__sprite" />
-                  <span className="pool-stars__name">
-                    <strong>{t.game.pokemon(x.pokemon)}</strong>
-                    <KindMarks kinds={limitKindsOf(x.pokemon)} />
-                  </span>
-                  <span className="pool-stars__pos small">
-                    {x.pick && ti >= 0 ? tx.starsPick(nameOf(ti), x.pick.pick + 1) : <span className="muted">{tx.starsFree}</span>}
-                  </span>
-                </li>
-              );
-            })}
-          </ol>
-        </section>
+        <StarsLanded
+          stars={stars.map((x) => {
+            const ti = x.pick ? teams.findIndex((tm) => tm.id === x.pick!.teamId) : -1;
+            return ti >= 0 ? { pokemon: x.pokemon, team: nameOf(ti), pick: x.pick!.pick + 1, mine: ti === you } : { pokemon: x.pokemon };
+          })}
+        />
       )}
 
       {picks.length > 0 && (

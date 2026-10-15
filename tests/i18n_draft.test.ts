@@ -608,6 +608,10 @@ describe('/draft an einem Gerät auf Englisch', () => {
     });
     // Ein Legendäres (Mewtu) für ★ in „Alle Picks“
     teams[1].slots[0] = 150;
+    // Der stärkste Star des Pools geht an Team 2 (Runde 2) – für „Where did the stars go?“
+    const { poolStars } = await import('../src/components/PoolStars');
+    const stars = poolStars(ALL.filter((p) => !p.leg && !p.myth && !p.form), SCALE);
+    teams[2].slots[1] = stars[0].pokemon.id;
     const log: { team: number; slot: number; id: number }[] = [];
     for (let k = 0; k < 33; k++) {
       const round = Math.floor(k / 3);
@@ -634,6 +638,12 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(list[0].textContent).toMatch(/^#1 · R1 .+ → My Team$/);
     expect(list[0].className).toContain('is-you');
     expect(list[1].className).not.toContain('is-you');
+    // Stars: der erste mit Team 2 und Pick 4 (Snake: Runde 2 beginnt mit Team 2), die übrigen nicht gedraftet
+    const starRows = r.container.querySelectorAll('.draft-results__stars li');
+    expect(starRows).toHaveLength(5);
+    expect(starRows[0].textContent).toBe(`${stars[0].pokemon.en}${clubEn(CLUB_NAMES[2])} · pick 4`);
+    expect(starRows[0].className).not.toContain('is-you');
+    for (const row of starRows.slice(1)) expect(row.textContent).toMatch(/not drafted$/);
     // ★ hinter Mewtu (und nur dort)
     const marked = list.filter((li) => li.querySelector('.draft-feed__kind'));
     expect(marked).toHaveLength(1);

@@ -7,7 +7,7 @@ import { CLUB_NAMES } from '../config/season';
 import { PosBadge } from '../components/Badges';
 import { DraftPickFeed, DraftTypeChip, KindMarks } from '../components/DraftBoard';
 import type { FeedItem } from '../state/useDraftRoom';
-import { PoolStars } from '../components/PoolStars';
+import { PoolStars, poolStars, StarsLanded } from '../components/PoolStars';
 import { FilterBar, typingElsewhere, useFilteredPokemon, type PokemonFilters } from '../components/FilterBar';
 import { CaptainPicker } from '../components/CaptainPicker';
 import { JerseyEditor } from '../components/JerseyEditor';
@@ -1178,6 +1178,17 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
             </details>
           );
         })()}
+        {state.log && state.log.length === state.teams.length * ROUNDS && (
+          // Wo landeten die Stars des Pools? (wie im Online-Ergebnis; Pool ohne Mega-Limit je Team)
+          <StarsLanded
+            stars={poolStars(all.filter(inPool), scale('all')).map((x) => {
+              const k = state.log!.findIndex((e) => e.id === x.pokemon.id);
+              if (k < 0) return { pokemon: x.pokemon };
+              const tm = state.teams[state.log![k].team];
+              return { pokemon: x.pokemon, team: teamName(tm?.name ?? ''), pick: k + 1, mine: !!tm && !tm.cpu };
+            })}
+          />
+        )}
         {state.log && state.log.length === state.teams.length * ROUNDS && (
           // Alle Picks in Reihenfolge – wie im Online-Ergebnis (nur mit Pick-Verlauf)
           <details className="card details draft-results__picks">
