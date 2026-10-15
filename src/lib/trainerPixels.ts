@@ -473,6 +473,15 @@ function accessory(c: Canvas, id: string, cloth: string) {
         c.rect(x0 + 2, 15, 1, 3, cloth);
       }
       break;
+    case 'locket':
+      // Herz-Medaillon: goldene Kette mit rotem Herz
+      c.dots([[12, 24], [13, 25], [14, 26], [19, 24], [18, 25], [17, 26]], '#f2c230');
+      c.dots([[14, 27], [15, 27], [17, 27], [18, 27]], '#d8342a');
+      c.rect(14, 28, 5, 1, '#d8342a');
+      c.rect(15, 29, 3, 1, '#d8342a');
+      c.dots([[16, 30]], '#d8342a');
+      c.dots([[14, 27]], '#f08a8a');
+      break;
     case 'whistle':
       c.dots([[12, 24], [13, 25], [14, 26], [19, 24], [18, 25], [17, 26]], '#26282e');
       c.rect(15, 27, 3, 2, '#c9ced6');

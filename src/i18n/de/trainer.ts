@@ -133,6 +133,7 @@ const trainer = {
       sunglasses: 'Sonnenbrille',
       eyepatch: 'Augenklappe',
       facepaint: 'Fanschminke',
+      locket: 'Herz-Medaillon',
       medal: 'Medaille',
     },
     background: {
