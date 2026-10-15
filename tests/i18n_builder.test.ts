@@ -204,10 +204,12 @@ describe('Tooltips und Export-Bild auf Englisch', () => {
         subtitle: '4-3-3 · All regions',
         result: { record: '34–0', points: 102, score: 88, position: 1, label: '34–0 Challenge' },
         watermark: 'elf.example',
+        shinies: [SNORLAX.id],
       }),
     );
     const all = texts().join(' | ');
     expect(all).toContain('My XI');
+    expect(all).toContain('✨');
     expect(all).toContain('102 pts · Score 88 · 1st place');
     expect(all).toContain('Snorlax');
     expect(germanLeft()).toEqual([]);

@@ -49,6 +49,7 @@ export async function lineupImage(o: Options): Promise<Blob> {
       captain={o.captain}
       crest={o.crest}
       crestHref={mascot ? images.get(mascot.id)?.url : undefined}
+      shinies={o.shinies}
     />,
   );
 }
