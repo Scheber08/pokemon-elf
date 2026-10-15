@@ -879,6 +879,21 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                   });
                   return <p className="draft-results__roster-meta small">✨ {parts.join(', ')}</p>;
                 })()}
+                {(() => {
+                  // 🗺️ Regionen-Mix der Elf (nur bei mehr als einer Region)
+                  const gens = new Map<number, number>();
+                  for (const id of team.slots) {
+                    const p = id != null ? byId.get(id) : undefined;
+                    if (p) gens.set(p.gen, (gens.get(p.gen) ?? 0) + 1);
+                  }
+                  if (gens.size < 2) return null;
+                  const list = [...gens].sort((a, b) => b[1] - a[1] || a[0] - b[0]).map(([g, n]) => `${t.game.region[g] ?? g} ${n}`);
+                  return (
+                    <p className="draft-results__roster-meta small draft-results__roster-regions" title={tx.regionsTitle}>
+                      🗺️ {list.join(' · ')}
+                    </p>
+                  );
+                })()}
                 {teamTopScorer.has(r.team) && (
                   <p className="draft-results__roster-meta small">
                     {tx.teamTopScorer(pokemonName(teamTopScorer.get(r.team)!.pokemonId), teamTopScorer.get(r.team)!.goals)}

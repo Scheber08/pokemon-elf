@@ -2036,6 +2036,20 @@ describe('ManagerSeason', () => {
     expect(cbEl.className.includes('is-you')).toBe(cb.winner === idx || cb.loser === idx);
   });
 
+  it('Saisonende: 🗺️ Regionen-Mix in den Kader-Karten (nur bei mehreren Regionen)', async () => {
+    const { DraftSeasonStage } = await import('../src/components/DraftSeasonStage');
+    let s = engine.startDraft(lobby(2, { gens: [1, 2], maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = engine.withLeague(s, ALL, SCALE);
+    const done = { ...s, season: { ...s.season!, startsAt: Date.now() - 30 * 86_400_000 } };
+    const { container } = await render(app(h(DraftSeasonStage, { room: fakeRoom(snap(done, 'h')) })));
+    await settle();
+    const lines = container.querySelectorAll('.draft-results__roster-regions').map((e) => e.textContent);
+    const mixed = s.teams.filter((tm) => new Set(tm.slots.map((id) => ALL.find((p) => p.id === id)!.gen)).size > 1);
+    expect(lines).toHaveLength(mixed.length);
+    for (const line of lines) expect(line).toMatch(/^🗺️ (Kanto|Johto) \d+ · (Kanto|Johto) \d+$/);
+  });
+
   it('Saisonende: Saisonrekorde mit Angriff, Abwehr und ggf. Remis-König', async () => {
     const { DraftSeasonStage } = await import('../src/components/DraftSeasonStage');
     let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);

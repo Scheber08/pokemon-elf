@@ -366,6 +366,7 @@ const draft: Messages['draft'] = {
     recordWinLine: (home, score, away, round) => `${home} ${score} ${away} (matchday ${round})`,
     streak: (team, n, from, to) => `${team}, ${n} wins in a row (matchdays ${from}–${to})`,
     topCaptain: (pokemon, team, goals) => `Top captain: ${pokemon} (${team}) with ${goals === 1 ? '1 goal' : `${goals} goals`}`,
+    regionsTitle: 'Which regions the eleven comes from',
     typeGoals: 'Top-scoring types:',
     missed: (pick, name, fit, pos, alt, altFit) => `Missed chance: pick ${pick} ${name} (fit ${fit}) – ${alt} (fit ${altFit}) was still free at ${pos}`,
     missedTaken: (team, pick) => `– went to ${team} with pick ${pick}.`,
