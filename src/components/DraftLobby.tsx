@@ -31,7 +31,7 @@ import '../styles/draft.css';
 import { cleanKit } from '../lib/kits';
 import { CrestEditor } from './CrestEditor';
 import { cleanCrest } from '../lib/crest';
-import { rosterOf } from '../lib/draftEngine';
+import { rosterOf, rounds as draftRounds } from '../lib/draftEngine';
 import { Crest } from './Crest';
 
 /** QR-Code des Liga-Links – zum Scannen, wenn alle im selben Raum sitzen. */
@@ -497,7 +497,8 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
             {!blocker && (
               <p className="hint">
                 {(() => {
-                  const rounds = s.settings.setPiece ? 12 : 11;
+                  // Runden inkl. Standardschütze und Bank (Manager-Saison)
+                  const rounds = draftRounds(s.settings);
                   const humans = s.teams.filter((tm) => !tm.cpu).length;
                   const cpus = s.teams.length - humans;
                   // Längstens: jeder menschliche Pick bis zum Timer, CPU-Picks mit ihrer kurzen Pause
