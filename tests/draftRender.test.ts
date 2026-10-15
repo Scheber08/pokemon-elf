@@ -760,6 +760,16 @@ describe('DraftLobby', () => {
     const easy = r2.container.querySelectorAll('.draft-settings button').find((b) => b.textContent === 'Leicht') as MiniElement;
     await act(async () => easy.click());
     expect(room.updateSettings).toHaveBeenCalledWith({ cpuLevel: 'easy' });
+    // Abweichende Stärke steht bei den CPU-Teams in der Liste, Menschen ohne
+    const withCpu = engine.addCpuTeam(st, 'dev-h', 'cpu1');
+    const hard = { ...withCpu, settings: { ...withCpu.settings, cpuLevel: 'hard' as const } };
+    const r3 = await render(app(h(DraftLobby, { room: fakeRoom(snap(hard, 'h')) })));
+    await settle();
+    const cpuRows = hard.teams.filter((tm) => tm.cpu).length;
+    expect(cpuRows).toBeGreaterThan(0);
+    expect(r3.container.querySelectorAll('.draft-lobby__cpulevel')).toHaveLength(cpuRows);
+    expect(r3.container.querySelector('.draft-lobby__cpulevel')!.textContent).toBe(' · Stark');
+    expect(r2.container.querySelectorAll('.draft-lobby__cpulevel')).toHaveLength(0);
   });
 
   it('Host mischt die Draft-Reihenfolge (nur bei Reihenfolge wie in der Liste)', async () => {
