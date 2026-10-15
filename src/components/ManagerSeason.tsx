@@ -106,11 +106,12 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
     );
     // Läuft der Spieltag noch live, nichts verraten – nur Bescheid geben
     const live = s.season ? liveMinute(kickoffAt(s.season, playedNow), now, liveDuration(s.season.stepMs)) != null : false;
+    const place = league.table.findIndex((x) => x.team === you) + 1;
     const body = live
       ? t.draft.manager.notifyLive(playedNow)
-      : r
-        ? t.draft.manager.notifyResult(t.draft.outcome[r.outcome], r.gf, r.ga, nameOf(r.opponent))
-        : t.draft.manager.notifyPlayed(playedNow);
+      : (r
+          ? t.draft.manager.notifyResult(t.draft.outcome[r.outcome], r.gf, r.ga, nameOf(r.opponent))
+          : t.draft.manager.notifyPlayed(playedNow)) + (place > 0 ? ` ${t.draft.manager.notifyPlace(place)}` : '');
     showNotify(t.draft.manager.notifyHeading(s.settings.name || t.online.leagueFallback(s.code), playedNow), body, `manager-${s.code}`);
   }, [playedNow]);
 

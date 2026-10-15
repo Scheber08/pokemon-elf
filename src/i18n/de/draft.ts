@@ -602,6 +602,7 @@ const draft = {
       `${names.join(', ')} ${names.length === 1 ? 'fällt' : 'fallen'} aus – beim Anpfiff springt der beste verfügbare Ersatz ein.`,
     captainBench: (name: string) => `Dein Kapitän ${name} steht nicht in der Startelf – sein doppeltes Gewicht zählt nur auf dem Platz.`,
     captainOut: (name: string) => `Dein Kapitän ${name} fällt aus – an diesem Spieltag gibt es keinen Kapitänsbonus. Wähle sonst einen anderen.`,
+    notifyPlace: (place: number) => `Jetzt Platz ${place}.`,
     notifyLive: (matchday: number) => `Spieltag ${matchday} läuft jetzt live – schau zu!`,
     liveTitle: (matchday: number, minute: number) => `Spieltag ${matchday} · ${minute}. Minute`,
     liveNote: 'Der Spieltag läuft gerade – alle sehen dieselbe Minute. Tore fallen zu ihrer Spielminute, Tabelle live.',

@@ -556,6 +556,7 @@ const draft: Messages['draft'] = {
     outWarning: (names) => `${names.join(', ')} ${names.length === 1 ? 'is' : 'are'} out – the best available replacement steps in at kickoff.`,
     captainBench: (name) => `Your captain ${name} is not in the starting XI – the double weight only counts on the pitch.`,
     captainOut: (name) => `Your captain ${name} is out – no captain bonus this matchday. Consider picking another one.`,
+    notifyPlace: (place) => `Now in place ${place}.`,
     notifyLive: (matchday) => `Matchday ${matchday} is live now – watch it!`,
     liveTitle: (matchday, minute) => `Matchday ${matchday} · minute ${minute}`,
     liveNote: 'The matchday is in progress – everyone sees the same minute. Goals fall at their match minute, live table.',
