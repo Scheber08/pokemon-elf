@@ -1865,3 +1865,39 @@ button.draft-bench__slot {
   gap: 4px 6px;
   margin: 4px 0 8px;
 }
+
+/* Eigenes Team: kleine Formations-Vorschau neben „Zufällige Formation“ */
+.formation-mini-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.formation-mini {
+  width: 64px;
+  height: 80px;
+  flex: none;
+}
+.formation-mini__pitch {
+  fill: var(--grass-1);
+}
+.formation-mini__line {
+  stroke: rgba(255, 255, 255, 0.45);
+  stroke-width: 1.2;
+  fill: none;
+}
+.formation-mini__dot {
+  stroke: rgba(0, 0, 0, 0.35);
+  stroke-width: 1;
+}
+.formation-mini__dot--gk {
+  fill: var(--yellow);
+}
+.formation-mini__dot--def {
+  fill: var(--blue);
+}
+.formation-mini__dot--mid {
+  fill: #7ee08f;
+}
+.formation-mini__dot--att {
+  fill: var(--red);
+}

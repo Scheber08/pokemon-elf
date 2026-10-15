@@ -4,6 +4,7 @@ import type { Messages } from '../de';
 const common: Messages['common'] = {
   close: 'Close',
   retry: 'Try again',
+  formationPreview: (f) => `Preview of formation ${f}`,
   randomName: 'Random club name',
   randomFormation: 'Random formation',
   randomFormationTitle: 'Roll a different formation',

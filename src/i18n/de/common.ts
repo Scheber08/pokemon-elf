@@ -2,6 +2,7 @@
 const common = {
   close: 'Schließen',
   retry: 'Erneut versuchen',
+  formationPreview: (f: string) => `Formation ${f} als Vorschau`,
   randomName: 'Zufälliger Vereinsname',
   randomFormation: 'Zufällige Formation',
   randomFormationTitle: 'Eine andere Formation auswürfeln',

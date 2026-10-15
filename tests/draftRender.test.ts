@@ -974,6 +974,12 @@ describe('DraftLobby', () => {
     await settle();
     const btn = container.querySelector('.random-formation') as MiniElement;
     expect(btn.textContent).toBe('🎲 Zufällige Formation');
+    // Formations-Vorschau: ein Punkt je Position, Farbe nach Mannschaftsteil
+    const current0 = st.teams.find((t) => t.id === 'h')!.formation;
+    const mini = container.querySelector('.formation-mini')!;
+    expect(mini.getAttribute('aria-label')).toBe(`Formation ${current0} als Vorschau`);
+    expect(mini.querySelectorAll('.formation-mini__dot')).toHaveLength(11);
+    expect(mini.querySelectorAll('.formation-mini__dot--gk')).toHaveLength(1);
     vi.spyOn(Math, 'random').mockReturnValue(0);
     await act(async () => btn.click());
     vi.restoreAllMocks();

@@ -17,6 +17,7 @@ import { poolHasLegends, poolHasMegas, poolHasUltraBeasts, poolOf, rerollUsable 
 import { fitSettingsPatch, poolCapacity } from '../state/useDraftRoom';
 import type { FormationId, Pokemon, TypeKey } from '../types';
 import { RandomNameButton } from './RandomNameButton';
+import { FormationMini } from './FormationMini';
 import { Segmented } from './Segmented';
 import '../styles/draft.css';
 
@@ -831,19 +832,22 @@ export function DraftTeamFields({ name, formation, onName, onFormation, onCommit
         onChange={(f) => !disabled && onFormation(f)}
         options={FORMATION_IDS.map((f) => ({ value: f, label: f }))}
       />
-      <button
-        type="button"
-        className="btn btn--small btn--ghost random-formation"
-        disabled={disabled}
-        title={t.common.randomFormationTitle}
-        onClick={() => {
-          // Eine andere als die aktuelle Formation
-          const others = FORMATION_IDS.filter((f) => f !== formation);
-          onFormation(others[Math.floor(Math.random() * others.length)]);
-        }}
-      >
-        🎲 {t.common.randomFormation}
-      </button>
+      <div className="formation-mini-row">
+        <FormationMini formation={formation} />
+        <button
+          type="button"
+          className="btn btn--small btn--ghost random-formation"
+          disabled={disabled}
+          title={t.common.randomFormationTitle}
+          onClick={() => {
+            // Eine andere als die aktuelle Formation
+            const others = FORMATION_IDS.filter((f) => f !== formation);
+            onFormation(others[Math.floor(Math.random() * others.length)]);
+          }}
+        >
+          🎲 {t.common.randomFormation}
+        </button>
+      </div>
     </div>
   );
 }
