@@ -22,7 +22,7 @@ import { emptySlots } from '../lib/formation';
 import { biggestWin, draftGrades, goalFest, headToHead, leagueTimeline, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
 import { createRng, randomSeed, shuffle } from '../lib/rng';
 import { cpuLevelOf, cpuPickChoice } from '../lib/localCpu';
-import { CLASSIC_MODEL, DRAFT_MODEL, formatRecord, sideTable, simulateLeague, type LeagueTeam } from '../lib/season';
+import { buildTable, CLASSIC_MODEL, DRAFT_MODEL, formatRecord, sideTable, simulateLeague, type LeagueTeam } from '../lib/season';
 import { scorerSummary } from '../lib/seasonTimeline';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
 import { bestCaptain, evaluateTeam } from '../lib/teamScore';
@@ -809,6 +809,10 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           for (const row of tb) ratings[row.team] = row.rating;
           const { up, down } = seasonSwings(tb.map((row) => row.team), ratings);
           const line = (m: NonNullable<typeof bigWin>) => r.recordWinLine(nameOf(m.home), `${m.hg}:${m.ag}`, nameOf(m.away), m.round);
+          // Herbstmeister und Rückrunden-Tabelle (doppelte Runde, ab 4 Spieltagen) – wie online
+          const days = leagueTimeline(league);
+          const half = days.length >= 4 && days.length % 2 === 0 ? days[days.length / 2 - 1] : null;
+          const second = half ? buildTable(league.teams, league.matches.filter((m) => m.round > half.round))[0] : null;
           return (
             <section className="card" aria-labelledby="draft-local-records">
               <h2 id="draft-local-records" className="section-title">
@@ -827,6 +831,18 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   <div>
                     <dt>{r.recordDraws}</dt>
                     <dd>{r.recordDrawsLine(nameOf(draws.team), draws.d)}</dd>
+                  </div>
+                )}
+                {half && (
+                  <div>
+                    <dt>{r.recordHalf}</dt>
+                    <dd>{r.recordHalfLine(nameOf(half.leader.team), half.leader.pts, half.round)}</dd>
+                  </div>
+                )}
+                {second && (
+                  <div>
+                    <dt>{r.recordSecond}</dt>
+                    <dd>{r.recordSecondLine(nameOf(second.team), second.pts)}</dd>
                   </div>
                 )}
                 {bigWin && (

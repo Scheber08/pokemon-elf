@@ -389,6 +389,10 @@ describe('/draft an einem Gerät auf Englisch', () => {
     const labels = rows.map((r) => r[0]);
     expect(labels.slice(0, 2)).toEqual(['Best attack', 'Best defence']);
     expect(labels).toContain('Biggest win');
+    // Doppelte Runde mit 6 Teams (10 Spieltage): Herbstmeister nach Spieltag 5 und Rückrunden-Bester
+    expect(labels).toContain('Half-season champions');
+    expect(labels).toContain('Best team of the second half');
+    expect(rows.find((r) => r[0] === 'Half-season champions')![1]).toMatch(/after the first half \(matchday 5\)$/);
     const goals = Math.max(...mainRows(container).map((r) => Number(r.querySelectorAll('td')[8].textContent!.split(':')[0])));
     expect(rows[0][1]).toContain(`${goals} goals`);
     expect(section.textContent).not.toContain('Mein Team');
