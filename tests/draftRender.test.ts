@@ -1052,6 +1052,10 @@ describe('ManagerSeason', () => {
     expect(tip.textContent).toContain(`Tipp: Mit ${top.f} wäre Stärke ${top.n} möglich.`);
     await act(async () => (tip.querySelector('button') as MiniElement).click());
     expect((room.setLineup as ReturnType<typeof vi.fn>).mock.calls.at(-1)![0].formation).toBe(top.f);
+    // Bank-Karten: bestpassende Position mit Fit
+    const benchBest = container.querySelectorAll('.manager__bench-best');
+    expect(benchBest.length).toBe(engine.rosterOf(me).length - 11);
+    expect(benchBest[0].textContent).toMatch(/^[A-ZÄÖÜ]{2,3} \d+$/);
     // In der stärksten Formation: kein Tipp
     const best = { ...s, manager: { ...s.manager!, lineups: { ...s.manager!.lineups, h: { ...top.l, auto: false } } } };
     const r2 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(best, 'h')), readOnly: false })));

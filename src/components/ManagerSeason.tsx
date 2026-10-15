@@ -806,7 +806,25 @@ function LineupEditor({
           sprite={sprite}
           onClick={onBench}
           state={(k) => (pick?.kind === 'bench' && pick.id === bench[k] ? 'selected' : pick?.kind === 'slot' ? 'target' : undefined)}
-          extra={(id) => <FormMark value={formOf(id)} />}
+          extra={(id) => {
+            // Bestpassende Position der Formation (mit Tagesform) – wohin der Bankspieler passt
+            const p = byId.get(id);
+            let best: { pos: PosCode; fit: number } | null = null;
+            for (const pos of positions) {
+              const fit = p ? formFit(p, pos, sc, formOf(id)) : 0;
+              if (p && (!best || fit > best.fit)) best = { pos, fit };
+            }
+            return (
+              <>
+                <FormMark value={formOf(id)} />
+                {best && (
+                  <span className="manager__bench-best" title={tx.benchBest(t.game.posName[best.pos], Math.round(best.fit))}>
+                    {t.game.posShort[best.pos]} {Math.round(best.fit)}
+                  </span>
+                )}
+              </>
+            );
+          }}
         />
       </div>
       <h3 className="manager__squad-title">{tx.squadTitle}</h3>

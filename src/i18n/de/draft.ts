@@ -534,6 +534,7 @@ const draft = {
     strength: (n: number) => `Stärke ${n}`,
     formationTip: (formation: string, n: number) => `Tipp: Mit ${formation} wäre Stärke ${n} möglich.`,
     formationTipApply: (formation: string) => `${formation} übernehmen`,
+    benchBest: (pos: string, fit: number) => `Passt am besten als ${pos} (Fit ${fit} mit Tagesform)`,
     bestStrength: (n: number) => `bestmöglich ${n}`,
     strengthTitle: 'Team-Score dieser Elf samt Tagesform',
     swapHint: 'Tippe zwei Spieler an, um sie zu tauschen – auf dem Feld, mit dem Standardschützen oder mit der Bank.',

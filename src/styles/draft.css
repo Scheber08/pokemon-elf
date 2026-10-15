@@ -1459,3 +1459,10 @@ button.draft-bench__slot {
   flex-wrap: wrap;
   overflow-x: visible;
 }
+
+/* Manager-Aufstellung: bestpassende Position eines Bankspielers */
+.manager__bench-best {
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}

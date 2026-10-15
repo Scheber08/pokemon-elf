@@ -489,6 +489,7 @@ const draft: Messages['draft'] = {
     strength: (n) => `Strength ${n}`,
     formationTip: (formation, n) => `Tip: with ${formation} a strength of ${n} is possible.`,
     formationTipApply: (formation) => `Switch to ${formation}`,
+    benchBest: (pos, fit) => `Best fit: ${pos} (fit ${fit} with daily form)`,
     bestStrength: (n) => `best possible ${n}`,
     strengthTitle: 'Team score of this eleven including daily form',
     swapHint: 'Tap two players to swap them – on the pitch, with the set-piece taker or with the bench.',
