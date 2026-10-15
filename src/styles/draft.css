@@ -1828,3 +1828,31 @@ button.draft-bench__slot {
 :root[data-theme='light'] .draft-progress__mark {
   background: #b45309;
 }
+
+/* Online-Draft: bester freier Fit auf leeren Slots der eigenen Elf */
+.slot__best {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 20px;
+  padding: 0 4px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  pointer-events: none;
+}
+.slot__best {
+  background: rgba(8, 19, 31, 0.88);
+  box-shadow: 0 0 0 1px currentColor;
+}
+.slot__best--good {
+  color: #7ee08f;
+}
+.slot__best--ok {
+  color: #ffcb05;
+}
+.slot__best--bad {
+  color: #ff8a6b;
+}

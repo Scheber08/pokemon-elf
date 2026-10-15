@@ -679,6 +679,21 @@ describe('DraftLive', () => {
     // Zuschauer (ohne Team) sehen keine Chips
     const view = await renderLive(fakeRoom(snap(st, null)));
     expect(view.container.querySelector('.draft__bestfree')).toBeNull();
+    expect(view.container.querySelector('.slot__best')).toBeNull();
+    // Leere Slots der eigenen Elf: bester freier Fit je Position (Farbe nach Höhe), wie die Chips
+    const badges = container.querySelectorAll('.slot__best');
+    expect(badges).toHaveLength(FORMATIONS[me.formation].slots.length);
+    const chipFits = new Map(
+      container.querySelectorAll('.draft__bestfree button').map((b) => {
+        const txt = b.textContent!.trim().split(' ');
+        return [txt[0], txt.at(-1)!] as const;
+      }),
+    );
+    for (const b of badges) {
+      const fit = Number(b.textContent);
+      expect(b.className).toContain(fit >= 90 ? 'slot__best--good' : fit >= 80 ? 'slot__best--ok' : 'slot__best--bad');
+      expect([...chipFits.values()]).toContain(String(fit));
+    }
   });
 
   it('Turnbar: ist als Nächstes eine CPU dran, zeigt sie am eigenen Zug ihren wahrscheinlichen Pick', async () => {

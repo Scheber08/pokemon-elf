@@ -870,6 +870,18 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                 slotState={slotState}
                 positionTips
                 onSlotClick={pitchTeam === me ? onSlotClick : undefined}
+                emptyBadge={
+                  pitchTeam === me && me
+                    ? (i) => {
+                        // Bester noch freier Fit für diese Position: grün viel Auswahl, gelb mittel, rot knapp
+                        const pos = FORMATIONS[me.formation].slots[i]?.pos;
+                        const b = pos ? bestFree.find((x) => x.pos === pos) : undefined;
+                        if (!b) return null;
+                        const fit = Math.round(b.fit);
+                        return { text: String(fit), tone: fit >= 90 ? 'good' : fit >= 80 ? 'ok' : 'bad', title: t.online.slotBest(fit) };
+                      }
+                    : undefined
+                }
                 ariaLabel={t.online.pitchAria(teamLabel(pitchTeam, t), pitchTeam.formation)}
                 jerseys={pitchTeam.jerseys}
                 captain={pitchTeam.captain ?? null}

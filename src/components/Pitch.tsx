@@ -27,6 +27,8 @@ interface Props {
   slotState?: (index: number) => SlotState;
   /** Markierte Slots (z. B. Schwachstellen im Ergebnis) */
   highlight?: number[];
+  /** Kleine Plakette auf leeren Slots (z. B. bester freier Fit im Draft); null = keine */
+  emptyBadge?: (index: number) => { text: string; tone: 'good' | 'ok' | 'bad'; title: string } | null;
   tooltips?: boolean;
   /**
    * Positions-Hinweise (Standard: an): Hover/Long-Press auf einen leeren Slot zeigt, welche
@@ -72,6 +74,7 @@ export function Pitch({
   onSwap,
   slotState,
   highlight,
+  emptyBadge,
   tooltips = true,
   positionTips = true,
   ariaLabel,
@@ -250,7 +253,18 @@ export function Pitch({
       ? t.builder.pitch.filled(t.game.posName[pos], t.game.pokemon(pokemon), !!onSlotClick)
       : t.builder.pitch.empty(t.game.posName[pos], !!onSlotClick);
     const number = pokemon && numbers ? (numbers.get(pokemon.id) ?? null) : null;
-    const content = <PlayerToken key={`${index}-${id ?? 'x'}`} pos={pos} pokemon={pokemon} sprite={sprite} number={number} captain={captain != null && index !== SS_INDEX && id === captain} shiny={id != null && !!shinies?.includes(id)} />;
+    const badge = !pokemon ? (emptyBadge?.(index) ?? null) : null;
+    const slotLabel = badge ? `${label} – ${badge.title}` : label;
+    const content = (
+      <>
+        <PlayerToken key={`${index}-${id ?? 'x'}`} pos={pos} pokemon={pokemon} sprite={sprite} number={number} captain={captain != null && index !== SS_INDEX && id === captain} shiny={id != null && !!shinies?.includes(id)} />
+        {badge && (
+          <span className={`slot__best slot__best--${badge.tone}`} title={badge.title}>
+            {badge.text}
+          </span>
+        )}
+      </>
+    );
     if (!interactive) {
       return (
         <div
@@ -258,7 +272,7 @@ export function Pitch({
           className={classes}
           style={style}
           data-slot-index={index}
-          aria-label={label}
+          aria-label={slotLabel}
           onPointerEnter={(e) => onPointerEnter(e, index)}
           onPointerLeave={onPointerLeave}
           onPointerDown={(e) => {
@@ -278,7 +292,7 @@ export function Pitch({
         className={classes}
         style={style}
         data-slot-index={index}
-        aria-label={label}
+        aria-label={slotLabel}
         onClick={() => onClick(index)}
         onPointerDown={(e) => onPointerDown(e, index)}
         onPointerEnter={(e) => onPointerEnter(e, index)}

@@ -205,6 +205,7 @@ const online = {
   elevenDone: (avg: number) => `✅ Deine Elf steht – Ø Fit ${avg}`,
   progressLabel: (done: number, total: number, left: number) =>
     `Draft-Fortschritt: ${done} von ${total} Picks${left > 0 ? ` – noch ${left} ${left === 1 ? 'eigener Pick' : 'eigene Picks'}` : ''}`,
+  slotBest: (fit: number) => `bester freier Fit hier: ${fit}`,
   legendFirst: (name: string, team: string) => `★ Erstes legendäres Pokémon des Drafts: ${name} (${team})`,
   legendLast: (name: string, team: string) => `★ Das letzte legendäre Pokémon ist vergeben: ${name} (${team})`,
   favouriteGone: (name: string, team: string) => `${name} ist weg – ${team} war schneller.`,
