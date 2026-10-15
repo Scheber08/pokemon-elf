@@ -130,6 +130,7 @@ const online: Messages['online'] = {
   removeConfirm: (team) => `Remove ${team} from the league?`,
   orderRandom: 'The draft order is drawn at the start.',
   orderHost: 'Draft order as listed (round 2 in reverse – snake draft).',
+  myPicks: (picks) => `Your picks: ${picks}`,
   orderHostFixed: 'Draft order as listed – the same every round.',
   goalLabel: 'Season goal',
   goalNone: 'No goal',

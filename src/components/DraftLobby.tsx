@@ -31,7 +31,7 @@ import '../styles/draft.css';
 import { cleanKit } from '../lib/kits';
 import { CrestEditor } from './CrestEditor';
 import { cleanCrest } from '../lib/crest';
-import { poolOf, rosterOf, rounds as draftRounds } from '../lib/draftEngine';
+import { poolOf, rosterOf, rounds as draftRounds, teamIndexForPick } from '../lib/draftEngine';
 import { Crest } from './Crest';
 import { PoolStars } from './PoolStars';
 
@@ -440,6 +440,16 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
                 ? t.online.orderHostFixed
                 : t.online.orderHost}
           </p>
+          {s.settings.order === 'host' && me && s.teams.length >= 2 && (() => {
+            // Feste Reihenfolge: die eigenen Pick-Nummern vorab (die ersten vier)
+            const n = s.teams.length;
+            const at = s.teams.findIndex((tm) => tm.id === me.id);
+            const total = n * draftRounds(s.settings);
+            const mine: number[] = [];
+            for (let p = 0; p < total && mine.length < 5; p++) if (teamIndexForPick(p, n, s.settings.snake !== false) === at) mine.push(p + 1);
+            if (!mine.length) return null;
+            return <p className="small draft-lobby__mypicks">{t.online.myPicks(mine.slice(0, 4).join(', ') + (mine.length > 4 ? ' …' : ''))}</p>;
+          })()}
           {isHost && s.settings.order === 'host' && s.teams.length >= 2 && (
             <button type="button" className="btn btn--small draft-lobby__shuffle" onClick={shuffleOrder}>
               {t.online.shuffleOrder}

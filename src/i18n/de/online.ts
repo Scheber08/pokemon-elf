@@ -140,6 +140,8 @@ const online = {
   removeConfirm: (team: string) => `${team} aus der Liga entfernen?`,
   orderRandom: 'Die Draft-Reihenfolge wird beim Start ausgelost.',
   orderHost: 'Draft-Reihenfolge wie in der Liste (Runde 2 rückwärts – Snake-Draft).',
+  /** Lobby, feste Reihenfolge: die eigenen Pick-Nummern */
+  myPicks: (picks: string) => `Deine Picks: ${picks}`,
   orderHostFixed: 'Draft-Reihenfolge wie in der Liste – jede Runde gleich.',
   shuffleOrder: '🎲 Reihenfolge mischen',
   addCpu: 'CPU-Team hinzufügen',

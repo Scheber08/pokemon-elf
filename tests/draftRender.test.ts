@@ -909,6 +909,21 @@ describe('DraftLobby', () => {
     expect(stars.some((x) => x.pokemon.leg)).toBe(true);
   });
 
+  it('feste Reihenfolge: „Deine Picks“ mit den eigenen Pick-Nummern (Snake und ohne)', async () => {
+    const snake = lobby(3, { region: 1, maxTeams: 6, order: 'host' });
+    let r = await render(app(h(DraftLobby, { room: fakeRoom(snap(snake, 'h')) })));
+    await settle();
+    expect(r.container.querySelector('.draft-lobby__mypicks')!.textContent).toBe('Deine Picks: 1, 6, 7, 12 …');
+    const fixed = lobby(3, { region: 1, maxTeams: 6, order: 'host', snake: false });
+    r = await render(app(h(DraftLobby, { room: fakeRoom(snap(fixed, 't1')) })));
+    await settle();
+    expect(r.container.querySelector('.draft-lobby__mypicks')!.textContent).toBe('Deine Picks: 2, 5, 8, 11 …');
+    // Zufällige Reihenfolge: noch unbekannt
+    r = await render(app(h(DraftLobby, { room: fakeRoom(snap(lobby(3, { region: 1, maxTeams: 6, order: 'random' }), 'h')) })));
+    await settle();
+    expect(r.container.querySelector('.draft-lobby__mypicks')).toBeNull();
+  });
+
   it('neuer Mitspieler: „👋 … ist dabei“ (nicht beim ersten Laden, nicht für CPU-Teams)', async () => {
     let st = lobby(2, { region: 1, maxTeams: 6 });
     const { container, root } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) })));
