@@ -538,6 +538,13 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(steal).toBeTruthy();
     const line = r.container.querySelector('.draft-results__steal')!.textContent!;
     expect(line).toMatch(new RegExp(`^Steal of the draft: .+ \\(pick ${steal.pick + 1}\\) for `));
+    // Alle Picks: 33 Einträge in Draft-Reihenfolge, eigene markiert
+    const list = r.container.querySelectorAll('.draft-results__picklist li');
+    expect(r.container.querySelector('.draft-results__picks summary')!.textContent).toBe('All 33 picks');
+    expect(list).toHaveLength(33);
+    expect(list[0].textContent).toMatch(/^#1 · R1 .+ → My Team$/);
+    expect(list[0].className).toContain('is-you');
+    expect(list[1].className).not.toContain('is-you');
   });
 
   it('Rückgängig: nimmt den letzten eigenen Pick und die CPU-Picks danach zurück', async () => {

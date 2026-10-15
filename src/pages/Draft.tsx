@@ -991,6 +991,27 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
             </section>
           );
         })()}
+        {state.log && state.log.length === state.teams.length * ROUNDS && (
+          // Alle Picks in Reihenfolge – wie im Online-Ergebnis (nur mit Pick-Verlauf)
+          <details className="card details draft-results__picks">
+            <summary>{t.draft.results.allPicks(state.log.length)}</summary>
+            <ol className="draft-results__picklist">
+              {state.log.map((x, k) => {
+                const p = byId.get(x.id);
+                const round = Math.floor(k / state.teams.length) + 1;
+                return (
+                  <li key={k} className={state.teams[x.team]?.cpu ? '' : 'is-you'}>
+                    <span className="muted" title={t.draft.results.pickRound(round)}>
+                      #{k + 1} · R{round}
+                    </span>{' '}
+                    <strong>{p ? t.game.pokemon(p) : `#${x.id}`}</strong>
+                    {state.shinies?.includes(x.id) && <span title={t.shiny.title}> ✨</span>} → {teamName(state.teams[x.team].name)}
+                  </li>
+                );
+              })}
+            </ol>
+          </details>
+        )}
         <details className="card details">
           <summary>{tx.allMatches}</summary>
           <ReplayToggle />
