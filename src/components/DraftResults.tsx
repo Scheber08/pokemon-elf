@@ -73,6 +73,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
   const [saving, setSaving] = useState(false);
   const tableRef = useRef<HTMLElement>(null);
   const bracketRef = useRef<HTMLElement>(null);
+  const elevenRef = useRef<HTMLElement>(null);
   const days = useMemo(() => leagueTimeline(league), [league]);
   const allScorers = useMemo(() => topScorers(league), [league]);
   const scorers = allScorers.slice(0, TOP_SCORERS);
@@ -552,10 +553,18 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
           const eleven = seasonEleven(league, teams, byId, scale('all'));
           if (!eleven) return null;
           return (
-            <section className="card draft-results__eleven" aria-labelledby="draft-results-eleven">
-              <h2 id="draft-results-eleven" className="section-title">
-                {tx.elevenTitle}
-              </h2>
+            <section className="card draft-results__eleven" aria-labelledby="draft-results-eleven" ref={elevenRef}>
+              <div className="draft-results__table-head">
+                <h2 id="draft-results-eleven" className="section-title">
+                  {tx.elevenTitle}
+                </h2>
+                <SaveImageButton
+                  target={elevenRef}
+                  filename={`${slugify(leagueName || code)}-elf-der-saison.png`}
+                  label={tx.saveTable}
+                  aria={tx.saveElevenAria}
+                />
+              </div>
               <p className="muted small">{tx.elevenNote(eleven.formation)}</p>
               <Pitch formation={eleven.formation} slots={eleven.slots} sprite={sprite} ariaLabel={tx.elevenTitle} jerseys={false} shinies={shinies} />
               <ul className="draft-results__eleven-list small">

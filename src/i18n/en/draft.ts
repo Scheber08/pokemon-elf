@@ -264,6 +264,7 @@ const draft: Messages['draft'] = {
     yourPlace: (team, place, pts) => `Your team ${team}: ${ordinal(place)} place · ${plural(pts, 'pt', 'pts')}`,
     tableView: 'Table view',
     tableViews: { all: 'Overall', home: 'Home', away: 'Away' },
+    saveElevenAria: 'Save the team of the season as an image',
     elevenTitle: 'Team of the season',
     elevenNote: (formation) => `For each position the player with the most goals plus assists across all teams – in the most common formation, ${formation}.`,
     ownTopPick: (line) => `Your best pick: ${line}`,

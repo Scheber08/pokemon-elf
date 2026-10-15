@@ -285,6 +285,7 @@ const draft = {
     yourPlace: (team: string, place: number, pts: number) => `Dein Team ${team}: Platz ${place} · ${pts} Pkt`,
     tableView: 'Tabellenansicht',
     tableViews: { all: 'Gesamt', home: 'Heim', away: 'Auswärts' },
+    saveElevenAria: 'Elf der Saison als Bild speichern',
     elevenTitle: 'Elf der Saison',
     elevenNote: (formation: string) => `Je Position der Spieler mit den meisten Scorerpunkten (Tore + Vorlagen) aus allen Teams – in der häufigsten Formation ${formation}.`,
     ownTopPick: (line: string) => `Dein bester Pick: ${line}`,

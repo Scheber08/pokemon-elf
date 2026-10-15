@@ -1236,6 +1236,7 @@ describe('ManagerSeason', () => {
     expect(homeRows[0].className).not.toContain('is-zone');
     // Elf der Saison: Feld und 11 Namen
     expect(container.querySelector('.draft-results__eleven h2')!.textContent).toBe('Elf der Saison');
+    expect(container.querySelector('.draft-results__eleven button')!.getAttribute('aria-label')).toBe('Elf der Saison als Bild speichern');
     expect(container.querySelectorAll('.draft-results__eleven-list li')).toHaveLength(11);
     // Eigener bester / schwächster Pick nach Positions-Fit
     {
