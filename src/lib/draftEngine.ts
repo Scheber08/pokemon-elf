@@ -930,15 +930,21 @@ export function updateSettings(
 
 /**
  * Fügt ein CPU-Team hinzu. Name und Formation leiten sich aus dem (öffentlichen) Liga-Code
- * ab – nie aus dem geheimen Seed, sonst ließe er sich aus ihnen zurückrechnen.
+ * ab – nie aus dem geheimen Seed, sonst ließe er sich aus ihnen zurückrechnen. `names`: Teamnamen
+ * aus den Online-Ranglisten (der Server lädt sie), die vor den Vereinsnamen drankommen.
  */
-export function addCpuTeam(state: DraftState, deviceId: string, teamId: string): DraftState {
+export function addCpuTeam(state: DraftState, deviceId: string, teamId: string, names: readonly string[] = []): DraftState {
   requireLobby(state);
   requireHost(state, deviceId);
   if (state.career) fail('career', 'Karriere-Saison: Es spielen nur die Teams der Vorsaison');
   if (state.teams.length >= state.settings.maxTeams) fail('league_full', 'Die Liga ist voll');
-  const taken = new Set(state.teams.map((t) => t.name));
-  const name = shuffle(streamRng(state.code, 'cpu-names'), CLUB_NAMES).find((n) => !taken.has(n)) ?? `CPU ${state.teams.length + 1}`;
+  const taken = new Set(state.teams.map((t) => t.name.trim().toLowerCase()));
+  const ranked = shuffle(streamRng(state.code, 'cpu-ranking-names'), names)
+    .map((n) => Array.from(n.trim()).slice(0, DRAFT_LIMITS.teamNameMax).join('').trim())
+    .filter(Boolean);
+  const name =
+    [...ranked, ...shuffle(streamRng(state.code, 'cpu-names'), CLUB_NAMES)].find((n) => !taken.has(n.toLowerCase())) ??
+    `CPU ${state.teams.length + 1}`;
   const cpuCount = state.teams.filter((t) => t.cpu).length;
   const formation = FORMATION_IDS[hashSeed(state.code, 'cpu-formation', cpuCount) % FORMATION_IDS.length];
   return { ...state, teams: [...state.teams, makeTeam(teamId, name, formation, true)] };

@@ -1408,7 +1408,9 @@ export class DraftRoomCore {
     if (LOBBY_CHANGES.has(msg.type) && !this.allowChange(att.deviceId, now)) {
       return this.sendError(conn, 'rate_limited', 'Zu viele Änderungen – bitte kurz warten', msg.type);
     }
-    const applied = this.apply(rec.state, att.deviceId, msg, now);
+    // CPU-Teams heißen wie Teams aus der Online-Rangliste (vor dem synchronen Anwenden laden)
+    const cpuNames = msg.type === 'add-cpu' ? await this.rankingCpuNames(now) : [];
+    const applied = this.apply(rec.state, att.deviceId, msg, now, cpuNames);
     // Neu beigetreten: Trainer vom Anmelden mitnehmen
     const next = msg.type === 'join' && att.trainer !== undefined ? withTrainer(applied, att.deviceId, att.trainer) : applied;
     // Nichts geändert (z. B. „leave" ohne Team, gleiche Einstellung): nur den aktuellen Stand zurück.
@@ -1575,7 +1577,28 @@ export class DraftRoomCore {
   }
 
   /** Wendet eine Nachricht mit der Engine an (wirft DraftError bei Unerlaubtem). */
-  private apply(state: DraftState, deviceId: string, msg: Exclude<DraftClientMessage, { type: 'hello' | 'ping' | 'react' }>, now: number): DraftState {
+  /** Ranglisten-Namen für CPU-Teams (Teamname, sonst Spieler), je Raum höchstens stündlich neu geladen */
+  private cpuNamesCache: { at: number; names: string[] } | null = null;
+  private async rankingCpuNames(now: number): Promise<string[]> {
+    if (this.cpuNamesCache && now - this.cpuNamesCache.at < 60 * 60 * 1000) return this.cpuNamesCache.names;
+    const seen = new Set<string>();
+    const names = (await loadFillCandidates(this.ports.env.DB)).flatMap((c) => {
+      const name = (c.teamName.trim() || c.player.trim()).slice(0, DRAFT_LIMITS.teamNameMax).trim();
+      if (!name || seen.has(name.toLowerCase())) return [];
+      seen.add(name.toLowerCase());
+      return [name];
+    });
+    this.cpuNamesCache = { at: now, names };
+    return names;
+  }
+
+  private apply(
+    state: DraftState,
+    deviceId: string,
+    msg: Exclude<DraftClientMessage, { type: 'hello' | 'ping' | 'react' }>,
+    now: number,
+    cpuNames: readonly string[] = [],
+  ): DraftState {
     const { list, scale } = this.ports;
     switch (msg.type) {
       case 'join': {
@@ -1593,9 +1616,9 @@ export class DraftRoomCore {
       case 'settings':
         return updateSettings(state, deviceId, cleanSettingsPatch(msg.settings), list);
       case 'add-cpu': {
-        let next = addCpuTeam(state, deviceId, newTeamId(state));
+        let next = addCpuTeam(state, deviceId, newTeamId(state), cpuNames);
         // Auffüllen: bis die Liga voll ist (eine Nachricht, eine Änderung)
-        while (msg.fill && next.teams.length < next.settings.maxTeams) next = addCpuTeam(next, deviceId, newTeamId(next));
+        while (msg.fill && next.teams.length < next.settings.maxTeams) next = addCpuTeam(next, deviceId, newTeamId(next), cpuNames);
         return next;
       }
       case 'remove-team':
