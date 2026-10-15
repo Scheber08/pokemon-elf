@@ -307,9 +307,15 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           const level = avg < mid - 1.5 ? 'hard' : avg > mid + 1.5 ? 'easy' : 'medium';
           const shownAvg = avg.toLocaleString(localeOf(lang), { minimumFractionDigits: 1, maximumFractionDigits: 1 });
           return (
-            <p className={`small muted manager__rest is-${level}`} title={tx.restTitle}>
-              {tx.rest(shownAvg, opps.length, tx.restLevel[level])}
-            </p>
+            <>
+              <p className={`small muted manager__rest is-${level}`} title={tx.restTitle}>
+                {tx.rest(shownAvg, opps.length, tx.restLevel[level])}
+              </p>
+              {/* Die nächsten drei Gegner mit aktuellem Platz */}
+              <p className="small muted manager__upnext">
+                {tx.upNext(opps.slice(0, 3).map((o) => `${nameOf(o)} (${placeOf(o)}.)`).join(' → '))}
+              </p>
+            </>
           );
         })()}
         {m.played >= 3 && (() => {

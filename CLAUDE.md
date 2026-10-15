@@ -70,7 +70,7 @@ lokal und online), Heim-/Auswärtstabelle, Tabellen-Zonen mit Legende, Spieler d
 im Ticker, Führungsserie, Favorit vor dem Anpfiff, Vorschau der nächsten Picks, Taste V/„Vorschlag“ auch lokal,
 ausgeglichenes Heimrecht im Manager-Spielplan, lokale Liga mit Heim/Auswärts, Saisonrekorden, Zeitreise, Duellen,
 Revanche und Titelsammlung, „Reihenfolge mischen“ (Lobby und lokal), „Du bist in N Picks dran“ und Restdauer im
-Online-Draft, Restprogramm, Serie (`currentRun`) und Spielort-Bilanz und Formation des Gegners in der Manager-Saison, Serie im Ticker.
+Online-Draft, Restprogramm mit den nächsten drei Gegnern, Serie (`currentRun`) und Spielort-Bilanz und Formation des Gegners in der Manager-Saison, Serie im Ticker.
 
 1. Weitere Saisons im Shop (z. B. Nikolaus, Erntedank) – neue Einträge mit `seasonal(...)` in `src/lib/trainer.ts`
 2. Shiny-Party-Badge in der Liste öffentlicher Lobbys (braucht Feld in der Lobby-Zeile – Schema nur additiv)

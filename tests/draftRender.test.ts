@@ -1264,6 +1264,11 @@ describe('ManagerSeason', () => {
       expect(r.container.querySelector('.manager__rest')!.textContent).toContain(
         `Restprogramm: Ø Platz ${avg.toFixed(1).replace('.', ',')} der ${opps.length} Gegner`,
       );
+      // Die nächsten drei Gegner mit Platz
+      const up = r.container.querySelector('.manager__upnext')!.textContent!;
+      expect(up.startsWith('Die nächsten Gegner: ')).toBe(true);
+      expect(up.split(' → ')).toHaveLength(3);
+      expect(up.match(/\((\d+)\.\)/g)!.map((x) => Number(x.slice(1, -2)))).toEqual(opps.slice(0, 3).map(placeOf));
     }
     // Topspiel des nächsten Spieltags: beste Platzsumme
     {

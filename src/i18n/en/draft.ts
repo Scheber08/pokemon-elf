@@ -539,6 +539,7 @@ const draft: Messages['draft'] = {
     restLevel: { easy: 'fairly easy', medium: 'medium', hard: 'fairly tough' },
     seriesUnbeaten: (n) => `Unbeaten in ${n} games`,
     seriesWinless: (n) => `Winless in ${n} games`,
+    upNext: (list) => `Next opponents: ${list}`,
     projection: (pts) => `Projection: ${pts} pts`,
     behindTop: (n) => (n === 0 ? 'level on points with the top' : `${n} pts behind 1st`),
     colAssists: 'Ast.',
