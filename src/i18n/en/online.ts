@@ -106,7 +106,7 @@ const online: Messages['online'] = {
   copyFailed: 'Couldn’t copy',
   copyLink: 'Copy link',
   shareTitle: 'Pokémon Elf – Fantasy Draft',
-  shareText: (code) => `Join my draft league! Code: ${code}`,
+  shareText: (code, name = '') => `Join my draft league${name ? ` “${name}”` : ''}! Code: ${code}`,
   share: 'Share',
   qrShow: 'Show QR code',
   qrHide: 'Hide QR code',

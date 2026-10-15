@@ -111,7 +111,7 @@ const online = {
   copyFailed: 'Kopieren hat nicht geklappt',
   copyLink: 'Link kopieren',
   shareTitle: 'Pokémon Elf – Fantasy-Draft',
-  shareText: (code: string) => `Komm in meine Draft-Liga! Code: ${code}`,
+  shareText: (code: string, name = '') => `Komm in meine Draft-Liga${name ? ` „${name}“` : ''}! Code: ${code}`,
   share: 'Teilen',
   /** QR-Code des Liga-Links */
   qrShow: 'QR-Code zeigen',

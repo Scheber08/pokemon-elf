@@ -77,7 +77,7 @@ function DraftQr({ link }: { link: string }) {
 }
 
 /** Liga-Code groß + Link kopieren / Teilen. */
-function DraftCodeCard({ code }: { code: string }) {
+function DraftCodeCard({ code, name = '' }: { code: string; name?: string }) {
   const t = useT();
   const toast = useToast();
   const link = draftLink(code);
@@ -105,7 +105,7 @@ function DraftCodeCard({ code }: { code: string }) {
             className="btn"
             onClick={() =>
               nav
-                .share?.({ title: t.online.shareTitle, text: t.online.shareText(code), url: link })
+                .share?.({ title: t.online.shareTitle, text: t.online.shareText(code, name), url: link })
                 .catch(() => {
                   /* abgebrochen */
                 })
@@ -291,7 +291,7 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
   return (
     <div className="draft-lobby">
       <div className="draft-lobby__main">
-        <DraftCodeCard code={s.code} />
+        <DraftCodeCard code={s.code} name={s.settings.name} />
         {s.career && (
           <section className="card draft-career" aria-label={t.online.careerTitle}>
             <p className="kicker">{t.online.careerTitle}</p>
