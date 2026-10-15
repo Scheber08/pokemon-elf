@@ -101,8 +101,8 @@ const scouting = {
       a: 'Ligagegner und CPU-Teams heißen wie echte Teams aus den Online-Ranglisten (Teamname, sonst Spielername) – in den Challenge-Saisons, im Draft an einem Gerät, online und in der Manager-Saison. Deine eigenen Einträge kommen nicht vor. Ohne Verbindung spielen Fantasie-Vereine aus der Pokémon-Welt. Die Namen ändern nichts an Stärke oder Ergebnissen.',
     },
     {
-      q: 'Was bedeuten ⚡, 🏅, 👑 und 💔 im Draft?',
-      a: '⚡ im Pick-Verlauf: ein Blitz-Pick – selbst gewählt, höchstens 5 Sekunden nach dem vorigen Pick (fünf davon in einer Online-Liga bringen den Erfolg „Blitzdrafter“). 🏅: der Pick mit dem bisher besten Positions-Fit des Drafts. 👑 auf dem Board: das Team mit dem besten Ø Fit; ein farbiger Chip wie „Feuer ×4“ zeigt eine Typ-Elf. 💔: ein anderes Team hat ein Pokémon von deiner Wunschliste geschnappt. „🎲 Zufall“ merkt ein zufälliges passendes Pokémon vor.',
+      q: 'Was bedeuten ⚡, 🏅, 👑, 💔, 🐍 und 🏁 im Draft?',
+      a: '⚡ im Pick-Verlauf: ein Blitz-Pick – selbst gewählt, höchstens 5 Sekunden nach dem vorigen Pick (fünf davon in einer Online-Liga bringen den Erfolg „Blitzdrafter“). 🏅: der Pick mit dem bisher besten Positions-Fit des Drafts. 👑 auf dem Board: das Team mit dem besten Ø Fit; ein farbiger Chip wie „Feuer ×4“ zeigt eine Typ-Elf. 💔: ein anderes Team hat ein Pokémon von deiner Wunschliste geschnappt. „🎲 Zufall“ merkt ein zufälliges passendes Pokémon vor. 🐍 heißt: Snake-Wende, du bist gleich noch einmal dran; 🏁 markiert die letzte Draft-Runde.',
     },
     {
       q: 'Gibt es Tastenkürzel im Draft?',
