@@ -97,6 +97,10 @@ const scouting = {
       a: 'Das legt die CPU-Stärke fest – im Draft an einem Gerät beim Aufbau, online stellt sie der Host in der Lobby ein. „Normal“ wählt gut mit etwas Zufall, „Leicht“ greift öfter daneben, „Stark“ nimmt (fast) immer den bestpassenden Pick. Online steht eine abweichende Stärke bei den CPU-Teams in der Teamliste.',
     },
     {
+      q: 'Woher kommen die Namen der Gegner?',
+      a: 'Ligagegner und CPU-Teams heißen wie echte Teams aus den Online-Ranglisten (Teamname, sonst Spielername) – in den Challenge-Saisons, im Draft an einem Gerät, online und in der Manager-Saison. Deine eigenen Einträge kommen nicht vor. Ohne Verbindung spielen Fantasie-Vereine aus der Pokémon-Welt. Die Namen ändern nichts an Stärke oder Ergebnissen.',
+    },
+    {
       q: 'Gibt es Tastenkürzel im Draft?',
       a: '„/“ springt in die Pokémon-Suche, „W“ setzt das ausgewählte Pokémon auf deine Wunschliste (oder nimmt es herunter), „V“ holt einen Vorschlag, im Draft an einem Gerät nimmt „Z“ den letzten Pick zurück. Mit den Pfeiltasten geht es durchs Raster, Enter wählt ein Pokémon aus. Beim Tippen in einem Feld greifen die Kürzel nicht.',
     },

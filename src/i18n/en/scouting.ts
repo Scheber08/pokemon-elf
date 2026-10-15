@@ -80,6 +80,10 @@ const scouting: Messages['scouting'] = {
       a: 'That is the CPU strength – in the one-device draft you set it in the setup, online the host sets it in the lobby. “Normal” picks well with a bit of chance, “Easy” misses more often, “Hard” (almost) always takes the best-fitting pick. Online, a non-default strength is shown next to the CPU teams in the team list.',
     },
     {
+      q: 'Where do the opponents’ names come from?',
+      a: 'League opponents and CPU teams are named after real teams from the online leaderboards (team name, otherwise player name) – in the challenge seasons, the one-device draft, online and in the manager season. Your own entries never appear. Offline, fantasy clubs from the Pokémon world play instead. The names never change strength or results.',
+    },
+    {
       q: 'Are there keyboard shortcuts in the draft?',
       a: '“/” jumps to the Pokémon search, “W” puts the selected Pokémon on your wishlist (or takes it off), “V” fetches a suggestion, and in the one-device draft “Z” takes back the last pick. Arrow keys move through the grid, Enter selects a Pokémon. While typing in a field, the shortcuts are off.',
     },
