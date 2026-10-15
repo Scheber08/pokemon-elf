@@ -234,6 +234,26 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   );
   /** Teamname für die Anzeige: Vorgabe „Mein Team" und Vereinsnamen (CPU) in der aktiven Sprache */
   const teamName = (name: string) => (name === OWN_TEAM ? tx.myTeam : t.game.club(name));
+  // 🔔 Ende einer Draft-Runde: kurzer Hinweis mit dem Top-Pick der Runde (Fit an seiner Position) – nur beim Vorwärtsdraften
+  const lastPickRef = useRef(state.pick);
+  useEffect(() => {
+    const before = lastPickRef.current;
+    lastPickRef.current = state.pick;
+    const log = state.log;
+    if (state.pick <= before || state.pick % n !== 0 || !log || log.length !== state.pick) return;
+    const sc = scale('all');
+    let top: { id: number; team: number; fit: number } | null = null;
+    for (const x of log.slice(-n)) {
+      const tm = state.teams[x.team];
+      const pos = tm ? FORMATIONS[tm.formation].slots[x.slot]?.pos : undefined;
+      const mon = byId.get(x.id);
+      if (!tm || !pos || !mon) continue;
+      const fit = positionFit(mon, pos, sc);
+      if (!top || fit > top.fit) top = { id: x.id, team: x.team, fit };
+    }
+    const mon = top && byId.get(top.id);
+    if (top && mon) toast(tx.roundDone(state.pick / n, t.game.pokemon(mon), teamName(state.teams[top.team].name), Math.round(top.fit)));
+  }, [state.pick]);
   const megas = MEGA_OPTIONS.includes(state.megas) ? state.megas : 0;
   const inPool = (p: Pokemon) =>
     (state.region === 0 || p.gen === state.region) &&

@@ -1014,6 +1014,41 @@ describe('/draft an einem Gerät auf Englisch', () => {
     }
   });
 
+  it('Rundenende: „🔔 Runde n vorbei“ mit dem Top-Pick der Runde (nicht schon beim Laden)', async () => {
+    const f = FORMATION_IDS[0];
+    const teams = [
+      { name: 'Mein Team', cpu: false, formation: f, slots: emptySlots(f) },
+      { name: CLUB_NAMES[0], cpu: true, formation: f, slots: emptySlots(f) },
+    ];
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: false, pick: 0, selected: null, seed: null, log: [], pickSeconds: 30 }));
+    vi.useFakeTimers();
+    try {
+      const { container } = await render(app(h(Draft)));
+      const toasts = () => container.querySelectorAll('.toast').map((e) => e.textContent!);
+      await act(async () => void (await vi.advanceTimersByTimeAsync(300)));
+      expect(toasts().filter((x) => x.startsWith('🔔'))).toEqual([]);
+      // Uhr läuft ab → Auto-Pick, danach die CPU: Runde 1 (2 Picks) ist vorbei
+      await act(async () => void (await vi.advanceTimersByTimeAsync(31_000)));
+      await act(async () => void (await vi.advanceTimersByTimeAsync(3_000)));
+      const saved = JSON.parse(localStorage.getItem('pokemon-elf:draft')!);
+      expect(saved.pick).toBeGreaterThanOrEqual(2);
+      const round = toasts().filter((x) => x.startsWith('🔔'));
+      expect(round).toHaveLength(1);
+      expect(round[0]).toMatch(/^🔔 Runde 1 vorbei – Top-Pick: .+ \((Mein Team|.+), Fit \d+\)$/);
+      const ids = saved.log.slice(0, 2).map((x: { id: number }) => x.id);
+      expect(ids.some((id: number) => round[0].includes(ALL.find((p) => p.id === id)!.de))).toBe(true);
+    } finally {
+      vi.useRealTimers();
+      localStorage.removeItem('pokemon-elf:draft');
+    }
+    // Geladener Stand am Rundenende: kein Hinweis
+    const done = teams.map((tm, i) => ({ ...tm, slots: tm.slots.map((x, j) => (j === 0 ? ALL[i].id : x)) }));
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams: done, region: 0, legends: true, pick: 2, selected: null, seed: null, log: [{ team: 0, slot: 0, id: ALL[0].id }, { team: 1, slot: 0, id: ALL[1].id }] }));
+    const r = await render(app(h(Draft)));
+    await settle();
+    expect(r.container.querySelectorAll('.toast').filter((e) => e.textContent!.startsWith('🔔'))).toHaveLength(0);
+  });
+
   it('Hot-Seat: „📱 Gerät an … weitergeben“ nur nach dem Pick eines anderen menschlichen Teams', async () => {
     const f = FORMATION_IDS[0];
     const empty = emptySlots(f);
