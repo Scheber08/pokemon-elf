@@ -99,7 +99,7 @@ const draft: Messages['draft'] = {
     bestFree: 'Best available:',
     bestFreeTitle: (name, pos, fit) => `Select ${name} – best available ${pos} (fit ${fit})`,
     undo: '↶ Undo',
-    undoTitle: 'Take back the last human pick (and any CPU picks after it)',
+    undoTitle: 'Take back the last human pick (and any CPU picks after it) – key Z',
     newDraft: 'New draft',
     round: 'Round',
     pick: 'Pick',

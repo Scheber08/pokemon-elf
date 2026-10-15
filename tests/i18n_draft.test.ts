@@ -567,7 +567,11 @@ describe('/draft an einem Gerät auf Englisch', () => {
     await settle();
     const btn = container.querySelectorAll('.draft-pooltools button').find((b) => b.textContent === '↶ Undo') as MiniElement;
     expect(btn).toBeTruthy();
-    await act(async () => btn.click());
+    expect(btn.getAttribute('aria-keyshortcuts')).toBe('Z');
+    // Taste Z wirkt wie der Knopf
+    const { MiniEvent } = await import('./miniDom');
+    const ev = Object.assign(new MiniEvent('keydown', { bubbles: true, cancelable: true }), { key: 'z', ctrlKey: false, metaKey: false, altKey: false });
+    await act(async () => void window.dispatchEvent(ev as unknown as Event));
     const saved = JSON.parse(localStorage.getItem('pokemon-elf:draft')!);
     expect(saved.pick).toBe(0);
     expect(saved.log).toEqual([]);

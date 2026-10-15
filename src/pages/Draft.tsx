@@ -298,11 +298,22 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   // Taste „V“: Vorschlag (wie online; nicht beim Tippen)
   const suggestRef = useRef(suggest);
   suggestRef.current = suggest;
+  // Taste Z: Rückgängig (nur wenn der Knopf da ist)
+  const undoRef = useRef<(() => void) | null>(null);
+  undoRef.current = canUndo ? undo : null;
   useEffect(() => {
     if (state.phase !== 'drafting') return;
     const onKey = (e: KeyboardEvent) => {
-      if ((e.key !== 'v' && e.key !== 'V') || e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
+      if (e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
+      const key = e.key.toLowerCase();
+      if (key !== 'v' && key !== 'z') return;
       if (typingElsewhere(e.target)) return;
+      if (key === 'z') {
+        if (!undoRef.current) return;
+        e.preventDefault();
+        undoRef.current();
+        return;
+      }
       e.preventDefault();
       suggestRef.current();
     };
@@ -1260,7 +1271,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   {t.online.autoPickFor(teamName(String(team?.name)))}
                 </button>
                 {canUndo && (
-                  <button type="button" className="btn btn--small btn--ghost" onClick={undo} title={tx.undoTitle}>
+                  <button type="button" className="btn btn--small btn--ghost" onClick={undo} title={tx.undoTitle} aria-keyshortcuts="Z">
                     {tx.undo}
                   </button>
                 )}

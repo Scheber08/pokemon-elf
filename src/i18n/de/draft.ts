@@ -100,7 +100,7 @@ const draft = {
     bestFree: 'Beste Freie:',
     bestFreeTitle: (name: string, pos: string, fit: number) => `${name} auswählen – bester Freier für ${pos} (Fit ${fit})`,
     undo: '↶ Rückgängig',
-    undoTitle: 'Den letzten Pick eines Menschen zurücknehmen (CPU-Picks danach ebenso)',
+    undoTitle: 'Den letzten Pick eines Menschen zurücknehmen (CPU-Picks danach ebenso) – Taste Z',
     newDraft: 'Neuer Draft',
     round: 'Runde',
     pick: 'Pick',
