@@ -337,9 +337,11 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     const mon = pool[Math.floor(Math.random() * pool.length)];
     setState((s) => ({ ...s, selected: mon.id }));
   };
-  // Taste „V“: Vorschlag (wie online; nicht beim Tippen)
+  // Taste „V“: Vorschlag, Taste „R“: 🎲 Zufall (wie online; nicht beim Tippen)
   const suggestRef = useRef(suggest);
   suggestRef.current = suggest;
+  const randomRef = useRef(randomPick);
+  randomRef.current = randomPick;
   // Taste Z: Rückgängig (nur wenn der Knopf da ist)
   const undoRef = useRef<(() => void) | null>(null);
   undoRef.current = canUndo ? undo : null;
@@ -348,7 +350,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
       const key = e.key.toLowerCase();
-      if (key !== 'v' && key !== 'z') return;
+      if (key !== 'v' && key !== 'z' && key !== 'r') return;
       if (typingElsewhere(e.target)) return;
       if (key === 'z') {
         if (!undoRef.current) return;
@@ -357,7 +359,8 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
         return;
       }
       e.preventDefault();
-      suggestRef.current();
+      if (key === 'r') randomRef.current();
+      else suggestRef.current();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -1508,7 +1511,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 >
                   {t.online.suggest}
                 </button>
-                <button type="button" className="btn btn--small" onClick={randomPick} title={t.online.randomPickTitle}>
+                <button type="button" className="btn btn--small" onClick={randomPick} title={t.online.randomPickTitle} aria-keyshortcuts="R">
                   🎲 {t.online.randomPick}
                 </button>
                 <button

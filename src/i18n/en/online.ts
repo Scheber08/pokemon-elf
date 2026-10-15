@@ -214,7 +214,7 @@ const online: Messages['online'] = {
   megasFreeTitle: (n) => (n === 1 ? 'One Mega still available' : `${n} Megas still available`),
   poolFree: (n) => `(${n} available)`,
   randomPick: 'Random',
-  randomPickTitle: 'Pre-select a random fitting Pokémon – tap the highlighted slot to take it',
+  randomPickTitle: 'Pre-select a random fitting Pokémon – tap the highlighted slot to take it (key R)',
   suggest: 'Suggest',
   suggestKey: 'Key V',
   showTaken: 'Show taken',

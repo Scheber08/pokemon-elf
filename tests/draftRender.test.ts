@@ -684,6 +684,19 @@ describe('DraftLive', () => {
     expect(container.querySelector('.draft-pooltools button')!.getAttribute('aria-keyshortcuts')).toBe('V');
   });
 
+  it('Taste R merkt ein zufälliges erlaubtes Pokémon vor (wie „🎲 Zufall“)', async () => {
+    const st = drafting();
+    const { container } = await renderLive(fakeRoom(snap(st, 'h')));
+    const options = engine.allowedPicks(st, 'h', ALL);
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const ev = Object.assign(new MiniEvent('keydown', { bubbles: true, cancelable: true }), { key: 'r', ctrlKey: false, metaKey: false, altKey: false });
+    await act(async () => void window.dispatchEvent(ev as unknown as Event));
+    vi.restoreAllMocks();
+    expect(container.querySelector('.draft-live .hint strong')!.textContent).toBe(options[0].de);
+    const btn = container.querySelectorAll('.draft-pooltools button').find((b) => b.textContent!.includes('🎲'))!;
+    expect(btn.getAttribute('aria-keyshortcuts')).toBe('R');
+  });
+
   it('Pool-Kopf: ★ n Legendäre frei (nur mit Legendären im Pool)', async () => {
     const plain = await renderLive(fakeRoom(snap(drafting(), 'h')));
     expect(plain.container.querySelector('.draft-pool__legends')).toBeNull();

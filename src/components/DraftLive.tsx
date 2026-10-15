@@ -425,16 +425,20 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     setSuggestSlot(slot);
   };
 
-  // Taste „V“: Vorschlag (wie der Knopf; nicht beim Tippen)
+  // Taste „V“: Vorschlag, Taste „R“: 🎲 Zufall (wie die Knöpfe; nicht beim Tippen)
   const suggestRef = useRef(suggest);
   suggestRef.current = suggest;
+  const randomRef = useRef(randomPick);
+  randomRef.current = randomPick;
   useEffect(() => {
     if (readOnly) return;
     const onKey = (e: KeyboardEvent) => {
-      if ((e.key !== 'v' && e.key !== 'V') || e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
+      const key = e.key.toLowerCase();
+      if ((key !== 'v' && key !== 'r') || e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
       if (typingElsewhere(e.target)) return;
       e.preventDefault();
-      suggestRef.current();
+      if (key === 'r') randomRef.current();
+      else suggestRef.current();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -703,7 +707,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                 <button type="button" className="btn btn--small" onClick={suggest} disabled={!mySlots.length} title={t.online.suggestKey} aria-keyshortcuts="V">
                   {t.online.suggest}
                 </button>
-                <button type="button" className="btn btn--small" onClick={randomPick} disabled={!mySlots.length} title={t.online.randomPickTitle}>
+                <button type="button" className="btn btn--small" onClick={randomPick} disabled={!mySlots.length} title={t.online.randomPickTitle} aria-keyshortcuts="R">
                   🎲 {t.online.randomPick}
                 </button>
                 {restricted && (

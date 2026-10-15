@@ -394,6 +394,13 @@ describe('/draft an einem Gerät auf Englisch', () => {
       vi.restoreAllMocks();
       expect(JSON.parse(localStorage.getItem('pokemon-elf:draft')!).selected).toBe(want.id);
     }
+    // Taste R wirkt wie „🎲 Random“
+    expect(rnd.getAttribute('aria-keyshortcuts')).toBe('R');
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    const evR = Object.assign(new MiniEvent('keydown', { bubbles: true, cancelable: true }), { key: 'R', ctrlKey: false, metaKey: false, altKey: false });
+    await act(async () => void window.dispatchEvent(evR as unknown as Event));
+    vi.restoreAllMocks();
+    expect(JSON.parse(localStorage.getItem('pokemon-elf:draft')!).selected).toBe(kantoFree[Math.floor(0.5 * kantoFree.length)].id);
     // Noch keine Picks: kein Ø Fit auf dem Board
     expect(container.querySelector('.draft__board .draft-board__fit')).toBeNull();
     expect(germanLeft(container)).toEqual([]);

@@ -232,7 +232,7 @@ const online = {
   megasFreeTitle: (n: number) => (n === 1 ? 'Ein Mega noch frei' : `${n} Megas noch frei`),
   poolFree: (n: number) => `(${n} frei)`,
   randomPick: 'Zufall',
-  randomPickTitle: 'Ein zufälliges passendes Pokémon vormerken – zum Übernehmen den markierten Platz antippen',
+  randomPickTitle: 'Ein zufälliges passendes Pokémon vormerken – zum Übernehmen den markierten Platz antippen (Taste R)',
   suggest: 'Vorschlag',
   suggestKey: 'Taste V',
   showTaken: 'Vergebene zeigen',
