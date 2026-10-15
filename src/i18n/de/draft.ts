@@ -97,6 +97,8 @@ const draft = {
     titlesTitle: 'Titelsammlung',
     titlesCount: (n: number) => (n === 1 ? '🏆 1 Titel' : `🏆 ${n} Titel`),
     titlesNote: (n: number) => `Meister aus ${n} lokalen Ligen auf diesem Gerät (gleicher Teamname = gleicher Verein).`,
+    bestFree: 'Beste Freie:',
+    bestFreeTitle: (name: string, pos: string, fit: number) => `${name} auswählen – bester Freier für ${pos} (Fit ${fit})`,
     newDraft: 'Neuer Draft',
     round: 'Runde',
     pick: 'Pick',

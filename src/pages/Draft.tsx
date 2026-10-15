@@ -192,6 +192,24 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     [all, state.region, state.legends, state.forms, megas, megaRoom, drafted],
   );
   const filtered = useFilteredPokemon(pool, filters);
+  /** Beste Freie: für jede noch offene Position des Teams am Zug das passendste Pokémon im Pool */
+  const bestFree = useMemo(() => {
+    if (!team || team.cpu || state.phase !== 'drafting') return [];
+    const sc = scale('all');
+    const seen = new Set<string>();
+    const out: { pos: (typeof FORMATIONS)[FormationId]['slots'][number]['pos']; p: Pokemon; fit: number }[] = [];
+    FORMATIONS[team.formation].slots.forEach((d, j) => {
+      if (team.slots[j] != null || seen.has(d.pos)) return;
+      seen.add(d.pos);
+      let best: { p: Pokemon; fit: number } | null = null;
+      for (const p of pool) {
+        const fit = positionFit(p, d.pos, sc);
+        if (!best || fit > best.fit) best = { p, fit };
+      }
+      if (best) out.push({ pos: d.pos, ...best });
+    });
+    return out;
+  }, [team, pool, state.phase, scale]);
   // Megas zählen nur, soweit das Limit sie aufnimmt
   const poolSize = useMemo(() => {
     const base = all.filter(inPool);
@@ -1145,6 +1163,22 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   {t.online.autoPickFor(teamName(String(team?.name)))}
                 </button>
               </div>
+              {bestFree.length > 0 && (
+                <p className="draft__bestfree small">
+                  <span className="muted">{tx.bestFree}</span>{' '}
+                  {bestFree.map((b) => (
+                    <button
+                      key={b.pos}
+                      type="button"
+                      className={`chip ${state.selected === b.p.id ? 'is-active' : ''}`}
+                      title={tx.bestFreeTitle(t.game.pokemon(b.p), t.game.posShort[b.pos], Math.round(b.fit))}
+                      onClick={() => setState((s) => ({ ...s, selected: b.p.id }))}
+                    >
+                      <strong>{t.game.posShort[b.pos]}</strong> {t.game.pokemon(b.p)} {Math.round(b.fit)}
+                    </button>
+                  ))}
+                </p>
+              )}
               <FilterBar filters={filters} onChange={setFilters} showRegion={state.region === 0} resultCount={filtered.length} slashFocus />
               <PokemonGrid
                 items={filtered}

@@ -1535,3 +1535,12 @@ button.draft-bench__slot {
   gap: 8px;
   padding: 2px 0;
 }
+
+/* Lokaler Draft: beste Freie je offener Position */
+.draft__bestfree {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 8px;
+}

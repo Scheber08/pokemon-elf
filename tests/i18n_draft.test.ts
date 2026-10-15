@@ -322,6 +322,15 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(all).toContain(clubEn(CLUB_NAMES[0]));
     // Vorschau der nächsten Picks (Snake mit 2 Teams: CPU, CPU, ich)
     expect(container.querySelector('.draft__next')!.textContent).toBe(`Then: ${clubEn(CLUB_NAMES[0])} → ${clubEn(CLUB_NAMES[0])} → My Team`);
+    // Beste Freie: ein Chip je verschiedener Position der Formation, Klick wählt das Pokémon aus
+    const { FORMATIONS } = await import('../src/config/formations');
+    const chips = container.querySelectorAll('.draft__bestfree button');
+    expect(chips).toHaveLength(new Set(FORMATIONS[FORMATION_IDS[0]].slots.map((d) => d.pos)).size);
+    expect(container.querySelector('.draft__bestfree')!.textContent).toContain('Best available:');
+    await act(async () => (chips[0] as MiniElement).click());
+    const sel = JSON.parse(localStorage.getItem('pokemon-elf:draft')!).selected;
+    expect(typeof sel).toBe('number');
+    expect(container.querySelectorAll('.draft__bestfree button')[0].className).toContain('is-active');
     expect(all).toContain('Cancel draft');
     // „Suggest“ wählt ein Pokémon aus (Hinweis zeigt es fett)
     const btn = container.querySelectorAll('.draft-pooltools button').find((b) => b.textContent === 'Suggest') as MiniElement;

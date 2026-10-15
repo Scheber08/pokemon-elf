@@ -96,6 +96,8 @@ const draft: Messages['draft'] = {
     titlesTitle: 'Trophy cabinet',
     titlesCount: (n) => (n === 1 ? '🏆 1 title' : `🏆 ${n} titles`),
     titlesNote: (n) => `Champions of ${n} local leagues on this device (same team name = same club).`,
+    bestFree: 'Best available:',
+    bestFreeTitle: (name, pos, fit) => `Select ${name} – best available ${pos} (fit ${fit})`,
     newDraft: 'New draft',
     round: 'Round',
     pick: 'Pick',
