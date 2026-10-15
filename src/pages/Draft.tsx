@@ -201,6 +201,9 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   const [tableView, setTableView] = useState<'all' | 'home' | 'away'>('all');
   const pitchRef = useRef<HTMLDivElement>(null);
   const elevenRef = useRef<HTMLElement>(null);
+  /** 👀 Feld eines anderen Teams ansehen (Index; null = Team am Zug) – nach jedem Pick wieder das Team am Zug */
+  const [peekIdx, setPeekIdx] = useState<number | null>(null);
+  useEffect(() => setPeekIdx(null), [state.pick]);
 
   useEffect(() => save(STORAGE_KEYS.draft, state), [state]);
 
@@ -1636,6 +1639,29 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   const slotState = (i: number): SlotState =>
     team?.slots[i] != null ? 'locked' : !team?.cpu && state.selected != null ? 'target' : undefined;
 
+  /** 👀 Auswahl „Feld von …“ (Team am Zug oder ein anderes Team) */
+  const peekSelect =
+    state.teams.length > 1 ? (
+      <label className="draft-peek small">
+        <span aria-hidden="true">👀 </span>
+        <span className="muted">{t.online.peekLabel}</span>{' '}
+        <select
+          className="input select"
+          value={peekIdx != null && peekIdx !== currentTeam ? String(peekIdx) : ''}
+          onChange={(e) => setPeekIdx(e.target.value === '' ? null : Number(e.target.value))}
+        >
+          <option value="">{t.online.peekCurrent}</option>
+          {state.teams.map((x, i) =>
+            i === currentTeam ? null : (
+              <option key={i} value={i}>
+                {teamName(x.name)}
+              </option>
+            ),
+          )}
+        </select>
+      </label>
+    ) : null;
+
   return (
     <div className="page draft">
         {modeSwitch}
@@ -1935,9 +1961,28 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
         <div className="challenge__pitch" ref={pitchRef}>
           {team && (
             <>
+              {(() => {
+                const shown = peekIdx != null && peekIdx !== currentTeam ? state.teams[peekIdx] : null;
+                if (!shown) return null;
+                // Nur Ansicht: fremdes Feld ohne Ziele, Plaketten und Kapitänswahl
+                return (
+                  <>
+                    <h2 className="section-title">
+                      {teamName(shown.name)} · {shown.formation}
+                    </h2>
+                    {peekSelect}
+                    <Pitch formation={shown.formation} slots={shown.slots} sprite={sprite} jerseys={shown.jerseys} captain={shown.captain ?? null} shinies={state.shinies} />
+                  </>
+                );
+              })()}
+            </>
+          )}
+          {team && (peekIdx == null || peekIdx === currentTeam) && (
+            <>
               <h2 className="section-title">
                 {teamName(team.name)} · {team.formation}
               </h2>
+              {peekSelect}
               <Pitch
                 formation={team.formation}
                 slots={team.slots}

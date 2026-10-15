@@ -1144,6 +1144,31 @@ describe('/draft an einem Gerät auf Englisch', () => {
     localStorage.removeItem('pokemon-elf:draft');
   });
 
+  it('👀 Feld eines anderen Teams ansehen (nur Ansicht)', async () => {
+    const f = FORMATION_IDS[0];
+    const g = FORMATION_IDS[1];
+    const kanto = ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth);
+    const teams = [
+      { name: 'Mein Team', cpu: false, formation: f, slots: emptySlots(f) },
+      { name: 'Zweites Team', cpu: false, formation: g, slots: emptySlots(g).map((x, j) => (j === 0 ? kanto[0].id : x)) },
+    ];
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: false, pick: 0, selected: kanto[3].id, seed: null }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const title = () => container.querySelector('.challenge__pitch h2')!.textContent;
+    expect(title()).toBe(`Mein Team · ${f}`);
+    expect(container.querySelectorAll('.challenge__pitch .slot--target').length).toBeGreaterThan(0);
+    const select = container.querySelector('.draft-peek select') as MiniElement;
+    const { MiniEvent } = await import('./miniDom');
+    (select as unknown as { value: string }).value = '1';
+    await act(async () => void select.dispatchEvent(new MiniEvent('change', { bubbles: true })));
+    expect(title()).toBe(`Zweites Team · ${g}`);
+    // Fremdes Feld: keine Ziele, keine Plaketten
+    expect(container.querySelectorAll('.challenge__pitch .slot--target')).toHaveLength(0);
+    expect(container.querySelector('.challenge__pitch .slot__best')).toBeNull();
+    localStorage.removeItem('pokemon-elf:draft');
+  });
+
   it('Fortschrittsbalken: Picks des Teams am Zug als Striche', async () => {
     const f = FORMATION_IDS[0];
     const teams = [0, 1, 2].map((i) => ({ name: i ? CLUB_NAMES[i] : 'Mein Team', cpu: i > 0, formation: f, slots: emptySlots(f) }));
