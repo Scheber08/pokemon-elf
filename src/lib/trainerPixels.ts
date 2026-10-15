@@ -474,13 +474,12 @@ function accessory(c: Canvas, id: string, cloth: string) {
       }
       break;
     case 'locket':
-      // Herz-Medaillon: goldene Kette mit rotem Herz
+      // Herz-Medaillon: goldene Kette mit goldenem Herz und rosa Stein (sichtbar auf jeder Trikotfarbe)
       c.dots([[12, 24], [13, 25], [14, 26], [19, 24], [18, 25], [17, 26]], '#f2c230');
-      c.dots([[14, 27], [15, 27], [17, 27], [18, 27]], '#d8342a');
-      c.rect(14, 28, 5, 1, '#d8342a');
-      c.rect(15, 29, 3, 1, '#d8342a');
-      c.dots([[16, 30]], '#d8342a');
-      c.dots([[14, 27]], '#f08a8a');
+      c.dots([[14, 27], [15, 27], [17, 27], [18, 27], [14, 28], [18, 28], [15, 29], [17, 29]], '#f2c230');
+      c.dots([[16, 30]], '#a87b10');
+      c.rect(15, 28, 3, 1, '#f08a8a');
+      c.dots([[16, 29]], '#f08a8a');
       break;
     case 'whistle':
       c.dots([[12, 24], [13, 25], [14, 26], [19, 24], [18, 25], [17, 26]], '#26282e');
