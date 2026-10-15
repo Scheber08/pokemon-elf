@@ -1856,3 +1856,12 @@ button.draft-bench__slot {
 .slot__best--bad {
   color: #ff8a6b;
 }
+
+/* Manager-Aufstellung: Schwachstelle der Startelf (rot markiert) mit Bank-Alternative */
+.manager__weak {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin: 4px 0 8px;
+}

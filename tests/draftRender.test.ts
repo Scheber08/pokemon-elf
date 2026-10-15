@@ -1741,6 +1741,27 @@ describe('ManagerSeason', () => {
     expect(el.textContent).toMatch(/^🏆 Platz 1 /);
   });
 
+  it('Aufstellung: Schwachstelle der Startelf markiert, ggf. mit Bank-Alternative zum Einwechseln', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason } = await import('../src/lib/manager');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    const room = fakeRoom(snap(s, 'h'));
+    const { container } = await render(app(h(ManagerSeason, { room, readOnly: false })));
+    await settle();
+    const line = container.querySelector('.manager__weak')!;
+    expect(line.textContent).toMatch(/^Schwachstelle: \S+ .+ \(Fit \d+\)/);
+    const lineupPitch = container.querySelector('.manager__lineup .pitch')!;
+    expect(lineupPitch.querySelectorAll('.slot--highlight')).toHaveLength(1);
+    const swap = line.querySelector('button') as MiniElement | null;
+    if (swap) {
+      expect(line.textContent).toMatch(/Bank: .+ passt mit \d+/);
+      await act(async () => swap.click());
+      expect(room.setLineup).toHaveBeenCalled();
+    }
+  });
+
   it('Aufstellung: Tipp für eine stärkere Formation, Knopf übernimmt sie', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, bestLineup, lineupScore } = await import('../src/lib/manager');

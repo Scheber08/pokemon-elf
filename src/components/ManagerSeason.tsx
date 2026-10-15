@@ -975,6 +975,26 @@ function LineupEditor({
     if (pick?.kind === 'slot') return manual(withAtSlot(lineup, pick.index, id));
     setPick(pick?.kind === 'bench' && pick.id === id ? null : { kind: 'bench', id });
   };
+  // Schwachstelle der Startelf: niedrigster Fit (mit Tagesform) – und ob ein fitter Bankspieler dort besser passt (+5)
+  const weak = (() => {
+    let w: { index: number; id: number; pos: PosCode; fit: number } | null = null;
+    lineup.slots.forEach((id, i) => {
+      const p = id != null ? byId.get(id) : undefined;
+      if (!p || !defs[i]) return;
+      const fit = formFit(p, defs[i].pos, sc, formOf(id));
+      if (!w || fit < w.fit) w = { index: i, id, pos: defs[i].pos, fit };
+    });
+    if (!w) return null;
+    const x: { index: number; id: number; pos: PosCode; fit: number } = w;
+    let alt: { id: number; fit: number } | null = null;
+    for (const id of bench) {
+      const p = byId.get(id);
+      if (!p || absent.has(id)) continue;
+      const fit = formFit(p, x.pos, sc, formOf(id));
+      if (fit >= x.fit + 5 && (!alt || fit > alt.fit)) alt = { id, fit };
+    }
+    return { ...x, fit: Math.round(x.fit), alt: alt && { id: alt.id, fit: Math.round(alt.fit) } };
+  })();
   const slotState = (i: number): SlotState => (pick?.kind === 'slot' && pick.index === i ? 'selected' : pick ? 'target' : undefined);
   const pickedName = (() => {
     const id = pick?.kind === 'slot' ? idAtSlot(pick.index) : pick?.kind === 'bench' ? pick.id : null;
@@ -1127,8 +1147,23 @@ function LineupEditor({
         return null;
       })()}
       <p className={`hint ${pick ? 'hint--active' : ''}`}>{pickedName ? tx.selected(pickedName) : tx.swapHint}</p>
+      {weak && (
+        <p className="small manager__weak">
+          {tx.weakSpot(t.game.posShort[weak.pos], t.game.pokemon(byId.get(weak.id)!), weak.fit)}
+          {weak.alt && (
+            <>
+              {' · '}
+              {tx.weakAlt(t.game.pokemon(byId.get(weak.alt.id)!), weak.alt.fit)}{' '}
+              <button type="button" className="btn btn--small btn--ghost" onClick={() => manual(withAtSlot(lineup, weak.index, weak.alt!.id))}>
+                {tx.weakSwap}
+              </button>
+            </>
+          )}
+        </p>
+      )}
       <div className="manager__pitch">
         <Pitch
+          highlight={weak ? [weak.index] : undefined}
           formation={lineup.formation}
           slots={lineup.slots}
           ss={setPiece ? lineup.ss : undefined}

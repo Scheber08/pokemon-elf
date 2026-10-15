@@ -193,7 +193,7 @@ eine Bank (`bench`: 3 oder 5), danach läuft Phase `season`: eine Hinrunde mit 1
 `matchdayMinutes` (10 min bis 24 h); der Server spielt jeden Spieltag per Alarm zum Anpfiff. Davor stellt jedes
 Team seine Elf aus dem Kader auf (Nachricht `lineup`: Formation, Positionen, Standardschütze – oder `auto`:
 beste Elf zur Tagesform). Jedes Pokémon hat je Spieltag eine Tagesform von −2 bis +2 (aus dem geheimen
-Liga-Seed, vorher sichtbar), die seinen Fit um 5 Punkte je Stufe verschiebt (die Aufstellung zeigt die Ø Tagesform der Startelf); die Kader-Tabelle sortiert nach Fit, Form, Toren, Vorlagen oder Scorerpunkten. In der Gegner-Karte gibt man „🔮 Dein Tipp“ (Sieg/Remis/Niederlage) ab; die Trefferbilanz (mit „🔥 n in Folge“ ab zwei richtigen Tipps hintereinander) bleibt auf dem Gerät (`managerTips`). Löschung erst 14 Tage nach dem
+Liga-Seed, vorher sichtbar), die seinen Fit um 5 Punkte je Stufe verschiebt (die Aufstellung zeigt die Ø Tagesform der Startelf und markiert die Schwachstelle – den Starter mit dem niedrigsten Fit – samt fitterem Bankspieler zum Einwechseln); die Kader-Tabelle sortiert nach Fit, Form, Toren, Vorlagen oder Scorerpunkten. In der Gegner-Karte gibt man „🔮 Dein Tipp“ (Sieg/Remis/Niederlage) ab; die Trefferbilanz (mit „🔥 n in Folge“ ab zwei richtigen Tipps hintereinander) bleibt auf dem Gerät (`managerTips`). Löschung erst 14 Tage nach dem
 letzten Spieltag. **Transfermarkt**: Jedes Team kann pro Spieltag ein freies Pokémon (Pool ohne Gedraftete)
 gegen eins aus dem Kader wünschen (Nachricht `transfer`, privat); zum Anpfiff vergibt der Server in
 Tabellen-Reihenfolge (Letzter zuerst), CPU-Teams holen bei klarem Gewinn selbst jemanden. **Tausch zwischen Teams**:
