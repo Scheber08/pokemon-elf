@@ -683,6 +683,7 @@ const draft = {
     stripPlayed: (round: number, opp: string, score: string) => `${round}. Spieltag: ${score} gegen ${opp}`,
     stripNext: (round: number, opp: string, place: number) => `${round}. Spieltag: gegen ${opp}${place ? ` (${place}.)` : ''}`,
     slotGoals: (n: number) => (n === 1 ? '1 Saisontor' : `${n} Saisontore`),
+    aroundLabel: 'Tabellenausschnitt um dein Team (Punkte, Abstand zu dir)',
     projection: (pts: number) => `Hochrechnung: ${pts} Pkt`,
     behindTop: (n: number) => (n === 0 ? 'punktgleich mit der Spitze' : `${n} Pkt hinter Platz 1`),
     colAssists: 'Vorl.',

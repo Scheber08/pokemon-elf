@@ -376,6 +376,29 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           const r = currentRun(shown.matches, you);
           return r && <SeriesLine run={r} />;
         })()}
+        {you != null && m.played >= 1 && (() => {
+          // Tabellenausschnitt: zwei Plätze über und unter dem eigenen Team, mit Punkteabstand
+          const at = shown.table.findIndex((r) => r.team === you);
+          if (at < 0) return null;
+          const from = Math.max(0, Math.min(at - 2, shown.table.length - 5));
+          const rows = shown.table.slice(from, from + 5);
+          const mine = shown.table[at].pts;
+          return (
+            <ol className="manager__around" aria-label={tx.aroundLabel} start={from + 1}>
+              {rows.map((r, k) => {
+                const d = r.pts - mine;
+                return (
+                  <li key={r.team} className={r.team === you ? 'is-you' : ''}>
+                    <span className="manager__around-place">{from + k + 1}.</span>
+                    <span className="manager__around-name">{nameOf(r.team)}</span>
+                    <span className="manager__around-pts">{r.pts}</span>
+                    <span className="manager__around-diff muted">{r.team === you ? '' : d > 0 ? `+${d}` : d === 0 ? '±0' : `−${-d}`}</span>
+                  </li>
+                );
+              })}
+            </ol>
+          );
+        })()}
         {you != null && (() => {
           // Saisonstreifen: je Spieltag ein Kästchen – gespielt in Ergebnisfarbe (eigene Tore zuerst), offen mit Platz des Gegners
           const placeOf = (i: number) => shown.table.findIndex((r) => r.team === i) + 1;

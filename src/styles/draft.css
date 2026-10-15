@@ -1965,3 +1965,32 @@ button.draft-bench__slot {
   max-width: 220px;
   padding-block: 4px;
 }
+
+/* Manager-Saison: Tabellenausschnitt rund ums eigene Team */
+.manager__around {
+  margin: 8px 0 4px;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+.manager__around li {
+  display: grid;
+  grid-template-columns: 2.2em 1fr 2.5em 2.5em;
+  gap: 6px;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+.manager__around li.is-you {
+  background: var(--surface-3);
+  font-weight: 700;
+}
+.manager__around-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.manager__around-pts,
+.manager__around-diff {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
