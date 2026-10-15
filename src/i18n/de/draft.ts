@@ -423,6 +423,8 @@ const draft = {
     avgTitle: 'Durchschnittlicher Platz über alle Ligen',
   },
   ticker: {
+    /** Hattrick auf der Ergebnistafel des Spieltags */
+    hatTrick: (pokemon: string, team: string, goals: number) => `Hattrick: ${pokemon} (${team}) trifft ${goals}-mal`,
     /** Eigene Spiele ohne Gegentor bisher (🧤 n bei den Toren) */
     cleanSheets: (n: number) => (n === 1 ? 'ein Spiel ohne Gegentor' : `${n} Spiele ohne Gegentor`),
     startsSoon: 'Die gemeinsame Saison beginnt gleich.',

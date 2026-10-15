@@ -989,8 +989,12 @@
 .league-board__upset,
 .league-board__late,
 .league-board__top,
-.league-board__star {
+.league-board__star,
+.league-board__hat {
   margin: 0;
+}
+.league-board__hat.is-you {
+  font-weight: 600;
 }
 
 /* Platzverlauf (Liga-Ergebnis) */

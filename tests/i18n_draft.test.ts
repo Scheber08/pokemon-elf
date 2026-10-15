@@ -1105,6 +1105,35 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     expect((await renderAt(2)).querySelector('.league-ticker__series')).toBeNull();
   });
 
+  it('Ticker: 🎩 Hattrick auf der Ergebnistafel des Spieltags', async () => {
+    storeLang('en');
+    const s = snap(finishedDraft());
+    const league = s.league!;
+    const names = s.teams.map((t) => (t.cpu ? clubEn(t.name) : t.name));
+    const total = timeline.matchdayCount(league);
+    const hats = timeline.hatTricks(league.matches);
+    // Ein Spieltag (vor dem Ende) mit Hattrick – der positive Fall muss vorkommen
+    const hat = hats.find((h) => h.round < total);
+    expect(hat).toBeTruthy();
+    const step = 60_000;
+    const renderAt = async (md: number) => {
+      const { container } = await render(
+        app(h(LeagueTicker, { league, teamNames: names, highlight: 0, startsAt: Date.now() - (md - 0.5) * step, stepMs: step, clockOffset: 0, onDone: () => {} })),
+      );
+      await settle();
+      return container;
+    };
+    const c = await renderAt(hat!.round);
+    const nameOf = (i: number) => names[i] ?? clubEn(league.teams[i].name);
+    const mon = ALL.find((p) => p.id === hat!.pokemonId)!.en;
+    const lines = c.querySelectorAll('.league-board__hat').map((e) => e.textContent);
+    expect(lines).toContain(`🎩 Hat-trick: ${mon} (${nameOf(hat!.team)}) scores ${hat!.goals}`);
+    expect(lines).toHaveLength(hats.filter((x) => x.round === hat!.round).length);
+    // Ein Spieltag ohne Hattrick: keine Zeile
+    const quiet = Array.from({ length: total - 1 }, (_, i) => i + 1).find((r) => !hats.some((x) => x.round === r));
+    if (quiet) expect((await renderAt(quiet)).querySelector('.league-board__hat')).toBeNull();
+  });
+
   it('Ticker: Wechsel an der Tabellenspitze wird gemeldet', async () => {
     storeLang('en');
     const s = snap(finishedDraft());

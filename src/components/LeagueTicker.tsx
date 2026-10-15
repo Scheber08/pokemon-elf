@@ -17,6 +17,7 @@ import {
   topScorers,
   biggestUpset,
   playerOfRound,
+  hatTricks,
   lateWinner,
   type Matchday,
 } from '../lib/leagueTimeline';
@@ -439,6 +440,13 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
                     </p>
                   );
                 })()}
+                {hatTricks(day.matches).map((h) => (
+                  // Hattricks des Spieltags (3+ Tore eines Pokémon in einem Spiel)
+                  <p key={`${h.team}-${h.pokemonId}`} className={`league-board__hat ${h.team === you ? 'is-you' : ''}`}>
+                    <span aria-hidden="true">🎩 </span>
+                    {tx.hatTrick(pokemonName(h.pokemonId), nameOf(h.team), h.goals)}
+                  </p>
+                ))}
                 {(() => {
                   // Spieler des Spieltags (wie in der Manager-Saison): meiste Torbeteiligungen, Tore doppelt
                   const star = playerOfRound(day.matches);
