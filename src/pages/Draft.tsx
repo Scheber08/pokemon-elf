@@ -243,6 +243,30 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
       };
     });
 
+  /** Rückgängig: nimmt Picks bis einschließlich des letzten menschlichen zurück (CPU-Picks danach ebenso) */
+  const lastHumanPick = state.log ? state.log.map((x) => !state.teams[x.team]?.cpu).lastIndexOf(true) : -1;
+  const canUndo = state.phase === 'drafting' && !!team && !team.cpu && lastHumanPick >= 0 && state.log!.length === state.pick;
+  const undo = () =>
+    setState((s) => {
+      if (!s.log || s.log.length !== s.pick) return s;
+      const from = s.log.map((x) => !s.teams[x.team]?.cpu).lastIndexOf(true);
+      if (from < 0) return s;
+      const removed = s.log.slice(from);
+      const gone = new Set(removed.map((x) => x.id));
+      const teams = s.teams.map((tm, i) => {
+        const mine = removed.filter((x) => x.team === i);
+        return mine.length ? { ...tm, slots: tm.slots.map((v, j) => (mine.some((x) => x.slot === j) ? null : v)) } : tm;
+      });
+      return {
+        ...s,
+        teams,
+        pick: from,
+        log: s.log.slice(0, from),
+        shinies: (s.shinies ?? []).filter((id) => !gone.has(id)),
+        selected: null,
+      };
+    });
+
   // Neuer Shiny: kurz melden (wie im Online-Draft)
   const shinyCount = state.shinies?.length ?? 0;
   const shinySeen = useRef(shinyCount);
@@ -1214,6 +1238,11 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 >
                   {t.online.autoPickFor(teamName(String(team?.name)))}
                 </button>
+                {canUndo && (
+                  <button type="button" className="btn btn--small btn--ghost" onClick={undo} title={tx.undoTitle}>
+                    {tx.undo}
+                  </button>
+                )}
               </div>
               {bestFree.length > 0 && (
                 <p className="draft__bestfree small">

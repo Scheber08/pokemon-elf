@@ -540,6 +540,38 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(line).toMatch(new RegExp(`^Steal of the draft: .+ \\(pick ${steal.pick + 1}\\) for `));
   });
 
+  it('Rückgängig: nimmt den letzten eigenen Pick und die CPU-Picks danach zurück', async () => {
+    storeLang('en');
+    const pool = ALL.filter((p) => !p.leg && !p.myth);
+    const f0 = FORMATION_IDS[0];
+    const f1 = FORMATION_IDS[1];
+    // Snake mit 2 Teams: Pick 0 ich, 1 und 2 CPU, Pick 3 wieder ich (am Zug)
+    const teams = [
+      { name: 'Mein Team', cpu: false, formation: f0, slots: emptySlots(f0).map((_, j) => (j === 0 ? pool[0].id : null)) },
+      { name: CLUB_NAMES[0], cpu: true, formation: f1, slots: emptySlots(f1).map((_, j) => (j === 0 ? pool[1].id : j === 1 ? pool[2].id : null)) },
+    ];
+    const log = [
+      { team: 0, slot: 0, id: pool[0].id },
+      { team: 1, slot: 0, id: pool[1].id },
+      { team: 1, slot: 1, id: pool[2].id },
+    ];
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 0, legends: false, pick: 3, selected: null, seed: null, log }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const btn = container.querySelectorAll('.draft-pooltools button').find((b) => b.textContent === '↶ Undo') as MiniElement;
+    expect(btn).toBeTruthy();
+    await act(async () => btn.click());
+    const saved = JSON.parse(localStorage.getItem('pokemon-elf:draft')!);
+    expect(saved.pick).toBe(0);
+    expect(saved.log).toEqual([]);
+    expect(saved.teams.every((t: { slots: (number | null)[] }) => t.slots.every((x) => x == null))).toBe(true);
+    // Ohne Verlauf (ältere Drafts) kein Knopf
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 0, legends: false, pick: 3, selected: null, seed: null }));
+    const r2 = await render(app(h(Draft)));
+    await settle();
+    expect(r2.container.querySelectorAll('.draft-pooltools button').some((b) => b.textContent === '↶ Undo')).toBe(false);
+  });
+
   it('Liga: Deine Duelle – Bilanz gegen jeden Gegner, passend zu den Spielen', async () => {
     storeLang('en');
     const pool = ALL.filter((p) => !p.leg && !p.myth);

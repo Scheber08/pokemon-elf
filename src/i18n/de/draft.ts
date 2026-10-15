@@ -99,6 +99,8 @@ const draft = {
     titlesNote: (n: number) => `Meister aus ${n} lokalen Ligen auf diesem Gerät (gleicher Teamname = gleicher Verein).`,
     bestFree: 'Beste Freie:',
     bestFreeTitle: (name: string, pos: string, fit: number) => `${name} auswählen – bester Freier für ${pos} (Fit ${fit})`,
+    undo: '↶ Rückgängig',
+    undoTitle: 'Den letzten Pick eines Menschen zurücknehmen (CPU-Picks danach ebenso)',
     newDraft: 'Neuer Draft',
     round: 'Runde',
     pick: 'Pick',

@@ -98,6 +98,8 @@ const draft: Messages['draft'] = {
     titlesNote: (n) => `Champions of ${n} local leagues on this device (same team name = same club).`,
     bestFree: 'Best available:',
     bestFreeTitle: (name, pos, fit) => `Select ${name} – best available ${pos} (fit ${fit})`,
+    undo: '↶ Undo',
+    undoTitle: 'Take back the last human pick (and any CPU picks after it)',
     newDraft: 'New draft',
     round: 'Round',
     pick: 'Pick',

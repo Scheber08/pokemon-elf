@@ -68,7 +68,7 @@ Rückrunde, Überraschung/Enttäuschung, torreichstes Spiel, Remis-König), näc
 beste Position der Bankspieler, Punkte-Hochrechnung und Torjäger des Gegners in der Manager-Saison, Elf der Saison (auch als Bild,
 lokal und online), Heim-/Auswärtstabelle, Tabellen-Zonen mit Legende, Spieler des Spieltags und Last-Minute-Sieg
 im Ticker, Führungsserie, Favorit vor dem Anpfiff, Vorschau der nächsten Picks, Taste V/„Vorschlag“ auch lokal,
-ausgeglichenes Heimrecht im Manager-Spielplan, lokale Liga mit Heim/Auswärts, Pick-Verlauf und Schnäppchen, Saisonrekorden, Zeitreise, Duellen,
+ausgeglichenes Heimrecht im Manager-Spielplan, lokale Liga mit Heim/Auswärts, Pick-Verlauf, Rückgängig und Schnäppchen, Saisonrekorden, Zeitreise, Duellen,
 Revanche und Titelsammlung, „Reihenfolge mischen“ (Lobby und lokal), „Beste Freie“ je offener Position (lokal und online), Restdauer im
 Online-Draft, Restprogramm mit den nächsten drei Gegnern, Serie (`currentRun`) und Spielort-Bilanz und Formation des Gegners in der Manager-Saison, Serie im Ticker.
 
