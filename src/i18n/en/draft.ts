@@ -370,6 +370,7 @@ const draft: Messages['draft'] = {
     statusLive: 'Live',
     statusSoon: 'Soon',
     sharedSeason: 'Shared season',
+    topGame: (home, score, away) => `Top game: ${home} ${score} ${away}`,
     lateWinner: (winner, loser, score, minute) => `Late winner: ${winner} beat ${loser} ${score} – winning goal in the ${minute}`,
     upset: (winner, loser, score) => `Upset: ${winner} beat ${loser} ${score}`,
     title: 'Season ticker',

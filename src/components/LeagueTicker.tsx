@@ -371,6 +371,25 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
                   )}
                 </p>
               )}
+              {!cup && day.round > 1 && (() => {
+                // Topspiel des Spieltags: beste Platzsumme nach der Tabelle vor diesem Spieltag
+                const before = days[day.round - 2];
+                if (!before) return null;
+                const top = [...day.matches].sort(
+                  (a, b) => before.places[a.home] + before.places[a.away] - (before.places[b.home] + before.places[b.away]),
+                )[0];
+                if (!top) return null;
+                return (
+                  <p className="league-board__top">
+                    <span aria-hidden="true">🔥 </span>
+                    {tx.topGame(
+                      `${before.places[top.home]}. ${nameOf(top.home)}`,
+                      `${top.hg}:${top.ag}`,
+                      `${before.places[top.away]}. ${nameOf(top.away)}`,
+                    )}
+                  </p>
+                );
+              })()}
               {(() => {
                 // Last-Minute-Sieg des Spieltags (Siegtor ab der 85. Minute)
                 const late = lateWinner(day.matches);
