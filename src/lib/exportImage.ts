@@ -24,8 +24,8 @@ function loadImage(url: string): Promise<HTMLImageElement> {
  * Lädt ein Sprite (mit Fallbacks) und liefert eine Data-URL.
  * Pixel-Sprites werden mit ganzzahligem Faktor ohne Glättung vergrößert, Artwork verkleinert.
  */
-export async function spriteDataUrl(p: Pokemon, style: SpriteStyle, pixelFactor = 4, artSize = 320): Promise<SpriteSource | null> {
-  for (const url of spriteUrls(p, style)) {
+export async function spriteDataUrl(p: Pokemon, style: SpriteStyle, pixelFactor = 4, artSize = 320, shiny = false): Promise<SpriteSource | null> {
+  for (const url of spriteUrls(p, style, shiny)) {
     try {
       const img = await loadImage(url);
       const kind = spriteKind(url);
@@ -49,9 +49,11 @@ export async function spriteDataUrl(p: Pokemon, style: SpriteStyle, pixelFactor 
 export async function spriteDataUrls(
   list: (Pokemon | null | undefined)[],
   style: SpriteStyle,
+  /** Shinys: schillernde Sprites laden */
+  shinies?: ReadonlySet<number>,
 ): Promise<Map<number, SpriteSource>> {
   const unique = [...new Map(list.filter((p): p is Pokemon => !!p).map((p) => [p.id, p])).values()];
-  const entries = await Promise.all(unique.map(async (p) => [p.id, await spriteDataUrl(p, style)] as const));
+  const entries = await Promise.all(unique.map(async (p) => [p.id, await spriteDataUrl(p, style, 4, 320, !!shinies?.has(p.id))] as const));
   return new Map(entries.filter((e): e is readonly [number, SpriteSource] => !!e[1]));
 }
 

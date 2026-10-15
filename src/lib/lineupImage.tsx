@@ -20,6 +20,8 @@ interface Options {
   captain?: number | null;
   /** Vereinswappen */
   crest?: Crest | null;
+  /** Shinys (Pokémon-IDs) – mit schillerndem Sprite */
+  shinies?: readonly number[];
 }
 
 /** Erzeugt das 1200×1500-PNG einer Aufstellung (optional mit Saisonbilanz). */
@@ -29,7 +31,8 @@ export async function lineupImage(o: Options): Promise<Blob> {
   // Wappentier mitladen (Data-URL – sonst fehlt es im Bild)
   const mascotId = o.crest ? crestPokemon(o.crest.symbol) : null;
   const mascot = mascotId != null ? o.byId.get(mascotId) ?? null : null;
-  const images = await spriteDataUrls([...players, ss, mascot], o.sprite);
+  const shinySet = o.shinies?.length ? new Set(o.shinies.filter((id) => id !== mascotId)) : undefined;
+  const images = await spriteDataUrls([...players, ss, mascot], o.sprite, shinySet);
   const watermark = `${window.location.host}${import.meta.env.BASE_URL}`.replace(/\/$/, '');
   return renderToPng(
     <ExportCard

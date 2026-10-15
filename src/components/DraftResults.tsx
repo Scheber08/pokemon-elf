@@ -211,6 +211,10 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
           position: ownIndex + 1,
           label: leagueName || tx.kicker(code),
         },
+        jerseys: team.jerseys,
+        captain: team.captain ?? null,
+        crest: cleanCrest(team.crest),
+        shinies,
       });
       downloadBlob(blob, `${slugify(name || 'pokemon-elf')}.png`);
       toast(t.builder.imageSaved);
