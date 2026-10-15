@@ -46,6 +46,12 @@ describe('Bereit in der Lobby', () => {
     expect(viewer.state!.teams[0].ready).toBe(true);
     await room.send(host, { type: 'ready', ready: false });
     expect(room.stored!.state.teams[0]).not.toHaveProperty('ready');
+    // Neue Spielregeln setzen „bereit“ zurück, ein neuer Liganame nicht
+    await room.send(host, { type: 'ready', ready: true });
+    await room.send(host, { type: 'settings', settings: { name: 'Neue Liga' } });
+    expect(room.stored!.state.teams[0].ready).toBe(true);
+    await room.send(host, { type: 'settings', settings: { pickSeconds: 30 } });
+    expect(room.stored!.state.teams[0]).not.toHaveProperty('ready');
     await room.send(host, { type: 'add-cpu' });
     await room.send(host, { type: 'start' });
     await room.send(host, { type: 'ready', ready: true });

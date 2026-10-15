@@ -873,7 +873,20 @@ export function updateSettings(
   }
   const settings = normalizeSettings(patch, state.settings, list);
   if (settings.maxTeams < state.teams.length) fail('too_many_teams', `Es sind schon ${state.teams.length} Teams dabei`);
-  return { ...state, settings };
+  // Andere Spielregeln: „bereit“ gilt nicht mehr (Name und Sichtbarkeit ändern nichts am Spiel)
+  const rulesChanged = (Object.keys(settings) as (keyof DraftSettings)[]).some(
+    (k) => k !== 'name' && k !== 'visibility' && JSON.stringify(settings[k]) !== JSON.stringify(state.settings[k]),
+  );
+  if (!rulesChanged || !state.teams.some((t) => t.ready)) return { ...state, settings };
+  return {
+    ...state,
+    settings,
+    teams: state.teams.map((t) => {
+      if (!t.ready) return t;
+      const { ready: _drop, ...rest } = t;
+      return rest;
+    }),
+  };
 }
 
 /**
