@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AchievementWatcher } from './components/AchievementWatcher';
 import { Footer, Header } from './components/Layout';
 import { useT } from './i18n';
+import { apiAvailable, fetchLeaderboard } from './lib/api/client';
+import { refreshRankingNames } from './lib/rankingNames';
 import { Builder } from './pages/Builder';
 import { PokemonDataProvider } from './state/PokemonData';
 import { SettingsProvider } from './state/Settings';
@@ -51,6 +53,16 @@ function RouteEffects() {
   return null;
 }
 
+/** Ligagegner heißen wie Teams aus den Online-Ranglisten: Namen einmal je Seitenaufruf im Hintergrund auffrischen */
+function RankingNames() {
+  useEffect(() => {
+    void apiAvailable().then((ok) => {
+      if (ok) void refreshRankingNames((ch) => fetchLeaderboard(ch, 'all', 50).then((r) => r.rows));
+    });
+  }, []);
+  return null;
+}
+
 function SkipLink() {
   const t = useT();
   return (
@@ -67,6 +79,7 @@ export function App() {
         <ToastProvider>
           <SkipLink />
           <AchievementWatcher />
+          <RankingNames />
           <Header />
           <main id="main" className="main">
             <PokemonDataProvider>

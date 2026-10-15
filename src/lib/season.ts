@@ -422,12 +422,19 @@ export interface SeasonInput {
   setPieceTaker?: SquadPlayer | null;
   setPieceFit?: number;
   seed: number;
+  /**
+   * Namen der Gegner (z. B. Teams aus den Online-Ranglisten, src/lib/rankingNames.ts) – nur mit genau
+   * SEASON.opponents Namen, sonst Vereinsnamen. Ändert nur die Namen, nie Stärken oder Ergebnisse.
+   */
+  opponentNames?: readonly string[];
 }
 
 /** Simuliert eine 34-Spiele-Saison des eigenen Teams gegen 17 generierte Gegner. */
 export function simulateSeason(input: SeasonInput): SeasonResult {
   const rng = createRng(input.seed);
-  const names = shuffle(rng, CLUB_NAMES).slice(0, SEASON.opponents);
+  // Vereinsnamen immer ziehen: gleicher Zufallsverlauf mit und ohne eigene Gegnernamen
+  const clubs = shuffle(rng, CLUB_NAMES).slice(0, SEASON.opponents);
+  const names = input.opponentNames?.length === SEASON.opponents ? input.opponentNames : clubs;
   const ratings = shuffle(rng, opponentRatings());
   const teams: LeagueTeam[] = [
     {

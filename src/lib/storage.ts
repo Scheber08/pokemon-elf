@@ -22,6 +22,8 @@ export const STORAGE_KEYS = {
   kit: (scope: string) => `kit:${scope}`,
   cheer: (scope: string) => `cheer:${scope}`,
   crest: (scope: string) => `crest:${scope}`,
+  /** Teamnamen aus den Online-Ranglisten für Ligagegner (src/lib/rankingNames.ts) */
+  rankingNames: 'ranking-names',
 } as const;
 
 export function load<T>(key: string, fallback: T): T {

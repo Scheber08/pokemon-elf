@@ -17,6 +17,8 @@ import { dailySeasonSeed } from './daily';
 import { getDevice } from './device';
 import type { Scale } from './fit';
 import { leaderboard } from './leaderboard';
+import { SEASON } from '../config/season';
+import { opponentNames, rankingNames } from './rankingNames';
 import { randomSeed } from './rng';
 import { computeRun, type ComputedRun, type FinishedRunInput } from './runCompute';
 import { load, save, STORAGE_KEYS } from './storage';
@@ -300,6 +302,8 @@ export async function finishRun(o: FinishOptions): Promise<FinishOutcome> {
     teamName: o.teamName,
     seed: seasonSeed,
     ...(o.captain != null ? { captain: o.captain } : {}),
+    // Gegner heißen wie Teams aus den Online-Ranglisten (sofern geladen) – fest im gespeicherten Run
+    ...(rankingNames().length ? { opponentNames: opponentNames(SEASON.opponents, seasonSeed, rankingNames(), [o.teamName]) } : {}),
   };
   const computed = computeRun(input, o.byId, o.scale);
   if (expectedScore != null && expectedScore !== computed.evaluation.score) {

@@ -200,6 +200,28 @@ describe('finishRun', () => {
     expect(fetch).not.toHaveBeenCalled();
     expect(out.ranking).toMatchObject({ status: 'offline', message: 'Offline gespielt – nicht gewertet' });
   });
+
+  it('Gegner heißen wie Ranglisten-Teams (falls geladen) – Ergebnis wie ohne Namen', async () => {
+    stubFetch(json(500, {}));
+    const plain = await finishRun(opts({ token: null }));
+    expect(plain.input.opponentNames).toBeUndefined();
+    const names = Array.from({ length: 20 }, (_, i) => `Rangteam ${i + 1}`).concat('Test-Elf');
+    localStorage.setItem('pokemon-elf:ranking-names', JSON.stringify({ at: Date.now(), names }));
+    const out = await finishRun(opts({ token: null, }));
+    const own = out.input.opponentNames!;
+    expect(own).toHaveLength(17);
+    expect(own.every((n) => n.startsWith('Rangteam '))).toBe(true);
+    expect(own).not.toContain('Test-Elf');
+    const { computeRun } = await import('../src/lib/runCompute');
+    const withNames = computeRun(out.input, DATA.byId, SCALE).season;
+    const without = computeRun({ ...out.input, opponentNames: undefined }, DATA.byId, SCALE).season;
+    expect(withNames.userMatches.map((m) => m.opponent).every((n) => n.startsWith('Rangteam '))).toBe(true);
+    expect(withNames.userMatches.map((m) => [m.gf, m.ga, m.isHome, m.opponentRating])).toEqual(
+      without.userMatches.map((m) => [m.gf, m.ga, m.isHome, m.opponentRating]),
+    );
+    expect([withNames.points, withNames.position, withNames.record]).toEqual([without.points, without.position, without.record]);
+    localStorage.removeItem('pokemon-elf:ranking-names');
+  });
 });
 
 describe('Ende zu Ende mit blockiertem localStorage', () => {

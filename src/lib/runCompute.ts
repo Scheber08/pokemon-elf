@@ -18,6 +18,8 @@ export interface FinishedRunInput {
   captain?: number | null;
   /** Seed der Saison-Simulation */
   seed: number;
+  /** Namen der 17 Gegner (Ranglisten-Teams) – fehlen sie, spielen die Vereinsnamen; Ergebnisse gleich */
+  opponentNames?: string[];
 }
 
 export interface ComputedRun {
@@ -41,6 +43,7 @@ export function computeRun(input: FinishedRunInput, byId: Map<number, Pokemon>, 
     setPieceTaker: ssPokemon ? { pokemonId: ssPokemon.id, pos: 'SS', atk: ssPokemon.atk, spa: ssPokemon.spa } : null,
     setPieceFit: ssPokemon ? positionFit(ssPokemon, 'SS', scale) : undefined,
     seed: input.seed,
+    ...(input.opponentNames ? { opponentNames: input.opponentNames } : {}),
   });
   return { evaluation, season };
 }
