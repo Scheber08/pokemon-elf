@@ -587,6 +587,16 @@ describe('/draft an einem Gerät auf Englisch', () => {
       expect(saved.pick).toBe(2);
       // Jetzt ist der Mensch dran – kein CPU-Hinweis mehr
       expect(container.querySelector('.cpu-thinking')).toBeNull();
+      // Zwei eigene Picks (Snake: Pick 3 und 4), danach wieder CPU – jetzt mit normaler Bedenkzeit
+      for (let k = 0; k < 2; k++) {
+        const auto = container.querySelectorAll('.draft-pooltools button').find((b) => /^Pick automatically for /.test(b.textContent ?? '')) as MiniElement;
+        await act(async () => auto.click());
+      }
+      expect(JSON.parse(localStorage.getItem('pokemon-elf:draft')!).pick).toBe(4);
+      await act(async () => void vi.advanceTimersByTime(200));
+      expect(JSON.parse(localStorage.getItem('pokemon-elf:draft')!).pick).toBe(4);
+      await act(async () => void vi.advanceTimersByTime(400));
+      expect(JSON.parse(localStorage.getItem('pokemon-elf:draft')!).pick).toBe(5);
     } finally {
       vi.useRealTimers();
     }
