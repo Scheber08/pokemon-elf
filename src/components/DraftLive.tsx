@@ -408,6 +408,20 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     }
   };
 
+  // 🎲 Zufall: ein zufälliges erlaubtes Pokémon vormerken, auf seinen bestpassenden freien Platz (bestätigen wie beim Vorschlag)
+  const randomPick = () => {
+    if (!me || !mySlots.length) return;
+    const options = allowedPicks(s, me.id, list).filter((p) => !owners.has(p.id));
+    if (!options.length) return setInfo(t.online.noSuggestion);
+    const mon = options[Math.floor(Math.random() * options.length)];
+    const defs = FORMATIONS[me.formation].slots;
+    // Feldplätze nach Fit, danach Standardschütze, zuletzt die Bank
+    const score = (slot: number) => (slot === DRAFT_SS_SLOT ? -1 : slot >= DRAFT_BENCH_SLOT ? -2 : positionFit(mon, defs[slot].pos, scale('all')));
+    const slot = [...mySlots].sort((a, b) => score(b) - score(a))[0];
+    setSelected(mon.id);
+    setSuggestSlot(slot);
+  };
+
   // Taste „V“: Vorschlag (wie der Knopf; nicht beim Tippen)
   const suggestRef = useRef(suggest);
   suggestRef.current = suggest;
@@ -630,6 +644,9 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
               <div className="draft-pooltools">
                 <button type="button" className="btn btn--small" onClick={suggest} disabled={!mySlots.length} title={t.online.suggestKey} aria-keyshortcuts="V">
                   {t.online.suggest}
+                </button>
+                <button type="button" className="btn btn--small" onClick={randomPick} disabled={!mySlots.length} title={t.online.randomPickTitle}>
+                  🎲 {t.online.randomPick}
                 </button>
                 {restricted && (
                   <label className="draft-check">

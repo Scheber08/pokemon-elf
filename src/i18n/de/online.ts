@@ -225,6 +225,8 @@ const online = {
   yourTurn: 'Du bist dran!',
   pool: 'Pool',
   poolFree: (n: number) => `(${n} frei)`,
+  randomPick: 'Zufall',
+  randomPickTitle: 'Ein zufälliges passendes Pokémon vormerken – zum Übernehmen den markierten Platz antippen',
   suggest: 'Vorschlag',
   suggestKey: 'Taste V',
   showTaken: 'Vergebene zeigen',

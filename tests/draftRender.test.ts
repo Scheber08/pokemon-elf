@@ -684,6 +684,21 @@ describe('DraftLive', () => {
     expect(container.querySelector('.draft-pooltools button')!.getAttribute('aria-keyshortcuts')).toBe('V');
   });
 
+  it('🎲 Zufall merkt ein zufälliges erlaubtes Pokémon vor', async () => {
+    const st = drafting();
+    const { container } = await renderLive(fakeRoom(snap(st, 'h')));
+    const options = engine.allowedPicks(st, 'h', ALL);
+    const btn = container.querySelectorAll('.draft-pooltools button').find((b) => b.textContent === '🎲 Zufall') as MiniElement;
+    for (const [r, idx] of [[0, 0], [0.999, options.length - 1]] as const) {
+      vi.spyOn(Math, 'random').mockReturnValue(r);
+      await act(async () => btn.click());
+      expect(container.querySelector('.draft-live .hint strong')!.textContent).toBe(options[idx].de);
+      vi.restoreAllMocks();
+    }
+    // Vorgemerkt ist ein Feldplatz (der bestpassende freie)
+    expect(container.querySelectorAll('.challenge__pitch .slot--target').length).toBeGreaterThan(0);
+  });
+
   it('Wunschliste im Raster: „★ Wunsch n“ auf den Karten', async () => {
     const { DraftLive } = await import('../src/components/DraftLive');
     const st = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);

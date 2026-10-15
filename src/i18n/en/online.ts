@@ -208,6 +208,8 @@ const online: Messages['online'] = {
   yourTurn: 'It’s your turn!',
   pool: 'Pool',
   poolFree: (n) => `(${n} available)`,
+  randomPick: 'Random',
+  randomPickTitle: 'Pre-select a random fitting Pokémon – tap the highlighted slot to take it',
   suggest: 'Suggest',
   suggestKey: 'Key V',
   showTaken: 'Show taken',
