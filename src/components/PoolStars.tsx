@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
+import { FORMATIONS } from '../config/formations';
 import { POSITIONS } from '../config/positions';
 import { useT } from '../i18n';
 import { positionFit, type Scale } from '../lib/fit';
 import { useSettings } from '../state/Settings';
-import type { Pokemon, PosCode } from '../types';
+import type { FormationId, Pokemon, PosCode } from '../types';
 import { PosBadge } from './Badges';
 import { KindMarks } from './DraftBoard';
 import { limitKindsOf } from '../lib/draftEngine';
@@ -38,11 +39,41 @@ export function poolStars(pool: readonly Pokemon[], scale: Scale, n = 5): PoolSt
   return rated.slice(0, n).map((x) => ({ ...x, fit: Math.round(x.fit) }));
 }
 
+/** Ab diesem Positions-Fit gilt ein Pokémon als stark auf der Position */
+export const SCARCE_FIT = 85;
+
+export interface ScarcePos {
+  pos: PosCode;
+  /** Starke Kandidaten im Pool (Fit ≥ SCARCE_FIT) */
+  strong: number;
+  /** Plätze dieser Position in allen Formationen */
+  need: number;
+}
+
+/**
+ * Knappe Positionen: weniger starke Kandidaten im Pool, als die Formationen aller Teams Plätze haben –
+ * die knappsten zuerst (Verhältnis, dann Formationsreihenfolge), höchstens n.
+ */
+export function poolScarcity(pool: readonly Pokemon[], scale: Scale, formations: readonly FormationId[], n = 3): ScarcePos[] {
+  const need = new Map<PosCode, number>();
+  for (const f of formations) for (const d of FORMATIONS[f].slots) need.set(d.pos, (need.get(d.pos) ?? 0) + 1);
+  const out: ScarcePos[] = [];
+  for (const [pos, k] of need) {
+    const strong = pool.filter((p) => positionFit(p, pos, scale) >= SCARCE_FIT).length;
+    if (strong < k) out.push({ pos, strong, need: k });
+  }
+  const order: readonly PosCode[] = FIELD;
+  out.sort((a, b) => a.strong / a.need - b.strong / b.need || order.indexOf(a.pos) - order.indexOf(b.pos));
+  return out.slice(0, n);
+}
+
 /** Lobby: Vorschau der fünf stärksten Pokémon im Pool – damit man vor dem Draft weiß, um wen es geht. */
-export function PoolStars({ pool, scale }: { pool: readonly Pokemon[]; scale: Scale }) {
+export function PoolStars({ pool, scale, formations }: { pool: readonly Pokemon[]; scale: Scale; formations?: readonly FormationId[] }) {
   const t = useT();
   const { sprite } = useSettings();
   const stars = useMemo(() => poolStars(pool, scale), [pool, scale]);
+  const formationKey = formations?.join(',') ?? '';
+  const scarce = useMemo(() => (formations?.length ? poolScarcity(pool, scale, formations) : []), [pool, scale, formationKey]);
   if (!stars.length) return null;
   return (
     <section className="card pool-stars" aria-labelledby="pool-stars-title">
@@ -64,6 +95,11 @@ export function PoolStars({ pool, scale }: { pool: readonly Pokemon[]; scale: Sc
         ))}
       </ol>
       <p className="hint">{t.online.poolStarsNote}</p>
+      {scarce.length > 0 && (
+        <p className="small pool-stars__scarce" title={t.online.poolScarceTitle(SCARCE_FIT)}>
+          ⚠️ {t.online.poolScarce(scarce.map((x) => t.online.poolScarceItem(t.game.posShort[x.pos], x.strong, x.need)).join(', '))}
+        </p>
+      )}
     </section>
   );
 }

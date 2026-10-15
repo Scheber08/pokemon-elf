@@ -758,7 +758,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
             </button>
           </section>
           {/* Die stärksten Pokémon der gewählten Einstellungen – wie in der Online-Lobby */}
-          {!poolTooSmall && <PoolStars pool={pool} scale={scale('all')} />}
+          {!poolTooSmall && <PoolStars pool={pool} scale={scale('all')} formations={state.teams.map((tm) => tm.formation)} />}
         </div>
       </div>
     );

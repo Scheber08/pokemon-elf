@@ -1659,6 +1659,10 @@ button.draft-bench__slot {
   flex: none;
   font-variant-numeric: tabular-nums;
 }
+.pool-stars__scarce {
+  margin: 6px 0 0;
+  font-weight: 600;
+}
 .draft-results__stars li.is-you strong {
   color: var(--yellow);
 }

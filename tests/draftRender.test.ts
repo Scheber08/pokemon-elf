@@ -911,6 +911,35 @@ describe('DraftLobby', () => {
     expect(room.updateTeam).toHaveBeenCalledWith({ formation: expected });
   });
 
+  it('Knapp im Pool: weniger starke Kandidaten als Plätze in allen Formationen', async () => {
+    const { poolScarcity, SCARCE_FIT } = await import('../src/components/PoolStars');
+    const { poolOf } = await import('../src/lib/draftEngine');
+    const { positionFit } = await import('../src/lib/fit');
+    const { FORMATIONS } = await import('../src/config/formations');
+    // Nur Kanto, viele Teams im 4-4-2: Stürmer reichen nicht für alle
+    const st = lobby(1, { region: 1, maxTeams: 8 });
+    const pool = poolOf(st.settings, ALL);
+    const formations = Array(8).fill('4-4-2') as '4-4-2'[];
+    const scarce = poolScarcity(pool, SCALE, formations);
+    expect(scarce.length).toBeGreaterThan(0);
+    expect(scarce.length).toBeLessThanOrEqual(3);
+    for (const x of scarce) {
+      expect(x.strong).toBe(pool.filter((p) => positionFit(p, x.pos, SCALE) >= SCARCE_FIT).length);
+      expect(x.need).toBe(8 * FORMATIONS['4-4-2'].slots.filter((d) => d.pos === x.pos).length);
+      expect(x.strong).toBeLessThan(x.need);
+    }
+    for (let i = 1; i < scarce.length; i++) expect(scarce[i - 1].strong / scarce[i - 1].need).toBeLessThanOrEqual(scarce[i].strong / scarce[i].need);
+    // Ein Team mit allen Regionen: nichts knapp
+    expect(poolScarcity(poolOf(lobby(1, { gens: [1, 2, 3, 4, 5, 6, 7, 8, 9] }).settings, ALL), SCALE, ['4-4-2'])).toEqual([]);
+    // Lobby: Zeile mit den Formationen der beigetretenen Teams
+    const { container } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) })));
+    await settle();
+    const expected = poolScarcity(pool, SCALE, st.teams.map((t) => t.formation));
+    const line = container.querySelector('.pool-stars__scarce');
+    if (expected.length) expect(line!.textContent).toMatch(/^⚠️ Knapp im Pool: .+ – früh zugreifen!$/);
+    else expect(line).toBeNull();
+  });
+
   it('Stars im Pool: die fünf stärksten Pokémon der Einstellungen mit bester Position', async () => {
     const { poolStars } = await import('../src/components/PoolStars');
     const { poolOf } = await import('../src/lib/draftEngine');

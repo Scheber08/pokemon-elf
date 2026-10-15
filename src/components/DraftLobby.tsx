@@ -528,7 +528,7 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
             </>
           )}
         </section>
-        {pool.length > 0 && <PoolStars pool={pool} scale={scale('all')} />}
+        {pool.length > 0 && <PoolStars pool={pool} scale={scale('all')} formations={s.teams.map((tm) => tm.formation)} />}
         {isHost && (
           <section className="card draft-start">
             <button
