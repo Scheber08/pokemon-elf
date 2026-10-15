@@ -62,7 +62,7 @@ Kapitän in allen Modi (zählt doppelt; Rangliste dafür einmalig neu gestartet)
 Pick (automatisch der bestpassende, „Beste Wahl“, Ersatzkapitän der CPU), „Mit CPU auffüllen“ und „🎲 Überraschung“-Vorlage in der Lobby, Vibration bei
 knapper Pick-Zeit, Shinys und Pokalsiege im Profil, Karriere-Verlauf, „Ich bin bereit“ in der Lobby, Wunschliste mit
 Taste W/„★ Wunsch n“/Vergebene entfernen/💔 bei weggeschnapptem Wunsch, sortierbare Kader-Tabelle mit Toren und Vorlagen, Teambild auch im lokalen Draft,
-alle Picks und bester Kapitän im Ergebnis, Erfolg „Spielführer“, Ø Fit auf dem Board (👑 am besten Team, Typ-Elf-Chip), Position/Fit, „Run“, ⚡ Blitz-Pick (≤ 5 s) und 🏅 bester Fit (eigener mit Hinweis) im
+alle Picks und bester Kapitän im Ergebnis, Erfolge „Spielführer“ und „Blitzdrafter“, Ø Fit auf dem Board (👑 am besten Team, Typ-Elf-Chip), Position/Fit, „Run“, ⚡ Blitz-Pick (≤ 5 s) und 🏅 bester Fit (eigener mit Hinweis) im
 Pick-Verlauf, offene Positionen im Wartehinweis, Pool-Größe in der Lobby, weitere Saisonrekorde (Weiße Weste ab 3 Spielen ohne Gegentor, Herbstmeister,
 Rückrunde, Überraschung/Enttäuschung, torreichstes Spiel, Remis-König), nächster Gegner im Ticker, Formations-Tipp,
 beste Position der Bankspieler, Punkte-Hochrechnung und Torjäger des Gegners in der Manager-Saison, Elf der Saison (auch als Bild,

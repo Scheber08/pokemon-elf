@@ -233,6 +233,7 @@ const trainer: Messages['trainer'] = {
     shiny_first: { name: 'Shimmering', desc: 'Finish an online league with a shiny in your squad.' },
     shiny_5: { name: 'Shiny collector', desc: 'Collect 5 shinies in total across finished online leagues.' },
     captain_10: { name: 'Leader', desc: 'Your captain scores 10 goals in an online league or manager season.' },
+    blitz_5: { name: 'Lightning drafter', desc: 'Five lightning picks ⚡ in one online league – each within 5 seconds of the previous pick.' },
     goal_reached: { name: 'Mission accomplished', desc: 'Reach your season goal in an online league or manager season.' },
     manager_5: { name: 'Old hand', desc: 'Finish 5 manager seasons.' },
     draft_manager: { name: 'Master trainer', desc: 'Win a manager season.' },

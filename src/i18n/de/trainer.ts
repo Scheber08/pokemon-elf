@@ -232,6 +232,7 @@ const trainer = {
     shiny_first: { name: 'Schillernd', desc: 'Beende eine Online-Liga mit einem Shiny im Kader.' },
     shiny_5: { name: 'Shiny-Sammler', desc: 'Sammle insgesamt 5 Shinys in beendeten Online-Ligen.' },
     captain_10: { name: 'Spielführer', desc: 'Dein Kapitän schießt in einer Online-Liga oder Manager-Saison 10 Tore.' },
+    blitz_5: { name: 'Blitzdrafter', desc: 'Fünf Blitz-Picks ⚡ in einer Online-Liga – jeweils höchstens 5 Sekunden nach dem vorigen Pick.' },
     goal_reached: { name: 'Plan erfüllt', desc: 'Erreiche dein Saisonziel in einer Online-Liga oder Manager-Saison.' },
     manager_5: { name: 'Alter Hase', desc: 'Spiele 5 Manager-Saisons zu Ende.' },
     draft_manager: { name: 'Meistertrainer', desc: 'Gewinne eine Manager-Saison.' },

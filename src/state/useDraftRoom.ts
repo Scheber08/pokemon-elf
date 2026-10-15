@@ -4,6 +4,7 @@
  * die Draft-Engine dient hier nur der Anzeige und einer Vorprüfung (Pick am falschen
  * Platz, nicht dran …), damit Fehler sofort und ohne Umweg über den Server erscheinen.
  */
+import { FAST_PICK_SECONDS } from '../lib/draftEngine';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ApiRequestError } from '../lib/api/client';
 import {
@@ -255,8 +256,7 @@ export interface FeedItem {
   top?: boolean;
 }
 
-/** Bis zu so vielen Sekunden nach dem vorigen Pick gilt ein eigener (nicht automatischer) Pick als Blitz-Pick ⚡ */
-export const FAST_PICK_SECONDS = 5;
+export { FAST_PICK_SECONDS };
 
 /**
  * Anzeigename eines Teams: Vereinsnamen der CPU-Teams (intern deutsch gespeichert) in der Sprache

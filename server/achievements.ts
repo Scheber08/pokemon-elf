@@ -15,7 +15,7 @@ import type { Db, Env } from './env';
 import { ApiError, json } from './http';
 import { ensureSchema } from './schema';
 import { CHALLENGE_KEYS, parseDeviceAuth, readJsonBody } from './validate';
-import { goalReached, rosterOf } from '../src/lib/draftEngine';
+import { fastPickCounts, goalReached, rosterOf } from '../src/lib/draftEngine';
 
 /** Tages-Wertungen ('YYYY-MM-DD') – Wochen o. Ä. zählen nicht als Tagessieg */
 const DAY_SCOPE_GLOB = '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]';
@@ -39,18 +39,19 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
       .bind(deviceId, today),
     db
       .prepare(
-        `SELECT SUM(CASE WHEN format NOT IN ('manager_cup', 'shiny', 'captain', 'goal') THEN 1 ELSE 0 END) AS leagues,
+        `SELECT SUM(CASE WHEN format NOT IN ('manager_cup', 'shiny', 'captain', 'goal', 'blitz') THEN 1 ELSE 0 END) AS leagues,
            SUM(CASE WHEN format = 'shiny' THEN rank ELSE 0 END) AS shinies,
            MAX(CASE WHEN format = 'captain' THEN rank ELSE 0 END) AS captain_goals,
+           MAX(CASE WHEN format = 'blitz' THEN rank ELSE 0 END) AS blitz,
            SUM(CASE WHEN format = 'goal' THEN 1 ELSE 0 END) AS goals_reached,
            SUM(CASE WHEN rank = 1 AND format = 'league' THEN 1 ELSE 0 END) AS titles,
            SUM(CASE WHEN rank = 1 AND format = 'manager_cup' THEN 1 ELSE 0 END) AS manager_cups,
            SUM(CASE WHEN rank = 1 AND format = 'cup' THEN 1 ELSE 0 END) AS cups,
            SUM(CASE WHEN rank = 1 AND format = 'manager' THEN 1 ELSE 0 END) AS manager,
-           SUM(CASE WHEN rank <= 3 AND format NOT IN ('manager_cup', 'shiny', 'captain', 'goal') THEN 1 ELSE 0 END) AS podiums,
+           SUM(CASE WHEN rank <= 3 AND format NOT IN ('manager_cup', 'shiny', 'captain', 'goal', 'blitz') THEN 1 ELSE 0 END) AS podiums,
            SUM(CASE WHEN format = 'manager' THEN 1 ELSE 0 END) AS seasons,
            SUM(CASE WHEN format = 'manager' AND rank <= 3 THEN 1 ELSE 0 END) AS manager_podiums,
-           SUM(CASE WHEN losses = 0 AND format NOT IN ('cup', 'manager_cup', 'shiny', 'captain', 'goal') AND wins + draws > 0 THEN 1 ELSE 0 END) AS unbeaten
+           SUM(CASE WHEN losses = 0 AND format NOT IN ('cup', 'manager_cup', 'shiny', 'captain', 'goal', 'blitz') AND wins + draws > 0 THEN 1 ELSE 0 END) AS unbeaten
          FROM draft_results WHERE device_id = ?`,
       )
       .bind(deviceId),
@@ -88,6 +89,7 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
       managerCups: num(d.manager_cups),
       shinies: num(d.shinies),
       captainGoals: num(d.captain_goals),
+      blitz: num(d.blitz),
       goalsReached: num(d.goals_reached),
     },
   };
@@ -188,7 +190,7 @@ export async function buyItem(request: Request, env: Env): Promise<Response> {
  */
 export async function saveDraftResults(
   db: Db,
-  state: Pick<DraftState, 'code' | 'settings' | 'teams' | 'owners' | 'league' | 'manager' | 'shinies'>,
+  state: Pick<DraftState, 'code' | 'settings' | 'teams' | 'owners' | 'league' | 'manager' | 'shinies'> & Partial<Pick<DraftState, 'picks'>>,
   now: number,
 ): Promise<number> {
   const league = state.league;
@@ -264,6 +266,21 @@ export async function saveDraftResults(
         .bind(`${state.code}#captain`, device, goals, now),
     );
   });
+  // Blitz-Picks je Mensch (eigene Zeile „…#blitz“, rank = Anzahl) – zählt nur für den Erfolg „Blitzdrafter“
+  for (const [teamId, count] of fastPickCounts(state.picks ?? [])) {
+    const team = state.teams.find((t) => t.id === teamId);
+    const device = team && !team.cpu ? state.owners[team.id] : undefined;
+    if (!device) continue;
+    stmts.push(
+      db
+        .prepare(
+          `INSERT INTO draft_results (code, device_id, format, rank, teams, wins, draws, losses, points, finished_at)
+           VALUES (?, ?, 'blitz', ?, 0, 0, 0, 0, 0, ?)
+           ON CONFLICT (code, device_id) DO UPDATE SET rank = excluded.rank`,
+        )
+        .bind(`${state.code}#blitz`, device, count, now),
+    );
+  }
   // Erreichte Saisonziele (eigene Zeile „…#goal“) – nur Liga und Manager-Saison, zählt nur für den Ziel-Erfolg
   if (format !== 'cup') {
     league.table.forEach((r, i) => {

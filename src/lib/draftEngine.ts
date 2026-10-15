@@ -928,6 +928,21 @@ export function updateSettings(
   };
 }
 
+/** Bis zu so vielen Sekunden nach dem vorigen Pick gilt ein eigener (nicht automatischer) Pick als Blitz-Pick ⚡ */
+export const FAST_PICK_SECONDS = 5;
+
+/** Blitz-Picks je Team (Verlauf ⚡, Erfolg „Blitzdrafter“): eigene Picks höchstens FAST_PICK_SECONDS nach dem vorigen */
+export function fastPickCounts(picks: readonly Pick<DraftPickLog, 'pick' | 'teamId' | 'auto' | 'at'>[]): Map<string, number> {
+  const atOf = new Map(picks.map((p) => [p.pick, p.at]));
+  const out = new Map<string, number>();
+  for (const p of picks) {
+    const prev = atOf.get(p.pick - 1);
+    if (p.auto || prev == null || Math.max(0, Math.round((p.at - prev) / 1000)) > FAST_PICK_SECONDS) continue;
+    out.set(p.teamId, (out.get(p.teamId) ?? 0) + 1);
+  }
+  return out;
+}
+
 /**
  * Fügt ein CPU-Team hinzu. Name und Formation leiten sich aus dem (öffentlichen) Liga-Code
  * ab – nie aus dem geheimen Seed, sonst ließe er sich aus ihnen zurückrechnen. `names`: Teamnamen
