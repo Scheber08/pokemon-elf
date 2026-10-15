@@ -72,6 +72,10 @@ const scouting: Messages['scouting'] = {
       a: 'Every draft pick has a 2% chance to be shiny. A shiny plays better itself and lifts the whole team’s score – the weaker the Pokémon, the more: a shiny Magikarp adds up to +40, a shiny Mewtwo only about +4. So even a weak Pokémon can pay off. In the manager season, a new signing from the transfer market can be shiny too. Prefer playing without? Turn shinies off before the draft.',
     },
     {
+      q: 'Are there keyboard shortcuts in the draft?',
+      a: '“/” jumps to the Pokémon search, “W” puts the selected Pokémon on your wishlist (or takes it off). Arrow keys move through the grid, Enter selects a Pokémon. While typing in a field, the shortcuts are off.',
+    },
+    {
       q: 'What does the set-piece taker do?',
       a: 'He doesn’t count towards the team score. In the season he converts some of the goals from set pieces and gives a small bonus to expected goals – the better his Sp. Atk and Attack, the bigger it is.',
     },

@@ -89,6 +89,10 @@ const scouting = {
       a: 'Jeder Pick im Draft schillert mit 2 % Chance. Ein Shiny spielt selbst besser und hebt das ganze Team im Team-Score – je schwächer das Pokémon, desto mehr: Ein Shiny-Karpador bringt bis zu +40, ein Shiny-Mewtu nur rund +4. So lohnt sich auch ein schwaches Pokémon. In der Manager-Saison kann auch ein Neuzugang vom Transfermarkt schillern. Wer lieber ohne spielt, schaltet Shinys vor dem Draft aus.',
     },
     {
+      q: 'Gibt es Tastenkürzel im Draft?',
+      a: '„/“ springt in die Pokémon-Suche, „W“ setzt das ausgewählte Pokémon auf deine Wunschliste (oder nimmt es herunter). Mit den Pfeiltasten geht es durchs Raster, Enter wählt ein Pokémon aus. Beim Tippen in einem Feld greifen die Kürzel nicht.',
+    },
+    {
       q: 'Was macht der Standardschütze?',
       a: 'Er zählt nicht zum Team-Score. In der Saison verwandelt er einen Teil der Tore aus Standards und gibt einen kleinen Bonus auf die Torerwartung – je besser Sp.-Angriff und Angriff, desto mehr.',
     },
