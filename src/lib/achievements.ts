@@ -43,6 +43,8 @@ export interface AchievementStats {
     blitz?: number;
     /** Meiste Spiele ohne Gegentor in einer Online-Liga bzw. Manager-Saison */
     cleanSheets?: number;
+    /** Meiste eigene Tore in einer Online-Liga bzw. Manager-Saison */
+    mostGoals?: number;
     /** Erreichte Saisonziele in Online-Ligen */
     goalsReached?: number;
   };
@@ -105,6 +107,7 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'captain_10', category: 'draft', coins: 300, goal: 10, value: (s) => s.draft.captainGoals ?? 0 },
   { id: 'blitz_5', category: 'draft', coins: 150, goal: 5, value: (s) => s.draft.blitz ?? 0 },
   { id: 'clean_10', category: 'draft', coins: 250, goal: 10, value: (s) => s.draft.cleanSheets ?? 0 },
+  { id: 'goals_80', category: 'draft', coins: 250, goal: 80, value: (s) => s.draft.mostGoals ?? 0 },
   { id: 'goal_reached', category: 'draft', coins: 150, goal: 1, value: (s) => s.draft.goalsReached ?? 0 },
   { id: 'manager_5', category: 'draft', coins: 400, goal: 5, value: (s) => s.draft.seasons ?? 0 },
   { id: 'draft_manager', category: 'draft', coins: 400, goal: 1, value: (s) => s.draft.manager },

@@ -130,9 +130,10 @@ describe('Kennzahlen und /api/me', () => {
     expect(s.dailyStreak).toBe(3);
     expect(s.dailyWins).toBe(1);
     expect(s.bestPlace).toBe(1);
-    expect(s.draft).toEqual({ leagues: 1, titles: 0, cups: 1, manager: 0, podiums: 1, unbeaten: 0, seasons: 0, managerPodiums: 0, managerCups: 0, shinies: 0, captainGoals: 0, blitz: 0, cleanSheets: 0, goalsReached: 0 });
+    expect(s.draft).toEqual({ leagues: 1, titles: 0, cups: 1, manager: 0, podiums: 1, unbeaten: 0, seasons: 0, managerPodiums: 0, managerCups: 0, shinies: 0, captainGoals: 0, blitz: 0, cleanSheets: 0, mostGoals: 8, goalsReached: 0 });
     // Doppelt gespeichert (Neuversuch) zählt nicht doppelt
-    expect(db.query('SELECT * FROM draft_results')).toHaveLength(1);
+    // (Liga-Zeile plus Zusatzzeile „#goals“ für die Torfabrik)
+    expect(db.query('SELECT code FROM draft_results ORDER BY code').map((r) => (r as { code: string }).code)).toEqual(['ABC234', 'ABC234#goals']);
     // Manager-Saison als Zweiter: zählt als Saison, nicht als Titel
     await saveDraftResults(
       db,
@@ -253,6 +254,30 @@ describe('Kennzahlen und /api/me', () => {
     const fortress = await achievementStats(db, dev, '2026-10-14');
     expect(fortress.draft).toMatchObject({ leagues: 6, cleanSheets: 10 });
     expect(achievementStates(fortress).find((a) => a.id === 'clean_10')?.done).toBe(true);
+    // Torfabrik: eigene Tore aus der Tabelle (Maximum über die Ligen), ab 80
+    expect(fortress.draft.mostGoals).toBeGreaterThanOrEqual(11);
+    expect(achievementStates(fortress).find((a) => a.id === 'goals_80')?.done).toBe(false);
+    await saveDraftResults(
+      db,
+      {
+        code: 'GOL234',
+        settings: { format: 'league' } as never,
+        teams: [{ id: 'c', cpu: true, slots: [], ss: null } as never, { id: 'h', cpu: false, slots: [1], ss: null } as never],
+        owners: { h: dev },
+        league: {
+          teams: [{ name: 'C', rating: 1 }, { name: 'H', rating: 1 }],
+          matches: [],
+          table: [
+            { team: 1, name: 'H', rating: 1, isUser: false, played: 34, w: 30, d: 2, l: 2, gf: 85, ga: 20, gd: 65, pts: 92 },
+            { team: 0, name: 'C', rating: 1, isUser: false, played: 34, w: 2, d: 2, l: 30, gf: 20, ga: 85, gd: -65, pts: 8 },
+          ],
+        } as never,
+      },
+      7,
+    );
+    const factory = await achievementStats(db, dev, '2026-10-14');
+    expect(factory.draft).toMatchObject({ leagues: 7, mostGoals: 85 });
+    expect(achievementStates(factory).find((a) => a.id === 'goals_80')?.done).toBe(true);
     expect(achievementStates(cap).find((a) => a.id === 'blitz_5')).toMatchObject({ done: true, value: 5, goal: 5 });
     expect(achievementStates(cap).find((a) => a.id === 'goal_reached')?.done).toBe(true);
     expect(achievementStates(cap).find((a) => a.id === 'captain_10')?.done).toBe(true);
