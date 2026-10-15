@@ -3,7 +3,7 @@ import { FORMATIONS } from '../config/formations';
 import { TYPES, dominantType } from '../config/pokemonTypes';
 import { useT } from '../i18n';
 import { DRAFT_BENCH_SLOT, type DraftSnapshot, type DraftTeam } from '../lib/api/draftContract';
-import { DRAFT_SS_SLOT, hasKind, isLegend, poolHasLegends, poolHasMegas, poolHasUltraBeasts } from '../lib/draftEngine';
+import { DRAFT_SS_SLOT, hasKind, isLegend, poolHasLegends, poolHasMegas, poolHasUltraBeasts, type LimitKind } from '../lib/draftEngine';
 import { teamLabel, type FeedItem } from '../state/useDraftRoom';
 import type { Pokemon, PosCode } from '../types';
 import { parseLook } from '../lib/trainer';
@@ -226,6 +226,23 @@ export function DraftBoard({ state, byId, currentId, nextId }: Props) {
   );
 }
 
+/** Legendär/Mysteriös ★, Ultrabestie UB, Mega M hinter einem Pokémon-Namen (wie im Pool-Kopf). */
+export function KindMarks({ kinds }: { kinds?: readonly LimitKind[] }) {
+  const t = useT();
+  if (!kinds?.length) return null;
+  return (
+    <>
+      {kinds.map((k) => (
+        <span key={k} className={`draft-feed__kind draft-feed__kind--${k}`} title={t.draft.board.feedKind[k]}>
+          {' '}
+          <span aria-hidden="true">{k === 'legend' ? '★' : k === 'ub' ? 'UB' : 'M'}</span>
+          <span className="sr-only">{t.draft.board.feedKind[k]}</span>
+        </span>
+      ))}
+    </>
+  );
+}
+
 /** Die letzten Picks als kurzer Verlauf („Glurak → Team X (auto)") – ohne Live-Region (die Ansage kommt aus DraftLive). */
 export function DraftPickFeed({ items, you }: { items: FeedItem[]; you: string | null }) {
   const t = useT();
@@ -253,14 +270,7 @@ export function DraftPickFeed({ items, you }: { items: FeedItem[]; you: string |
                 {f.shiny && <span title={t.shiny.title}>✨ </span>}
                 {f.pokemon}
               </strong>
-              {f.kinds?.map((k) => (
-                // Legendär/Mysteriös ★, Ultrabestie UB, Mega M (wie im Pool-Kopf)
-                <span key={k} className={`draft-feed__kind draft-feed__kind--${k}`} title={tx.feedKind[k]}>
-                  {' '}
-                  <span aria-hidden="true">{k === 'legend' ? '★' : k === 'ub' ? 'UB' : 'M'}</span>
-                  <span className="sr-only">{tx.feedKind[k]}</span>
-                </span>
-              ))}{' '}
+              <KindMarks kinds={f.kinds} />{' '}
               → {f.team}
               {f.pos && (
                 <span className="draft-feed__pos">

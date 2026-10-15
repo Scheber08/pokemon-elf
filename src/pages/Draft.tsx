@@ -5,7 +5,7 @@ import { POSITIONS } from '../config/positions';
 import { REGIONS } from '../config/regions';
 import { CLUB_NAMES } from '../config/season';
 import { PosBadge } from '../components/Badges';
-import { DraftTypeChip } from '../components/DraftBoard';
+import { DraftTypeChip, KindMarks } from '../components/DraftBoard';
 import { FilterBar, typingElsewhere, useFilteredPokemon, type PokemonFilters } from '../components/FilterBar';
 import { CaptainPicker } from '../components/CaptainPicker';
 import { JerseyEditor } from '../components/JerseyEditor';
@@ -44,7 +44,7 @@ import { cleanCheer } from '../lib/cheer';
 import { cleanCrest, type Crest as CrestData } from '../lib/crest';
 import { Crest } from '../components/Crest';
 import { CrestEditor } from '../components/CrestEditor';
-import { cpuCaptain } from '../lib/draftEngine';
+import { cpuCaptain, limitKindsOf } from '../lib/draftEngine';
 import { SHINY_CHANCE, SHINY_FIT_BONUS, SHINY_PARTY_CHANCE, shinyBonus, shinyRoll, shinyTeamBoost } from '../lib/shiny';
 import { useToast } from '../state/Toast';
 import { downloadBlob } from '../lib/exportImage';
@@ -1188,6 +1188,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                       #{k + 1} · R{round}
                     </span>{' '}
                     <strong>{p ? t.game.pokemon(p) : `#${x.id}`}</strong>
+                    {p && <KindMarks kinds={limitKindsOf(p)} />}
                     {state.shinies?.includes(x.id) && <span title={t.shiny.title}> ✨</span>} → {teamName(state.teams[x.team].name)}
                   </li>
                 );

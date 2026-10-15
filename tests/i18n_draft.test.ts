@@ -576,6 +576,8 @@ describe('/draft an einem Gerät auf Englisch', () => {
       const formation = FORMATION_IDS[i % FORMATION_IDS.length];
       return { name: i === 0 ? 'Mein Team' : CLUB_NAMES[i], cpu: i !== 0, formation, slots: emptySlots(formation).map((_, j) => pool[i * 11 + j].id) };
     });
+    // Ein Legendäres (Mewtu) für ★ in „Alle Picks“
+    teams[1].slots[0] = 150;
     const log: { team: number; slot: number; id: number }[] = [];
     for (let k = 0; k < 33; k++) {
       const round = Math.floor(k / 3);
@@ -602,6 +604,10 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(list[0].textContent).toMatch(/^#1 · R1 .+ → My Team$/);
     expect(list[0].className).toContain('is-you');
     expect(list[1].className).not.toContain('is-you');
+    // ★ hinter Mewtu (und nur dort)
+    const marked = list.filter((li) => li.querySelector('.draft-feed__kind'));
+    expect(marked).toHaveLength(1);
+    expect(marked[0].textContent).toMatch(/^#\d+ · R1 Mewtwo ★Legendary\/mythical → /);
   });
 
   it('CPU am Zug: „Faster until the next turn“ verkürzt die Bedenkzeit bis zum eigenen Zug', async () => {

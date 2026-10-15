@@ -32,7 +32,8 @@ import { Crest } from './Crest';
 import { shinyTeamBoost } from '../lib/shiny';
 import { FORMATIONS } from '../config/formations';
 import { positionFit } from '../lib/fit';
-import { fastPickCounts, goalReached, rosterOf } from '../lib/draftEngine';
+import { fastPickCounts, goalReached, limitKindsOf, rosterOf } from '../lib/draftEngine';
+import { KindMarks } from './DraftBoard';
 
 interface Props {
   /** Shinys der Liga */
@@ -853,6 +854,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                     #{pk.pick + 1} · R{Math.floor(pk.pick / teams.length) + 1}
                   </span>{' '}
                   <strong>{p ? t.game.pokemon(p) : `#${pk.pokemonId}`}</strong>
+                  {p && <KindMarks kinds={limitKindsOf(p)} />}
                   {pk.shiny && <span title={t.shiny.title}> ✨</span>} → {ti >= 0 ? nameOf(ti) : '?'}
                   {pk.auto && <small className="muted">{t.draft.board.auto}</small>}
                 </li>
