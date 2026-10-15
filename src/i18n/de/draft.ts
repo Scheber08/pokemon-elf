@@ -306,6 +306,7 @@ const draft = {
     recordAttack: 'Bester Angriff',
     recordDefense: 'Beste Abwehr',
     recordWin: 'Höchster Sieg',
+    recordFest: 'Torreichstes Spiel',
     recordStreak: 'Längste Siegesserie',
     recordSurprise: 'Überraschung der Saison',
     recordFlop: 'Enttäuschung der Saison',

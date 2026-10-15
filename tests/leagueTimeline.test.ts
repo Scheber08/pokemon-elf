@@ -12,7 +12,7 @@ import {
   startDraft,
 } from '../src/lib/draftEngine';
 import { buildScale } from '../src/lib/fit';
-import { biggestUpset, biggestWin, fastestPicker, longestWinStreak, recentForm,
+import { biggestUpset, biggestWin, goalFest, fastestPicker, longestWinStreak, recentForm,
   currentMatchday,
   FINALE_MS,
   leagueTimeline,
@@ -293,6 +293,16 @@ describe('Höchster Sieg', () => {
   it('größte Differenz, dann mehr Tore, dann früher; ohne Sieg null', () => {
     expect(biggestWin([m(1, 0, 1, 3, 0), m(2, 1, 0, 4, 1), m(3, 0, 1, 1, 4)])).toEqual(m(2, 1, 0, 4, 1));
     expect(biggestWin([m(1, 0, 1, 1, 1)])).toBeNull();
+  });
+});
+
+describe('Torreichstes Spiel', () => {
+  const m = (round: number, home: number, away: number, hg: number, ag: number) => ({ round, home, away, hg, ag, homeScorers: [], awayScorers: [] });
+  it('meiste Tore, dann früher; unter 5 Toren null', () => {
+    expect(goalFest([m(1, 0, 1, 3, 2), m(2, 1, 0, 4, 1), m(3, 0, 1, 3, 3)])).toEqual(m(3, 0, 1, 3, 3));
+    expect(goalFest([m(2, 0, 1, 3, 2), m(1, 1, 0, 4, 1)])).toEqual(m(1, 1, 0, 4, 1));
+    expect(goalFest([m(1, 0, 1, 2, 2)])).toBeNull();
+    expect(goalFest([])).toBeNull();
   });
 });
 

@@ -279,6 +279,7 @@ const draft: Messages['draft'] = {
     recordAttack: 'Best attack',
     recordDefense: 'Best defence',
     recordWin: 'Biggest win',
+    recordFest: 'Highest-scoring game',
     recordStreak: 'Longest winning run',
     recordSurprise: 'Surprise of the season',
     recordFlop: 'Disappointment of the season',

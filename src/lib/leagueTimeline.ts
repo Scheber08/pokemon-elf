@@ -708,6 +708,13 @@ export function biggestWin(matches: readonly Match[]): Match | null {
   return best;
 }
 
+/** Torreichstes Spiel der Saison (meiste Tore, dann früherer Spieltag) – null unter 5 Toren. */
+export function goalFest(matches: readonly Match[]): Match | null {
+  let best: Match | null = null;
+  for (const m of matches) if (!best || m.hg + m.ag > best.hg + best.ag || (m.hg + m.ag === best.hg + best.ag && m.round < best.round)) best = m;
+  return best && best.hg + best.ag >= 5 ? best : null;
+}
+
 /** Überraschung eines Spieltags: Sieg des Außenseiters mit dem größten Rating-Rückstand. */
 export interface Upset {
   match: Match;

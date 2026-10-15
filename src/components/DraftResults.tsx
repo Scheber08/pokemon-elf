@@ -4,7 +4,7 @@ import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftTeam, ManagerTransfer } from '../lib/api/draftContract';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { bestTransfer, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { bestTransfer, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { formatRecord, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -89,6 +89,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
   const duels = useMemo(() => (you != null ? headToHead(league, you) : []), [league, you]);
   const streak = useMemo(() => (league.cup ? null : longestWinStreak(league)), [league]);
   const bigWin = useMemo(() => (league.cup ? null : biggestWin(league.matches)), [league]);
+  const fest = useMemo(() => (league.cup ? null : goalFest(league.matches)), [league]);
   const fastest = useMemo(() => fastestPicker(picks), [picks]);
   const fastestTeam = fastest ? teams.findIndex((tm) => tm.id === fastest.teamId) : -1;
 
@@ -512,6 +513,12 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                 <div>
                   <dt>{tx.recordWin}</dt>
                   <dd>{tx.recordWinLine(nameOf(bigWin.home), `${bigWin.hg}:${bigWin.ag}`, nameOf(bigWin.away), bigWin.round)}</dd>
+                </div>
+              )}
+              {fest && fest !== bigWin && (
+                <div>
+                  <dt>{tx.recordFest}</dt>
+                  <dd>{tx.recordWinLine(nameOf(fest.home), `${fest.hg}:${fest.ag}`, nameOf(fest.away), fest.round)}</dd>
                 </div>
               )}
               {fastest && fastestTeam >= 0 && (
