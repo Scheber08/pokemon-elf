@@ -554,6 +554,7 @@ const draft = {
     marketNote: (n: number) =>
       `Ein Tausch pro Spieltag: ein freies Pokémon gegen eins aus deinem Kader. Vergeben wird zum Anpfiff von Spieltag ${n} – wollen mehrere dasselbe, bekommt es der Tabellenschlechtere.`,
     marketOut: 'Abgeben',
+    marketGoals: (n: number) => (n === 1 ? '1 Tor' : `${n} Tore`),
     marketCaptainOut: (name: string) => `${name} ist dein Kapitän – gibst du ihn ab, übernimmt der Neuzugang die Binde.`,
     marketSearch: 'Freie Pokémon suchen',
     marketFree: (n: number) => `${n} frei`,

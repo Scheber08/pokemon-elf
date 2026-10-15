@@ -18,12 +18,15 @@ export function TransferMarket({
   claim,
   matchday,
   onTransfer,
+  goals,
 }: {
   state: Pick<DraftSnapshot, 'settings' | 'teams'>;
   team: DraftTeam;
   claim: ManagerClaim | null;
   matchday: number;
   onTransfer: (inId: number | null, outId: number | null) => void;
+  /** Saisontore je Pokémon des eigenen Teams (für die Auswahl „Abgeben“) */
+  goals?: ReadonlyMap<number, number>;
 }) {
   const t = useT();
   const tx = t.draft.manager;
@@ -106,7 +109,7 @@ export function TransferMarket({
               return (
                 <option key={id} value={id}>
                   {name(id)}
-                  {b ? ` (${tx.marketFit(t.game.posShort[b.pos], Math.round(b.fit))})` : ''}
+                  {b ? ` (${tx.marketFit(t.game.posShort[b.pos], Math.round(b.fit))}${goals?.get(id) ? `, ${tx.marketGoals(goals.get(id)!)}` : ''})` : ''}
                 </option>
               );
             })}

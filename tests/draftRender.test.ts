@@ -794,6 +794,12 @@ describe('ManagerSeason', () => {
     };
     expect(await view(out)).toContain('übernimmt der Neuzugang die Binde');
     expect(await view(engine.rosterOf(me)[1])).not.toContain('übernimmt der Neuzugang die Binde');
+    // Saisontore stehen in der Auswahl „Abgeben“
+    const { container } = await render(
+      app(h(TransferMarket, { state: s, team: me, claim, matchday: 1, onTransfer: () => {}, goals: new Map([[out, 3]]) })),
+    );
+    await settle();
+    expect(container.querySelector('.manager__market select')!.textContent).toContain('3 Tore');
   });
 
   it('Shiny-Neuzugang: Hinweis im Status nur fürs eigene Team', async () => {

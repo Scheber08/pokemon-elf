@@ -398,6 +398,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           claim={m.claim ?? null}
           matchday={nextNo}
           onTransfer={(inId, outId) => room.setTransfer(inId, outId)}
+          goals={goalsOf(league, meIndex)}
         />
       )}
 
