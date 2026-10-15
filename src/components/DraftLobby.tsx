@@ -250,6 +250,7 @@ function MyTeamCard({ room }: { room: DraftRoom }) {
               </option>
             ))}
           </select>
+          <span className="muted small">{t.online.goalNote}</span>
         </label>
       )}
       <KitPicker kit={cleanKit(me.kit)} onChange={(kit) => room.setKit(kit)} cheer={me.cheer ?? ''} onCheer={(c) => room.setCheer(c)} />

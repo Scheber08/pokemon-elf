@@ -144,6 +144,7 @@ const online = {
   addCpu: 'CPU-Team hinzufügen',
   goalLabel: 'Saisonziel',
   goalNone: 'Kein Ziel',
+  goalNote: 'Alle sehen dein Ziel. Erreichst du es, gibt es den Erfolg „Plan erfüllt“.',
   goal: { title: 'Meister werden', top3: 'Top 3', upper: 'Obere Tabellenhälfte', stay: 'Nicht auf den letzten 3 Plätzen' } as Record<DraftGoal, string>,
   goalReached: (goal: string) => `🎯 Saisonziel erreicht: ${goal} ✓`,
   goalMissed: (goal: string) => `🎯 Saisonziel verfehlt: ${goal}`,

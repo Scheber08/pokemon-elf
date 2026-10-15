@@ -133,6 +133,7 @@ const online: Messages['online'] = {
   orderHostFixed: 'Draft order as listed – the same every round.',
   goalLabel: 'Season goal',
   goalNone: 'No goal',
+  goalNote: 'Everyone sees your goal. Reach it to unlock the “Mission accomplished” achievement.',
   goal: { title: 'Win the title', top3: 'Top 3', upper: 'Top half', stay: 'Stay out of the bottom 3' },
   goalReached: (goal) => `🎯 Season goal reached: ${goal} ✓`,
   goalMissed: (goal) => `🎯 Season goal missed: ${goal}`,
