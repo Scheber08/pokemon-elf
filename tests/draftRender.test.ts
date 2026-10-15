@@ -1215,6 +1215,14 @@ describe('ManagerSeason', () => {
     expect(rows.slice(-3).every((r) => r.className.includes('is-zone-bottom'))).toBe(true);
     expect(rows[3].className).not.toContain('is-zone');
     expect(container.querySelector('.draft-results__table')!.closest('section')!.querySelector('.table-legend')!.textContent).toBe('Meisterletzte 3 Plätze');
+    // Heimtabelle: Umschalter wechselt die Zeilen (Punkte nur aus Heimspielen), ohne Zonen
+    const { sideTable } = await import('../src/lib/season');
+    const homeBtn = container.querySelectorAll('button').find((b) => b.textContent === 'Heim') as MiniElement;
+    await act(async () => homeBtn.click());
+    const home = sideTable(s.league!.teams, s.league!.matches, 'home');
+    const homeRows = container.querySelectorAll('.draft-results__table tbody tr');
+    expect(homeRows[0].querySelector('strong')!.textContent).toBe(String(home[0].pts));
+    expect(homeRows[0].className).not.toContain('is-zone');
     // Elf der Saison: Feld und 11 Namen
     expect(container.querySelector('.draft-results__eleven h2')!.textContent).toBe('Elf der Saison');
     expect(container.querySelectorAll('.draft-results__eleven-list li')).toHaveLength(11);

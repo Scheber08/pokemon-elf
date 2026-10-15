@@ -387,3 +387,16 @@ describe('Last-Minute-Sieg', () => {
     expect(lateWinner([{ ...m(1, 0, 1, [10, 88], []), ag: 1 }])).toBeNull();
   });
 });
+
+describe('Heim- und Auswärtstabelle', () => {
+  it('zählt je Team nur die Heim- bzw. Auswärtsspiele', async () => {
+    const { sideTable } = await import('../src/lib/season');
+    const teams = [{ name: 'A', rating: 1 }, { name: 'B', rating: 1 }];
+    const m = (home: number, away: number, hg: number, ag: number) => ({ round: 1, home, away, hg, ag, homeScorers: [], awayScorers: [] });
+    const matches = [m(0, 1, 2, 0), m(1, 0, 1, 1)];
+    const home = sideTable(teams, matches, 'home');
+    expect(home.map((r) => [r.name, r.played, r.pts, r.gf, r.ga])).toEqual([['A', 1, 3, 2, 0], ['B', 1, 1, 1, 1]]);
+    const away = sideTable(teams, matches, 'away');
+    expect(away.map((r) => [r.name, r.played, r.pts, r.gf, r.ga])).toEqual([['A', 1, 1, 1, 1], ['B', 1, 0, 0, 2]]);
+  });
+});

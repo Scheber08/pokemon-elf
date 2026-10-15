@@ -6,7 +6,7 @@ import type { DraftPickLog, DraftTeam, ManagerTransfer } from '../lib/api/draftC
 import { copyText, downloadBlob } from '../lib/exportImage';
 import { bestTransfer, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
-import { buildTable, formatRecord, type LeagueResult } from '../lib/season';
+import { buildTable, formatRecord, sideTable, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
 import { teamLabel } from '../state/useDraftRoom';
@@ -24,6 +24,7 @@ import { PlaceChart } from './PlaceChart';
 import { SaveImageButton } from './SaveImageButton';
 import { TableTimeTravel } from './TableTimeTravel';
 import { Sprite } from './Sprite';
+import { Segmented } from './Segmented';
 import '../styles/league.css';
 import { cleanKit } from '../lib/kits';
 import { cleanCrest } from '../lib/crest';
@@ -87,6 +88,12 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
     [league, transfers, teams],
   );
   const table = league.table;
+  /** Abschlusstabelle: gesamt oder nur Heim- bzw. Auswärtsspiele */
+  const [tableView, setTableView] = useState<'all' | 'home' | 'away'>('all');
+  const shownTable = useMemo(
+    () => (tableView === 'all' || league.cup ? table : sideTable(league.teams, league.matches, tableView)),
+    [tableView, table, league],
+  );
   const you = highlight != null && highlight >= 0 && highlight < league.teams.length ? highlight : null;
   const duels = useMemo(() => (you != null ? headToHead(league, you) : []), [league, you]);
   const streak = useMemo(() => (league.cup ? null : longestWinStreak(league)), [league]);
@@ -398,6 +405,15 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
               aria={tx.saveTableAria}
             />
           </div>
+          {!cup && (
+            <Segmented
+              label={tx.tableView}
+              hideLabel
+              value={tableView}
+              onChange={setTableView}
+              options={(['all', 'home', 'away'] as const).map((v) => ({ value: v, label: tx.tableViews[v] }))}
+            />
+          )}
           <div className="table-scroll">
             <table className="league-table draft-results__table">
               <thead>
@@ -439,8 +455,11 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                 </tr>
               </thead>
               <tbody>
-                {table.map((r, i) => (
-                  <tr key={r.team} className={cup ? (r.team === you ? 'is-user' : '') : tableRowClass(r.team === you, i + 1, table.length)}>
+                {shownTable.map((r, i) => (
+                  <tr
+                    key={r.team}
+                    className={cup || tableView !== 'all' ? (r.team === you ? 'is-user' : '') : tableRowClass(r.team === you, i + 1, table.length)}
+                  >
                     <td>{i + 1}</td>
                     <td className="left draft-results__name">
                       {teams[r.team]?.trainer && (
@@ -483,7 +502,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
               </tbody>
             </table>
           </div>
-          {!cup && <TableLegend total={table.length} />}
+          {!cup && tableView === 'all' && <TableLegend total={table.length} />}
         </section>
 
         <section className="card" aria-labelledby="draft-results-scorers">

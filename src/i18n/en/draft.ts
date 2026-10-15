@@ -262,6 +262,8 @@ const draft: Messages['draft'] = {
       `${plural(r.pts, 'pt', 'pts')} · ${r.w}–${r.d}–${r.l} · Goals ${r.gf}:${r.ga} · Team score ${rating}`,
     youChampion: 'Congratulations – your team won the league!',
     yourPlace: (team, place, pts) => `Your team ${team}: ${ordinal(place)} place · ${plural(pts, 'pt', 'pts')}`,
+    tableView: 'Table view',
+    tableViews: { all: 'Overall', home: 'Home', away: 'Away' },
     elevenTitle: 'Team of the season',
     elevenNote: (formation) => `For each position the player with the most goals plus assists across all teams – in the most common formation, ${formation}.`,
     ownTopPick: (line) => `Your best pick: ${line}`,

@@ -404,6 +404,17 @@ export function buildTable(teams: LeagueTeam[], matches: Match[]): TableRow[] {
   );
 }
 
+/**
+ * Heim- bzw. Auswärtstabelle: nur die Spiele, in denen ein Team zu Hause (bzw. auswärts) antrat. Der Gegner zählt
+ * dafür als Platzhalter-Team, das danach wegfällt – Sortierung wie in buildTable.
+ */
+export function sideTable(teams: LeagueTeam[], matches: Match[], side: 'home' | 'away'): TableRow[] {
+  const ghost = teams.length;
+  const all = [...teams, { name: '', rating: 0 }];
+  const ms = matches.map((m) => (side === 'home' ? { ...m, away: ghost } : { ...m, home: ghost }));
+  return buildTable(all, ms).filter((r) => r.team !== ghost);
+}
+
 export interface SeasonInput {
   teamName: string;
   score: number;
