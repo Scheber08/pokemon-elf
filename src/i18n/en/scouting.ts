@@ -76,6 +76,10 @@ const scouting: Messages['scouting'] = {
       a: 'With “I’m ready” the host sees who is set to go – if the host changes the rules afterwards, mark yourself ready again. Everyone sees your season goal (title, top 3, top half or staying out of the bottom 3); the results show whether you made it, and your first reached goal unlocks the “Mission accomplished” achievement.',
     },
     {
+      q: 'How strong are the CPU teams?',
+      a: 'That is the CPU strength – in the one-device draft you set it in the setup, online the host sets it in the lobby. “Normal” picks well with a bit of chance, “Easy” misses more often, “Hard” (almost) always takes the best-fitting pick. Online, a non-default strength is shown next to the CPU teams in the team list.',
+    },
+    {
       q: 'Are there keyboard shortcuts in the draft?',
       a: '“/” jumps to the Pokémon search, “W” puts the selected Pokémon on your wishlist (or takes it off), “V” fetches a suggestion, and in the one-device draft “Z” takes back the last pick. Arrow keys move through the grid, Enter selects a Pokémon. While typing in a field, the shortcuts are off.',
     },

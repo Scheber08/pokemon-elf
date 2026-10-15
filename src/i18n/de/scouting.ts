@@ -93,6 +93,10 @@ const scouting = {
       a: 'Mit „Ich bin bereit“ sieht der Host, wer startklar ist – ändert er danach die Regeln, meldet ihr euch neu. Das Saisonziel (Meister, Top 3, obere Hälfte oder nicht auf den letzten 3) sehen alle; im Ergebnis steht, ob ihr es geschafft habt, und das erste erreichte Ziel bringt den Erfolg „Plan erfüllt“.',
     },
     {
+      q: 'Wie stark spielen die CPU-Teams?',
+      a: 'Das legt die CPU-Stärke fest – im Draft an einem Gerät beim Aufbau, online stellt sie der Host in der Lobby ein. „Normal“ wählt gut mit etwas Zufall, „Leicht“ greift öfter daneben, „Stark“ nimmt (fast) immer den bestpassenden Pick. Online steht eine abweichende Stärke bei den CPU-Teams in der Teamliste.',
+    },
+    {
       q: 'Gibt es Tastenkürzel im Draft?',
       a: '„/“ springt in die Pokémon-Suche, „W“ setzt das ausgewählte Pokémon auf deine Wunschliste (oder nimmt es herunter), „V“ holt einen Vorschlag, im Draft an einem Gerät nimmt „Z“ den letzten Pick zurück. Mit den Pfeiltasten geht es durchs Raster, Enter wählt ein Pokémon aus. Beim Tippen in einem Feld greifen die Kürzel nicht.',
     },
