@@ -79,7 +79,7 @@ const draft = {
     cpuLevelTitles: {
       easy: 'CPU-Teams greifen öfter daneben – mehr Glück für dich',
       normal: 'CPU-Teams wählen gut, mit etwas Zufall',
-      hard: 'CPU-Teams nehmen immer den bestpassenden Pick',
+      hard: 'CPU-Teams nehmen (fast) immer den bestpassenden Pick',
     },
     poolTooSmall: (size: number, teams: number, rounds: number, need: number) =>
       `Nur ${size} Pokémon im Pool – für ${teams} Teams × ${rounds} Runden braucht ihr ${need}. Wählt eine größere Region, „Alle" oder weniger Teams.`,

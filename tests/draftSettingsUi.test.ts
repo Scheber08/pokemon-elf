@@ -558,6 +558,13 @@ describe('DraftSettingsSummary', () => {
     ]);
   });
 
+  it('CPU-Stärke erscheint nur, wenn sie vom Standard abweicht', async () => {
+    const { container } = await render(app(h(DraftSettingsSummary, { settings: { ...custom, cpuLevel: 'hard' } })));
+    expect(items(container)).toContain('CPU-Stärke: Stark');
+    const r2 = await render(app(h(DraftSettingsSummary, { settings: custom })));
+    expect(items(r2.container).some((x) => x?.startsWith('CPU-Stärke'))).toBe(false);
+  });
+
   it('Rerolls nur, wenn sie gehen können; Limit 1 in der Einzahl', async () => {
     const random = { ...DEFAULT_DRAFT_SETTINGS, roll: 'pick' as const, rerolls: { type: 1, region: 2 } };
     const { container } = await render(

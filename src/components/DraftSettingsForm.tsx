@@ -742,6 +742,8 @@ export function DraftSettingsSummary({ settings }: { settings: DraftSettings }) 
     tx.maxTeams(settings.maxTeams),
     settings.order === 'random' ? tx.orderRandom : tx.orderHost,
     settings.snake ? tx.snake : tx.fixedOrder,
+    // CPU-Stärke nur, wenn abweichend vom Standard
+    settings.cpuLevel && settings.cpuLevel !== 'normal' ? `${t.draft.local.cpuLevel}: ${t.draft.local.cpuLevels[settings.cpuLevel]}` : null,
     random ? (settings.roll === 'pick' ? tx.rollPick : tx.rollRound) : null,
     random ? rerolls : null,
     settings.pickSeconds ? tx.perPick(settings.pickSeconds) : tx.noTimer,
