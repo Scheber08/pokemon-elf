@@ -481,6 +481,7 @@ const draft: Messages['draft'] = {
     fitTitle: 'Fit at their position including daily form (bench: best position in the formation)',
     colForm: 'Form',
     colGoals: 'Goals',
+    yourPlace: (place, pts) => `Your team: place ${place} · ${pts} pts`,
     colAssists: 'Ast.',
     assistsTitle: 'Assists this season',
     goalsTitle: 'Goals this season',

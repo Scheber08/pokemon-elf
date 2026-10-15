@@ -244,6 +244,17 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           {s.career && ` · ${t.online.careerSeason(s.career.season, t.online.careerTier[s.career.tier])}`}
         </span>
         <h2 className="section-title">{tx.played(m.played, m.total)}</h2>
+        {you != null && m.played > 0 && (() => {
+          // Eigener Tabellenplatz mit Punkten und Veränderung zum Vorspieltag
+          const at = shown.table.findIndex((r) => r.team === you);
+          if (at < 0) return null;
+          const delta = m.played >= 2 ? leagueTimeline(shown).at(-1)?.delta?.[you] : undefined;
+          return (
+            <p className="manager__place">
+              {tx.yourPlace(at + 1, shown.table[at].pts)} {delta != null && <Trend delta={delta} />}
+            </p>
+          );
+        })()}
         {/* Karriere: frühere Saisons des eigenen Teams */}
         {(() => {
           const mine = room.me ? (s.career?.history ?? []).filter((h) => h.places[room.me!.id] != null) : [];

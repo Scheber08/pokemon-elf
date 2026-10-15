@@ -526,6 +526,7 @@ const draft = {
     fitTitle: 'Fit auf seiner Position samt Tagesform (Bank: beste Position der Formation)',
     colForm: 'Form',
     colGoals: 'Tore',
+    yourPlace: (place: number, pts: number) => `Dein Team: Platz ${place} · ${pts} Pkt`,
     colAssists: 'Vorl.',
     assistsTitle: 'Vorlagen in dieser Saison',
     goalsTitle: 'Tore in dieser Saison',
