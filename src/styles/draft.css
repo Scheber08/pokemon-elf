@@ -1710,3 +1710,11 @@ button.draft-bench__slot {
 .random-formation {
   margin: 4px 0 14px;
 }
+
+/* Manager-Saison: Ø Tagesform der Startelf neben der Stärke */
+.manager__formavg.is-up {
+  color: #2e9a44;
+}
+.manager__formavg.is-down {
+  color: var(--red);
+}

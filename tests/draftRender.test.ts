@@ -1301,6 +1301,13 @@ describe('ManagerSeason', () => {
     expect(container.querySelector('.manager__shiny')!.textContent).toContain(ALL.find((p) => p.id === inn)!.de);
     expect(container.querySelector('.manager__place')!.textContent).toMatch(/^Dein Team: Platz \d+ · \d+ Pkt.* · (\d+ Pkt (Vorsprung|hinter Platz 1)|punktgleich)/);
     expect(container.querySelector('.manager__goal')!.textContent).toContain('🎯 Nicht auf den letzten 3 Plätzen');
+    // Ø Tagesform der Startelf neben der Stärke
+    {
+      const ids = st.manager!.lineups['h'].slots.filter((x): x is number => x != null);
+      const avg = ids.reduce((a, id) => a + (st.manager!.form[id] ?? 0), 0) / ids.length;
+      const sign = avg > 0 ? '+' : avg < 0 ? '−' : '±';
+      expect(container.querySelector('.manager__formavg')!.textContent).toBe(` · Form Ø ${sign}${Math.abs(avg).toFixed(1).replace('.', ',')}`);
+    }
     // Kader-Tabelle: Tore dieser Saison je Pokémon (Summe = eigene Tore am 1. Spieltag)
     const idx = st.teams.findIndex((t) => t.id === 'h');
     const m1 = st.league!.matches.find((m) => m.round === 1 && (m.home === idx || m.away === idx))!;

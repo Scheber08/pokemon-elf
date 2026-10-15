@@ -620,6 +620,8 @@ const draft = {
     formationTipApply: (formation: string) => `${formation} übernehmen`,
     benchBest: (pos: string, fit: number) => `Passt am besten als ${pos} (Fit ${fit} mit Tagesform)`,
     bestStrength: (n: number) => `bestmöglich ${n}`,
+    formAvg: (avg: number) => `Form Ø ${avg > 0 ? '+' : avg < 0 ? '−' : '±'}${Math.abs(avg).toFixed(1).replace('.', ',')}`,
+    formAvgTitle: 'Durchschnittliche Tagesform der Startelf zum nächsten Spieltag (−2 bis +2)',
     strengthTitle: 'Team-Score dieser Elf samt Tagesform',
     swapHint: 'Tippe zwei Spieler an, um sie zu tauschen – auf dem Feld, mit dem Standardschützen oder mit der Bank.',
     selected: (name: string) => `${name} ausgewählt – jetzt den Tauschpartner antippen.`,

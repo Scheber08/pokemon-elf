@@ -563,6 +563,8 @@ const draft: Messages['draft'] = {
     formationTipApply: (formation) => `Switch to ${formation}`,
     benchBest: (pos, fit) => `Best fit: ${pos} (fit ${fit} with daily form)`,
     bestStrength: (n) => `best possible ${n}`,
+    formAvg: (avg) => `form avg. ${avg > 0 ? '+' : avg < 0 ? '−' : '±'}${Math.abs(avg).toFixed(1)}`,
+    formAvgTitle: 'Average day form of the starting eleven for the next matchday (−2 to +2)',
     strengthTitle: 'Team score of this eleven including daily form',
     swapHint: 'Tap two players to swap them – on the pitch, with the set-piece taker or with the bench.',
     selected: (name) => `${name} selected – now tap the player to swap with.`,

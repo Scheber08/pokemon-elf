@@ -970,6 +970,18 @@ function LineupEditor({
         <span className="manager__strength" title={tx.strengthTitle}>
           <strong>{tx.strength(strength)}</strong>
           {bestStrength > strength && <span className="muted"> · {tx.bestStrength(bestStrength)}</span>}
+          {(() => {
+            // Ø Tagesform der Startelf zum nächsten Spieltag (−2 … +2)
+            const ids = lineup.slots.filter((id): id is number => id != null);
+            if (!ids.length) return null;
+            const avg = ids.reduce((a, id) => a + formOf(id), 0) / ids.length;
+            return (
+              <span className={`muted manager__formavg ${avg > 0 ? 'is-up' : avg < 0 ? 'is-down' : ''}`} title={tx.formAvgTitle}>
+                {' · '}
+                {tx.formAvg(avg)}
+              </span>
+            );
+          })()}
         </span>
       </div>
       <div className="manager__controls">
