@@ -513,6 +513,8 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
 
 /** Eigene Aufstellung: tauschen (Feld, Standardschütze, Bank), Formation, automatisch, Kader mit Tagesform. */
 /** Saisontore je Pokémon eines Liga-Teams (gespielte Spiele) */
+type SquadSort = 'fit' | 'form' | 'goals' | 'assists';
+
 /** Saisonvorlagen je Pokémon eines Liga-Teams */
 function assistsOf(league: LeagueResult | null | undefined, team: number): Map<number, number> {
   const out = new Map<number, number>();
@@ -566,6 +568,7 @@ function LineupEditor({
   const { sprite } = useSettings();
   const sc = scale('all');
   const [pick, setPick] = useState<Selection>(null);
+  const [sortBy, setSortBy] = useState<SquadSort | null>(null);
   const formOf = (id: number) => form[id] ?? 0;
   const defs = FORMATIONS[lineup.formation].slots;
   const inLineup = new Set([...lineup.slots, ...(lineup.ss != null ? [lineup.ss] : [])]);
@@ -630,6 +633,18 @@ function LineupEditor({
     const p = byId.get(id);
     if (p) rows.push({ p, role: null, fit: Math.max(...positions.map((pos) => formFit(p, pos, sc, formOf(id)))) });
   }
+  // Sortierung per Klick auf den Spaltenkopf (absteigend; ohne: Elf, Standardschütze, Bank)
+  const sortVal = (r: (typeof rows)[number]) =>
+    sortBy === 'fit' ? r.fit : sortBy === 'form' ? formOf(r.p.id) : sortBy === 'goals' ? (goals?.get(r.p.id) ?? 0) : (assists?.get(r.p.id) ?? 0);
+  const sorted = sortBy ? [...rows].sort((a, b) => sortVal(b) - sortVal(a)) : rows;
+  const sortHead = (key: SquadSort, label: string, title?: string) => (
+    <th scope="col" title={title} aria-sort={sortBy === key ? 'descending' : undefined}>
+      <button type="button" className="manager__sort" onClick={() => setSortBy(sortBy === key ? null : key)}>
+        {label}
+        {sortBy === key ? ' ▼' : ''}
+      </button>
+    </th>
+  );
 
   return (
     <section className="card manager__lineup" aria-labelledby="manager-lineup">
@@ -733,20 +748,14 @@ function LineupEditor({
                 {tx.colPokemon}
               </th>
               <th scope="col">{tx.colRole}</th>
-              <th scope="col" title={tx.fitTitle}>
-                {tx.colFit}
-              </th>
-              <th scope="col">{tx.colForm}</th>
-              <th scope="col" title={tx.goalsTitle}>
-                {tx.colGoals}
-              </th>
-              <th scope="col" title={tx.assistsTitle}>
-                {tx.colAssists}
-              </th>
+              {sortHead('fit', tx.colFit, tx.fitTitle)}
+              {sortHead('form', tx.colForm)}
+              {sortHead('goals', tx.colGoals, tx.goalsTitle)}
+              {sortHead('assists', tx.colAssists, tx.assistsTitle)}
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {sorted.map((r) => (
               <tr key={r.p.id} className={r.role ? '' : 'is-bench'}>
                 <td className="left">
                   {t.game.pokemon(r.p)}

@@ -823,6 +823,11 @@ describe('ManagerSeason', () => {
     const ownScorers = m1.home === idx ? m1.homeScorers : m1.awayScorers;
     const assistCells = container.querySelectorAll('.manager__squad tbody tr').map((tr) => Number(tr.querySelectorAll('td')[5].textContent) || 0);
     expect(assistCells.reduce((a, b) => a + b, 0)).toBe(ownScorers.filter((g) => g.assist != null && engine.rosterOf(me).includes(g.assist)).length);
+    // Sortieren nach Toren: absteigend
+    const goalsBtn = container.querySelectorAll('.manager__squad .manager__sort').find((b) => b.textContent === 'Tore') as MiniElement;
+    await act(async () => goalsBtn.click());
+    const sortedGoals = container.querySelectorAll('.manager__squad tbody tr').map((tr) => Number(tr.querySelectorAll('td')[4].textContent) || 0);
+    expect(sortedGoals).toEqual([...sortedGoals].sort((a, b) => b - a));
   });
 
   it('Pokal: Auslosung vor der ersten Runde, nach dem Finale der Sieger', async () => {

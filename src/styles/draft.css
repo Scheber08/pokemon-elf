@@ -1383,3 +1383,17 @@ button.draft-bench__slot {
   gap: 8px;
   margin: 10px 0 0;
 }
+
+/* Manager-Kader: sortierbare Spaltenköpfe */
+.manager__sort {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.manager__sort:hover,
+.manager__sort:focus-visible {
+  text-decoration: underline;
+}
