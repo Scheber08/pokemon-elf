@@ -19,7 +19,7 @@ import { useT } from '../i18n';
 import { draftsSupported } from '../lib/api/draftClient';
 import { positionFit } from '../lib/fit';
 import { emptySlots } from '../lib/formation';
-import { draftGrades, leagueTimeline, seasonEleven, tableRowClass } from '../lib/leagueTimeline';
+import { biggestWin, draftGrades, goalFest, leagueTimeline, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
 import { createRng, randomSeed, shuffle } from '../lib/rng';
 import { cpuLevelOf, cpuPickChoice } from '../lib/localCpu';
 import { CLASSIC_MODEL, DRAFT_MODEL, formatRecord, sideTable, simulateLeague, type LeagueTeam } from '../lib/season';
@@ -679,6 +679,75 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 {t.draft.results.placeChart}
               </h2>
               <PlaceChart places={days.map((d) => d.places[you])} teams={league.teams.length} />
+            </section>
+          );
+        })()}
+        {league.table.length > 1 && (() => {
+          // Saisonrekorde wie im Online-Draft (ohne Pick-Tempo – lokal gibt es keine Uhr)
+          const r = t.draft.results;
+          const nameOf = (i: number) => teamName(state.teams[i].name);
+          const tb = league.table;
+          const attack = tb.reduce((a, b) => (b.gf > a.gf ? b : a));
+          const defense = tb.reduce((a, b) => (b.ga < a.ga ? b : a));
+          const draws = tb.reduce((a, b) => (b.d > a.d ? b : a));
+          const bigWin = biggestWin(league.matches);
+          const fest = goalFest(league.matches);
+          const streak = longestWinStreak(league);
+          const ratings: number[] = [];
+          for (const row of tb) ratings[row.team] = row.rating;
+          const { up, down } = seasonSwings(tb.map((row) => row.team), ratings);
+          const line = (m: NonNullable<typeof bigWin>) => r.recordWinLine(nameOf(m.home), `${m.hg}:${m.ag}`, nameOf(m.away), m.round);
+          return (
+            <section className="card" aria-labelledby="draft-local-records">
+              <h2 id="draft-local-records" className="section-title">
+                {r.records}
+              </h2>
+              <dl className="draft-records">
+                <div>
+                  <dt>{r.recordAttack}</dt>
+                  <dd>{r.recordGoals(nameOf(attack.team), attack.gf)}</dd>
+                </div>
+                <div>
+                  <dt>{r.recordDefense}</dt>
+                  <dd>{r.recordConceded(nameOf(defense.team), defense.ga)}</dd>
+                </div>
+                {draws.d >= 4 && (
+                  <div>
+                    <dt>{r.recordDraws}</dt>
+                    <dd>{r.recordDrawsLine(nameOf(draws.team), draws.d)}</dd>
+                  </div>
+                )}
+                {bigWin && (
+                  <div>
+                    <dt>{r.recordWin}</dt>
+                    <dd>{line(bigWin)}</dd>
+                  </div>
+                )}
+                {fest && fest !== bigWin && (
+                  <div>
+                    <dt>{r.recordFest}</dt>
+                    <dd>{line(fest)}</dd>
+                  </div>
+                )}
+                {up && up.delta >= 2 && (
+                  <div>
+                    <dt>{r.recordSurprise}</dt>
+                    <dd>{r.recordSwingLine(nameOf(up.team), up.delta)}</dd>
+                  </div>
+                )}
+                {down && down.delta <= -2 && (
+                  <div>
+                    <dt>{r.recordFlop}</dt>
+                    <dd>{r.recordSwingLine(nameOf(down.team), down.delta)}</dd>
+                  </div>
+                )}
+                {streak && streak.length >= 3 && (
+                  <div>
+                    <dt>{r.recordStreak}</dt>
+                    <dd>{r.streak(nameOf(streak.team), streak.length, streak.from, streak.to)}</dd>
+                  </div>
+                )}
+              </dl>
             </section>
           );
         })()}

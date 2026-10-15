@@ -341,6 +341,27 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(container.querySelector('.table-legend')!.textContent).toBe('Champions');
   });
 
+  it('Liga: Saisonrekorde mit bestem Angriff, bester Abwehr und höchstem Sieg', async () => {
+    storeLang('en');
+    const pool = ALL.filter((p) => !p.leg && !p.myth);
+    const teams = [0, 1, 2, 3, 4, 5].map((i) => {
+      const formation = FORMATION_IDS[i % FORMATION_IDS.length];
+      return { name: i === 0 ? 'Mein Team' : CLUB_NAMES[i], cpu: i !== 0, formation, slots: emptySlots(formation).map((_, j) => pool[i * 11 + j].id) };
+    });
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'league', teams, region: 0, legends: false, pick: 66, selected: null, seed: 7 }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const section = container.querySelectorAll('section').find((s) => s.getAttribute('aria-labelledby') === 'draft-local-records') as MiniElement;
+    expect(section).toBeTruthy();
+    const rows = section.querySelectorAll('dt').map((dt, k) => [dt.textContent, section.querySelectorAll('dd')[k].textContent]);
+    const labels = rows.map((r) => r[0]);
+    expect(labels.slice(0, 2)).toEqual(['Best attack', 'Best defence']);
+    expect(labels).toContain('Biggest win');
+    const goals = Math.max(...container.querySelectorAll('.league-table tbody tr').map((r) => Number(r.querySelectorAll('td')[8].textContent!.split(':')[0])));
+    expect(rows[0][1]).toContain(`${goals} goals`);
+    expect(section.textContent).not.toContain('Mein Team');
+  });
+
   it('Liga: Umschalter Heim/Auswärts zeigt nur die halbe Saison, ohne Zonen und Legende', async () => {
     storeLang('en');
     const pool = ALL.filter((p) => !p.leg && !p.myth);
