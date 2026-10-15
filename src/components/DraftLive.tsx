@@ -519,11 +519,19 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
       </p>
       <div className={`draft-turnbar ${myTurn ? 'is-my-turn' : ''}`} ref={barRef}>
         <div className="statusline">
-          <span className="statusline__item">
+          <span className={`statusline__item ${room.round === room.rounds ? 'draft-turnbar__final' : ''}`}>
             {t.online.round}{' '}
             <strong>
               {room.round}/{room.rounds}
             </strong>
+            {room.round === room.rounds && (
+              // Letzte Draft-Runde
+              <span title={t.online.finalRound}>
+                {' '}
+                <span aria-hidden="true">🏁</span>
+                <span className="sr-only">{t.online.finalRound}</span>
+              </span>
+            )}
           </span>
           <span className="statusline__item">
             {t.online.pick}{' '}

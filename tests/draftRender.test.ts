@@ -684,6 +684,17 @@ describe('DraftLive', () => {
     expect(container.querySelector('.draft-pooltools button')!.getAttribute('aria-keyshortcuts')).toBe('V');
   });
 
+  it('Statusleiste: 🏁 in der letzten Draft-Runde', async () => {
+    let st = drafting();
+    const r0 = await renderLive(fakeRoom(snap(st, 'h')));
+    expect(r0.container.querySelector('.draft-turnbar__final')).toBeNull();
+    // Bis zum ersten Pick der letzten Runde
+    const total = st.teams.length * engine.rounds(st.settings);
+    while (st.pickIndex < total - st.teams.length) st = autoPick(st);
+    const { container } = await renderLive(fakeRoom(snap(st, 'h')));
+    expect(container.querySelector('.draft-turnbar__final')!.textContent).toBe(`Runde ${engine.rounds(st.settings)}/${engine.rounds(st.settings)} 🏁Letzte Runde`);
+  });
+
   it('Snake-Wende: „🐍 Doppelpick“, wenn man gleich noch einmal dran ist', async () => {
     // 2 Teams, Snake: h, t1, t1, h, h, …
     let st = drafting();

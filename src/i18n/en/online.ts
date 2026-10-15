@@ -249,6 +249,7 @@ const online: Messages['online'] = {
   readyLobby: (team) => `✅ ${team} is ready`,
   blitzTitle: (n) => `${n} ${n === 1 ? 'lightning pick' : 'lightning picks'} – 5 earn the “Lightning drafter” achievement`,
   doublePick: 'Double pick – you’re up again right after this one.',
+  finalRound: 'Final round',
   presets: 'Quick start',
   presetName: { classic: 'Classic', allRegions: 'All regions', megaChaos: 'Mega chaos', blitz: 'Blitz', cup: 'Knockout cup', shinyParty: 'Shiny party' },
   presetNote: {
