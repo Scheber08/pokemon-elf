@@ -1483,3 +1483,12 @@ button.draft-bench__slot {
 .manager__zone--bottom {
   color: var(--red);
 }
+
+/* Manager-Saison: Last-Minute-Sieg des Spieltags */
+.manager__late {
+  margin: 6px 0 0;
+  font-size: 14px;
+}
+.manager__late.is-you {
+  font-weight: 600;
+}

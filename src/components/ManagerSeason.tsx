@@ -3,12 +3,12 @@ import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
-import { leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince } from '../lib/leagueTimeline';
+import { leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
 import { bestLineup, FORM_FIT, formFit, kickoffAt, lineupScore, managerSchedule, squadStrength } from '../lib/manager';
-import { buildTable, type LeagueResult, type Match } from '../lib/season';
+import { buildTable, formatMinute, type LeagueResult, type Match } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import { teamLabel, type DraftRoom } from '../state/useDraftRoom';
@@ -540,6 +540,18 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
               {pokemonName(star.pokemonId)} <span className="muted">({nameOf(star.teamIndex)})</span> – {tx.starLine(star.goals, star.assists)}
             </p>
           )}
+          {liveMin == null && (() => {
+            // Last-Minute-Sieg des Spieltags (wie im Saison-Ticker)
+            const late = lateWinner(last);
+            if (!late) return null;
+            const score = late.match.home === late.winner ? `${late.match.hg}:${late.match.ag}` : `${late.match.ag}:${late.match.hg}`;
+            return (
+              <p className={`manager__late ${late.winner === you ? 'is-you' : ''}`}>
+                <span aria-hidden="true">⏱ </span>
+                {t.draft.ticker.lateWinner(nameOf(late.winner), nameOf(late.loser), score, formatMinute(late.minute))}
+              </p>
+            );
+          })()}
         </section>
       )}
 

@@ -1159,6 +1159,11 @@ describe('ManagerSeason', () => {
     const marks = r3.container.querySelectorAll('.manager__squad .manager__stars');
     expect(marks).toHaveLength(starCount.size);
     for (const el of marks) expect(el.textContent).toMatch(/Spieler des Spieltags/);
+    // Letzter Spieltag: Last-Minute-Sieg, falls es einen gab
+    const late = tl.lateWinner(lg.matches.filter((m) => m.round === s.manager!.played));
+    const lateEl = r3.container.querySelector('.manager__late');
+    if (late) expect(lateEl!.textContent).toMatch(/Last-Minute-Sieg: .+ – Siegtor in der \d/);
+    else expect(lateEl).toBeNull();
   });
 
   it('Saisonende: Saisonrekorde mit Angriff, Abwehr und ggf. Remis-König', async () => {
