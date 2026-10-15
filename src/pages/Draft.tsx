@@ -19,7 +19,7 @@ import { useT } from '../i18n';
 import { draftsSupported } from '../lib/api/draftClient';
 import { positionFit } from '../lib/fit';
 import { emptySlots } from '../lib/formation';
-import { biggestWin, draftGrades, goalFest, leagueTimeline, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
+import { biggestWin, draftGrades, goalFest, headToHead, leagueTimeline, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
 import { createRng, randomSeed, shuffle } from '../lib/rng';
 import { cpuLevelOf, cpuPickChoice } from '../lib/localCpu';
 import { CLASSIC_MODEL, DRAFT_MODEL, formatRecord, sideTable, simulateLeague, type LeagueTeam } from '../lib/season';
@@ -694,6 +694,56 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 {t.draft.results.timeTravel}
               </h2>
               <TableTimeTravel days={days} you={you < 0 ? null : you} nameOf={(i) => teamName(state.teams[i].name)} />
+            </section>
+          );
+        })()}
+        {(() => {
+          // Deine Duelle: Bilanz des (ersten) menschlichen Teams gegen jeden Gegner – wie im Online-Draft
+          const you = state.teams.findIndex((tm) => !tm.cpu);
+          const duels = you < 0 ? [] : headToHead(league, you);
+          if (duels.length === 0) return null;
+          const r = t.draft.results;
+          return (
+            <section className="card" aria-labelledby="draft-local-duels">
+              <h2 id="draft-local-duels" className="section-title">
+                {r.duels}
+              </h2>
+              <div className="table-scroll">
+                <table className="league-table draft-results__duels">
+                  <thead>
+                    <tr>
+                      <th scope="col" className="left">
+                        {r.duelsOpponent}
+                      </th>
+                      <th scope="col" className="left">
+                        {r.duelsScores}
+                      </th>
+                      <th scope="col" title={r.duelsRecordTitle}>
+                        {r.duelsRecord}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {duels.map((d) => (
+                      <tr key={d.opponent} className={d.w > d.l ? 'is-up' : d.l > d.w ? 'is-down' : ''}>
+                        <th scope="row" className="left">
+                          {teamName(state.teams[d.opponent].name)}
+                        </th>
+                        <td className="left">
+                          {d.scores.map((x, i) => (
+                            <span key={i} className="draft-results__duel" title={x.home ? r.duelHome : r.duelAway}>
+                              {x.gf}:{x.ga}
+                            </span>
+                          ))}
+                        </td>
+                        <td>
+                          <strong>{formatRecord({ w: d.w, d: d.d, l: d.l })}</strong>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </section>
           );
         })()}

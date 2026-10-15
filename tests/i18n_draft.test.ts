@@ -392,6 +392,34 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(played()).toEqual(['1', '1', '1', '1']);
   });
 
+  it('Liga: Deine Duelle – Bilanz gegen jeden Gegner, passend zu den Spielen', async () => {
+    storeLang('en');
+    const pool = ALL.filter((p) => !p.leg && !p.myth);
+    const teams = [0, 1, 2, 3].map((i) => {
+      const formation = FORMATION_IDS[i % FORMATION_IDS.length];
+      return { name: i === 0 ? 'Mein Team' : CLUB_NAMES[i], cpu: i !== 0, formation, slots: emptySlots(formation).map((_, j) => pool[i * 11 + j].id) };
+    });
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'league', teams, region: 0, legends: false, pick: 44, selected: null, seed: 7 }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const section = container.querySelectorAll('section').find((s) => s.getAttribute('aria-labelledby') === 'draft-local-duels') as MiniElement;
+    expect(section).toBeTruthy();
+    const rows = section.querySelectorAll('tbody tr');
+    expect(rows).toHaveLength(3);
+    expect(section.textContent).not.toContain('Mein Team');
+    let w = 0;
+    let d = 0;
+    let l = 0;
+    for (const row of rows) {
+      const scores = row.querySelectorAll('.draft-results__duel').map((x) => x.textContent!.split(':').map(Number));
+      expect(scores).toHaveLength(2);
+      for (const [gf, ga] of scores) gf > ga ? w++ : gf === ga ? d++ : l++;
+    }
+    // Summe der Duelle = eigene Bilanz in der Haupttabelle
+    const own = mainRows(container).find((r) => r.className.includes('is-user'))!;
+    expect([w, d, l].map(String)).toEqual([5, 6, 7].map((k) => own.querySelectorAll('td')[k].textContent));
+  });
+
   it('Liga: Umschalter Heim/Auswärts zeigt nur die halbe Saison, ohne Zonen und Legende', async () => {
     storeLang('en');
     const pool = ALL.filter((p) => !p.leg && !p.myth);
