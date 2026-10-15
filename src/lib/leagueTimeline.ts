@@ -744,6 +744,26 @@ export function headToHead(league: Pick<LeagueResult, 'matches' | 'table'>, team
 }
 
 /**
+ * Aktuelle Serie eines Teams (vom letzten Spiel rückwärts): Spiele ohne Niederlage bzw. ohne Sieg.
+ * Liefert die Serie ab `min` Spielen – ungeschlagen hat Vorrang – sonst null.
+ */
+export function currentRun(matches: readonly Match[], team: number, min = 3): { kind: 'unbeaten' | 'winless'; length: number } | null {
+  const res = matches
+    .filter((m) => m.home === team || m.away === team)
+    .sort((a, b) => b.round - a.round)
+    .map((m) => Math.sign(m.home === team ? m.hg - m.ag : m.ag - m.hg));
+  const run = (ok: (r: number) => boolean) => {
+    let n = 0;
+    while (n < res.length && ok(res[n])) n++;
+    return n;
+  };
+  const unbeaten = run((r) => r >= 0);
+  if (unbeaten >= min) return { kind: 'unbeaten', length: unbeaten };
+  const winless = run((r) => r <= 0);
+  return winless >= min ? { kind: 'winless', length: winless } : null;
+}
+
+/**
  * Formkurve: die letzten n Ergebnisse eines Teams bis einschließlich Spieltag upTo, ältestes zuerst
  * ('S' Sieg, 'U' Unentschieden, 'N' Niederlage).
  */

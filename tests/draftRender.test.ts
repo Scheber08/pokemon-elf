@@ -1133,6 +1133,15 @@ describe('ManagerSeason', () => {
     const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
     await settle();
     expect(container.querySelector('.manager__series')!.textContent).toContain(expected!);
+    // Auch der nächste Gegner zeigt seine Serie (gleiche Hilfsfunktion) – Gegner über den Spielplan
+    const { currentRun } = await import('../src/lib/leagueTimeline');
+    const { scheduleOf } = await import('../src/lib/manager');
+    const league = storedLeague(s.league, s.teams.length)!;
+    const [a, b] = scheduleOf(s.manager, league.teams.length)[s.manager!.played].find(([x, y]) => x === me || y === me)!;
+    const run = currentRun(league.matches, a === me ? b : a);
+    const line = container.querySelectorAll('.manager__rival .manager__series')[0];
+    if (run) expect(line!.textContent).toContain(run.kind === 'unbeaten' ? `Seit ${run.length} Spielen ungeschlagen` : `Seit ${run.length} Spielen sieglos`);
+    else expect(line).toBeUndefined();
   });
 
   it('Manager: nächster Gegner zeigt seine Bilanz am Spielort', async () => {

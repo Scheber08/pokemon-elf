@@ -3,7 +3,7 @@ import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
-import { leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset } from '../lib/leagueTimeline';
+import { currentRun, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -292,22 +292,8 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
         })()}
         {you != null && m.played >= 3 && (() => {
           // Aktuelle Serie des eigenen Teams: ungeschlagen bzw. sieglos (ab 3 Spielen)
-          const own = shown.matches.filter((x) => x.home === you || x.away === you).sort((a, b) => b.round - a.round);
-          const res = own.map((x) => {
-            const gf = x.home === you ? x.hg : x.ag;
-            const ga = x.home === you ? x.ag : x.hg;
-            return gf > ga ? 1 : gf === ga ? 0 : -1;
-          });
-          const run = (ok: (r: number) => boolean) => {
-            let n = 0;
-            while (n < res.length && ok(res[n])) n++;
-            return n;
-          };
-          const unbeaten = run((r) => r >= 0);
-          const winless = run((r) => r <= 0);
-          if (unbeaten >= 3) return <p className="small manager__series is-up">🔥 {tx.seriesUnbeaten(unbeaten)}</p>;
-          if (winless >= 3) return <p className="small manager__series is-down">🥶 {tx.seriesWinless(winless)}</p>;
-          return null;
+          const r = currentRun(shown.matches, you);
+          return r && <SeriesLine run={r} />;
         })()}
         {you != null && m.played >= 3 && m.total - m.played >= 2 && (() => {
           // Restprogramm: Ø aktueller Tabellenplatz der noch ausstehenden Gegner (leicht/mittel/schwer)
@@ -410,6 +396,11 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
                 {tx.rivalVenue(side, formatRecord({ w: row.w, d: row.d, l: row.l }), row.played)}
               </p>
             );
+          })()}
+          {(() => {
+            // Serie des Gegners (ab 3 Spielen)
+            const r = currentRun(shown.matches, rival);
+            return r && <SeriesLine run={r} />;
           })()}
           {(() => {
             // Bester Torschütze des Gegners (ab 2 Toren)
@@ -1238,5 +1229,15 @@ function ManagerTable({
         {view === 'all' && <TableLegend total={rows.length} top={top} />}
       </div>
     </>
+  );
+}
+
+/** Serie eines Teams: „🔥 Seit N Spielen ungeschlagen“ bzw. „🥶 Seit N Spielen sieglos“ */
+function SeriesLine({ run }: { run: { kind: 'unbeaten' | 'winless'; length: number } }) {
+  const tx = useT().draft.manager;
+  return run.kind === 'unbeaten' ? (
+    <p className="small manager__series is-up">🔥 {tx.seriesUnbeaten(run.length)}</p>
+  ) : (
+    <p className="small manager__series is-down">🥶 {tx.seriesWinless(run.length)}</p>
   );
 }

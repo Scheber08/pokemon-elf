@@ -12,7 +12,7 @@ import {
   startDraft,
 } from '../src/lib/draftEngine';
 import { buildScale } from '../src/lib/fit';
-import { biggestUpset, biggestWin, goalFest, fastestPicker, longestWinStreak, recentForm,
+import { biggestUpset, currentRun, biggestWin, goalFest, fastestPicker, longestWinStreak, recentForm,
   currentMatchday,
   FINALE_MS,
   leagueTimeline,
@@ -398,5 +398,25 @@ describe('Heim- und Auswärtstabelle', () => {
     expect(home.map((r) => [r.name, r.played, r.pts, r.gf, r.ga])).toEqual([['A', 1, 3, 2, 0], ['B', 1, 1, 1, 1]]);
     const away = sideTable(teams, matches, 'away');
     expect(away.map((r) => [r.name, r.played, r.pts, r.gf, r.ga])).toEqual([['A', 1, 1, 1, 1], ['B', 1, 0, 0, 2]]);
+  });
+});
+
+describe('currentRun', () => {
+  const g = (round: number, home: number, away: number, hg: number, ag: number) => ({ round, home, away, hg, ag, homeScorers: [], awayScorers: [] });
+  it('zählt vom letzten Spiel rückwärts – ungeschlagen hat Vorrang, unter 3 Spielen null', () => {
+    // Team 0: N, S, U, S (ungeschlagen seit 3), Reihenfolge der Liste egal
+    const ms = [g(4, 1, 0, 0, 2), g(1, 0, 1, 0, 1), g(3, 2, 0, 1, 1), g(2, 0, 2, 3, 0)];
+    expect(currentRun(ms, 0)).toEqual({ kind: 'unbeaten', length: 3 });
+    // Team 1: zuletzt N, davor S → keine Serie
+    expect(currentRun(ms, 1)).toBeNull();
+    // Team 2: N (Runde 2), U (Runde 3) – nur zwei Spiele, mit min 2 sieglos
+    expect(currentRun(ms, 2)).toBeNull();
+    expect(currentRun(ms, 2, 2)).toEqual({ kind: 'winless', length: 2 });
+  });
+  it('sieglos: Remis und Niederlagen ohne Sieg', () => {
+    const ms = [g(1, 0, 1, 2, 0), g(2, 1, 0, 1, 1), g(3, 0, 2, 0, 1), g(4, 3, 0, 2, 2)];
+    expect(currentRun(ms, 0)).toEqual({ kind: 'winless', length: 3 });
+    // nur Remis: ungeschlagen und sieglos zugleich – ungeschlagen gewinnt
+    expect(currentRun([g(1, 0, 1, 1, 1), g(2, 0, 1, 0, 0), g(3, 1, 0, 2, 2)], 0)).toEqual({ kind: 'unbeaten', length: 3 });
   });
 });
