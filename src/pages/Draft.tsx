@@ -1213,7 +1213,25 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           // Die nächsten Picks nach dem aktuellen (Snake), höchstens drei – wie im Online-Draft
           const next: string[] = [];
           for (let p = state.pick + 1; p < totalPicks && next.length < 3; p++) next.push(teamName(state.teams[teamForPick(p, n)].name));
-          return next.length ? <p className="small muted draft__next">{t.online.nextUp(next.join(' → '))}</p> : null;
+          if (!next.length) return null;
+          // Bedarf des nächsten Teams (falls es ein anderes ist): offene Feldpositionen, gruppiert
+          const nt = state.pick + 1 < totalPicks ? teamForPick(state.pick + 1, n) : -1;
+          const nextTeam = nt >= 0 && nt !== currentTeam ? state.teams[nt] : undefined;
+          const needs = new Map<string, number>();
+          if (nextTeam)
+            FORMATIONS[nextTeam.formation].slots.forEach((d, j) => {
+              if (nextTeam.slots[j] == null) needs.set(t.game.posShort[d.pos], (needs.get(t.game.posShort[d.pos]) ?? 0) + 1);
+            });
+          return (
+            <>
+              <p className="small muted draft__next">{t.online.nextUp(next.join(' → '))}</p>
+              {nextTeam && needs.size > 0 && (
+                <p className="small muted draft__needs">
+                  {t.online.nextNeeds(teamName(nextTeam.name), [...needs].map(([pos, k]) => (k > 1 ? `${k}× ${pos}` : pos)).join(', '))}
+                </p>
+              )}
+            </>
+          );
         })()}
       </header>
       <div className="challenge__play">

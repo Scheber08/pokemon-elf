@@ -1549,3 +1549,9 @@ button.draft-bench__slot {
 .manager__drop.is-in {
   color: var(--red);
 }
+
+/* Lokaler Draft: Vorschau der nächsten Picks und Bedarf des nächsten Teams eng untereinander */
+.draft__next,
+.draft__needs {
+  margin: 4px 0 0;
+}
