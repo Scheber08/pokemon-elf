@@ -907,6 +907,14 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
       await settle();
       const all = texts(container).join(' | ');
       for (const e of c.expect) expect(all).toContain(e);
+      // Abstand zur Spitze bzw. Vorsprung neben den Punkten (nach Spieltag 2)
+      if (c.expect.includes('Next opponent')) {
+        const tbl = timeline.leagueTimeline(league)[1].table;
+        const own = tbl.findIndex((r) => r.team === 0);
+        const gap = container.querySelector('.league-ticker__gap')!.textContent;
+        if (own === 0) expect(gap).toMatch(/^(\d+ pts clear|level on points with 2nd)$/);
+        else expect(gap).toBe(`${tbl[0].pts - tbl[own].pts === 0 ? 'level on points with the top' : `${tbl[0].pts - tbl[own].pts} pts behind 1st`}`);
+      }
       // Nächster Gegner (Liga): nach Spieltag 2 der Gegner von Spieltag 3 mit seinem Platz, am Saisonende nicht mehr
       const next = container.querySelector('.league-ticker__next');
       if (c.expect.includes('Next opponent')) {

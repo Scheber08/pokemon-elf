@@ -290,7 +290,15 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
           </div>
           <div>
             <dt>{tx.points}</dt>
-            <dd>{ownRow.pts}</dd>
+            <dd>
+              {ownRow.pts}
+              {/* Abstand zur Spitze bzw. Vorsprung (wie in der Manager-Saison) */}
+              {day && table.length > 1 && ownPlace != null && (
+                <small className="muted league-ticker__gap">
+                  {ownPlace === 1 ? t.draft.manager.leadBy(table[0].pts - table[1].pts) : t.draft.manager.behindTop(table[0].pts - ownRow.pts)}
+                </small>
+              )}
+            </dd>
           </div>
           <div>
             <dt>{tx.record}</dt>

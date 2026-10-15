@@ -1156,3 +1156,14 @@
 .manager__leader.is-new {
   color: var(--yellow);
 }
+
+/* Saison-Ticker: Abstand zur Spitze unter den Punkten */
+.league-ticker__gap {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
