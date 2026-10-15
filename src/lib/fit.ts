@@ -161,3 +161,22 @@ export function soleTopIndex(values: (number | null)[]): number | null {
   const max = Math.max(...present);
   return present.filter((v) => v === max).length === 1 ? values.indexOf(max) : null;
 }
+
+/**
+ * Bester Pick jeder Draft-Runde: Index (in Pick-Reihenfolge) des höchsten Fits je Runde mit perRound Picks
+ * (bei Gleichstand der frühere). Picks ohne Fit (Bank, unbekannt) zählen nicht; Runden ohne Fit bleiben leer.
+ */
+export function roundBestPicks(fits: readonly (number | null)[], perRound: number): Set<number> {
+  const out = new Set<number>();
+  if (perRound < 1) return out;
+  for (let start = 0; start < fits.length; start += perRound) {
+    let best = -1;
+    let at = -1;
+    for (let i = start; i < Math.min(start + perRound, fits.length); i++) {
+      const f = fits[i];
+      if (f != null && f > best) [best, at] = [f, i];
+    }
+    if (at >= 0) out.add(at);
+  }
+  return out;
+}

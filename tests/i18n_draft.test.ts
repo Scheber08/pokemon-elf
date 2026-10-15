@@ -644,6 +644,11 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(starRows[0].textContent).toBe(`${stars[0].pokemon.en}${clubEn(CLUB_NAMES[2])} · pick 4`);
     expect(starRows[0].className).not.toContain('is-you');
     for (const row of starRows.slice(1)) expect(row.textContent).toMatch(/not drafted$/);
+    // 🏅 bester Pick jeder Runde: 11 Runden, je genau einer
+    const bests = list.filter((li) => li.querySelector('.draft-results__roundbest'));
+    expect(bests).toHaveLength(11);
+    for (let rd = 1; rd <= 11; rd++) expect(bests.filter((li) => li.textContent!.includes(` · R${rd} `))).toHaveLength(1);
+    expect(bests[0].querySelector('.draft-results__roundbest')!.textContent).toBe(' 🏅Best pick of the round (positional fit)');
     // ★ hinter Mewtu (und nur dort)
     const marked = list.filter((li) => li.querySelector('.draft-feed__kind'));
     expect(marked).toHaveLength(1);
@@ -1108,6 +1113,12 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     expect(all).toMatch(/Top captain: [^|]+ \([^|]+\) with \d+ goals?/);
     expect(container.querySelectorAll('.draft-results .captain-badge').length).toBeGreaterThan(0);
     expect(all).toMatch(/All \d+ picks/);
+    // 🏅 je Runde genau ein bester Pick
+    {
+      const rows = container.querySelectorAll('.draft-results__picklist li');
+      const rounds = rows.length / s.teams.length;
+      expect(rows.filter((li) => li.querySelector('.draft-results__roundbest'))).toHaveLength(rounds);
+    }
     // Nur eigene Picks: Liste schrumpft auf die eigenen
     const allPicks = container.querySelectorAll('.draft-results__picklist li').length;
     expect(container.querySelector('.draft-results__picklist li')!.textContent).toMatch(/^#1 · R1 /);

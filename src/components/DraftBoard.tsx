@@ -243,6 +243,18 @@ export function KindMarks({ kinds }: { kinds?: readonly LimitKind[] }) {
   );
 }
 
+/** 🏅 hinter dem besten Pick einer Draft-Runde (Liste „Alle Picks“) */
+export function RoundBest() {
+  const t = useT();
+  return (
+    <span className="draft-results__roundbest" title={t.draft.results.roundBest}>
+      {' '}
+      <span aria-hidden="true">🏅</span>
+      <span className="sr-only">{t.draft.results.roundBest}</span>
+    </span>
+  );
+}
+
 /** Die letzten Picks als kurzer Verlauf („Glurak → Team X (auto)") – ohne Live-Region (die Ansage kommt aus DraftLive). */
 export function DraftPickFeed({ items, you }: { items: FeedItem[]; you: string | null }) {
   const t = useT();

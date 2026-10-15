@@ -5,7 +5,7 @@ import { POSITIONS } from '../config/positions';
 import { REGIONS } from '../config/regions';
 import { CLUB_NAMES } from '../config/season';
 import { PosBadge } from '../components/Badges';
-import { DraftPickFeed, DraftTypeChip, KindMarks } from '../components/DraftBoard';
+import { DraftPickFeed, DraftTypeChip, KindMarks, RoundBest } from '../components/DraftBoard';
 import type { FeedItem } from '../state/useDraftRoom';
 import { PoolStars, poolStars, StarsLanded } from '../components/PoolStars';
 import { FilterBar, typingElsewhere, useFilteredPokemon, type PokemonFilters } from '../components/FilterBar';
@@ -20,7 +20,7 @@ import { Segmented } from '../components/Segmented';
 import { Sprite } from '../components/Sprite';
 import { useT } from '../i18n';
 import { draftsSupported } from '../lib/api/draftClient';
-import { positionFit, soleTopIndex } from '../lib/fit';
+import { positionFit, roundBestPicks, soleTopIndex } from '../lib/fit';
 import { rankingNames } from '../lib/rankingNames';
 import { emptySlots } from '../lib/formation';
 import { biggestWin, draftGrades, hatTricks, mostCleanSheets, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
@@ -1194,20 +1194,35 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           <details className="card details draft-results__picks">
             <summary>{t.draft.results.allPicks(state.log.length)}</summary>
             <ol className="draft-results__picklist">
-              {state.log.map((x, k) => {
-                const p = byId.get(x.id);
-                const round = Math.floor(k / state.teams.length) + 1;
-                return (
-                  <li key={k} className={state.teams[x.team]?.cpu ? '' : 'is-you'}>
-                    <span className="muted" title={t.draft.results.pickRound(round)}>
-                      #{k + 1} · R{round}
-                    </span>{' '}
-                    <strong>{p ? t.game.pokemon(p) : `#${x.id}`}</strong>
-                    {p && <KindMarks kinds={limitKindsOf(p)} />}
-                    {state.shinies?.includes(x.id) && <span title={t.shiny.title}> ✨</span>} → {teamName(state.teams[x.team].name)}
-                  </li>
+              {(() => {
+                // 🏅 bester Pick jeder Runde (Fit an der jetzigen Position)
+                const sc = scale('all');
+                const best = roundBestPicks(
+                  state.log.map((x) => {
+                    const tm = state.teams[x.team];
+                    const at = tm ? tm.slots.indexOf(x.id) : -1;
+                    const pos = tm && at >= 0 ? FORMATIONS[tm.formation].slots[at]?.pos : undefined;
+                    const mon = byId.get(x.id);
+                    return mon && pos ? positionFit(mon, pos, sc) : null;
+                  }),
+                  state.teams.length,
                 );
-              })}
+                return state.log.map((x, k) => {
+                  const p = byId.get(x.id);
+                  const round = Math.floor(k / state.teams.length) + 1;
+                  return (
+                    <li key={k} className={state.teams[x.team]?.cpu ? '' : 'is-you'}>
+                      <span className="muted" title={t.draft.results.pickRound(round)}>
+                        #{k + 1} · R{round}
+                      </span>{' '}
+                      <strong>{p ? t.game.pokemon(p) : `#${x.id}`}</strong>
+                      {p && <KindMarks kinds={limitKindsOf(p)} />}
+                      {state.shinies?.includes(x.id) && <span title={t.shiny.title}> ✨</span>} → {teamName(state.teams[x.team].name)}
+                      {best.has(k) && <RoundBest />}
+                    </li>
+                  );
+                });
+              })()}
             </ol>
           </details>
         )}

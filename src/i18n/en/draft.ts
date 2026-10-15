@@ -276,6 +276,7 @@ const draft: Messages['draft'] = {
 
   // ---------------------------------------------------------------- Online league result
   results: {
+    roundBest: 'Best pick of the round (positional fit)',
     starsTitle: 'Where did the stars go?',
     starsPick: (team, pick) => `${team} · pick ${pick}`,
     starsFree: 'not drafted',

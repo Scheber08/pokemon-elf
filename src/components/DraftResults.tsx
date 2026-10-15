@@ -32,9 +32,9 @@ import { cleanCrest } from '../lib/crest';
 import { Crest } from './Crest';
 import { shinyTeamBoost } from '../lib/shiny';
 import { FORMATIONS } from '../config/formations';
-import { positionFit } from '../lib/fit';
+import { positionFit, roundBestPicks } from '../lib/fit';
 import { fastPickCounts, goalReached, limitKindsOf, poolOf, rosterOf } from '../lib/draftEngine';
-import { KindMarks } from './DraftBoard';
+import { KindMarks, RoundBest } from './DraftBoard';
 
 interface Props {
   /** Shinys der Liga */
@@ -94,6 +94,22 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
     if (!settings || !all.length || !picks.length) return [];
     return poolStars(poolOf(settings, all), scale('all')).map((x) => ({ ...x, pick: picks.find((pk) => pk.pokemonId === x.pokemon.id) }));
   }, [settings, all, picks, scale]);
+  // 🏅 bester Pick jeder Runde (Fit an der jetzigen Position; Bank zählt nicht)
+  const roundBest = useMemo(() => {
+    const sc = scale('all');
+    const fits = [...picks]
+      .sort((a, b) => a.pick - b.pick)
+      .map((pk) => {
+        const tm = teams.find((x) => x.id === pk.teamId);
+        const at = tm ? tm.slots.indexOf(pk.pokemonId) : -1;
+        const pos = tm && at >= 0 ? FORMATIONS[tm.formation]?.slots[at]?.pos : undefined;
+        const mon = byId.get(pk.pokemonId);
+        return mon && pos ? positionFit(mon, pos, sc) : null;
+      });
+    const idx = roundBestPicks(fits, teams.length);
+    const sorted = [...picks].sort((a, b) => a.pick - b.pick);
+    return new Set([...idx].map((i) => sorted[i].pick));
+  }, [picks, teams, byId, scale]);
   const steal = useMemo(() => draftSteal(picks, teams, byId, scale('all')), [picks, teams, byId, scale]);
   const signing = useMemo(
     () => bestTransfer(league.matches, transfers, (id) => teams.findIndex((tm) => tm.id === id)),
@@ -863,6 +879,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
           )}
           <ol className="draft-results__picklist">
             {picks.filter((pk) => !onlyMine || teams.findIndex((tm) => tm?.id === pk.teamId) === you).map((pk) => {
+              const best = roundBest.has(pk.pick);
               const ti = teams.findIndex((tm) => tm?.id === pk.teamId);
               const p = byId.get(pk.pokemonId);
               return (
@@ -874,6 +891,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                   {p && <KindMarks kinds={limitKindsOf(p)} />}
                   {pk.shiny && <span title={t.shiny.title}> ✨</span>} → {ti >= 0 ? nameOf(ti) : '?'}
                   {pk.auto && <small className="muted">{t.draft.board.auto}</small>}
+                  {best && <RoundBest />}
                 </li>
               );
             })}

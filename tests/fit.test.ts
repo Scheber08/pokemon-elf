@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { PROFILES } from '../src/config/positions';
 import { TYPE_KEYS, dominantType } from '../src/config/pokemonTypes';
 import { SCORING } from '../src/config/scoring';
-import { buildScale, cdf, soleTopIndex, compositeScore, positionFit, profileFit, typeBonus, weightScore } from '../src/lib/fit';
+import { buildScale, cdf, soleTopIndex, roundBestPicks, compositeScore, positionFit, profileFit, typeBonus, weightScore } from '../src/lib/fit';
 import type { ProfileKey } from '../src/types';
 import { ALL, byName, mon } from './helpers';
 
@@ -164,5 +164,16 @@ describe('dominantType (Typ-Elf auf dem Draft-Board)', () => {
     expect(dominantType([mk('fire'), mk('fire', 'flying'), mk('fire'), mk('fire', 'ground'), mk('water')])).toEqual({ type: 'fire', n: 4 });
     expect(dominantType([...Array(4)].flatMap(() => [mk('fire'), mk('water')]))).toBeNull();
     expect(dominantType([])).toBeNull();
+  });
+});
+
+describe('roundBestPicks', () => {
+  it('höchster Fit je Runde, bei Gleichstand der frühere, ohne Fit nichts', () => {
+    // Runde 1: 70, 90, 80 → Index 1; Runde 2: 50, 50, null → Index 3; Runde 3: null, null → keiner
+    expect([...roundBestPicks([70, 90, 80, 50, 50, null, null, null], 3)]).toEqual([1, 3]);
+    expect([...roundBestPicks([], 3)]).toEqual([]);
+    expect([...roundBestPicks([10, 20], 0)]).toEqual([]);
+    // Unvollständige letzte Runde zählt mit
+    expect([...roundBestPicks([1, 2, 3, 4, 5], 2)]).toEqual([1, 3, 4]);
   });
 });
