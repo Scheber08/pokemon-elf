@@ -341,6 +341,27 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(container.querySelector('.table-legend')!.textContent).toBe('Champions');
   });
 
+  it('Liga: Umschalter Heim/Auswärts zeigt nur die halbe Saison, ohne Zonen und Legende', async () => {
+    storeLang('en');
+    const pool = ALL.filter((p) => !p.leg && !p.myth);
+    const teams = [0, 1, 2, 3, 4, 5].map((i) => {
+      const formation = FORMATION_IDS[i % FORMATION_IDS.length];
+      return { name: i === 0 ? 'Mein Team' : CLUB_NAMES[i], cpu: i !== 0, formation, slots: emptySlots(formation).map((_, j) => pool[i * 11 + j].id) };
+    });
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'league', teams, region: 0, legends: false, pick: 66, selected: null, seed: 7 }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const played = () => container.querySelectorAll('.league-table tbody tr').map((r) => r.querySelectorAll('td')[4].textContent);
+    expect(played()).toEqual(Array(6).fill('10'));
+    for (const label of ['Home', 'Away']) {
+      const radio = container.querySelectorAll('[role="radio"]').find((b) => b.textContent === label) as MiniElement;
+      await act(async () => radio.click());
+      expect(played()).toEqual(Array(6).fill('5'));
+      expect(container.querySelectorAll('.league-table tbody tr').some((r) => r.className.includes('is-zone'))).toBe(false);
+      expect(container.querySelector('.table-legend')).toBeNull();
+    }
+  });
+
   it('Draft läuft: Board zeigt den Ø Fit der gesetzten Picks', async () => {
     storeLang('en');
     const { positionFit } = await import('../src/lib/fit');

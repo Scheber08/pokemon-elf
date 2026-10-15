@@ -22,7 +22,7 @@ import { emptySlots } from '../lib/formation';
 import { draftGrades, leagueTimeline, seasonEleven, tableRowClass } from '../lib/leagueTimeline';
 import { createRng, randomSeed, shuffle } from '../lib/rng';
 import { cpuLevelOf, cpuPickChoice } from '../lib/localCpu';
-import { CLASSIC_MODEL, DRAFT_MODEL, formatRecord, simulateLeague, type LeagueTeam } from '../lib/season';
+import { CLASSIC_MODEL, DRAFT_MODEL, formatRecord, sideTable, simulateLeague, type LeagueTeam } from '../lib/season';
 import { scorerSummary } from '../lib/seasonTimeline';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
 import { bestCaptain, evaluateTeam } from '../lib/teamScore';
@@ -146,6 +146,8 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   const { sprite } = useSettings();
   const [state, setState] = useState<DraftState>(() => ({ ...INITIAL, ...load<Partial<DraftState>>(STORAGE_KEYS.draft, {}) }));
   const [filters, setFilters] = useState<PokemonFilters>({ query: '', type: null, region: 0 });
+  /** Liga-Tabelle: gesamt oder nur Heim- bzw. Auswärtsspiele */
+  const [tableView, setTableView] = useState<'all' | 'home' | 'away'>('all');
   const pitchRef = useRef<HTMLDivElement>(null);
   const elevenRef = useRef<HTMLElement>(null);
 
@@ -580,6 +582,13 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
             <h2 id="draft-table" className="section-title">
               {t.draft.table}
             </h2>
+            <Segmented
+              label={t.draft.results.tableView}
+              hideLabel
+              value={tableView}
+              onChange={setTableView}
+              options={(['all', 'home', 'away'] as const).map((v) => ({ value: v, label: t.draft.results.tableViews[v] }))}
+            />
             <div className="table-scroll">
               <table className="league-table">
                 <thead>
@@ -598,8 +607,8 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {league.table.map((r, i) => (
-                    <tr key={r.team} className={tableRowClass(r.isUser, i + 1, league.table.length)}>
+                  {(tableView === 'all' ? league.table : sideTable(league.teams, league.matches, tableView)).map((r, i) => (
+                    <tr key={r.team} className={tableView === 'all' ? tableRowClass(r.isUser, i + 1, league.table.length) : r.isUser ? 'is-user' : ''}>
                       <td>{i + 1}</td>
                       <td className="left">
                         {cleanCrest(state.teams[r.team].crest) && (
@@ -627,7 +636,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 </tbody>
               </table>
             </div>
-            <TableLegend total={league.table.length} />
+            {tableView === 'all' && <TableLegend total={league.table.length} />}
           </section>
           <section className="card" aria-labelledby="draft-scorers">
             <h2 id="draft-scorers" className="section-title">
