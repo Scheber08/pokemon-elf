@@ -654,6 +654,14 @@ describe('DraftLobby', () => {
   });
 
   // CLIENT-5
+  it('Lobby: Host sieht, wie viele Mitspieler bereit sind', async () => {
+    const st = engine.setTeamReady(lobby(3), 'dev-1', true);
+    const { container } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) })));
+    await settle();
+    expect(container.querySelector('.draft-start')!.textContent).toContain('1/2 Mitspieler bereit');
+    expect(container.textContent).toContain('✓ bereit');
+  });
+
   it('Start, CPU und Einstellungen nehmen nichts an, solange die Aktion läuft', async () => {
     const room = fakeRoom(snap(lobby(2), 'h'), {
       busy: { pick: false, 'auto-pick': false, start: true, join: false, 'add-cpu': true, settings: true, reroll: false },

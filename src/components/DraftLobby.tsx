@@ -435,6 +435,13 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
             >
               {room.busy.start ? t.online.starting : s.career ? t.online.careerStart : t.online.start}
             </button>
+            {(() => {
+              // Mitspieler (ohne Host und CPU), die sich bereit gemeldet haben
+              const others = s.teams.filter((tm) => !tm.cpu && tm.id !== s.hostTeamId);
+              if (!others.length) return null;
+              const ready = others.filter((tm) => tm.ready).length;
+              return <p className={`hint ${ready === others.length ? 'draft-lobby__ready-mark' : ''}`}>{t.online.readyCount(ready, others.length)}</p>;
+            })()}
             {blocker ? (
               <p className="hint">{blocker}</p>
             ) : (

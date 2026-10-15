@@ -134,6 +134,7 @@ const online: Messages['online'] = {
   readyOff: 'I’m ready',
   readyOn: '✓ Ready – undo',
   readyMark: 'ready',
+  readyCount: (ready, total) => (ready === total ? `✓ All players ready (${total})` : `${ready}/${total} players ready`),
   addCpu: 'Add CPU team',
   fillCpu: (n) => `Fill with CPU (${n})`,
   readOnlyLobby:
