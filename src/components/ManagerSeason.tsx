@@ -8,7 +8,7 @@ import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
 import { bestLineup, FORM_FIT, formFit, kickoffAt, lineupScore, scheduleOf, squadStrength } from '../lib/manager';
-import { buildTable, formatMinute, sideTable, type LeagueResult, type Match } from '../lib/season';
+import { buildTable, formatMinute, formatRecord, sideTable, type LeagueResult, type Match } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import { teamLabel, type DraftRoom } from '../state/useDraftRoom';
@@ -364,6 +364,17 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
               <FormDots form={recentForm(shown.matches, rival, m.played)} />
             </p>
           )}
+          {m.played > 0 && (() => {
+            // Bilanz des Gegners am Spielort: auswärts, wenn er zu dir kommt – sonst zu Hause
+            const side = myNext.home === you ? 'away' : 'home';
+            const row = sideTable(shown.teams, shown.matches, side).find((r) => r.team === rival);
+            if (!row || row.played === 0) return null;
+            return (
+              <p className="small manager__rival-venue">
+                {tx.rivalVenue(side, formatRecord({ w: row.w, d: row.d, l: row.l }), row.played)}
+              </p>
+            );
+          })()}
           {(() => {
             // Bester Torschütze des Gegners (ab 2 Toren)
             let top: [number, number] | null = null;

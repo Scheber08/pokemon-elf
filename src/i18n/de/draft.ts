@@ -587,6 +587,8 @@ const draft = {
     rivalTitle: 'Nächster Gegner',
     rivalHome: 'Heimspiel',
     rivalAway: 'Auswärtsspiel',
+    rivalVenue: (side: 'home' | 'away', record: string, games: number) =>
+      `${side === 'home' ? 'Zu Hause' : 'Auswärts'}: ${record} (S–U–N, ${games === 1 ? '1 Spiel' : `${games} Spiele`})`,
     rivalScorer: (pokemon: string, goals: number) => `Gefährlichster Torschütze: ${pokemon} (${goals} Tore)`,
     rivalPlace: (n: number) => `Platz ${n}`,
     compareYou: 'Du',

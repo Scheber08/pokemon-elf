@@ -1079,6 +1079,32 @@ describe('ManagerSeason', () => {
     expect(el!.textContent).toContain(`(${best} Tore)`);
   });
 
+  it('Manager: nächster Gegner zeigt seine Bilanz am Spielort', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday, scheduleOf } = await import('../src/lib/manager');
+    const { storedLeague } = await import('../src/lib/leagueTimeline');
+    const { sideTable, formatRecord } = await import('../src/lib/season');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    // Vor dem ersten Spieltag gibt es noch keine Bilanz
+    const { container: before } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    expect(before.querySelector('.manager__rival-venue')).toBeNull();
+    for (let i = 0; i < 4; i++) s = playMatchday(s, ALL, SCALE);
+    const me = s.teams.findIndex((t) => t.id === 'h');
+    const league = storedLeague(s.league, s.teams.length)!;
+    const [home, away] = scheduleOf(s.manager, league.teams.length)[s.manager!.played].find(([a, b]) => a === me || b === me)!;
+    const rival = home === me ? away : home;
+    const side = home === me ? 'away' : 'home';
+    const row = sideTable(league.teams, league.matches, side).find((r) => r.team === rival)!;
+    const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    const el = container.querySelector('.manager__rival-venue');
+    expect(row.played).toBeGreaterThan(0);
+    expect(el!.textContent).toBe(`${side === 'home' ? 'Zu Hause' : 'Auswärts'}: ${formatRecord(row)} (S–U–N, ${row.played === 1 ? '1 Spiel' : `${row.played} Spiele`})`);
+  });
+
   it('Aufstellung: Tipp für eine stärkere Formation, Knopf übernimmt sie', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, bestLineup, lineupScore } = await import('../src/lib/manager');
