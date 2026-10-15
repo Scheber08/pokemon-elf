@@ -149,6 +149,14 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   const n = state.teams.length;
   const totalPicks = n * ROUNDS;
   const currentTeam = state.phase === 'drafting' ? teamForPick(state.pick, n) : -1;
+  // Team am Zug ins Bild: nur das Board seitlich scrollen (wie im Online-Draft)
+  const boardRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const board = boardRef.current;
+    const col = board?.querySelector<HTMLElement>('.draft__col.is-current');
+    if (!board || !col || board.scrollWidth <= board.clientWidth) return;
+    board.scrollTo?.({ left: Math.max(0, col.offsetLeft - (board.clientWidth - col.offsetWidth) / 2), behavior: 'smooth' });
+  }, [currentTeam]);
   const team = state.teams[currentTeam];
 
   const drafted = useMemo(
@@ -898,7 +906,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               />
             </section>
           )}
-          <section className="draft__board" aria-label={t.draft.draftBoard}>
+          <section className="draft__board" aria-label={t.draft.draftBoard} ref={boardRef}>
             {state.teams.map((tm, i) => (
               <div key={i} className={`draft__col ${i === currentTeam ? 'is-current' : ''}`}>
                 <h3>{teamName(tm.name)}</h3>
