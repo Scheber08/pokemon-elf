@@ -43,7 +43,7 @@ Deploy stehen in der README.
 - Lokal mit echtem Worker: `npm run dev:cf` (Port 8788). Nach `npm run build` den Dev-Server neu starten,
   sonst liefert er alte Asset-Hashes aus.
 
-## Offene Ideen (Stand 2026-10-14)
+## Offene Ideen (Stand 2026-10-15)
 
 Erledigt (siehe README): Ultrabestien/Megas/Formen, Revanche + ewige Tabelle, Benachrichtigung „Du bist
 dran", Testspiel, Spielerprofil, Wochenwertung, Tägliche-Elf-Serie, OG-Tags (auch je Liga), Routen
@@ -68,7 +68,9 @@ Rückrunde, Überraschung/Enttäuschung, torreichstes Spiel, Remis-König), näc
 beste Position der Bankspieler, Punkte-Hochrechnung und Torjäger des Gegners in der Manager-Saison, Elf der Saison (auch als Bild,
 lokal und online), Heim-/Auswärtstabelle, Tabellen-Zonen mit Legende, Spieler des Spieltags und Last-Minute-Sieg
 im Ticker, Führungsserie, Favorit vor dem Anpfiff, Vorschau der nächsten Picks, Taste V/„Vorschlag“ auch lokal,
-ausgeglichenes Heimrecht im Manager-Spielplan.
+ausgeglichenes Heimrecht im Manager-Spielplan, lokale Liga mit Heim/Auswärts, Saisonrekorden, Zeitreise, Duellen,
+Revanche und Titelsammlung, „Reihenfolge mischen“ (Lobby und lokal), „Du bist in N Picks dran“ und Restdauer im
+Online-Draft, Restprogramm, Serie (`currentRun`) und Spielort-Bilanz des Gegners in der Manager-Saison, Serie im Ticker.
 
 1. Weitere Saisons im Shop (z. B. Nikolaus, Erntedank) – neue Einträge mit `seasonal(...)` in `src/lib/trainer.ts`
 2. Shiny-Party-Badge in der Liste öffentlicher Lobbys (braucht Feld in der Lobby-Zeile – Schema nur additiv)
