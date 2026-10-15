@@ -6,7 +6,7 @@ import type { DraftPickLog, DraftSettings, DraftTeam, ManagerTransfer } from '..
 import { poolStars, StarsLanded } from './PoolStars';
 import { TypeGoals } from './TypeGoals';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { bestTransfer, comebackOf, missedChance, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { bestTransfer, comebackOf, missedChance, draftJoker, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { buildTable, formatRecord, sideTable, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -112,6 +112,11 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
     return new Set([...idx].map((i) => sorted[i].pick));
   }, [picks, teams, byId, scale]);
   const steal = useMemo(() => draftSteal(picks, teams, byId, scale('all')), [picks, teams, byId, scale]);
+  // 🃏 Joker des Drafts: später Pick mit den meisten Saisontoren
+  const joker = useMemo(
+    () => draftJoker(picks.map((pk) => ({ pick: pk.pick, team: teams.findIndex((tm) => tm.id === pk.teamId), pokemonId: pk.pokemonId })).filter((x) => x.team >= 0), league.matches),
+    [picks, teams, league],
+  );
   // 😬 Verpasste Chance des eigenen Teams (nur ohne Zufallswurf; Legendäre & Co. zählen wegen der Limits nicht als Alternative)
   const missed = useMemo(() => {
     const own = highlight != null ? teams[highlight] : undefined;
@@ -320,6 +325,11 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
         {steal && stealMon && stealTeam >= 0 && (
           <p className="draft-results__steal">
             {tx.steal(t.game.pokemon(stealMon), steal.pick + 1, nameOf(stealTeam), t.game.posName[steal.pos])}
+          </p>
+        )}
+        {joker && byId.get(joker.pokemonId) && (
+          <p className="draft-results__steal draft-results__joker">
+            {tx.joker(t.game.pokemon(byId.get(joker.pokemonId)!), joker.pick + 1, nameOf(joker.team), joker.goals)}
           </p>
         )}
         {topCaptain && topCaptainMon && (

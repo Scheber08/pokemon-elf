@@ -418,6 +418,7 @@ const draft = {
       `Verpasste Chance: Pick ${pick} ${name} (Fit ${fit}) – als ${pos} war noch ${alt} frei (Fit ${altFit})`,
     missedTaken: (team: string, pick: number) => `– ging mit Pick ${pick} an ${team}.`,
     missedFree: '– blieb sogar bis zum Schluss frei.',
+    joker: (pokemon: string, pick: number, team: string, goals: number) => `🃏 Joker des Drafts: ${pokemon} (erst Pick ${pick}) traf ${goals}-mal für ${team}`,
     steal: (pokemon: string, pick: number, team: string, pos: string) => `Schnäppchen des Drafts: ${pokemon} (Pick ${pick}) für ${team} als ${pos}`,
     signing: (pokemon: string, team: string, matchday: number, line: string) =>
       `Transfer der Saison: ${pokemon} zu ${team} (vor Spieltag ${matchday}) – danach ${line}`,

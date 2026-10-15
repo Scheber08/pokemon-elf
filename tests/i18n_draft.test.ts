@@ -733,6 +733,13 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(bests).toHaveLength(11);
     for (let rd = 1; rd <= 11; rd++) expect(bests.filter((li) => li.textContent!.includes(` · R${rd} `))).toHaveLength(1);
     expect(bests[0].querySelector('.draft-results__roundbest')!.textContent).toBe(' 🏅Best pick of the round (positional fit)');
+    // 🃏 Joker of the draft (English, like draftJoker)
+    {
+      const joker = timeline.draftJoker(log.map((x, i) => ({ pick: i, team: x.team, pokemonId: x.id })), JSON.parse(localStorage.getItem('pokemon-elf:draft')!).league?.matches ?? []);
+      const el = r.container.querySelector('.draft-results__joker');
+      if (el) expect(el.textContent).toMatch(/^🃏 Joker of the draft: .+ \(only pick \d+\) scored \d+ for .+$/);
+      if (joker) expect(el).not.toBeNull();
+    }
     // Top-scoring types below the scorers (English)
     expect(r.container.querySelector('.type-goals')!.textContent).toMatch(/^Top-scoring types:/);
     expect(r.container.querySelectorAll('.type-goals__item').length).toBeGreaterThan(0);

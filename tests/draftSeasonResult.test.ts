@@ -474,3 +474,20 @@ describe('Verpasste Chance', () => {
     expect(missedChance(picks, teams, 'x', pool, sc)).toBeNull();
   });
 });
+
+describe('Joker des Drafts', () => {
+  it('später Pick (letztes Drittel) mit den meisten Toren, ab drei; Gleichstand: späterer Pick', async () => {
+    const { draftJoker } = await import('../src/lib/leagueTimeline');
+    const g = (pokemonId: number) => ({ pokemonId, pos: 'ST' as const });
+    const picks = Array.from({ length: 9 }, (_, k) => ({ pick: k, team: k % 2, pokemonId: 100 + k }));
+    // Pick 0 (früh) trifft am meisten – zählt nicht; Pick 6 und 8 je drei, Pick 7 zwei
+    const matches = [
+      { round: 1, home: 0, away: 1, hg: 7, ag: 2, homeScorers: [g(100), g(100), g(100), g(100), g(106), g(106), g(106)], awayScorers: [g(107), g(107)] },
+      { round: 2, home: 0, away: 1, hg: 3, ag: 0, homeScorers: [g(108), g(108), g(108)], awayScorers: [] },
+    ];
+    expect(draftJoker(picks, matches)).toEqual({ pick: 8, team: 0, pokemonId: 108, goals: 3 });
+    // Tor für das falsche Team zählt nicht
+    expect(draftJoker([{ pick: 8, team: 1, pokemonId: 108 }], matches)).toBeNull();
+    expect(draftJoker([], matches)).toBeNull();
+  });
+});

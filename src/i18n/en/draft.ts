@@ -377,6 +377,7 @@ const draft: Messages['draft'] = {
     missed: (pick, name, fit, pos, alt, altFit) => `Missed chance: pick ${pick} ${name} (fit ${fit}) – ${alt} (fit ${altFit}) was still free at ${pos}`,
     missedTaken: (team, pick) => `– went to ${team} with pick ${pick}.`,
     missedFree: '– stayed free until the end.',
+    joker: (pokemon, pick, team, goals) => `🃏 Joker of the draft: ${pokemon} (only pick ${pick}) scored ${goals} for ${team}`,
     steal: (pokemon, pick, team, pos) => `Steal of the draft: ${pokemon} (pick ${pick}) for ${team} as ${pos}`,
     signing: (pokemon, team, matchday, line) => `Signing of the season: ${pokemon} to ${team} (before matchday ${matchday}) – then ${line}`,
     gradeTitle: 'Draft grade by team score – relative to the other teams in this league (A+ to D)',

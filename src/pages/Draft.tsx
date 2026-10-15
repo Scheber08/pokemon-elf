@@ -26,7 +26,7 @@ import { draftsSupported } from '../lib/api/draftClient';
 import { fitImpact, positionFit, roundBestPicks, soleTopIndex } from '../lib/fit';
 import { rankingNames } from '../lib/rankingNames';
 import { emptySlots } from '../lib/formation';
-import { biggestWin, comebackOf, missedChance, draftGrades, hatTricks, localShareText, mostCleanSheets, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
+import { biggestWin, comebackOf, missedChance, draftJoker, draftGrades, hatTricks, localShareText, mostCleanSheets, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
 import { createRng, randomSeed, shuffle } from '../lib/rng';
 import { cpuLevelOf, cpuPickChoice } from '../lib/localCpu';
 import { buildTable, CLASSIC_MODEL, DRAFT_MODEL, formatRecord, sideTable, simulateLeague, type LeagueTeam } from '../lib/season';
@@ -1157,6 +1157,15 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     {r.steal(t.game.pokemon(mon), steal.pick + 1, nameOf(Number(steal.teamId)), t.game.posName[steal.pos])}
                   </p>
                 );
+              })()}
+              {(() => {
+                // 🃏 Joker des Drafts (später Pick mit den meisten Saisontoren) – wie online
+                const log = state.log;
+                if (!log || log.length !== state.teams.length * ROUNDS) return null;
+                const joker = draftJoker(log.map((x, i) => ({ pick: i, team: x.team, pokemonId: x.id })), league.matches);
+                const mon = joker ? byId.get(joker.pokemonId) : undefined;
+                if (!joker || !mon) return null;
+                return <p className="draft-results__steal draft-results__joker">{r.joker(t.game.pokemon(mon), joker.pick + 1, nameOf(joker.team), joker.goals)}</p>;
               })()}
               <dl className="draft-records">
                 <div>

@@ -789,6 +789,32 @@ export function missedChance(
   return out;
 }
 
+/** Ab so vielen Saisontoren ist ein später Pick ein „Joker des Drafts“ */
+export const JOKER_MIN_GOALS = 3;
+
+/**
+ * Joker des Drafts: der Pick aus dem letzten Drittel des Drafts, der in der Saison die meisten Tore für sein Team
+ * schoss (ab JOKER_MIN_GOALS; bei Gleichstand der spätere Pick). team = Index in league.teams.
+ */
+export function draftJoker(
+  picks: readonly { pick: number; team: number; pokemonId: number }[],
+  matches: LeagueResult['matches'],
+): { pick: number; team: number; pokemonId: number; goals: number } | null {
+  if (!picks.length) return null;
+  const goals = new Map<string, number>();
+  for (const m of matches)
+    for (const [team, list] of [[m.home, m.homeScorers], [m.away, m.awayScorers]] as const)
+      for (const g of list) goals.set(`${team}:${g.pokemonId}`, (goals.get(`${team}:${g.pokemonId}`) ?? 0) + 1);
+  const from = Math.ceil((picks.length * 2) / 3);
+  let best: { pick: number; team: number; pokemonId: number; goals: number } | null = null;
+  for (const pk of picks) {
+    if (pk.pick < from) continue;
+    const n = goals.get(`${pk.team}:${pk.pokemonId}`) ?? 0;
+    if (n >= JOKER_MIN_GOALS && (!best || n > best.goals || (n === best.goals && pk.pick > best.pick))) best = { ...pk, goals: n };
+  }
+  return best;
+}
+
 /** Seit wie vielen Spieltagen (bis einschließlich `round`) der aktuelle Tabellenführer ununterbrochen vorn steht. */
 export function leaderSince(days: readonly Pick<Matchday, 'round' | 'leader'>[], round: number): number {
   const upTo = days.filter((d) => d.round <= round);
