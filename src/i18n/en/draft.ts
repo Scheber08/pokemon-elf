@@ -596,6 +596,7 @@ const draft: Messages['draft'] = {
     raceOut: 'First place is mathematically out of reach',
     raceLeading: (max) => `First place not certain yet – the chasers can still reach ${max} pts`,
     raceOpen: (max, top) => `First place still possible: up to ${max} pts (top: ${top})`,
+    goalMilestone: (pokemon, mark) => `${pokemon} reaches ${mark} goals this season!`,
     projection: (pts) => `Projection: ${pts} pts`,
     behindTop: (n) => (n === 0 ? 'level on points with the top' : `${n} pts behind 1st`),
     colAssists: 'Ast.',

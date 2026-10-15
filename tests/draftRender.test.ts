@@ -1844,6 +1844,28 @@ describe('ManagerSeason', () => {
     const hatEl = r5.container.querySelectorAll('.manager__hat').find((e) => e.textContent!.includes(ALL.find((p) => p.id === ids[0])!.de))!;
     expect(hatEl.textContent).toMatch(/^🎩 Hattrick: .+ \(.+\) trifft 3-mal$/);
     expect(hatEl.className.includes('is-you')).toBe(raw.matches[k2].home === idx);
+    // 🎯 Tor-Marken: nur eigene Spieler, wie goalMilestones (fünf Tore eines Pokémon im eigenen Spiel)
+    {
+      const { goalMilestones } = await import('../src/lib/leagueTimeline');
+      const own = raw.matches.findIndex((x) => x.round === md && (x.home === idx || x.away === idx));
+      const five = [10, 20, 30, 40, 50].map((min) => goal(ids[3], min));
+      const mark = {
+        ...s,
+        league: {
+          ...raw,
+          matches: raw.matches.map((x, i) =>
+            i === own ? (x.home === idx ? { ...x, hg: 5, ag: 0, homeScorers: five, awayScorers: [] } : { ...x, hg: 0, ag: 5, homeScorers: [], awayScorers: five }) : x,
+          ),
+        },
+      };
+      const expected = goalMilestones(tl.storedLeague(mark.league, mark.teams.length)!.matches, idx, md);
+      expect(expected.some((x) => x.pokemonId === ids[3])).toBe(true);
+      const r6 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(mark, 'h')), readOnly: false })));
+      await settle();
+      expect(r6.container.querySelectorAll('.manager__milestone').map((e) => e.textContent)).toEqual(
+        expected.map((x) => `🎯 ${ALL.find((p) => p.id === x.pokemonId)!.de} knackt die ${x.mark}-Tore-Marke!`),
+      );
+    }
     // Gezielt: 6:0 → „💥 Kantersieg“ beim letzten Spieltag (genau eine Zeile, eigenes Spiel fett)
     const rout = {
       ...s,

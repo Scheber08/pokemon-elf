@@ -482,3 +482,25 @@ describe('Titelkampf (rechnerisch)', () => {
     expect(titleChance(t, 9, 10)).toBeNull();
   });
 });
+
+describe('Tor-Marken', () => {
+  const g = (pokemonId: number) => ({ pokemonId, pos: 'ST' as const, minute: 10 });
+  const m = (round: number, home: number, away: number, hs: number[], as: number[]) => ({
+    round, home, away, hg: hs.length, ag: as.length, homeScorers: hs.map(g), awayScorers: as.map(g),
+  });
+  it('nur Marken, die am Spieltag erreicht wurden, nur eigene Spieler, höchste zuerst', async () => {
+    const { goalMilestones } = await import('../src/lib/leagueTimeline');
+    const matches = [
+      m(1, 0, 1, [7, 7, 7, 7, 8, 8, 8, 8, 8], [9, 9, 9, 9, 9]),
+      m(2, 1, 0, [9], [7, 8, 6, 6, 6, 6, 6]),
+      m(3, 0, 1, [7, 7, 7, 7, 7], []),
+    ];
+    // Spieltag 1: 8 trifft fünfmal → 5er-Marke; 7 (4) noch nicht; 9 spielt für Team 1
+    expect(goalMilestones(matches, 0, 1)).toEqual([{ pokemonId: 8, mark: 5 }]);
+    // Spieltag 2: 7 erreicht 5, 6 auch; 8 (6) hat die Marke schon
+    expect(goalMilestones(matches, 0, 2)).toEqual([{ pokemonId: 6, mark: 5 }, { pokemonId: 7, mark: 5 }]);
+    // Spieltag 3: 7 springt von 5 auf 10
+    expect(goalMilestones(matches, 0, 3)).toEqual([{ pokemonId: 7, mark: 10 }]);
+    expect(goalMilestones(matches, 1, 2)).toEqual([]);
+  });
+});

@@ -467,6 +467,29 @@ export function titleRace(table: readonly TableRow[]): TitleRace | null {
   return other;
 }
 
+/** Abstand der Tor-Marken (5, 10, 15 …) */
+const GOAL_MARK = 5;
+
+/** Saisontore-Marken (5, 10, 15 …), die Spieler von team am Spieltag round erreicht haben – höchste Marke zuerst */
+export function goalMilestones(matches: LeagueResult['matches'], team: number, round: number): { pokemonId: number; mark: number }[] {
+  const before = new Map<number, number>();
+  const now = new Map<number, number>();
+  for (const m of matches) {
+    if (m.round > round) continue;
+    const own = m.home === team ? m.homeScorers : m.away === team ? m.awayScorers : [];
+    for (const g of own) {
+      now.set(g.pokemonId, (now.get(g.pokemonId) ?? 0) + 1);
+      if (m.round < round) before.set(g.pokemonId, (before.get(g.pokemonId) ?? 0) + 1);
+    }
+  }
+  const out: { pokemonId: number; mark: number }[] = [];
+  for (const [pokemonId, n] of now) {
+    const mark = Math.floor(n / GOAL_MARK) * GOAL_MARK;
+    if (mark > 0 && mark > (before.get(pokemonId) ?? 0)) out.push({ pokemonId, mark });
+  }
+  return out.sort((a, b) => b.mark - a.mark || a.pokemonId - b.pokemonId);
+}
+
 /** Rechnerischer Titelkampf eines Teams: schon sicher vorn, noch möglich oder nicht mehr erreichbar */
 export type TitleChance = 'clinched' | 'open' | 'out';
 

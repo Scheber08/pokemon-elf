@@ -4,7 +4,7 @@ import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
 import { loadTips, MATCH_TIPS, saveTip, tipScore } from '../lib/managerTips';
-import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance } from '../lib/leagueTimeline';
+import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance, goalMilestones } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -734,6 +734,15 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
               <p key={`${h.team}-${h.pokemonId}`} className={`manager__hat ${h.team === you ? 'is-you' : ''}`}>
                 <span aria-hidden="true">🎩 </span>
                 {t.draft.ticker.hatTrick(pokemonName(h.pokemonId), nameOf(h.team), h.goals)}
+              </p>
+            ))}
+          {liveMin == null &&
+            you != null &&
+            goalMilestones(shown.matches, you, m.played).map((x) => (
+              // 🎯 Eigener Spieler erreicht am Spieltag eine 5er-Marke (5, 10, 15 … Saisontore)
+              <p key={x.pokemonId} className="manager__milestone is-you">
+                <span aria-hidden="true">🎯 </span>
+                {tx.goalMilestone(pokemonName(x.pokemonId), x.mark)}
               </p>
             ))}
           {liveMin == null && (() => {
