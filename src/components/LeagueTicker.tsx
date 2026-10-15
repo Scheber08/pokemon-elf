@@ -15,6 +15,7 @@ import {
   titleTieNote,
   topScorers,
   biggestUpset,
+  playerOfRound,
   type Matchday,
 } from '../lib/leagueTimeline';
 import { cupPens, cupStageOf, cupStatus, cupWinner, type CupInfo } from '../lib/cup';
@@ -369,6 +370,17 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
                   )}
                 </p>
               )}
+              {(() => {
+                // Spieler des Spieltags (wie in der Manager-Saison): meiste Torbeteiligungen, Tore doppelt
+                const star = playerOfRound(day.matches);
+                if (!star) return null;
+                return (
+                  <p className="league-board__star">
+                    <span aria-hidden="true">⭐</span> <strong>{t.draft.manager.starTitle}</strong> {pokemonName(star.pokemonId)}{' '}
+                    <span className="muted">({nameOf(star.teamIndex)})</span> – {t.draft.manager.starLine(star.goals, star.assists)}
+                  </p>
+                );
+              })()}
               <FixtureList
                 matches={day.matches}
                 you={you}

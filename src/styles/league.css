@@ -974,7 +974,8 @@
 }
 
 /* Ticker: Überraschung des Spieltags */
-.league-board__upset {
+.league-board__upset,
+.league-board__star {
   margin: 0 0 8px;
   padding: 6px 10px;
   border-radius: 8px;

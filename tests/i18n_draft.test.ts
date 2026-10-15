@@ -522,6 +522,11 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
         expect(next!.textContent).toMatch(/ · \d+(st|nd|rd|th)/);
       }
       if (c.expect.includes('Full time!')) expect(next).toBeNull();
+      // Spieler des Spieltags auf der Ergebnistafel (sobald es Torbeteiligungen gab)
+      if (c.expect.includes('Results')) {
+        const star = timeline.playerOfRound(league.matches.filter((m) => m.round === 2));
+        if (star) expect(container.querySelector('.league-board__star')!.textContent).toMatch(/Player of the matchday/);
+      }
       // Serie des Tabellenführers: sichtbar ab 3 Spieltagen in Folge, nicht am Saisonende
       const streak = container.querySelector('.league-ticker__leader');
       if (c.expect.includes('Full time!')) expect(streak).toBeNull();
