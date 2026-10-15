@@ -816,6 +816,10 @@ describe('ManagerSeason', () => {
     const clear = container.querySelectorAll('button').find((b) => b.textContent === 'Vergebenes entfernen') as MiniElement;
     await act(async () => clear.click());
     expect(room.setQueue).toHaveBeenCalledWith([free]);
+    // Nach unten schieben: erster Eintrag tauscht mit dem zweiten
+    const down = container.querySelectorAll('.draft-queue__btn').find((b) => b.textContent === '↓') as MiniElement;
+    await act(async () => down.click());
+    expect(room.setQueue).toHaveBeenLastCalledWith([free, taken]);
   });
 
   it('Shiny-Neuzugang: Hinweis im Status nur fürs eigene Team', async () => {

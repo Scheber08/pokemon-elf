@@ -239,6 +239,7 @@ const online: Messages['online'] = {
   queueRemove: '☆ Remove from wishlist',
   queueEmpty: 'Pick a Pokémon in the pool and add it to your wishlist.',
   queueNote: 'If your timer runs out (or someone picks for you), auto-pick takes the first fitting Pokémon from here.',
+  queueDown: (name) => `Move ${name} down`,
   queueUp: (name) => `Move ${name} up`,
   queueDrop: (name) => `Remove ${name}`,
   queueFull: (max) => `Your wishlist is full (max. ${max}).`,

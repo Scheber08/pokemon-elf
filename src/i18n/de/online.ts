@@ -265,6 +265,7 @@ const online = {
   queueEmpty: 'Wähle ein Pokémon im Pool und setz es auf deine Wunschliste.',
   queueNote: 'Läuft dein Timer ab (oder wählt jemand für dich), nimmt der Auto-Pick das erste passende Pokémon von hier.',
   queueUp: (name: string) => `${name} nach oben`,
+  queueDown: (name: string) => `${name} nach unten`,
   queueDrop: (name: string) => `${name} entfernen`,
   queueFull: (max: number) => `Die Wunschliste ist voll (höchstens ${max}).`,
   /** Statusleiste: Legendäre im eigenen Team bei einem Limit */

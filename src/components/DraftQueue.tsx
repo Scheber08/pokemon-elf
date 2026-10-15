@@ -65,6 +65,15 @@ export function DraftQueue({ room, selected }: { room: DraftRoom; selected: numb
                 <button
                   type="button"
                   className="draft-queue__btn"
+                  disabled={i === queue.length - 1}
+                  aria-label={t.online.queueDown(name(id))}
+                  onClick={() => set([...queue.slice(0, i), queue[i + 1], id, ...queue.slice(i + 2)])}
+                >
+                  ↓
+                </button>
+                <button
+                  type="button"
+                  className="draft-queue__btn"
                   aria-label={t.online.queueDrop(name(id))}
                   onClick={() => set(queue.filter((x) => x !== id))}
                 >
