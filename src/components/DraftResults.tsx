@@ -14,7 +14,7 @@ import type { SpriteStyle } from '../types';
 import { cupPath, cupPens, cupStageOf, cupStatus, cupWinner } from '../lib/cup';
 import { Confetti } from './Confetti';
 import { CupBracket, CupGroups, cupStatusText } from './CupBracket';
-import { FixtureList, FormDots } from './LeagueTicker';
+import { FixtureList, FormDots, TableLegend } from './LeagueTicker';
 import { ReplayToggle, useMatchReport } from './MatchReport';
 import { SeasonStats } from './SeasonStats';
 import { TrainerAvatar } from './TrainerAvatar';
@@ -483,6 +483,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
               </tbody>
             </table>
           </div>
+          {!cup && <TableLegend total={table.length} />}
         </section>
 
         <section className="card" aria-labelledby="draft-results-scorers">

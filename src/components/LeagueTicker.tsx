@@ -8,6 +8,8 @@ import {
   seasonFinishAt,
   secondsToKickoff,
   tableRowClass,
+  tableZone,
+  TABLE_BOTTOM_ZONE,
   titleRace,
   titleTieNote,
   topScorers,
@@ -639,7 +641,22 @@ function LiveTable({ table, day, you, nameOf, matches }: LiveTableProps) {
           ))}
         </tbody>
       </table>
+      <TableLegend total={table.length} />
     </div>
+  );
+}
+
+/** Legende der Tabellen-Zonen (grün oben, rot unten) – nur wenn es Zonen gibt (ab 6 Teams). */
+export function TableLegend({ total, top = 1 }: { total: number; top?: number }) {
+  const t = useT();
+  if (!tableZone(1, total, top)) return null;
+  return (
+    <p className="table-legend small muted">
+      <span className="table-legend__mark table-legend__mark--top" aria-hidden="true" />
+      {top > 1 ? t.draft.legendPromotion : t.draft.legendChampion}
+      <span className="table-legend__mark table-legend__mark--bottom" aria-hidden="true" />
+      {t.draft.legendBottom(TABLE_BOTTOM_ZONE)}
+    </p>
   );
 }
 

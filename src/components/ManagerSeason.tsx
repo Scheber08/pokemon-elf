@@ -15,7 +15,7 @@ import { teamLabel, type DraftRoom } from '../state/useDraftRoom';
 import type { FormationId, Pokemon, PosCode } from '../types';
 import { PosBadge } from './Badges';
 import { BenchRow } from './BenchRow';
-import { FixtureList, FormDots, Trend } from './LeagueTicker';
+import { FixtureList, FormDots, TableLegend, Trend } from './LeagueTicker';
 import { ReplayToggle, useMatchReport } from './MatchReport';
 import { CaptainPicker } from './CaptainPicker';
 import { JerseyEditor } from './JerseyEditor';
@@ -1098,6 +1098,7 @@ function ManagerTable({
           ))}
         </tbody>
       </table>
+      <TableLegend total={rows.length} top={top} />
     </div>
   );
 }

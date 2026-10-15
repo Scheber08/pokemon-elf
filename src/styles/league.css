@@ -1101,3 +1101,25 @@
 .league-table tr.is-zone-bottom td:first-child {
   box-shadow: inset 3px 0 0 var(--red);
 }
+
+/* Legende der Tabellen-Zonen */
+.table-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin: 8px 0 0;
+}
+.table-legend__mark {
+  display: inline-block;
+  width: 3px;
+  height: 12px;
+  border-radius: 1px;
+}
+.table-legend__mark--top {
+  background: #2e9a44;
+}
+.table-legend__mark--bottom {
+  background: var(--red);
+  margin-left: 8px;
+}

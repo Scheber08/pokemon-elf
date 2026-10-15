@@ -14,6 +14,9 @@ const draft = {
   on: 'An',
   off: 'Aus',
   draftBoard: 'Draft-Board',
+  legendChampion: 'Meister',
+  legendPromotion: 'Aufstieg',
+  legendBottom: (n: number) => `letzte ${n} Plätze`,
   topScorers: 'Torjäger',
   table: 'Tabelle',
   /** „3. Spieltag" */
