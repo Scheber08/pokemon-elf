@@ -764,6 +764,22 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(container.querySelector('.draft-board__top')).toBeNull();
   });
 
+  it('Draft läuft: Typ-Elf ab vier Pokémon eines Typs auf dem Board', async () => {
+    const f = FORMATION_IDS[0];
+    const fire = ALL.filter((p) => p.types.includes('fire') && !p.types.includes('water') && !p.leg && !p.myth).slice(0, 4);
+    const water = ALL.filter((p) => p.types.includes('water') && !p.types.includes('fire') && !p.leg && !p.myth).slice(0, 3);
+    const teams = [
+      { name: 'Mein Team', cpu: false, formation: f, slots: emptySlots(f).map((x, j) => (j < 4 ? fire[j].id : x)) },
+      { name: CLUB_NAMES[0], cpu: true, formation: f, slots: emptySlots(f).map((x, j) => (j < 3 ? water[j].id : x)) },
+    ];
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 0, legends: false, pick: 7, selected: null, seed: null }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const cols = container.querySelectorAll('.draft__board .draft__col');
+    expect(cols[0].querySelector('.draft-board__type')!.textContent).toBe('Feuer ×4Typ-Elf: 4 Pokémon vom Typ Feuer');
+    expect(cols[1].querySelector('.draft-board__type')).toBeNull();
+  });
+
   it('Draft läuft: 👑 am Team mit dem alleinigen besten Ø Fit', async () => {
     const { positionFit } = await import('../src/lib/fit');
     const { FORMATIONS } = await import('../src/config/formations');

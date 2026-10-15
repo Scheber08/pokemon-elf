@@ -5,6 +5,7 @@ import { POSITIONS } from '../config/positions';
 import { REGIONS } from '../config/regions';
 import { CLUB_NAMES } from '../config/season';
 import { PosBadge } from '../components/Badges';
+import { DraftTypeChip } from '../components/DraftBoard';
 import { FilterBar, typingElsewhere, useFilteredPokemon, type PokemonFilters } from '../components/FilterBar';
 import { CaptainPicker } from '../components/CaptainPicker';
 import { JerseyEditor } from '../components/JerseyEditor';
@@ -1490,6 +1491,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                         <span className="sr-only">{t.draft.board.topFit}</span>
                       </span>
                     )}
+                    <DraftTypeChip pokemon={tm.slots.flatMap((id) => (id != null && byId.get(id) ? [byId.get(id)!] : []))} />
                   </p>
                 )}
                 <ol>

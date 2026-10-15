@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PROFILES } from '../src/config/positions';
-import { TYPE_KEYS } from '../src/config/pokemonTypes';
+import { TYPE_KEYS, dominantType } from '../src/config/pokemonTypes';
 import { SCORING } from '../src/config/scoring';
 import { buildScale, cdf, soleTopIndex, compositeScore, positionFit, profileFit, typeBonus, weightScore } from '../src/lib/fit';
 import type { ProfileKey } from '../src/types';
@@ -154,5 +154,15 @@ describe('soleTopIndex (👑 auf dem Draft-Board)', () => {
     expect(soleTopIndex([72, 72, 10])).toBeNull();
     expect(soleTopIndex([80, null])).toBeNull();
     expect(soleTopIndex([])).toBeNull();
+  });
+});
+
+describe('dominantType (Typ-Elf auf dem Draft-Board)', () => {
+  const mk = (...types: (typeof TYPE_KEYS)[number][]) => ({ types });
+  it('ab vier Pokémon eines Typs, nur ohne Gleichstand', () => {
+    expect(dominantType([mk('fire'), mk('fire', 'flying'), mk('fire'), mk('water')])).toBeNull();
+    expect(dominantType([mk('fire'), mk('fire', 'flying'), mk('fire'), mk('fire', 'ground'), mk('water')])).toEqual({ type: 'fire', n: 4 });
+    expect(dominantType([...Array(4)].flatMap(() => [mk('fire'), mk('water')]))).toBeNull();
+    expect(dominantType([])).toBeNull();
   });
 });

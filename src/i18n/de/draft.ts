@@ -285,6 +285,8 @@ const draft = {
     fitTitle: (fit: number) => `Durchschnittlicher Positions-Fit der bisherigen Picks: ${fit}`,
     /** Krone am Team mit dem alleinigen besten Ø Fit */
     topFit: 'Bester Ø Fit bisher',
+    /** Typ-Elf: so viele Pokémon des Teams tragen diesen Typ */
+    typeTitle: (type: string, n: number) => `Typ-Elf: ${n} Pokémon vom Typ ${type}`,
     feedRun: (pos: string, n: number, of: number) => `Run auf ${pos}: ${n} der letzten ${of} Picks`,
     feedFitTitle: (fit: number) => `Positions-Fit: ${fit}`,
     megasTitle: (n: number, max: number) => `${n} von höchstens ${max === 1 ? 'einem Mega' : `${max} Megas`}`,

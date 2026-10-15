@@ -26,3 +26,13 @@ export const TYPES: Record<TypeKey, { color: string; text: string }> = {
 };
 
 export const TYPE_KEYS = Object.keys(TYPES) as TypeKey[];
+
+/** Häufigster Typ einer Elf, wenn ihn mindestens `min` Pokémon tragen und kein anderer Typ gleich oft vorkommt („Typ-Elf“) */
+export function dominantType(pokemon: { types: TypeKey[] }[], min = 4): { type: TypeKey; n: number } | null {
+  const counts = new Map<TypeKey, number>();
+  for (const p of pokemon) for (const ty of new Set(p.types)) counts.set(ty, (counts.get(ty) ?? 0) + 1);
+  const ranked = [...counts].sort((a, b) => b[1] - a[1]);
+  const [best, next] = ranked;
+  if (!best || best[1] < min || (next && next[1] === best[1])) return null;
+  return { type: best[0], n: best[1] };
+}

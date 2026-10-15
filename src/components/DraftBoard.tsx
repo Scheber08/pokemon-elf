@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { FORMATIONS } from '../config/formations';
+import { TYPES, dominantType } from '../config/pokemonTypes';
 import { useT } from '../i18n';
 import { DRAFT_BENCH_SLOT, type DraftSnapshot, type DraftTeam } from '../lib/api/draftContract';
 import { DRAFT_SS_SLOT, hasKind, isLegend, poolHasLegends, poolHasMegas, poolHasUltraBeasts } from '../lib/draftEngine';
@@ -11,6 +12,23 @@ import { usePokemonData } from '../state/PokemonData';
 import { PosBadge, TypeBadge } from './Badges';
 import { TrainerAvatar } from './TrainerAvatar';
 import '../styles/draft.css';
+
+/** Typ-Elf auf dem Board: mindestens vier Pokémon eines Teams teilen sich einen Typ (z. B. „Feuer ×4“) */
+export function DraftTypeChip({ pokemon }: { pokemon: Pokemon[] }) {
+  const t = useT();
+  const dom = dominantType(pokemon);
+  if (!dom) return null;
+  const name = t.game.type[dom.type];
+  const label = t.draft.board.typeTitle(name, dom.n);
+  return (
+    <span className="draft-board__type" title={label} style={{ background: TYPES[dom.type].color, color: TYPES[dom.type].text }}>
+      <span aria-hidden="true">
+        {name} ×{dom.n}
+      </span>
+      <span className="sr-only">{label}</span>
+    </span>
+  );
+}
 
 /** Kleine Marker an einem Team: Online-Punkt, Host, CPU, Du. */
 export function DraftTeamTags({ team, host, you }: { team: DraftTeam; host: boolean; you: boolean }) {
@@ -158,6 +176,7 @@ export function DraftBoard({ state, byId, currentId, nextId }: Props) {
                   <span className="sr-only">{t.draft.board.topFit}</span>
                 </span>
               )}
+              <DraftTypeChip pokemon={rows.flatMap((r) => (r.id != null && byId.get(r.id) ? [byId.get(r.id)!] : []))} />
               {shinyCount > 0 && (
                 <span className="draft-board__shinies" title={t.shiny.count(shinyCount)}>
                   <span aria-hidden="true">✨ {shinyCount}</span>

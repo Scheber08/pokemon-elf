@@ -264,6 +264,7 @@ const draft: Messages['draft'] = {
     ultraBeastsTitle: (n, max) => `${n} of at most ${plural(max, 'Ultra Beast', 'Ultra Beasts')}`,
     fitTitle: (fit) => `Average positional fit of the picks so far: ${fit}`,
     topFit: 'Best average fit so far',
+    typeTitle: (type, n) => `Type squad: ${n} ${type}-type Pokémon`,
     feedRun: (pos, n, of) => `Run on ${pos}: ${n} of the last ${of} picks`,
     feedFitTitle: (fit) => `Positional fit: ${fit}`,
     megasTitle: (n, max) => `${n} of at most ${plural(max, 'Mega', 'Megas')}`,

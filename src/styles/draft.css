@@ -1582,3 +1582,11 @@ button.draft-bench__slot {
   font-weight: 500;
   color: var(--text-dim);
 }
+/* Draft-Board: Typ-Elf (≥ 4 Pokémon eines Typs) */
+.draft-board__type {
+  white-space: nowrap;
+  border-radius: 4px;
+  padding: 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
