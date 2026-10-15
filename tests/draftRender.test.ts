@@ -1011,6 +1011,24 @@ describe('ManagerSeason', () => {
     expect(el!.textContent).toContain(`(${best} Tore)`);
   });
 
+  it('Eigener Platz: Hochrechnung der Punkte aufs Saisonende ab dem 3. Spieltag', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = playMatchday(playMatchday(startManagerSeason(s, ALL, SCALE), ALL, SCALE), ALL, SCALE);
+    let r = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    expect(r.container.querySelector('.manager__projection')).toBeNull();
+    for (let k = 0; k < 2; k++) s = playMatchday(s, ALL, SCALE);
+    r = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    const idx = s.teams.findIndex((t) => t.id === 'h');
+    const row = s.league!.table.find((x) => x.team === idx)!;
+    expect(row.played).toBe(4);
+    expect(r.container.querySelector('.manager__projection')!.textContent).toContain(`Hochrechnung: ${Math.round((row.pts / 4) * s.manager!.total)} Pkt`);
+  });
+
   it('Nach dem letzten Pick: Kapitän bis zum Anpfiff wählbar (mit Countdown), danach nicht mehr', async () => {
     const { DraftSeasonStage } = await import('../src/components/DraftSeasonStage');
     let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);

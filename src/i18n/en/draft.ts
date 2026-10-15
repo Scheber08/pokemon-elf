@@ -489,6 +489,7 @@ const draft: Messages['draft'] = {
     colGoals: 'Goals',
     yourPlace: (place, pts) => `Your team: place ${place} · ${pts} pts`,
     leadBy: (n) => (n === 0 ? 'level on points with 2nd' : `${n} pts clear`),
+    projection: (pts) => `Projection: ${pts} pts`,
     behindTop: (n) => (n === 0 ? 'level on points with the top' : `${n} pts behind 1st`),
     colAssists: 'Ast.',
     assistsTitle: 'Assists this season',

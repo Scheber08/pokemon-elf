@@ -261,6 +261,13 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
                     : tx.behindTop(shown.table[0].pts - shown.table[at].pts)}
                 </span>
               )}
+              {/* Hochrechnung aufs Saisonende (Punkteschnitt × alle Spiele), erst ab dem 3. Spieltag */}
+              {m.played >= 3 && m.played < m.total && shown.table[at].played > 0 && (
+                <span className="muted manager__projection">
+                  {' · '}
+                  {tx.projection(Math.round((shown.table[at].pts / shown.table[at].played) * m.total))}
+                </span>
+              )}
               {s.teams[you]?.goal && (
                 <span className="manager__goal">
                   {' · 🎯 '}
