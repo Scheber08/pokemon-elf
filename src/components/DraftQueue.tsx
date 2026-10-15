@@ -133,7 +133,8 @@ export function DraftQueue({
           {t.online.queueClearTaken(gone.length)}
         </button>
       )}
-      <p className="muted small">{t.online.queueNote}</p>
+      {/* Erklärung zum Auto-Pick erst, wenn etwas auf der Liste steht – leer bleibt die Karte kompakt */}
+      {queue.length > 0 && <p className="muted small">{t.online.queueNote}</p>}
     </section>
   );
 }

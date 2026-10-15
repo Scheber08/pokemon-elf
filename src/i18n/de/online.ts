@@ -282,7 +282,7 @@ const online = {
   queueCount: (n: number, max: number) => `${n}/${max}`,
   queueAdd: '★ Auf die Wunschliste',
   queueRemove: '☆ Von der Wunschliste',
-  queueEmpty: 'Wähle ein Pokémon im Pool und setz es auf deine Wunschliste.',
+  queueEmpty: 'Wähle ein Pokémon im Pool und setz es auf deine Wunschliste – der Auto-Pick nimmt dann zuerst von hier.',
   queueNote: 'Läuft dein Timer ab (oder wählt jemand für dich), nimmt der Auto-Pick das erste passende Pokémon von hier.',
   queueUp: (name: string) => `${name} nach oben`,
   queueDown: (name: string) => `${name} nach unten`,

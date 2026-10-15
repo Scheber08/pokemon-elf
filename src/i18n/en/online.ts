@@ -256,7 +256,7 @@ const online: Messages['online'] = {
   queueCount: (n, max) => `${n}/${max}`,
   queueAdd: '★ Add to wishlist',
   queueRemove: '☆ Remove from wishlist',
-  queueEmpty: 'Pick a Pokémon in the pool and add it to your wishlist.',
+  queueEmpty: 'Pick a Pokémon in the pool and add it to your wishlist – auto-pick then takes from here first.',
   queueNote: 'If your timer runs out (or someone picks for you), auto-pick takes the first fitting Pokémon from here.',
   queueDown: (name) => `Move ${name} down`,
   queueUp: (name) => `Move ${name} up`,

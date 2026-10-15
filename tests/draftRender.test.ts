@@ -568,8 +568,11 @@ describe('DraftLive', () => {
     const st = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
     const id = ALL.find((p) => p.gen === 1)!.id;
     const room = fakeRoom({ ...snap(st, 'h'), queue: [] });
-    await render(app(h(DraftQueue, { room, selected: id })));
+    const qv = await render(app(h(DraftQueue, { room, selected: id })));
     await settle();
+    // Leere Liste: kompakt, ohne den Absatz zum Auto-Pick (der steht kurz im Leertext)
+    expect(qv.container.textContent).toContain('der Auto-Pick nimmt dann zuerst von hier');
+    expect(qv.container.textContent).not.toContain('Läuft dein Timer ab');
     const ev = Object.assign(new MiniEvent('keydown', { bubbles: true, cancelable: true }), { key: 'w', ctrlKey: false, metaKey: false, altKey: false });
     await act(async () => void window.dispatchEvent(ev as unknown as Event));
     expect(room.setQueue).toHaveBeenCalledWith([id]);
