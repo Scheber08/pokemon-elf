@@ -775,7 +775,8 @@
   border-radius: 5px;
   padding: 1px 2px;
 }
-.draft-board__legends {
+.draft-board__legends,
+.draft-board__fit {
   white-space: nowrap;
 }
 .draft-board__legends.is-full {

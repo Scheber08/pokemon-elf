@@ -258,6 +258,7 @@ const draft = {
     /** Ultrabestien im Team bei einem Limit („UB 1/2") – Tooltip */
     ultraBeastsTitle: (n: number, max: number) => `${n} von höchstens ${max === 1 ? 'einer Ultrabestie' : `${max} Ultrabestien`}`,
     /** Megas im Team bei einem Limit („M 1/2") – Tooltip */
+    fitTitle: (fit: number) => `Durchschnittlicher Positions-Fit der bisherigen Picks: ${fit}`,
     megasTitle: (n: number, max: number) => `${n} von höchstens ${max === 1 ? 'einem Mega' : `${max} Megas`}`,
     /** Wurf, unter dem ein Pick fiel (Verlauf) */
     rollTitle: (region: string, type: string) => `Wurf: ${region} + ${type}`,

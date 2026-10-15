@@ -238,6 +238,7 @@ const draft: Messages['draft'] = {
     auto: ' (auto)',
     legendsTitle: (n, max) => `${n} of at most ${plural(max, 'legendary/mythical', 'legendaries/mythicals')}`,
     ultraBeastsTitle: (n, max) => `${n} of at most ${plural(max, 'Ultra Beast', 'Ultra Beasts')}`,
+    fitTitle: (fit) => `Average positional fit of the picks so far: ${fit}`,
     megasTitle: (n, max) => `${n} of at most ${plural(max, 'Mega', 'Megas')}`,
     rollTitle: (region, type) => `Roll: ${region} + ${type}`,
   },

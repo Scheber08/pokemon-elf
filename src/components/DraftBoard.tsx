@@ -5,6 +5,8 @@ import { DRAFT_SS_SLOT, hasKind, isLegend, poolHasLegends, poolHasMegas, poolHas
 import { teamLabel, type FeedItem } from '../state/useDraftRoom';
 import type { Pokemon, PosCode } from '../types';
 import { parseLook } from '../lib/trainer';
+import { positionFit } from '../lib/fit';
+import { usePokemonData } from '../state/PokemonData';
 import { PosBadge, TypeBadge } from './Badges';
 import { TrainerAvatar } from './TrainerAvatar';
 import '../styles/draft.css';
@@ -39,6 +41,8 @@ interface Props {
 /** Draft-Board: alle Teams als Spalten (Draft-Reihenfolge), der letzte Pick leuchtet. */
 export function DraftBoard({ state, byId, currentId }: Props) {
   const t = useT();
+  const { scale } = usePokemonData();
+  const sc = scale('all');
   const last = state.picks.length ? state.picks[state.picks.length - 1] : null;
   const maxLegends = state.settings.maxLegends;
   const legendLimit = maxLegends != null && poolHasLegends(state.settings) ? maxLegends : null;
@@ -66,6 +70,12 @@ export function DraftBoard({ state, byId, currentId }: Props) {
           }).length;
         const ultraBeasts = ofKind('ub');
         const megas = ofKind('mega');
+        // Ø Positions-Fit der gesetzten Elf (Bank und Standardschütze zählen nicht) – grobe Live-Stärke im Draft
+        const fits = rows.flatMap((r) => {
+          const p = r.id != null && r.pos && r.pos !== 'SS' ? byId.get(r.id) : undefined;
+          return p && r.pos ? [positionFit(p, r.pos, sc)] : [];
+        });
+        const avgFit = fits.length ? Math.round(fits.reduce((a, b) => a + b, 0) / fits.length) : null;
         const shinyCount = rows.filter((r) => r.id != null && state.shinies?.includes(r.id)).length;
         // Vereinsnamen der CPU-Teams erst bei der Anzeige übersetzen
         const name = teamLabel(team, t);
@@ -115,6 +125,12 @@ export function DraftBoard({ state, byId, currentId }: Props) {
                     M {megas}/{megaLimit}
                   </span>
                   <span className="sr-only">{t.draft.board.megasTitle(megas, megaLimit)}</span>
+                </span>
+              )}
+              {avgFit != null && (
+                <span className="draft-board__fit" title={t.draft.board.fitTitle(avgFit)}>
+                  <span aria-hidden="true">Ø {avgFit}</span>
+                  <span className="sr-only">{t.draft.board.fitTitle(avgFit)}</span>
                 </span>
               )}
               {shinyCount > 0 && (

@@ -394,6 +394,9 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     expect(all).toContain('Recent picks');
     expect(container.querySelectorAll('.draft-board__captain')).toHaveLength(1);
     expect(container.querySelectorAll('.draft-board__shinies')).toHaveLength(1);
+    // Ø Fit je Team mit Picks
+    expect(container.querySelectorAll('.draft-board__fit').length).toBeGreaterThanOrEqual(1);
+    expect(container.querySelector('.draft-board__fit')!.textContent).toMatch(/^Ø \d+Average positional fit of the picks so far: \d+$/);
     expect(all).toContain(clubEn(cpu.name));
     expect(germanLeft(container)).toEqual([]);
   });
