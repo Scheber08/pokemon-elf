@@ -412,6 +412,29 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(saved.teams[0].slots.filter((x: number | null) => x != null)).toHaveLength(1);
   });
 
+  it('Lokale Liga: Konfetti nur, wenn ein menschliches Team Meister wird', async () => {
+    const total = (p: (typeof ALL)[number]) => p.hp + p.atk + p.def + p.spa + p.spd + p.spe;
+    const pool = ALL.filter((p) => !p.leg && !p.myth && !p.form).sort((a, b) => total(b) - total(a));
+    const strong = pool.slice(0, 11);
+    const weak = pool.slice(-33);
+    const mk = (humanStrong: boolean) =>
+      [0, 1, 2, 3].map((i) => {
+        const formation = FORMATION_IDS[0];
+        const mons = i === 0 ? (humanStrong ? strong : weak.slice(0, 11)) : i === 1 && !humanStrong ? strong : weak.slice((i % 3) * 11, (i % 3) * 11 + 11);
+        return { name: i === 0 ? 'Mein Team' : CLUB_NAMES[i], cpu: i !== 0, formation, slots: emptySlots(formation).map((_, j) => mons[j].id) };
+      });
+    for (const humanStrong of [true, false]) {
+      localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'league', teams: mk(humanStrong), region: 0, legends: false, pick: 44, selected: null, seed: 7 }));
+      const { container, root } = await render(app(h(Draft)));
+      await settle();
+      const champ = container.querySelector('.draft__champion strong')!.textContent;
+      expect(champ).toBe(humanStrong ? 'Mein Team' : CLUB_NAMES[1]);
+      expect(doc.body.querySelectorAll('canvas').filter((c) => c.className === 'confetti')).toHaveLength(humanStrong ? 1 : 0);
+      await act(async () => root.unmount());
+    }
+    localStorage.removeItem('pokemon-elf:draft');
+  });
+
   it('Liga mit 6 Teams: Meister grün markiert, unten keine rote Zone, Legende nur „Champions“', async () => {
     storeLang('en');
     const pool = ALL.filter((p) => !p.leg && !p.myth);

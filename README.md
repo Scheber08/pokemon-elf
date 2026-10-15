@@ -124,7 +124,7 @@ Alle Zahlen sind in `src/config/` änderbar – die Tests prüfen Eigenschaften,
 - **151 Challenge** – pro Runde ein zufälliges Pokémon aus den Original-151, 5 Rerolls.
 - **Retro 34–0** – Modus der 151-Seite: Typ-Würfel wie bei 34–0, aber nur Kanto, Retro-Sprites,
   Gen-1-Skalierung, eigene Rangliste.
-- **Fantasy-Draft** – 2–8 Teams (Hot-Seat mit „📱 Gerät an … weitergeben“ beim Wechsel zwischen Menschen, oder CPU; CPU-Teams und 🎲 heißen wie Teams aus den Online-Ranglisten), Snake-Draft über 11 Runden, danach Liga mit Tabelle
+- **Fantasy-Draft** – 2–8 Teams (Hot-Seat mit „📱 Gerät an … weitergeben“ beim Wechsel zwischen Menschen, oder CPU; CPU-Teams und 🎲 heißen wie Teams aus den Online-Ranglisten), Snake-Draft über 11 Runden, danach Liga mit Tabelle (Konfetti, wenn ein menschliches Team Meister wird)
   (gesamt/Heim/Auswärts), Statistik (Vorlagen, Scorer, Teamwerte mit 🧤 Spielen ohne Gegentor), Saisonrekorden (u. a. Weiße Weste: meiste Spiele ohne Gegentor; Hattricks: Anzahl und der erste), Meisterchancen (50 Neuausspielungen), Zeitreise, Kreuztabelle, „Deine Duelle“, Revanche (gleiche Teams, neuer Draft) und
   Titelsammlung auf dem Gerät (`draft-champions` im localStorage).
 - **Online-Draft** – Liga anlegen, Code/Link teilen, gemeinsam live draften (siehe unten).

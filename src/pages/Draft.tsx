@@ -8,6 +8,7 @@ import { PosBadge } from '../components/Badges';
 import { DraftPickFeed, DraftTypeChip, KindMarks, RoundBest } from '../components/DraftBoard';
 import type { FeedItem } from '../state/useDraftRoom';
 import { PoolStars, poolStars, StarsLanded } from '../components/PoolStars';
+import { Confetti } from '../components/Confetti';
 import { FilterBar, typingElsewhere, useFilteredPokemon, type PokemonFilters } from '../components/FilterBar';
 import { CaptainPicker } from '../components/CaptainPicker';
 import { JerseyEditor } from '../components/JerseyEditor';
@@ -735,6 +736,8 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
         <header className="page-head">
           <h1 className="page-title">{tx.leagueTitle}</h1>
           <p className="page-lead">{tx.leagueLead(league.matches.length)}</p>
+          {/* Meister ist ein menschliches Team: Konfetti wie im Online-Ergebnis */}
+          {champion && state.teams[champion.team] && !state.teams[champion.team].cpu && <Confetti />}
           {champion && (
             <p className="draft__champion">
               <span aria-hidden="true">★ </span>

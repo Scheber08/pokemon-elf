@@ -10,7 +10,8 @@ export function Confetti({ duration = 4500 }: { duration?: number }) {
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const canvas = ref.current;
-    const ctx = canvas?.getContext('2d');
+    // Ohne Canvas-Unterstützung (z. B. Test-DOM) still nichts zeichnen
+    const ctx = typeof canvas?.getContext === 'function' ? canvas.getContext('2d') : null;
     if (!canvas || !ctx) return;
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     const resize = () => {
