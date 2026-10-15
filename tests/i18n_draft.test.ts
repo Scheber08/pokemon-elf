@@ -580,6 +580,15 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     );
     await settle();
     expect(container.querySelector('.league-ticker__leader')!.textContent).toContain(`have led the table for ${timeline.leaderSince(days, k + 1)} matchdays`);
+    // Spieltag mit Last-Minute-Sieg: Zeile auf der Ergebnistafel
+    const lateDay = days.findIndex((d, i) => i < days.length - 1 && timeline.lateWinner(d.matches));
+    expect(lateDay).toBeGreaterThanOrEqual(0);
+    const late = timeline.lateWinner(days[lateDay].matches)!;
+    const v2 = await render(
+      app(h(LeagueTicker, { league, teamNames: names, highlight: 0, startsAt: Date.now() - (lateDay + 0.5) * step, stepMs: step, clockOffset: 0, onDone: () => {} })),
+    );
+    await settle();
+    expect(v2.container.querySelector('.league-board__late')!.textContent).toContain(`winning goal in the ${late.minute > 90 ? `90+${late.minute - 90}` : late.minute}'`);
   });
 });
 
