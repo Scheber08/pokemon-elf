@@ -114,6 +114,13 @@ const draft = {
     cpuTag: '(CPU)',
     cpuScouting: (team: string) => `${team} scoutet …`,
     cpuNeeds: (positions: string) => `(sucht noch: ${positions})`,
+    /** Schnellstart-Vorlagen im lokalen Setup (Titel) */
+    localPresetNote: {
+      classic: 'Kanto ohne Legendäre, Formen und Megas',
+      allRegions: 'Alle Regionen mit Legendären und Formen',
+      megaChaos: 'Alle Regionen mit Legendären, Formen und 2 Megas pro Team',
+      shinyParty: 'Alle Regionen ohne Legendäre, 10 % Shiny-Chance je Pick',
+    },
     pickTitle: 'Wähle ein Pokémon',
     /** Folgt auf den fett gesetzten Pokémon-Namen */
     selectedHint: ' gewählt. Klicke auf einen freien Platz auf dem Feld.',

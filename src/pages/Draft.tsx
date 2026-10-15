@@ -155,6 +155,16 @@ const TITLE_RUNS = 50;
 const MEGAS_UNLIMITED = 99;
 const MEGA_OPTIONS = [0, 1, 2, 3, MEGAS_UNLIMITED];
 
+/** Schnellstart-Vorlagen des lokalen Drafts (wie online, nur die lokalen Einstellungen) */
+type LocalPresetId = 'classic' | 'allRegions' | 'megaChaos' | 'shinyParty';
+const LOCAL_PRESETS: Record<LocalPresetId, { region: RegionFilter; legends: boolean; forms: boolean; megas: number; shinyParty: boolean }> = {
+  classic: { region: 1, legends: false, forms: false, megas: 0, shinyParty: false },
+  allRegions: { region: 0, legends: true, forms: true, megas: 0, shinyParty: false },
+  megaChaos: { region: 0, legends: true, forms: true, megas: 2, shinyParty: false },
+  shinyParty: { region: 0, legends: false, forms: false, megas: 0, shinyParty: true },
+};
+const LOCAL_PRESET_IDS = Object.keys(LOCAL_PRESETS) as LocalPresetId[];
+
 /** Snake-Draft: Runde 1 vorwärts, Runde 2 rückwärts … */
 function teamForPick(pick: number, n: number): number {
   const round = Math.floor(pick / n);
@@ -586,6 +596,34 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
             <h2 id="draft-pool" className="section-title">
               {t.draft.pool}
             </h2>
+            {(() => {
+              // Schnellstart: mehrere Pool-Regeln auf einmal (Shinys an, Party nur bei der Vorlage)
+              const apply = (id: LocalPresetId) =>
+                setState(({ noShinies: _off, shinyParty: _party, ...s }) => {
+                  const p = LOCAL_PRESETS[id];
+                  return { ...s, region: p.region, legends: p.legends, forms: p.forms, megas: p.megas, ...(p.shinyParty ? { shinyParty: true as const } : {}) };
+                });
+              return (
+                <div className="field draft-presets">
+                  <span className="field__label">{t.online.presets}</span>
+                  <div className="chips">
+                    {LOCAL_PRESET_IDS.map((id) => (
+                      <button key={id} type="button" className="chip" title={tx.localPresetNote[id]} onClick={() => apply(id)}>
+                        {t.online.presetName[id]}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      className="chip draft-presets__random"
+                      title={t.online.presetRandomTitle}
+                      onClick={() => apply(LOCAL_PRESET_IDS[Math.floor(Math.random() * LOCAL_PRESET_IDS.length)])}
+                    >
+                      🎲 {t.online.presetRandom}
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
             <Segmented
               label={tx.region}
               wrap

@@ -113,6 +113,12 @@ const draft: Messages['draft'] = {
     cpuTag: '(CPU)',
     cpuScouting: (team) => `${team} is scouting …`,
     cpuNeeds: (positions) => `(still looking for: ${positions})`,
+    localPresetNote: {
+      classic: 'Kanto without legendaries, forms and Megas',
+      allRegions: 'All regions with legendaries and forms',
+      megaChaos: 'All regions with legendaries, forms and 2 Megas per team',
+      shinyParty: 'All regions without legendaries, 10% shiny chance per pick',
+    },
     pickTitle: 'Pick a Pokémon',
     selectedHint: ' selected. Click a free spot on the pitch.',
     yourTurn: (team) => `${team}, you’re up.`,

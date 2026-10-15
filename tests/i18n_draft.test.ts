@@ -622,6 +622,20 @@ describe('/draft an einem Gerät auf Englisch', () => {
     // Setup: „Stars in the pool“ mit fünf Pokémon
     expect(r.container.querySelector('.pool-stars h2')!.textContent).toBe('⭐ Stars in the pool');
     expect(r.container.querySelectorAll('.pool-stars li')).toHaveLength(5);
+    // Schnellstart-Vorlagen: setzen Region, Legendäre, Formen, Megas und Shiny-Party auf einmal
+    {
+      const chip = (label: string) => r.container.querySelectorAll('.draft-presets .chip').find((b) => b.textContent === label) as MiniElement;
+      const saved = () => JSON.parse(localStorage.getItem('pokemon-elf:draft')!);
+      await act(async () => chip('Mega chaos').click());
+      expect(saved()).toMatchObject({ region: 0, legends: true, forms: true, megas: 2 });
+      expect(saved().shinyParty).toBeUndefined();
+      await act(async () => chip('Shiny party').click());
+      expect(saved()).toMatchObject({ region: 0, legends: false, forms: false, megas: 0, shinyParty: true });
+      await act(async () => chip('Classic').click());
+      expect(saved()).toMatchObject({ region: 1, legends: false, forms: false, megas: 0 });
+      expect(saved().shinyParty).toBeUndefined();
+      expect(chip('Classic').getAttribute('title')).toBe('Kanto without legendaries, forms and Megas');
+    }
     // Pick-Nummern der menschlichen Teams (Snake, Reihenfolge der Liste)
     {
       const n = r.container.querySelectorAll('.draft__teamrow').length;
