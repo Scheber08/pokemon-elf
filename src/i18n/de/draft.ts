@@ -286,6 +286,7 @@ const draft = {
     /** Krone am Team mit dem alleinigen besten Ø Fit */
     topFit: 'Bester Ø Fit bisher',
     /** Typ-Elf: so viele Pokémon des Teams tragen diesen Typ */
+    rainbowTitle: (n: number) => `Typen-Regenbogen: ${n} verschiedene Typen`,
     typeTitle: (type: string, n: number) => `Typ-Elf: ${n} Pokémon vom Typ ${type}`,
     /** Blitz-Pick im Verlauf (⚡) */
     feedFast: (s: number) => `Blitz-Pick: nach ${s} ${s === 1 ? 'Sekunde' : 'Sekunden'}`,

@@ -871,6 +871,32 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(cols[1].querySelector('.draft-board__type')).toBeNull();
   });
 
+  it('Draft läuft: 🌈 Typen-Regenbogen ab zehn verschiedenen Typen', async () => {
+    const f = FORMATION_IDS[0];
+    // Gierig bunte Pokémon sammeln: jedes bringt mindestens einen neuen Typ
+    const seen = new Set<string>();
+    const colorful: typeof ALL = [];
+    for (const p of ALL) {
+      if (p.leg || p.myth || colorful.length >= 11 || seen.size >= 10) continue;
+      if (p.types.some((ty) => !seen.has(ty))) {
+        colorful.push(p);
+        p.types.forEach((ty) => seen.add(ty));
+      }
+    }
+    expect(seen.size).toBeGreaterThanOrEqual(10);
+    const fire = ALL.filter((p) => p.types.length === 1 && p.types[0] === 'fire' && !p.leg && !p.myth).slice(0, 3);
+    const teams = [
+      { name: 'Mein Team', cpu: false, formation: f, slots: emptySlots(f).map((x, j) => colorful[j]?.id ?? x) },
+      { name: CLUB_NAMES[0], cpu: true, formation: f, slots: emptySlots(f).map((x, j) => (j < 3 ? fire[j].id : x)) },
+    ];
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 0, legends: false, pick: colorful.length + 3, selected: null, seed: null }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const cols = container.querySelectorAll('.draft__board .draft__col');
+    expect(cols[0].querySelector('.draft-board__rainbow')!.textContent).toBe(`🌈 ${seen.size}Typen-Regenbogen: ${seen.size} verschiedene Typen`);
+    expect(cols[1].querySelector('.draft-board__rainbow')).toBeNull();
+  });
+
   it('Draft läuft: „🐍 Double pick“ an der Snake-Wende', async () => {
     storeLang('en');
     const [f, g] = [FORMATION_IDS[0], FORMATION_IDS[1]];

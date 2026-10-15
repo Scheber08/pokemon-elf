@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { FORMATIONS } from '../config/formations';
-import { TYPES, dominantType } from '../config/pokemonTypes';
+import { RAINBOW_TYPES, TYPES, dominantType, typeVariety } from '../config/pokemonTypes';
 import { useT } from '../i18n';
 import { DRAFT_BENCH_SLOT, type DraftSnapshot, type DraftTeam } from '../lib/api/draftContract';
 import { DRAFT_SS_SLOT, hasKind, isLegend, poolHasLegends, poolHasMegas, poolHasUltraBeasts, type LimitKind } from '../lib/draftEngine';
@@ -13,20 +13,33 @@ import { PosBadge, TypeBadge } from './Badges';
 import { TrainerAvatar } from './TrainerAvatar';
 import '../styles/draft.css';
 
-/** Typ-Elf auf dem Board: mindestens vier Pokémon eines Teams teilen sich einen Typ (z. B. „Feuer ×4“) */
+/**
+ * Typ-Chips auf dem Board: Typ-Elf (mindestens vier Pokémon eines Teams teilen sich einen Typ, z. B. „Feuer ×4“)
+ * und Typen-Regenbogen 🌈 (mindestens RAINBOW_TYPES verschiedene Typen).
+ */
 export function DraftTypeChip({ pokemon }: { pokemon: Pokemon[] }) {
   const t = useT();
   const dom = dominantType(pokemon);
-  if (!dom) return null;
-  const name = t.game.type[dom.type];
-  const label = t.draft.board.typeTitle(name, dom.n);
+  const variety = typeVariety(pokemon);
+  const name = dom ? t.game.type[dom.type] : '';
+  const label = dom ? t.draft.board.typeTitle(name, dom.n) : '';
   return (
-    <span className="draft-board__type" title={label} style={{ background: TYPES[dom.type].color, color: TYPES[dom.type].text }}>
-      <span aria-hidden="true">
-        {name} ×{dom.n}
-      </span>
-      <span className="sr-only">{label}</span>
-    </span>
+    <>
+      {dom && (
+        <span className="draft-board__type" title={label} style={{ background: TYPES[dom.type].color, color: TYPES[dom.type].text }}>
+          <span aria-hidden="true">
+            {name} ×{dom.n}
+          </span>
+          <span className="sr-only">{label}</span>
+        </span>
+      )}
+      {variety >= RAINBOW_TYPES && (
+        <span className="draft-board__type draft-board__rainbow" title={t.draft.board.rainbowTitle(variety)}>
+          <span aria-hidden="true">🌈 {variety}</span>
+          <span className="sr-only">{t.draft.board.rainbowTitle(variety)}</span>
+        </span>
+      )}
+    </>
   );
 }
 

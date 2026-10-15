@@ -264,6 +264,7 @@ const draft: Messages['draft'] = {
     ultraBeastsTitle: (n, max) => `${n} of at most ${plural(max, 'Ultra Beast', 'Ultra Beasts')}`,
     fitTitle: (fit) => `Average positional fit of the picks so far: ${fit}`,
     topFit: 'Best average fit so far',
+    rainbowTitle: (n) => `Type rainbow: ${n} different types`,
     typeTitle: (type, n) => `Type squad: ${n} ${type}-type Pokémon`,
     feedFast: (s) => `Lightning pick: after ${s} ${s === 1 ? 'second' : 'seconds'}`,
     feedKind: { legend: 'Legendary/mythical', ub: 'Ultra Beast', mega: 'Mega' },

@@ -102,7 +102,7 @@ const scouting = {
     },
     {
       q: 'Was bedeuten ⚡, 🏅, 👑, 💔, 🐍 und 🏁 im Draft?',
-      a: '⚡ im Pick-Verlauf: ein Blitz-Pick – selbst gewählt, höchstens 5 Sekunden nach dem vorigen Pick (fünf davon in einer Online-Liga bringen den Erfolg „Blitzdrafter“). 🏅: der Pick mit dem bisher besten Positions-Fit des Drafts. ★, UB und M hinter einem Namen im Pick-Verlauf: Legendäres/Mysteriöses, Ultrabestie, Mega. 👑 auf dem Board: das Team mit dem besten Ø Fit; ein farbiger Chip wie „Feuer ×4“ zeigt eine Typ-Elf. 💔: ein anderes Team hat ein Pokémon von deiner Wunschliste geschnappt. „🎲 Zufall“ merkt ein zufälliges passendes Pokémon vor. 🐍 heißt: Snake-Wende, du bist gleich noch einmal dran; 🏁 markiert die letzte Draft-Runde.',
+      a: '⚡ im Pick-Verlauf: ein Blitz-Pick – selbst gewählt, höchstens 5 Sekunden nach dem vorigen Pick (fünf davon in einer Online-Liga bringen den Erfolg „Blitzdrafter“). 🏅: der Pick mit dem bisher besten Positions-Fit des Drafts. ★, UB und M hinter einem Namen im Pick-Verlauf: Legendäres/Mysteriöses, Ultrabestie, Mega. 👑 auf dem Board: das Team mit dem besten Ø Fit; ein farbiger Chip wie „Feuer ×4“ zeigt eine Typ-Elf, „🌈 10“ einen Typen-Regenbogen (zehn oder mehr verschiedene Typen). 💔: ein anderes Team hat ein Pokémon von deiner Wunschliste geschnappt. „🎲 Zufall“ merkt ein zufälliges passendes Pokémon vor. 🐍 heißt: Snake-Wende, du bist gleich noch einmal dran; 🏁 markiert die letzte Draft-Runde.',
     },
     {
       q: 'Gibt es Tastenkürzel im Draft?',
