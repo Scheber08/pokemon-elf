@@ -35,7 +35,7 @@ import { load, save, STORAGE_KEYS } from '../lib/storage';
 import { bestCaptain, evaluateTeam } from '../lib/teamScore';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
-import type { FormationId, Pokemon, RegionFilter, Slots } from '../types';
+import type { FormationId, Pokemon, PosCode, RegionFilter, Slots } from '../types';
 import { DraftOnline } from './DraftOnline';
 import { FormDots, TableLegend } from '../components/LeagueTicker';
 import { PlaceChart } from '../components/PlaceChart';
@@ -325,6 +325,24 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     });
     return out;
   }, [team, pool, state.phase, scale]);
+  // ⏳ Wohl weg, bevor das Team am Zug wieder dran ist (wie online): die k stärksten Freien, k = fremde Picks dazwischen
+  const goneSoon = useMemo(() => {
+    if (!team || team.cpu || state.phase !== 'drafting') return new Set<number>();
+    let next = -1;
+    for (let p = state.pick + 1; p < totalPicks; p++)
+      if (teamForPick(p, n) === currentTeam) {
+        next = p;
+        break;
+      }
+    const k = next < 0 ? 0 : next - state.pick - 1;
+    if (k <= 0) return new Set<number>();
+    const sc = scale('all');
+    const field = (Object.keys(POSITIONS) as PosCode[]).filter((pos) => pos !== 'SS');
+    const ranked = pool
+      .map((p) => ({ id: p.id, fit: Math.max(...field.map((pos) => positionFit(p, pos, sc))) }))
+      .sort((a, b) => b.fit - a.fit || a.id - b.id);
+    return new Set(ranked.slice(0, k).map((x) => x.id));
+  }, [team, pool, state.phase, state.pick, currentTeam, n, totalPicks, scale]);
   // Megas zählen nur, soweit das Limit sie aufnimmt
   const poolSize = useMemo(() => {
     const base = all.filter(inPool);
@@ -1871,6 +1889,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     setTimeout(() => pitchRef.current?.scrollIntoView({ behavior: 'smooth' }), 60);
                   }
                 }}
+                note={(p) => (goneSoon.has(p.id) ? `⏳ ${t.online.goneSoon}` : null)}
                 className="pgrid-wrap--compact pgrid-wrap--scroll"
               />
             </section>

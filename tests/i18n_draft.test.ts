@@ -1169,6 +1169,29 @@ describe('/draft an einem Gerät auf Englisch', () => {
     localStorage.removeItem('pokemon-elf:draft');
   });
 
+  it('⏳ „bald weg“: die stärksten Freien vor dem nächsten Pick des Teams am Zug', async () => {
+    const f = FORMATION_IDS[0];
+    const teams = [0, 1, 2].map((i) => ({ name: i ? CLUB_NAMES[i] : 'Mein Team', cpu: false, formation: f, slots: emptySlots(f) }));
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: false, pick: 0, selected: null, seed: null, log: [] }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    // 3 Teams, Snake: Team 0 wählt Pick 0 und 5 → 4 fremde Picks dazwischen
+    const { POSITIONS } = await import('../src/config/positions');
+    const { positionFit } = await import('../src/lib/fit');
+    const field = (Object.keys(POSITIONS) as (keyof typeof POSITIONS)[]).filter((p) => p !== 'SS');
+    const expected = new Set(
+      ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth && !p.form)
+        .map((p) => ({ p, fit: Math.max(...field.map((pos) => positionFit(p, pos, SCALE))) }))
+        .sort((a, b) => b.fit - a.fit || a.p.id - b.p.id)
+        .slice(0, 4)
+        .map((x) => x.p.de),
+    );
+    const cards = container.querySelectorAll('.pcard').filter((c) => c.querySelector('.pcard__name'));
+    const marked = cards.filter((c) => (c.querySelector('.pcard__note')?.textContent ?? '') === '⏳ bald weg').map((c) => c.querySelector('.pcard__name')!.textContent);
+    expect(marked).toEqual(cards.map((c) => c.querySelector('.pcard__name')!.textContent).filter((n) => expected.has(n!)));
+    localStorage.removeItem('pokemon-elf:draft');
+  });
+
   it('Fortschrittsbalken: Picks des Teams am Zug als Striche', async () => {
     const f = FORMATION_IDS[0];
     const teams = [0, 1, 2].map((i) => ({ name: i ? CLUB_NAMES[i] : 'Mein Team', cpu: i > 0, formation: f, slots: emptySlots(f) }));
