@@ -19,7 +19,7 @@ import { useT } from '../i18n';
 import { draftsSupported } from '../lib/api/draftClient';
 import { positionFit } from '../lib/fit';
 import { emptySlots } from '../lib/formation';
-import { draftGrades, seasonEleven, tableRowClass } from '../lib/leagueTimeline';
+import { draftGrades, leagueTimeline, seasonEleven, tableRowClass } from '../lib/leagueTimeline';
 import { createRng, randomSeed, shuffle } from '../lib/rng';
 import { cpuLevelOf, cpuPickChoice } from '../lib/localCpu';
 import { CLASSIC_MODEL, DRAFT_MODEL, formatRecord, simulateLeague, type LeagueTeam } from '../lib/season';
@@ -31,6 +31,7 @@ import { useSettings } from '../state/Settings';
 import type { FormationId, Pokemon, RegionFilter, Slots } from '../types';
 import { DraftOnline } from './DraftOnline';
 import { TableLegend } from '../components/LeagueTicker';
+import { PlaceChart } from '../components/PlaceChart';
 import { SaveImageButton } from '../components/SaveImageButton';
 import { ReplayToggle, useMatchReport } from '../components/MatchReport';
 import '../styles/draft.css';
@@ -658,6 +659,20 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
             </ol>
           </section>
         </div>
+        {(() => {
+          // Saisonverlauf des (ersten) menschlichen Teams – wie im Online-Draft
+          const you = state.teams.findIndex((tm) => !tm.cpu);
+          const days = leagueTimeline(league);
+          if (you < 0 || days.length < 2) return null;
+          return (
+            <section className="card" aria-labelledby="draft-local-chart">
+              <h2 id="draft-local-chart" className="section-title">
+                {t.draft.results.placeChart}
+              </h2>
+              <PlaceChart places={days.map((d) => d.places[you])} teams={league.teams.length} />
+            </section>
+          );
+        })()}
         {state.teams.length >= 2 && (() => {
           // Elf der Saison wie im Online-Draft: beste Scorer je Position über alle Teams
           const eleven = seasonEleven(league, state.teams, byId, scale('all'));
