@@ -5,6 +5,8 @@ const common: Messages['common'] = {
   close: 'Close',
   retry: 'Try again',
   randomName: 'Random club name',
+  randomFormation: 'Random formation',
+  randomFormationTitle: 'Roll a different formation',
   settings: 'Settings',
   copyLink: 'Copy link',
   linkCopied: 'Link copied!',

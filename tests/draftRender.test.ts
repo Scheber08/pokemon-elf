@@ -880,6 +880,22 @@ describe('DraftLobby', () => {
     stubFetch();
   });
 
+  it('🎲 Zufällige Formation: wählt eine andere Formation fürs eigene Team', async () => {
+    const st = lobby(2, { region: 1, maxTeams: 6 });
+    const room = fakeRoom(snap(st, 'h'));
+    const { container } = await render(app(h(DraftLobby, { room })));
+    await settle();
+    const btn = container.querySelector('.random-formation') as MiniElement;
+    expect(btn.textContent).toBe('🎲 Zufällige Formation');
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    await act(async () => btn.click());
+    vi.restoreAllMocks();
+    const { FORMATION_IDS } = await import('../src/config/formations');
+    const current = st.teams.find((t) => t.id === 'h')!.formation;
+    const expected = FORMATION_IDS.filter((f) => f !== current)[0];
+    expect(room.updateTeam).toHaveBeenCalledWith({ formation: expected });
+  });
+
   it('Stars im Pool: die fünf stärksten Pokémon der Einstellungen mit bester Position', async () => {
     const { poolStars } = await import('../src/components/PoolStars');
     const { poolOf } = await import('../src/lib/draftEngine');

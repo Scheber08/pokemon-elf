@@ -1705,3 +1705,8 @@ button.draft-bench__slot {
 .draft__clock.is-urgent strong {
   color: var(--red);
 }
+
+/* Teamfelder: 🎲 zufällige Formation unter der Auswahl */
+.random-formation {
+  margin: 4px 0 14px;
+}

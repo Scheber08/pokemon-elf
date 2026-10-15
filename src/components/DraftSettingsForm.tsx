@@ -815,6 +815,19 @@ export function DraftTeamFields({ name, formation, onName, onFormation, onCommit
         onChange={(f) => !disabled && onFormation(f)}
         options={FORMATION_IDS.map((f) => ({ value: f, label: f }))}
       />
+      <button
+        type="button"
+        className="btn btn--small btn--ghost random-formation"
+        disabled={disabled}
+        title={t.common.randomFormationTitle}
+        onClick={() => {
+          // Eine andere als die aktuelle Formation
+          const others = FORMATION_IDS.filter((f) => f !== formation);
+          onFormation(others[Math.floor(Math.random() * others.length)]);
+        }}
+      >
+        🎲 {t.common.randomFormation}
+      </button>
     </div>
   );
 }

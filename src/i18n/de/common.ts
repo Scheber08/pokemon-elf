@@ -3,6 +3,8 @@ const common = {
   close: 'Schließen',
   retry: 'Erneut versuchen',
   randomName: 'Zufälliger Vereinsname',
+  randomFormation: 'Zufällige Formation',
+  randomFormationTitle: 'Eine andere Formation auswürfeln',
   settings: 'Einstellungen',
   copyLink: 'Link kopieren',
   linkCopied: 'Link kopiert!',
