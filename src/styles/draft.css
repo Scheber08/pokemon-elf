@@ -1431,3 +1431,19 @@ button.draft-bench__slot {
 .draft-lobby__ready {
   margin-bottom: 0.5rem;
 }
+
+/* Alle Mitspieler bereit: Start-Knopf pulsiert leicht */
+.draft-start--go {
+  animation: draft-go 1.6s ease-in-out infinite;
+}
+@keyframes draft-go {
+  50% {
+    box-shadow: 0 0 0 6px rgba(242, 194, 48, 0.35);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .draft-start--go {
+    animation: none;
+    box-shadow: 0 0 0 3px rgba(242, 194, 48, 0.45);
+  }
+}

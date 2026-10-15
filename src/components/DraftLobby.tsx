@@ -453,7 +453,7 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
           <section className="card draft-start">
             <button
               type="button"
-              className="btn btn--primary btn--big"
+              className={`btn btn--primary btn--big ${allReady && !blocker ? 'draft-start--go' : ''}`}
               disabled={!!blocker || room.status !== 'open' || room.busy.start}
               aria-busy={room.busy.start}
               onClick={room.start}

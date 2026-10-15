@@ -674,6 +674,12 @@ describe('DraftLobby', () => {
     await settle();
     expect(container.querySelector('.draft-start')!.textContent).toContain('1/2 Mitspieler bereit');
     expect(container.textContent).toContain('✓ bereit');
+    expect(container.querySelectorAll('.draft-start--go')).toHaveLength(0);
+    const all = engine.setTeamReady(st, 'dev-2', true);
+    const r2 = await render(app(h(DraftLobby, { room: fakeRoom(snap(all, 'h')) })));
+    await settle();
+    expect(r2.container.querySelector('.draft-start')!.textContent).toContain('Alle Mitspieler bereit (2)');
+    expect(r2.container.querySelectorAll('.draft-start--go')).toHaveLength(1);
   });
 
   it('Start, CPU und Einstellungen nehmen nichts an, solange die Aktion läuft', async () => {
