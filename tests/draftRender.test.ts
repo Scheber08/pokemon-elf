@@ -575,6 +575,12 @@ describe('DraftLive', () => {
     expect(room.setQueue).toHaveBeenCalledWith([id]);
   });
 
+  it('Turnbar: die nächsten drei Picks in Snake-Reihenfolge', async () => {
+    const { container } = await renderLive(fakeRoom(snap(drafting(), 'h')));
+    // 2 Teams, Snake: Pick 1 Host (jetzt), dann Team 1, Team 1, Host
+    expect(container.querySelector('.draft-turnbar__next')!.textContent).toBe('Danach: Team 1 → Team 1 → Du');
+  });
+
   it('Taste V holt einen Vorschlag (wie der Knopf)', async () => {
     const st = drafting();
     const { container } = await renderLive(fakeRoom(snap(st, 'h')));

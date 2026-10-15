@@ -21,6 +21,8 @@ import {
   rerollsLeft,
   rerollUsable,
   picksUntilTurn,
+  rounds as engineRounds,
+  teamIndexForPick,
 } from '../lib/draftEngine';
 import { positionFit } from '../lib/fit';
 import { usePokemonData } from '../state/PokemonData';
@@ -513,6 +515,16 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
             {lastPick.auto && t.online.autoTag}
           </p>
         )}
+        {(() => {
+          // Die nächsten Picks nach dem aktuellen (Snake-Reihenfolge), höchstens drei
+          const total = s.teams.length * engineRounds(s.settings);
+          const next: string[] = [];
+          for (let p = s.pickIndex + 1; p < total && next.length < 3; p++) {
+            const tm = s.teams[teamIndexForPick(p, s.teams.length, s.settings.snake ?? true)];
+            if (tm) next.push(tm.id === me?.id ? t.online.you : teamLabel(tm, t));
+          }
+          return next.length ? <p className="draft-turnbar__last draft-turnbar__next">{t.online.nextUp(next.join(' → '))}</p> : null;
+        })()}
         {s.settings.shinies !== false && s.settings.shinyParty && <p className="draft-turnbar__last">{t.shiny.note(Math.round(SHINY_PARTY_CHANCE * 100))}</p>}
       </div>
 
