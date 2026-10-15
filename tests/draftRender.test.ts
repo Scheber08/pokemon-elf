@@ -661,6 +661,16 @@ describe('DraftLobby', () => {
     stubFetch();
   });
 
+  it('Host-Hinweis: Pool-Größe und Picks, Draft-Dauer mit Bankrunden (Manager)', async () => {
+    const st = lobby(2, { region: 1, format: 'manager', pickSeconds: 60 });
+    const picks = engine.rounds(st.settings) * st.teams.length;
+    expect(engine.rounds(st.settings)).toBeGreaterThan(11);
+    const { container } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) })));
+    await settle();
+    const pool = engine.poolOf(st.settings, ALL).length;
+    expect(container.textContent).toContain(`Pool: ${pool} Pokémon für ${picks} Picks.`);
+  });
+
   // CLIENT-7 / SEASON-3
   it('Nur-Ansicht: kein Beitreten-Formular, Hinweis statt dessen', async () => {
     const { container } = await render(app(h(DraftLobby, { room: fakeRoom(snap(lobby(2), null), { live: false }), readOnly: true })));

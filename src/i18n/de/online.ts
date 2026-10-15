@@ -179,6 +179,7 @@ const online = {
   startNoTimer: 'Ohne Timer kannst du für abwesende Teams automatisch wählen lassen.',
   /** Dauer (Minuten, gerundet): Draft höchstens, danach der Saison-Ticker */
   duration: (draft: number, season: number) => `Dauer: Draft höchstens ~${draft} Min., danach Saison-Ticker ~${season} Min.`,
+  poolLine: (pool: number, picks: number) => `Pool: ${pool} Pokémon für ${picks} Picks.`,
   durationNoTimer: (season: number) => `Nach dem Draft läuft der Saison-Ticker ~${season} Min.`,
   draftRunning: 'Der Draft läuft schon',
 

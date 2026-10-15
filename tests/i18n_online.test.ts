@@ -465,7 +465,8 @@ describe('DraftLobby (en)', () => {
     expect(container.querySelector('.draft-start button')!.textContent).toBe('Start draft');
     // Dauer: 2 Menschen × 11 Runden × 60 s = 22 min; Ticker 30 s + 34 × 5 s ≈ 3 min
     expect(container.querySelectorAll('.draft-start .hint').map((e) => e.textContent)).toContain(
-      'Duration: draft at most ~22 min, then the season ticker ~3 min.',
+      // Dazu der Pool (Kanto) für 2 Teams × 11 Runden
+      `Duration: draft at most ~22 min, then the season ticker ~3 min. Pool: ${engine.poolOf(lobby(2, { region: 1 }).settings, ALL).length} Pokémon for 22 picks.`,
     );
     expectEnglishIn(
       container,

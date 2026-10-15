@@ -31,7 +31,7 @@ import '../styles/draft.css';
 import { cleanKit } from '../lib/kits';
 import { CrestEditor } from './CrestEditor';
 import { cleanCrest } from '../lib/crest';
-import { rosterOf, rounds as draftRounds } from '../lib/draftEngine';
+import { poolOf, rosterOf, rounds as draftRounds } from '../lib/draftEngine';
 import { Crest } from './Crest';
 
 /** QR-Code des Liga-Links – zum Scannen, wenn alle im selben Raum sitzen. */
@@ -508,6 +508,7 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
                   const min = (ms: number) => Math.max(1, Math.round(ms / 60_000));
                   return s.settings.pickSeconds ? t.online.duration(min(draftMs), min(seasonMs)) : t.online.durationNoTimer(min(seasonMs));
                 })()}
+                {list.length > 0 && ` ${t.online.poolLine(poolOf(s.settings, list).length, draftRounds(s.settings) * s.teams.length)}`}
               </p>
             )}
           </section>
