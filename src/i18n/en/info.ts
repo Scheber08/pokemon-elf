@@ -14,6 +14,11 @@ const info: Messages['info'] = {
     guidePost: '.',
     newsTitle: 'What’s new?',
     news: [
+      'New: shinies in the draft – 2% chance per pick (or 10% as “shiny party”), the weaker the Pokémon, the bigger the team bonus',
+      'New: captain in every mode – their fit counts double, “Best choice” finds them, automatic in the online draft and changeable until kickoff',
+      'New: jersey numbers, kit colours, goal celebrations and club crests for your team',
+      'Manager season: injuries and suspensions, cup, career with promotion and relegation, live matchday, goals and assists per Pokémon',
+      'Online draft: wishlist with key W, “Fill with CPU”, all picks in the results and a vibration when pick time runs low',
       'New: “Manager” menu item and match replays (2D/report) in every mode – configurable or off',
       'New: design your own trainer – coins from achievements buy caps, jerseys, backgrounds and companion Pokémon',
       'Online draft: manager season – draft a bench, set your eleven before every matchday, daily form per Pokémon, transfer market',

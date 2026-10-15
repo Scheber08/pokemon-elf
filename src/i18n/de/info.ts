@@ -16,6 +16,11 @@ const info = {
     /** „Was ist neu?" – die wichtigsten Neuerungen, neueste zuerst */
     newsTitle: 'Was ist neu?',
     news: [
+      'Neu: Shinys im Draft – 2 % Chance je Pick (oder 10 % als „Shiny-Party“), je schwächer das Pokémon, desto größer der Team-Bonus',
+      'Neu: Kapitän in allen Modi – seine Passung zählt doppelt, „Beste Wahl“ sucht ihn aus, im Online-Draft automatisch und bis zum Anpfiff wechselbar',
+      'Neu: Trikotnummern, Trikotfarben, Torjubel und Vereinswappen für dein Team',
+      'Manager-Saison: Verletzungen und Sperren, Pokal, Karriere mit Auf- und Abstieg, Live-Spieltag, Tore und Vorlagen je Pokémon',
+      'Online-Draft: Wunschliste mit Taste W, „Mit CPU auffüllen“, alle Picks im Ergebnis und Vibration bei knapper Pick-Zeit',
       'Neu: eigener Menüpunkt „Manager“ und Spielwiedergabe (2D/Bericht) in jedem Modus – einstellbar oder aus',
       'Neu: Gestalte deinen eigenen Trainer – Münzen aus Erfolgen kaufen Kappen, Trikots, Hintergründe und Begleiter-Pokémon',
       'Online-Draft: Manager-Saison – Bank mitdraften, vor jedem Spieltag die Elf aufstellen, Tagesform je Pokémon, Transfermarkt',
