@@ -2105,6 +2105,11 @@ button.sheet__row:hover {
   border-color: var(--yellow);
   box-shadow: 0 0 0 1px var(--yellow);
 }
+/* Wählt als Nächstes: gestrichelter Rahmen */
+.draft__col.is-next {
+  border-style: dashed;
+  border-color: var(--yellow);
+}
 .draft__col h3 {
   margin: 0 0 6px;
   font-family: var(--font-head);

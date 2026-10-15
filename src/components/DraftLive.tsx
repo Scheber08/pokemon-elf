@@ -742,7 +742,16 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
         </div>
       </div>
 
-      <DraftBoard state={s} byId={byId} currentId={current?.id ?? null} />
+      <DraftBoard
+        state={s}
+        byId={byId}
+        currentId={current?.id ?? null}
+        nextId={
+          s.phase === 'drafting' && s.pickIndex + 1 < s.teams.length * engineRounds(s.settings)
+            ? s.teams[teamIndexForPick(s.pickIndex + 1, s.teams.length, s.settings.snake ?? true)]?.id ?? null
+            : null
+        }
+      />
       <DraftPickFeed items={feed} you={s.you} />
     </div>
   );

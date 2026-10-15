@@ -607,6 +607,12 @@ describe('DraftLive', () => {
     // Ist man selbst als Nächstes dran, gibt es keine Zeile
     const other = await renderLive(fakeRoom(snap(drafting(), 't1')));
     expect(other.container.querySelector('.draft-turnbar__needs')).toBeNull();
+    // Board: aktuelles Team gelb, nächstes gestrichelt
+    const cols = container.querySelectorAll('.draft-board__col');
+    expect(cols.map((c) => [c.className.includes('is-current'), c.className.includes('is-next')])).toEqual([
+      [true, false],
+      [false, true],
+    ]);
   });
 
   it('Turnbar: höchstens verbleibende Draft-Dauer bei Pick-Uhr', async () => {

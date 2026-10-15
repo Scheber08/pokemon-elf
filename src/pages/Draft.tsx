@@ -1327,7 +1327,12 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           )}
           <section className="draft__board" aria-label={t.draft.draftBoard} ref={boardRef}>
             {state.teams.map((tm, i) => (
-              <div key={i} className={`draft__col ${i === currentTeam ? 'is-current' : ''}`}>
+              <div
+                key={i}
+                className={`draft__col ${i === currentTeam ? 'is-current' : ''} ${
+                  state.pick + 1 < totalPicks && i === teamForPick(state.pick + 1, n) && i !== currentTeam ? 'is-next' : ''
+                }`}
+              >
                 <h3>{teamName(tm.name)}</h3>
                 {(() => {
                   // Ø Positions-Fit der gesetzten Elf – grobe Live-Stärke wie im Online-Draft

@@ -37,10 +37,12 @@ interface Props {
   byId: Map<number, Pokemon>;
   /** Team am Zug */
   currentId: string | null;
+  /** Team, das nach dem aktuellen wählt (gestrichelt markiert) */
+  nextId?: string | null;
 }
 
 /** Draft-Board: alle Teams als Spalten (Draft-Reihenfolge), der letzte Pick leuchtet. */
-export function DraftBoard({ state, byId, currentId }: Props) {
+export function DraftBoard({ state, byId, currentId, nextId }: Props) {
   const t = useT();
   const { scale } = usePokemonData();
   const sc = scale('all');
@@ -93,7 +95,8 @@ export function DraftBoard({ state, byId, currentId }: Props) {
         return (
           <div
             key={team.id}
-            className={`draft__col draft-board__col ${team.id === currentId ? 'is-current' : ''} ${team.id === state.you ? 'is-mine' : ''}`}
+            className={`draft__col draft-board__col ${team.id === currentId ? 'is-current' : ''} ${team.id === nextId && nextId !== currentId ? 'is-next' : ''} ${team.id === state.you ? 'is-mine' : ''}`}
+            title={team.id === nextId && nextId !== currentId ? t.online.nextUp(name) : undefined}
           >
             <h3 title={name}>
               <span className="draft-board__no">{i + 1}</span>{' '}
