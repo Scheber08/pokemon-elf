@@ -69,7 +69,7 @@ beste Position der Bankspieler, Punkte-Hochrechnung und Torjäger des Gegners in
 lokal und online), Heim-/Auswärtstabelle, Tabellen-Zonen mit Legende, Spieler des Spieltags und Last-Minute-Sieg
 im Ticker, Führungsserie, Favorit vor dem Anpfiff, Vorschau der nächsten Picks, Taste V/„Vorschlag“ auch lokal,
 ausgeglichenes Heimrecht im Manager-Spielplan, lokale Liga mit Heim/Auswärts, Saisonrekorden, Zeitreise, Duellen,
-Revanche und Titelsammlung, „Reihenfolge mischen“ (Lobby und lokal), „Beste Freie“ je offener Position (lokal und online), „Du bist in N Picks dran“ und Restdauer im
+Revanche und Titelsammlung, „Reihenfolge mischen“ (Lobby und lokal), „Beste Freie“ je offener Position (lokal und online), Restdauer im
 Online-Draft, Restprogramm mit den nächsten drei Gegnern, Serie (`currentRun`) und Spielort-Bilanz und Formation des Gegners in der Manager-Saison, Serie im Ticker.
 
 1. Weitere Saisons im Shop (z. B. Nikolaus, Erntedank) – neue Einträge mit `seasonal(...)` in `src/lib/trainer.ts`

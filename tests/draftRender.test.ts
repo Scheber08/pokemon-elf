@@ -598,19 +598,6 @@ describe('DraftLive', () => {
     expect(container.querySelector('.draft-turnbar__next')!.textContent).toBe('Danach: Team 1 → Team 1 → Du');
   });
 
-  it('Turnbar: wer nicht dran ist, sieht, in wie vielen Picks er dran ist', async () => {
-    // Pick 1 Host (jetzt) → Team 1 ist als Nächstes dran
-    let r = await renderLive(fakeRoom(snap(drafting(), 't1')));
-    expect(r.container.querySelector('.draft-turnbar__until')!.textContent).toBe(' · du bist als Nächstes dran');
-    // Nach Pick 1: Team 1 hat Pick 2 und 3, der Host ist erst in 2 Picks wieder dran (Pick 4)
-    const s = autoPick(drafting());
-    r = await renderLive(fakeRoom(snap(s, 'h')));
-    expect(r.container.querySelector('.draft-turnbar__until')!.textContent).toBe(' · du bist in 2 Picks dran');
-    // Wer selbst dran ist, sieht keinen Hinweis
-    r = await renderLive(fakeRoom(snap(s, 't1')));
-    expect(r.container.querySelector('.draft-turnbar__until')).toBeNull();
-  });
-
   it('Turnbar: höchstens verbleibende Draft-Dauer bei Pick-Uhr', async () => {
     // Ohne Pick-Uhr keine Angabe
     let r = await renderLive(fakeRoom(snap(drafting(), 'h')));
