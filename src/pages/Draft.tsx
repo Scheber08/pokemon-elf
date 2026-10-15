@@ -792,7 +792,18 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     {tx.selectedHint}
                   </>
                 ) : (
-                  tx.yourTurn(teamName(String(team?.name)))
+                  <>
+                    {tx.yourTurn(teamName(String(team?.name)))}
+                    {team && (() => {
+                      // Noch offene Positionen des Teams am Zug (gruppiert, Reihenfolge der Formation)
+                      const open = new Map<string, number>();
+                      FORMATIONS[team.formation].slots.forEach((d, j) => {
+                        if (team.slots[j] == null) open.set(t.game.posShort[d.pos], (open.get(t.game.posShort[d.pos]) ?? 0) + 1);
+                      });
+                      if (!open.size) return null;
+                      return t.online.hintOpen([...open].map(([pos, n]) => (n > 1 ? `${n}× ${pos}` : pos)).join(', '));
+                    })()}
+                  </>
                 )}
               </p>
               <FilterBar filters={filters} onChange={setFilters} showRegion={state.region === 0} resultCount={filtered.length} slashFocus />

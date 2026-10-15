@@ -289,6 +289,8 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(all).toContain('On the clock:');
     expect(all).toContain('Pick a Pokémon');
     expect(all).toContain('My Team, you’re up.');
+    // Noch offene Positionen (noch kein Pick: alle elf)
+    expect(container.querySelectorAll('.hint').map((e) => e.textContent).find((x) => x?.includes('you’re up'))).toMatch(/Still open: .+\.$/);
     expect(all).toContain(clubEn(CLUB_NAMES[0]));
     expect(all).toContain('Cancel draft');
     // Noch keine Picks: kein Ø Fit auf dem Board
