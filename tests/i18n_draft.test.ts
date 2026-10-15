@@ -383,6 +383,15 @@ describe('/draft an einem Gerät auf Englisch', () => {
     const chosen = container.querySelectorAll('.hint strong').map((e) => e.textContent);
     expect(chosen.length).toBe(1);
     expect(ALL.some((p) => p.en === chosen[0] && p.gen === 1)).toBe(true);
+    // „🎲 Random“: erstes bzw. letztes freies Pokémon des Pools (Kanto, nach Nummer)
+    const rnd = container.querySelectorAll('.draft-pooltools button').find((b) => b.textContent === '🎲 Random') as MiniElement;
+    const kantoFree = ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth);
+    for (const [r, want] of [[0, kantoFree[0]], [0.9999, kantoFree.at(-1)!]] as const) {
+      vi.spyOn(Math, 'random').mockReturnValue(r);
+      await act(async () => rnd.click());
+      vi.restoreAllMocks();
+      expect(JSON.parse(localStorage.getItem('pokemon-elf:draft')!).selected).toBe(want.id);
+    }
     // Noch keine Picks: kein Ø Fit auf dem Board
     expect(container.querySelector('.draft__board .draft-board__fit')).toBeNull();
     expect(germanLeft(container)).toEqual([]);

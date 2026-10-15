@@ -329,6 +329,12 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     }
     if (best) setState((s) => ({ ...s, selected: best!.id }));
   };
+  // 🎲 Zufall: ein zufälliges freies Pokémon vormerken (wie online; übernommen wird mit Tippen auf den Platz)
+  const randomPick = () => {
+    if (!team || team.cpu || !pool.length) return;
+    const mon = pool[Math.floor(Math.random() * pool.length)];
+    setState((s) => ({ ...s, selected: mon.id }));
+  };
   // Taste „V“: Vorschlag (wie online; nicht beim Tippen)
   const suggestRef = useRef(suggest);
   suggestRef.current = suggest;
@@ -1446,6 +1452,9 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   aria-keyshortcuts="V"
                 >
                   {t.online.suggest}
+                </button>
+                <button type="button" className="btn btn--small" onClick={randomPick} title={t.online.randomPickTitle}>
+                  🎲 {t.online.randomPick}
                 </button>
                 <button
                   type="button"
