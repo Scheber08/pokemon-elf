@@ -125,7 +125,7 @@ Alle Zahlen sind in `src/config/` änderbar – die Tests prüfen Eigenschaften,
 - **Retro 34–0** – Modus der 151-Seite: Typ-Würfel wie bei 34–0, aber nur Kanto, Retro-Sprites,
   Gen-1-Skalierung, eigene Rangliste.
 - **Fantasy-Draft** – 2–8 Teams (Hot-Seat oder CPU; CPU-Teams und 🎲 heißen wie Teams aus den Online-Ranglisten), Snake-Draft über 11 Runden, danach Liga mit Tabelle
-  (gesamt/Heim/Auswärts), Statistik (Vorlagen, Scorer, Teamwerte mit 🧤 Spielen ohne Gegentor), Saisonrekorden, Meisterchancen (50 Neuausspielungen), Zeitreise, Kreuztabelle, „Deine Duelle“, Revanche (gleiche Teams, neuer Draft) und
+  (gesamt/Heim/Auswärts), Statistik (Vorlagen, Scorer, Teamwerte mit 🧤 Spielen ohne Gegentor), Saisonrekorden (u. a. Weiße Weste: meiste Spiele ohne Gegentor), Meisterchancen (50 Neuausspielungen), Zeitreise, Kreuztabelle, „Deine Duelle“, Revanche (gleiche Teams, neuer Draft) und
   Titelsammlung auf dem Gerät (`draft-champions` im localStorage).
 - **Online-Draft** – Liga anlegen, Code/Link teilen, gemeinsam live draften (siehe unten).
 - **Rangliste** – Heute, Diese Woche, Allzeit; Team ansehen, Testspiel gegen die eigene Builder-Elf,

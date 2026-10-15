@@ -4,7 +4,7 @@ import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftTeam, ManagerTransfer } from '../lib/api/draftContract';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { bestTransfer, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { bestTransfer, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { buildTable, formatRecord, sideTable, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -610,6 +610,15 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                         <dd>{tx.recordDrawsLine(nameOf(draws.team), draws.d)}</dd>
                       </div>
                     )}
+                    {(() => {
+                      const clean = mostCleanSheets(league.matches, table.map((r) => r.team));
+                      return clean ? (
+                        <div>
+                          <dt>{tx.recordClean}</dt>
+                          <dd>{tx.recordCleanLine(nameOf(clean.team), clean.n)}</dd>
+                        </div>
+                      ) : null;
+                    })()}
                   </>
                 );
               })()}

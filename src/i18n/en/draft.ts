@@ -321,6 +321,8 @@ const draft: Messages['draft'] = {
     recordDefense: 'Best defence',
     recordWin: 'Biggest win',
     recordFest: 'Highest-scoring game',
+    recordClean: 'Clean-sheet kings',
+    recordCleanLine: (team, n) => `${team} – ${n} clean sheets`,
     recordDraws: 'Kings of the draw',
     recordDrawsLine: (team, n) => `${team} – ${n} draws`,
     recordHalf: 'Half-season champions',

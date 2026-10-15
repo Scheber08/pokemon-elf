@@ -234,3 +234,15 @@ describe('Transfer der Saison', () => {
   });
 });
 
+
+describe('Saisonrekord Weiße Weste', () => {
+  it('meiste Spiele ohne Gegentor, Gleichstand: besser platziert, erst ab 3', async () => {
+    const { mostCleanSheets } = await import('../src/lib/leagueTimeline');
+    const m = (home: number, away: number, hg: number, ag: number) => ({ home, away, hg, ag });
+    const matches = [m(0, 1, 1, 0), m(2, 0, 0, 0), m(1, 2, 0, 0), m(0, 2, 2, 0), m(1, 0, 3, 1), m(2, 1, 1, 0)];
+    // Team 0: 3 (1:0, 0:0, 2:0), Team 2: 3 (0:0, 0:0, 1:0), Team 1: 1 (0:0)
+    expect(mostCleanSheets(matches, [2, 0, 1])).toEqual({ team: 2, n: 3 });
+    expect(mostCleanSheets(matches, [0, 2, 1])).toEqual({ team: 0, n: 3 });
+    expect(mostCleanSheets(matches.slice(0, 3), [0, 1, 2])).toBeNull();
+  });
+});

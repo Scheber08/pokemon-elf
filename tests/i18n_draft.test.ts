@@ -431,6 +431,10 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(labels).toContain('Half-season champions');
     expect(labels).toContain('Best team of the second half');
     expect(rows.find((r) => r[0] === 'Half-season champions')![1]).toMatch(/after the first half \(matchday 5\)$/);
+    // Weiße Weste (ab 3 Spielen ohne Gegentor)
+    const clean = rows.find((r) => r[0] === 'Clean-sheet kings')!;
+    expect(clean[1]).toMatch(/ – \d+ clean sheets$/);
+    expect(Number(clean[1]!.match(/(\d+) clean sheets$/)![1])).toBeGreaterThanOrEqual(3);
     const goals = Math.max(...mainRows(container).map((r) => Number(r.querySelectorAll('td')[8].textContent!.split(':')[0])));
     expect(rows[0][1]).toContain(`${goals} goals`);
     expect(section.textContent).not.toContain('Mein Team');

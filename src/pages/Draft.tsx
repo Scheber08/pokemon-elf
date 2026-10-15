@@ -21,7 +21,7 @@ import { draftsSupported } from '../lib/api/draftClient';
 import { positionFit, soleTopIndex } from '../lib/fit';
 import { rankingNames } from '../lib/rankingNames';
 import { emptySlots } from '../lib/formation';
-import { biggestWin, draftGrades, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
+import { biggestWin, draftGrades, mostCleanSheets, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
 import { createRng, randomSeed, shuffle } from '../lib/rng';
 import { cpuLevelOf, cpuPickChoice } from '../lib/localCpu';
 import { buildTable, CLASSIC_MODEL, DRAFT_MODEL, formatRecord, sideTable, simulateLeague, type LeagueTeam } from '../lib/season';
@@ -974,6 +974,15 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     <dd>{r.recordDrawsLine(nameOf(draws.team), draws.d)}</dd>
                   </div>
                 )}
+                {(() => {
+                  const clean = mostCleanSheets(league.matches, tb.map((x) => x.team));
+                  return clean ? (
+                    <div>
+                      <dt>{r.recordClean}</dt>
+                      <dd>{r.recordCleanLine(nameOf(clean.team), clean.n)}</dd>
+                    </div>
+                  ) : null;
+                })()}
                 {half && (
                   <div>
                     <dt>{r.recordHalf}</dt>

@@ -809,6 +809,27 @@ export function longestWinStreak(league: Pick<LeagueResult, 'matches' | 'teams'>
   return best;
 }
 
+/** Ab so vielen Spielen ohne Gegentor gibt es den Saisonrekord „Weiße Weste“ */
+export const CLEAN_SHEET_RECORD_MIN = 3;
+
+/**
+ * Meiste Spiele ohne Gegentor (Saisonrekord „Weiße Weste“): `order` = Teams in Tabellenreihenfolge
+ * (bei Gleichstand gewinnt das besser platzierte). null unter CLEAN_SHEET_RECORD_MIN.
+ */
+export function mostCleanSheets(matches: readonly Pick<Match, 'home' | 'away' | 'hg' | 'ag'>[], order: readonly number[]): { team: number; n: number } | null {
+  const count = new Map<number, number>();
+  for (const m of matches) {
+    if (m.ag === 0) count.set(m.home, (count.get(m.home) ?? 0) + 1);
+    if (m.hg === 0) count.set(m.away, (count.get(m.away) ?? 0) + 1);
+  }
+  let best: { team: number; n: number } | null = null;
+  for (const team of order) {
+    const n = count.get(team) ?? 0;
+    if (!best || n > best.n) best = { team, n };
+  }
+  return best && best.n >= CLEAN_SHEET_RECORD_MIN ? best : null;
+}
+
 /** Höchster Sieg der Saison (größte Tordifferenz, dann mehr Tore, dann früherer Spieltag) – null ohne Sieg. */
 export function biggestWin(matches: readonly Match[]): Match | null {
   let best: Match | null = null;

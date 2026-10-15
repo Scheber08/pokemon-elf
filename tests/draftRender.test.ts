@@ -1576,6 +1576,12 @@ describe('ManagerSeason', () => {
     expect(most).toBeGreaterThanOrEqual(4);
     expect(rec.textContent).toContain(`Remis-König`);
     expect(rec.textContent).toContain(`${most} Unentschieden`);
+    // Weiße Weste: meiste Spiele ohne Gegentor (ab 3, Gleichstand: besser platziert)
+    const { mostCleanSheets } = await import('../src/lib/leagueTimeline');
+    const clean = mostCleanSheets(s.league!.matches, s.league!.table.map((r) => r.team));
+    expect(clean).not.toBeNull();
+    const cleanName = clean!.team < s.teams.length ? s.teams[clean!.team].name : s.league!.teams[clean!.team].name;
+    expect(rec.textContent).toContain(`Weiße Weste${cleanName} – ${clean!.n} Spiele ohne Gegentor`);
     // Herbstmeister: Führender nach der Hälfte der Spieltage
     const { leagueTimeline } = await import('../src/lib/leagueTimeline');
     const days = leagueTimeline(s.league!);

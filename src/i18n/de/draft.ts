@@ -352,6 +352,8 @@ const draft = {
     recordDefense: 'Beste Abwehr',
     recordWin: 'Höchster Sieg',
     recordFest: 'Torreichstes Spiel',
+    recordClean: 'Weiße Weste',
+    recordCleanLine: (team: string, n: number) => `${team} – ${n} Spiele ohne Gegentor`,
     recordDraws: 'Remis-König',
     recordDrawsLine: (team: string, n: number) => `${team} – ${n} Unentschieden`,
     recordHalf: 'Herbstmeister',
