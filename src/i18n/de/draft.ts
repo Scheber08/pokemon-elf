@@ -264,6 +264,7 @@ const draft = {
 
   // ---------------------------------------------------------------- Ergebnis der Online-Liga
   results: {
+    allPicks: (n: number) => `Alle ${n} Picks`,
     none: 'Für diese Liga gibt es noch kein Ergebnis.',
     copied: 'Ergebnis kopiert',
     copyFailed: 'Kopieren nicht möglich',

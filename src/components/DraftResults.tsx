@@ -634,6 +634,25 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
         </div>
       </section>
 
+      {picks.length > 0 && (
+        <details className="card details draft-results__picks">
+          <summary>{tx.allPicks(picks.length)}</summary>
+          <ol className="draft-results__picklist">
+            {picks.map((pk) => {
+              const ti = teams.findIndex((tm) => tm?.id === pk.teamId);
+              const p = byId.get(pk.pokemonId);
+              return (
+                <li key={pk.pick} className={ti === you ? 'is-you' : ''}>
+                  <span className="muted">#{pk.pick + 1}</span> <strong>{p ? t.game.pokemon(p) : `#${pk.pokemonId}`}</strong>
+                  {pk.shiny && <span title={t.shiny.title}> ✨</span>} → {ti >= 0 ? nameOf(ti) : '?'}
+                  {pk.auto && <small className="muted">{t.draft.board.auto}</small>}
+                </li>
+              );
+            })}
+          </ol>
+        </details>
+      )}
+
       <details className="card details draft-results__days">
         <summary>{tx.allMatchdays}</summary>
         <ReplayToggle />

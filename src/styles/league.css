@@ -1048,3 +1048,20 @@
 .league-fixture__score--btn:focus-visible {
   box-shadow: 0 0 0 2px var(--yellow);
 }
+
+/* Alle Picks des Drafts (aufklappbar im Ergebnis) */
+.draft-results__picklist {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  columns: 2 16rem;
+  column-gap: 1.5rem;
+  font-size: 0.9rem;
+}
+.draft-results__picklist li {
+  break-inside: avoid;
+  padding: 0.15rem 0;
+}
+.draft-results__picklist li.is-you {
+  font-weight: 700;
+}

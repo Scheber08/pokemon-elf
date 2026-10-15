@@ -419,6 +419,7 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     // Kapitäne gibt es nach dem Draft immer (automatisch) – der torgefährlichste steht oben
     expect(all).toMatch(/Top captain: [^|]+ \([^|]+\) with \d+ goals?/);
     expect(container.querySelectorAll('.draft-results .captain-badge').length).toBeGreaterThan(0);
+    expect(all).toMatch(/All \d+ picks/);
     expect(all).toContain('Season records');
     expect(all).toContain('Your season');
     expect(all).toContain('Time travel');
