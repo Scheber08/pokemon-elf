@@ -1994,3 +1994,9 @@ button.draft-bench__slot {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+/* Lokaler Draft: Merken-Knopf im Auswahl-Hinweis */
+.draft__mark {
+  display: inline-flex;
+  margin: 6px 0 0;
+}

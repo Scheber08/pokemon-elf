@@ -111,6 +111,8 @@ interface DraftState {
   cpuLevel?: 'easy' | 'hard';
   /** Pick-Uhr für menschliche Teams in Sekunden (fehlt = aus); läuft sie ab, wird automatisch gewählt */
   pickSeconds?: number;
+  /** Merkliste je Team (Index → Pokémon-IDs) – nur Anzeige auf den Karten */
+  marks?: Record<number, number[]>;
 }
 
 
@@ -516,6 +518,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
       shinySalt: s.noShinies ? undefined : randomSeed(),
       shinies: [],
       log: [],
+      marks: undefined,
       teams: s.teams.map((tm) => ({ ...tm, slots: emptySlots(tm.formation) })),
     }));
     setFilters({ query: '', type: null, region: state.region });
@@ -1805,6 +1808,26 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                       const x = fitImpact(selected, FORMATIONS[team.formation].slots, team.slots, byId, scale('all'));
                       return x && <span className="draft-hint__impact">{t.online.hintImpact(t.game.posShort[x.pos], x.fit, x.before, x.after)}</span>;
                     })()}
+                    {team && !team.cpu && (() => {
+                      // ☆ Merkliste des Teams am Zug (an/aus)
+                      const marked = (state.marks?.[currentTeam] ?? []).includes(selected.id);
+                      return (
+                        <button
+                          type="button"
+                          className={`btn btn--small ${marked ? 'btn--accent' : 'btn--ghost'} draft__mark`}
+                          aria-pressed={marked}
+                          onClick={() =>
+                            setState((s) => {
+                              const list = s.marks?.[currentTeam] ?? [];
+                              const next = list.includes(selected.id) ? list.filter((id) => id !== selected.id) : [...list, selected.id];
+                              return { ...s, marks: { ...(s.marks ?? {}), [currentTeam]: next } };
+                            })
+                          }
+                        >
+                          {marked ? `★ ${tx.marked}` : `☆ ${tx.mark}`}
+                        </button>
+                      );
+                    })()}
                   </>
                 ) : (
                   <>
@@ -1889,7 +1912,11 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     setTimeout(() => pitchRef.current?.scrollIntoView({ behavior: 'smooth' }), 60);
                   }
                 }}
-                note={(p) => (goneSoon.has(p.id) ? `⏳ ${t.online.goneSoon}` : null)}
+                note={(p) => {
+                  const soon = goneSoon.has(p.id) ? `⏳ ${t.online.goneSoon}` : null;
+                  const mark = team && !team.cpu && (state.marks?.[currentTeam] ?? []).includes(p.id) ? `★ ${tx.marked}` : null;
+                  return [mark, soon].filter(Boolean).join(' · ') || null;
+                }}
                 className="pgrid-wrap--compact pgrid-wrap--scroll"
               />
             </section>

@@ -99,6 +99,8 @@ const draft: Messages['draft'] = {
     titlesNote: (n) => `Champions of ${n} local leagues on this device (same team name = same club).`,
     bestFree: 'Best available:',
     elevenDone: (team, avg) => `✅ ${team}’s eleven is complete – avg fit ${avg}`,
+    mark: 'Shortlist',
+    marked: 'shortlisted',
     roundDone: (round, name, team, fit) => `🔔 Round ${round} done – top pick: ${name} (${team}, fit ${fit})`,
     bestFreeTitle: (name, pos, fit) => `Select ${name} – best available ${pos} (fit ${fit})`,
     undo: '↶ Undo',

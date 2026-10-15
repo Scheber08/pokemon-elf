@@ -1192,6 +1192,27 @@ describe('/draft an einem Gerät auf Englisch', () => {
     localStorage.removeItem('pokemon-elf:draft');
   });
 
+  it('☆ Merken: Merkliste des Teams am Zug, „★ gemerkt“ auf der Karte', async () => {
+    const f = FORMATION_IDS[0];
+    const kanto = ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth);
+    const teams = [0, 1].map((i) => ({ name: i ? 'Zweites Team' : 'Mein Team', cpu: false, formation: f, slots: emptySlots(f) }));
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: false, pick: 0, selected: kanto[0].id, seed: null, log: [] }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const btn = () => container.querySelector('.draft__mark') as MiniElement;
+    expect(btn().textContent).toBe('☆ Merken');
+    await act(async () => btn().click());
+    expect(btn().textContent).toBe('★ gemerkt');
+    expect(JSON.parse(localStorage.getItem('pokemon-elf:draft')!).marks).toEqual({ 0: [kanto[0].id] });
+    // Karte (Bisasam ist im Raster ganz vorn) zeigt die Markierung
+    const card = container.querySelectorAll('.pcard').find((c) => c.querySelector('.pcard__name')?.textContent === kanto[0].de)!;
+    expect(card.querySelector('.pcard__note')!.textContent).toContain('★ gemerkt');
+    // Noch einmal: wieder aus
+    await act(async () => btn().click());
+    expect(JSON.parse(localStorage.getItem('pokemon-elf:draft')!).marks).toEqual({ 0: [] });
+    localStorage.removeItem('pokemon-elf:draft');
+  });
+
   it('Fortschrittsbalken: Picks des Teams am Zug als Striche', async () => {
     const f = FORMATION_IDS[0];
     const teams = [0, 1, 2].map((i) => ({ name: i ? CLUB_NAMES[i] : 'Mein Team', cpu: i > 0, formation: f, slots: emptySlots(f) }));
