@@ -257,6 +257,8 @@ const online = {
   reactSend: (emoji: string) => `${emoji} an alle senden`,
   /** Wunschliste (Auto-Pick nimmt die erste erlaubte) */
   queueTitle: 'Wunschliste',
+  queueTaken: '(vergeben)',
+  queueClearTaken: (n: number) => (n === 1 ? 'Vergebenes entfernen' : `${n} vergebene entfernen`),
   queueCount: (n: number, max: number) => `${n}/${max}`,
   queueAdd: '★ Auf die Wunschliste',
   queueRemove: '☆ Von der Wunschliste',

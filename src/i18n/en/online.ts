@@ -231,6 +231,8 @@ const online: Messages['online'] = {
   },
   reactLabel: 'Reaction to everyone',
   reactSend: (emoji) => `Send ${emoji} to everyone`,
+  queueTaken: '(taken)',
+  queueClearTaken: (n) => (n === 1 ? 'Remove taken one' : `Remove ${n} taken`),
   queueTitle: 'Wishlist',
   queueCount: (n, max) => `${n}/${max}`,
   queueAdd: '★ Add to wishlist',

@@ -802,6 +802,22 @@ describe('ManagerSeason', () => {
     expect(container.querySelector('.manager__market select')!.textContent).toContain('3 Tore');
   });
 
+  it('Wunschliste: Vergebene markiert und mit einem Klick entfernt', async () => {
+    const { DraftQueue } = await import('../src/components/DraftQueue');
+    let st = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
+    st = autoPick(st);
+    const taken = st.picks[0].pokemonId;
+    const free = ALL.find((p) => p.gen === 1 && p.id !== taken && !st.picks.some((x) => x.pokemonId === p.id))!.id;
+    const snapshot = { ...snap(st, 'h'), queue: [taken, free] };
+    const room = fakeRoom(snapshot);
+    const { container } = await render(app(h(DraftQueue, { room, selected: null })));
+    await settle();
+    expect(container.querySelectorAll('.draft-queue__list li.is-taken')).toHaveLength(1);
+    const clear = container.querySelectorAll('button').find((b) => b.textContent === 'Vergebenes entfernen') as MiniElement;
+    await act(async () => clear.click());
+    expect(room.setQueue).toHaveBeenCalledWith([free]);
+  });
+
   it('Shiny-Neuzugang: Hinweis im Status nur fürs eigene Team', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');

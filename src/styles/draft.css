@@ -1397,3 +1397,9 @@ button.draft-bench__slot {
 .manager__sort:focus-visible {
   text-decoration: underline;
 }
+
+/* Wunschliste: inzwischen vergeben */
+.draft-queue__list li.is-taken .draft-queue__name {
+  text-decoration: line-through;
+  opacity: 0.6;
+}

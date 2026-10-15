@@ -2,6 +2,7 @@ import { useT } from '../i18n';
 import { DRAFT_LIMITS } from '../lib/api/draftContract';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
+import { rosterOf } from '../lib/draftEngine';
 import type { DraftRoom } from '../state/useDraftRoom';
 import { Sprite } from './Sprite';
 
@@ -16,6 +17,9 @@ export function DraftQueue({ room, selected }: { room: DraftRoom; selected: numb
   const queue = room.state?.queue ?? [];
   const max = DRAFT_LIMITS.queueMax;
   const inQueue = selected != null && queue.includes(selected);
+  // Inzwischen von einem Team gewählt – der Auto-Pick überspringt sie ohnehin
+  const taken = new Set((room.state?.teams ?? []).flatMap((tm) => rosterOf(tm)));
+  const gone = queue.filter((id) => taken.has(id));
   const set = (ids: number[]) => room.setQueue(ids);
   const name = (id: number) => {
     const p = byId.get(id);
@@ -42,10 +46,13 @@ export function DraftQueue({ room, selected }: { room: DraftRoom; selected: numb
           {queue.map((id, i) => {
             const p = byId.get(id);
             return (
-              <li key={id}>
+              <li key={id} className={taken.has(id) ? 'is-taken' : undefined}>
                 <span className="draft-queue__no">{i + 1}.</span>
                 {p && <Sprite pokemon={p} style={sprite} className="draft-queue__sprite" />}
-                <span className="draft-queue__name">{name(id)}</span>
+                <span className="draft-queue__name">
+                  {name(id)}
+                  {taken.has(id) && <small className="muted"> {t.online.queueTaken}</small>}
+                </span>
                 <button
                   type="button"
                   className="draft-queue__btn"
@@ -69,6 +76,11 @@ export function DraftQueue({ room, selected }: { room: DraftRoom; selected: numb
         </ol>
       ) : (
         <p className="muted small">{t.online.queueEmpty}</p>
+      )}
+      {gone.length > 0 && (
+        <button type="button" className="btn btn--small btn--ghost" onClick={() => set(queue.filter((id) => !taken.has(id)))}>
+          {t.online.queueClearTaken(gone.length)}
+        </button>
       )}
       <p className="muted small">{t.online.queueNote}</p>
     </section>
