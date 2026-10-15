@@ -850,6 +850,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           league={shown}
           crestOf={(i) => cleanCrest(s.teams[i]?.crest)}
           top={(s.career?.tier ?? 2) > 1 ? 3 : 1}
+          rival={rival}
         />
       </section>
     </div>
@@ -1359,7 +1360,10 @@ function ManagerTable({
   league,
   crestOf,
   top,
+  rival = null,
 }: {
+  /** Nächster Gegner des eigenen Teams (⚔️ in der Tabelle) */
+  rival?: number | null;
   /** Grüne/goldene Zone oben: Aufstiegsplätze (Karriere unter der 1. Liga) bzw. nur der Meister */
   top: number;
   /** Wappen eines Teams (null = keins) */
@@ -1439,6 +1443,13 @@ function ManagerTable({
                     </>
                   )}
                   {nameOf(r.team)}
+                  {r.team === rival && (
+                    <span className="manager__table-rival" title={t.draft.manager.rivalMark}>
+                      {' '}
+                      <span aria-hidden="true">⚔️</span>
+                      <span className="sr-only"> – {t.draft.manager.rivalMark}</span>
+                    </span>
+                  )}
                 </td>
                 <td>{r.played}</td>
                 <td>{r.w}</td>

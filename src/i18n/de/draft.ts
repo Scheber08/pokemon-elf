@@ -674,6 +674,7 @@ const draft = {
     scoringRun: (pokemon: string, games: number) => `${pokemon} trifft im ${games}. Spiel in Folge!`,
     linesTitle: 'Tore nach Mannschaftsteil',
     lineNames: { att: 'Angriff', mid: 'Mittelfeld', def: 'Abwehr', gk: 'Tor' },
+    rivalMark: 'Dein nächster Gegner',
     projection: (pts: number) => `Hochrechnung: ${pts} Pkt`,
     behindTop: (n: number) => (n === 0 ? 'punktgleich mit der Spitze' : `${n} Pkt hinter Platz 1`),
     colAssists: 'Vorl.',

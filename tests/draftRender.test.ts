@@ -1667,6 +1667,10 @@ describe('ManagerSeason', () => {
     const row = sideTable(league.teams, league.matches, side).find((r) => r.team === rival)!;
     const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
     await settle();
+    // ⚔️ markiert den nächsten Gegner in der Tabelle (genau eine Zeile)
+    const marked = container.querySelectorAll('.manager__table-rival');
+    expect(marked).toHaveLength(1);
+    expect(marked[0].closest('td')!.textContent).toContain(league.teams[rival].name.split(' ')[0]);
     const el = container.querySelector('.manager__rival-venue');
     expect(row.played).toBeGreaterThan(0);
     expect(el!.textContent).toBe(`${side === 'home' ? 'Zu Hause' : 'Auswärts'}: ${formatRecord(row)} (S–U–N, ${row.played === 1 ? '1 Spiel' : `${row.played} Spiele`})`);

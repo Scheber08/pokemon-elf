@@ -612,6 +612,7 @@ const draft: Messages['draft'] = {
     scoringRun: (pokemon, games) => `${pokemon} has scored in ${games} straight games!`,
     linesTitle: 'Goals by unit',
     lineNames: { att: 'Attack', mid: 'Midfield', def: 'Defence', gk: 'Keeper' },
+    rivalMark: 'Your next opponent',
     projection: (pts) => `Projection: ${pts} pts`,
     behindTop: (n) => (n === 0 ? 'level on points with the top' : `${n} pts behind 1st`),
     colAssists: 'Ast.',
