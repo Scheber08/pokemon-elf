@@ -282,6 +282,24 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(JSON.parse(localStorage.getItem('pokemon-elf:draft')!).cpuLevel).toBe('hard');
   });
 
+  it('Aufbau: „Shuffle order“ mischt die Teamliste (= Draft-Reihenfolge)', async () => {
+    storeLang('en');
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const names = () => container.querySelectorAll('.draft__teamrow input').map((i) => (i as MiniElement).value as string);
+    const before = names();
+    expect(before.length).toBeGreaterThanOrEqual(2);
+    const btn = container.querySelectorAll('button').find((b) => b.textContent === '🎲 Shuffle order') as MiniElement;
+    // Math.random = 0: jeder Schritt tauscht mit dem ersten Element → Rotation nach links
+    const rnd = vi.spyOn(Math, 'random').mockReturnValue(0);
+    await act(async () => btn.click());
+    rnd.mockRestore();
+    expect(names()).toEqual([...before.slice(1), before[0]]);
+    // Gespeichert: das bisher erste Team (eigenes) steht jetzt hinten
+    const stored = JSON.parse(localStorage.getItem('pokemon-elf:draft')!).teams;
+    expect(stored[stored.length - 1].name).toBe('Mein Team');
+  });
+
   it('Draft läuft: Statuszeile, Board, Hinweis', async () => {
     storeLang('en');
     const teams = [

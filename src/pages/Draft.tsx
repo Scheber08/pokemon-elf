@@ -407,6 +407,14 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 </li>
               ))}
             </ol>
+            <button
+              type="button"
+              className="btn btn--small draft__shuffle"
+              // Reihenfolge der Liste = Draft-Reihenfolge (Snake); Mischen nur in der Oberfläche
+              onClick={() => setState((s) => ({ ...s, teams: shuffle(Math.random, s.teams) }))}
+            >
+              {t.online.shuffleOrder}
+            </button>
             <p className="muted small">{tx.hotSeatNote}</p>
           </section>
           <section className="card" aria-labelledby="draft-pool">
