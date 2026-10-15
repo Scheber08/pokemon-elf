@@ -642,6 +642,7 @@ const draft = {
     tipOptions: { w: 'Sieg', d: 'Remis', l: 'Niederlage' },
     tipLast: (round: number, hit: boolean) => `Spieltag ${round}: ${hit ? '✅' : '❌'}`,
     tipScore: (hits: number, total: number) => `${hits} von ${total} Tipps richtig`,
+    tipStreak: (n: number) => `${n} in Folge`,
     colPoints: 'Sc.',
     pointsTitle: 'Scorerpunkte (Tore + Vorlagen) in dieser Saison',
     goalsTitle: 'Tore in dieser Saison',

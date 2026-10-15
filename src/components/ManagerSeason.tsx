@@ -546,6 +546,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
                   <span className="small muted manager__tip-score">
                     {score.last && `${tx.tipLast(score.last.round, score.last.hit)} · `}
                     {tx.tipScore(score.hits, score.total)}
+                    {score.streak >= 2 && ` · 🔥 ${tx.tipStreak(score.streak)}`}
                   </span>
                 )}
               </div>

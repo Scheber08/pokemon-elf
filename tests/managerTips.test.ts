@@ -34,7 +34,12 @@ describe('Manager-Tipps', () => {
     expect(outcomeFor(matches[2], 0)).toBe('l');
     expect(outcomeFor(matches[0], 5)).toBeNull();
     // Spieltag 3 noch nicht gespielt (played = 2)
-    expect(tipScore({ 1: 'w', 2: 'l', 3: 'l' }, matches, 0, 2)).toEqual({ hits: 1, total: 2, last: { round: 2, hit: false } });
-    expect(tipScore({}, matches, 0, 3)).toEqual({ hits: 0, total: 0, last: null });
+    expect(tipScore({ 1: 'w', 2: 'l', 3: 'l' }, matches, 0, 2)).toEqual({ hits: 1, total: 2, last: { round: 2, hit: false }, streak: 0 });
+    expect(tipScore({}, matches, 0, 3)).toEqual({ hits: 0, total: 0, last: null, streak: 0 });
+    // Serie: drei richtige in Folge (Sieg, Remis, Niederlage)
+    expect(tipScore({ 1: 'w', 2: 'd', 3: 'l' }, matches, 0, 3)).toEqual({ hits: 3, total: 3, last: { round: 3, hit: true }, streak: 3 });
+    // Falscher Tipp am Anfang, danach zwei richtige; ungetippter Spieltag unterbricht nicht
+    expect(tipScore({ 1: 'l', 2: 'd', 3: 'l' }, matches, 0, 3).streak).toBe(2);
+    expect(tipScore({ 1: 'w', 3: 'l' }, matches, 0, 3).streak).toBe(2);
   });
 });

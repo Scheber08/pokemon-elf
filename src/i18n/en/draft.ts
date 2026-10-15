@@ -586,6 +586,7 @@ const draft: Messages['draft'] = {
     tipOptions: { w: 'Win', d: 'Draw', l: 'Loss' },
     tipLast: (round, hit) => `Matchday ${round}: ${hit ? '✅' : '❌'}`,
     tipScore: (hits, total) => `${hits} of ${total} tips right`,
+    tipStreak: (n) => `${n} in a row`,
     colPoints: 'Pts',
     pointsTitle: 'Goal involvements (goals + assists) this season',
     goalsTitle: 'Goals this season',
