@@ -4,7 +4,7 @@ import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftTeam, ManagerTransfer } from '../lib/api/draftContract';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { bestTransfer, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { bestTransfer, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { buildTable, formatRecord, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -526,6 +526,31 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
         </section>
 
         <SeasonStats league={league} you={you} nameOf={nameOf} tabs={['assists', 'points', 'teams']} captains={teams.map((tm) => tm?.captain)} />
+
+        {teams.length >= 2 && (() => {
+          // Elf der Saison: beste Scorer je Position über alle gedrafteten Teams
+          const eleven = seasonEleven(league, teams, byId, scale('all'));
+          if (!eleven) return null;
+          return (
+            <section className="card draft-results__eleven" aria-labelledby="draft-results-eleven">
+              <h2 id="draft-results-eleven" className="section-title">
+                {tx.elevenTitle}
+              </h2>
+              <p className="muted small">{tx.elevenNote(eleven.formation)}</p>
+              <Pitch formation={eleven.formation} slots={eleven.slots} sprite={sprite} ariaLabel={tx.elevenTitle} jerseys={false} shinies={shinies} />
+              <ul className="draft-results__eleven-list small">
+                {eleven.slots.map((id, j) => {
+                  const p = byId.get(id);
+                  return (
+                    <li key={id} className={eleven.teamOf[j] === you ? 'is-mine' : ''}>
+                      {p ? t.game.pokemon(p) : `#${id}`} <span className="muted">({nameOf(eleven.teamOf[j])})</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          );
+        })()}
 
         {!cup && table.length > 1 && (
           <section className="card" aria-labelledby="draft-results-records">

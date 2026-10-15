@@ -1077,3 +1077,19 @@
 .league-ticker__fact-next {
   grid-column: 1 / -1;
 }
+
+/* Saisonergebnis: Elf der Saison – Namensliste unter dem Feld */
+.draft-results__eleven-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+.draft-results__eleven-list li.is-mine {
+  color: var(--yellow);
+}
+:root[data-theme='light'] .draft-results__eleven-list li.is-mine {
+  color: #b45309;
+}

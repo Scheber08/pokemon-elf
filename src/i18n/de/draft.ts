@@ -280,6 +280,8 @@ const draft = {
       `${r.pts} Pkt · ${r.w}–${r.d}–${r.l} · Tore ${r.gf}:${r.ga} · Team-Score ${rating}`,
     youChampion: 'Glückwunsch – dein Team ist Meister!',
     yourPlace: (team: string, place: number, pts: number) => `Dein Team ${team}: Platz ${place} · ${pts} Pkt`,
+    elevenTitle: 'Elf der Saison',
+    elevenNote: (formation: string) => `Je Position der Spieler mit den meisten Scorerpunkten (Tore + Vorlagen) aus allen Teams – in der häufigsten Formation ${formation}.`,
     ownTopPick: (line: string) => `Dein bester Pick: ${line}`,
     ownLowPick: (line: string) => `dein schwächster: ${line}`,
     pickLine: (pokemon: string, pos: string, fit: number, pick: number | null) => `${pokemon} (${pos}, Fit ${fit}${pick != null ? `, Pick ${pick}` : ''})`,

@@ -9,7 +9,7 @@
  */
 import { FORMATIONS } from '../config/formations';
 import { messages } from '../i18n';
-import type { Pokemon, PosCode } from '../types';
+import type { FormationId, Pokemon, PosCode } from '../types';
 import type { DraftPickLog, DraftTeam } from './api/draftContract';
 import { storedCup } from './cup';
 import { positionFit, type Scale } from './fit';
@@ -615,6 +615,64 @@ export function draftSteal(
     if (!best || fit >= best.fit) best = { pick: pk.pick, teamId: pk.teamId, pokemonId: pk.pokemonId, pos: def.pos, fit };
   }
   return best && { pick: best.pick, teamId: best.teamId, pokemonId: best.pokemonId, pos: best.pos };
+}
+
+/** Elf der Saison: Formation, Pokémon je Slot und das Team (Index) jedes Spielers */
+export interface SeasonEleven {
+  formation: FormationId;
+  slots: number[];
+  teamOf: number[];
+}
+
+/**
+ * Elf der Saison aus allen gedrafteten Teams: in der häufigsten Formation der Liga (bei Gleichstand die
+ * zuerst vorkommende) bekommt jeder Slot den Spieler, der bei seinem Team auf genau dieser Position stand
+ * und die meisten Scorerpunkte (Tore + Vorlagen) holte – dann nach Positions-Fit, dann kleinere ID.
+ * null, wenn ein Slot leer bliebe.
+ */
+export function seasonEleven(
+  league: Pick<LeagueResult, 'matches'>,
+  teams: readonly Pick<DraftTeam, 'formation' | 'slots'>[],
+  byId: Map<number, Pokemon>,
+  scale: Scale,
+): SeasonEleven | null {
+  if (!teams.length) return null;
+  const counts = new Map<FormationId, number>();
+  for (const t of teams) counts.set(t.formation, (counts.get(t.formation) ?? 0) + 1);
+  const formation = [...counts].reduce((a, b) => (b[1] > a[1] ? b : a))[0];
+  // Scorerpunkte je Team und Pokémon
+  const points = teams.map(() => new Map<number, number>());
+  const add = (team: number, id: number | undefined) => {
+    if (id == null || !points[team]) return;
+    points[team].set(id, (points[team].get(id) ?? 0) + 1);
+  };
+  for (const m of league.matches) {
+    for (const [team, goals] of [[m.home, m.homeScorers], [m.away, m.awayScorers]] as const) {
+      for (const g of goals) {
+        add(team, g.pokemonId);
+        add(team, g.assist);
+      }
+    }
+  }
+  const candidates = teams.flatMap((t, ti) =>
+    FORMATIONS[t.formation].slots.flatMap((d, j) => {
+      const id = t.slots[j];
+      const p = id != null ? byId.get(id) : undefined;
+      return p ? [{ id: p.id, team: ti, pos: d.pos, pts: points[ti].get(p.id) ?? 0, fit: positionFit(p, d.pos, scale) }] : [];
+    }),
+  );
+  candidates.sort((a, b) => b.pts - a.pts || b.fit - a.fit || a.id - b.id);
+  const used = new Set<number>();
+  const slots: number[] = [];
+  const teamOf: number[] = [];
+  for (const d of FORMATIONS[formation].slots) {
+    const c = candidates.find((x) => x.pos === d.pos && !used.has(x.id));
+    if (!c) return null;
+    used.add(c.id);
+    slots.push(c.id);
+    teamOf.push(c.team);
+  }
+  return { formation, slots, teamOf };
 }
 
 /** Bilanz eines Teams gegen einen Gegner (aus Sicht des Teams). */

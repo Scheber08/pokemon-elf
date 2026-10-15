@@ -403,3 +403,38 @@ describe('Überraschung/Enttäuschung der Saison', () => {
     expect(seasonSwings([1, 0], [800, 800])).toEqual({ up: null, down: null });
   });
 });
+
+describe('Elf der Saison', () => {
+  it('häufigste Formation, je Slot der Scorer-beste auf genau dieser Position', async () => {
+    const { seasonEleven } = await import('../src/lib/leagueTimeline');
+    const { FORMATIONS } = await import('../src/config/formations');
+    const { buildScale } = await import('../src/lib/fit');
+    const { ALL } = await import('./helpers');
+    const scale = buildScale(ALL, 'all');
+    const byId = new Map(ALL.map((p) => [p.id, p]));
+    const f = '4-3-3' as const;
+    const ids = ALL.slice(0, 33).map((p) => p.id);
+    const teams = [
+      { formation: f, slots: ids.slice(0, 11) },
+      { formation: f, slots: ids.slice(11, 22) },
+      { formation: '4-4-2' as const, slots: ids.slice(22, 33) },
+    ];
+    // Team 1, Slot 10 (Sturm) trifft doppelt, Vorlage von Team 1 Slot 9
+    const st = teams[1].slots[10]!;
+    const ast = teams[1].slots[9]!;
+    const matches = [{ round: 1, home: 1, away: 0, hg: 2, ag: 0, homeScorers: [{ pokemonId: st, pos: 'ST' as const, minute: 10, assist: ast }, { pokemonId: st, pos: 'ST' as const, minute: 50 }], awayScorers: [] }];
+    const e = seasonEleven({ matches }, teams, byId, scale)!;
+    expect(e.formation).toBe(f);
+    expect(e.slots).toHaveLength(11);
+    expect(new Set(e.slots).size).toBe(11);
+    const at = FORMATIONS[f].slots.findIndex((d) => d.pos === FORMATIONS[f].slots[10].pos);
+    expect(e.slots[at]).toBe(st);
+    expect(e.teamOf[at]).toBe(1);
+    // Jeder Spieler stand bei seinem Team auf der Position seines Slots
+    e.slots.forEach((id, j) => {
+      const t = teams[e.teamOf[j]];
+      expect(FORMATIONS[t.formation].slots[t.slots.indexOf(id)].pos).toBe(FORMATIONS[f].slots[j].pos);
+    });
+    expect(seasonEleven({ matches: [] }, [], byId, scale)).toBeNull();
+  });
+});

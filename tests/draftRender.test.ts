@@ -1124,6 +1124,9 @@ describe('ManagerSeason', () => {
     const { buildTable } = await import('../src/lib/season');
     const second = buildTable(s.league!.teams, s.league!.matches.filter((m) => m.round > days.length / 2))[0];
     expect(rec.textContent).toContain(`${second.pts} Pkt in der Rückrunde`);
+    // Elf der Saison: Feld und 11 Namen
+    expect(container.querySelector('.draft-results__eleven h2')!.textContent).toBe('Elf der Saison');
+    expect(container.querySelectorAll('.draft-results__eleven-list li')).toHaveLength(11);
     // Eigener bester / schwächster Pick nach Positions-Fit
     {
       const { FORMATIONS } = await import('../src/config/formations');
