@@ -1502,6 +1502,12 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   ))}
                 </p>
               )}
+              {state.legends && (
+                // Noch freie Legendäre/Mysteriöse (wie im Pool-Kopf des Online-Drafts)
+                <p className="small muted draft-pool__legends">
+                  ★ {t.online.legendsFreeTitle(pool.filter((p) => p.leg || p.myth).length)}
+                </p>
+              )}
               <FilterBar filters={filters} onChange={setFilters} showRegion={state.region === 0} resultCount={filtered.length} slashFocus />
               <PokemonGrid
                 items={filtered}

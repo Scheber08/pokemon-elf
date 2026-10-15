@@ -833,6 +833,24 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(container.querySelector('.draft-turnbar__final')).toBeNull();
   });
 
+  it('Draft läuft: ★ freie Legendäre nur mit Legendären im Pool', async () => {
+    storeLang('en');
+    const f = FORMATION_IDS[0];
+    const legends = ALL.filter((p) => p.gen === 1 && (p.leg || p.myth));
+    const teams = [
+      { name: 'Mein Team', cpu: false, formation: f, slots: emptySlots(f).map((x, j) => (j === 0 ? legends[0].id : x)) },
+      { name: 'Zweites Team', cpu: false, formation: f, slots: emptySlots(f) },
+    ];
+    for (const withLegends of [false, true]) {
+      localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: withLegends, pick: 1, selected: null, seed: null }));
+      const { container } = await render(app(h(Draft)));
+      await settle();
+      const el = container.querySelector('.draft-pool__legends');
+      if (!withLegends) expect(el).toBeNull();
+      else expect(el!.textContent).toBe(`★ ${legends.length - 1} legendaries/mythicals still available`);
+    }
+  });
+
   it('Draft läuft: 🏁 in der letzten Runde', async () => {
     storeLang('en');
     const f = FORMATION_IDS[0];
