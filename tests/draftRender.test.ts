@@ -1408,9 +1408,26 @@ describe('ManagerSeason', () => {
     r = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
     await settle();
     const name = ALL.find((p) => p.id === Number(key.split(':')[1]))!.de;
-    expect(r.container.querySelector('.manager__ownscorer')!.textContent).toBe(
-      `⚽ Dein Torjäger: ${name} – ${n} ${n === 1 ? 'Tor' : 'Tore'} (Platz ${rank} der Torjägerliste)`,
-    );
+    const line = r.container.querySelector('.manager__ownscorer')!.textContent!;
+    expect(line.startsWith(`⚽ Dein Torjäger: ${name} – ${n} ${n === 1 ? 'Tor' : 'Tore'} (Platz ${rank} der Torjägerliste)`)).toBe(true);
+    // Nicht vorn: die Spitze der Torjägerliste mit ihren Toren
+    const max = Math.max(...per.values());
+    if (rank > 1) expect(line).toMatch(new RegExp(` · vorn: .+ \\(.+\\) mit ${max}$`));
+    else expect(r.container.querySelector('.manager__scorerlead')).toBeNull();
+    expect(rank).toBe(1);
+    // Ein fremder Torjäger zieht vorbei (Spiel ohne eigenes Team, Tore nachgetragen) → Spitze wird genannt
+    const raw = structuredClone(s.league) as { matches: { home: number; away: number; hg: number; homeScorers?: { pokemonId: number }[] }[] };
+    const m = raw.matches.find((x) => x.home !== idx && x.away !== idx)!;
+    const template = raw.matches.flatMap((x) => x.homeScorers ?? [])[0];
+    const rival = ALL[500].id;
+    m.hg += n + 1;
+    m.homeScorers = [...(m.homeScorers ?? []), ...Array.from({ length: n + 1 }, () => ({ ...template, pokemonId: rival }))];
+    const s2 = { ...s, league: raw as typeof s.league };
+    const r2 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s2, 'h')), readOnly: false })));
+    await settle();
+    const lead = r2.container.querySelector('.manager__scorerlead')!.textContent!;
+    expect(lead).toMatch(new RegExp(`^ · vorn: ${ALL.find((p) => p.id === rival)!.de} \\(.+\\) mit ${n + 1 + (per.get(`${m.home}:${rival}`) ?? 0)}$`));
+    expect(r2.container.querySelector('.manager__ownscorer')!.textContent).toContain('(Platz 2 der Torjägerliste)');
   });
 
   it('Eigener Platz: Hochrechnung der Punkte aufs Saisonende ab dem 3. Spieltag', async () => {

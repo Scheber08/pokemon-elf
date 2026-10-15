@@ -226,7 +226,7 @@ Spielerprofile `/spieler/:id` (Name, gewertete Runs, bester Allzeit-Platz).
 Statistik, Torschützen mit Vorlagen) oder die 2D-Ansicht von oben (`src/lib/matchReplay.ts`,
 `src/components/MatchPitch.tsx`: Formationen mit Pokémon-Sprites, Ballwege, Schüsse und die echten Tore – reine
 Illustration, das Ergebnis ändert sich nicht; Tempo 1×/2×/4×, „⏭ Tor“, Leertaste/N, „TOR!“-Einblendung). In den
-Einstellungen bzw. per Umschalter: 2D, Bericht oder aus. In der Manager-Saison zusätzlich der Spieler des Spieltags; vor dem nächsten Spieltag stehen Topspiel und Kellerduell (beste bzw. schlechteste Platzsumme); der Status nennt den eigenen Torjäger mit Platz in der Torjägerliste.
+Einstellungen bzw. per Umschalter: 2D, Bericht oder aus. In der Manager-Saison zusätzlich der Spieler des Spieltags; vor dem nächsten Spieltag stehen Topspiel und Kellerduell (beste bzw. schlechteste Platzsumme); der Status nennt den eigenen Torjäger mit Platz in der Torjägerliste (und die Spitze, wenn er nicht vorn ist).
 
 **Shinys im Draft** (`src/lib/shiny.ts`): Jeder Pick schillert mit 2 % Chance (online aus dem geheimen Liga-Seed,
 lokal aus einem Zufallswert je Draft). Ein Shiny spielt besser (+10 Passung) und hebt das ganze Team um bis zu
