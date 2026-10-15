@@ -4,6 +4,7 @@ import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftSettings, DraftTeam, ManagerTransfer } from '../lib/api/draftContract';
 import { poolStars, StarsLanded } from './PoolStars';
+import { TypeGoals } from './TypeGoals';
 import { copyText, downloadBlob } from '../lib/exportImage';
 import { bestTransfer, comebackOf, missedChance, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
@@ -601,6 +602,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
               })}
             </ol>
           )}
+          <TypeGoals matches={league.matches} byId={byId} />
         </section>
 
         <SeasonStats league={league} you={you} nameOf={nameOf} tabs={['assists', 'points', 'teams']} captains={teams.map((tm) => tm?.captain)} />

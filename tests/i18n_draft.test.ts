@@ -733,6 +733,9 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(bests).toHaveLength(11);
     for (let rd = 1; rd <= 11; rd++) expect(bests.filter((li) => li.textContent!.includes(` · R${rd} `))).toHaveLength(1);
     expect(bests[0].querySelector('.draft-results__roundbest')!.textContent).toBe(' 🏅Best pick of the round (positional fit)');
+    // Top-scoring types below the scorers (English)
+    expect(r.container.querySelector('.type-goals')!.textContent).toMatch(/^Top-scoring types:/);
+    expect(r.container.querySelectorAll('.type-goals__item').length).toBeGreaterThan(0);
     // 😬 Verpasste Chance (nur das menschliche Team; ein Mensch → ohne Teamnamen)
     {
       const missed = timeline.missedChance(

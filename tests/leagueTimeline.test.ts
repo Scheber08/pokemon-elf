@@ -540,3 +540,24 @@ describe('Tore nach Mannschaftsteil', () => {
     expect(goalsByLine(matches, 1)).toEqual({ att: 0, mid: 0, def: 1, gk: 0 });
   });
 });
+
+describe('Tore nach Typ', () => {
+  it('Doppeltypen zählen für beide, absteigend, höchstens drei', async () => {
+    const { goalsByType } = await import('../src/lib/leagueTimeline');
+    const byId = new Map([
+      [1, { types: ['fire', 'flying'] as const }],
+      [2, { types: ['water'] as const }],
+      [3, { types: ['fire'] as const }],
+      [4, { types: ['grass'] as const }],
+    ].map(([id, p]) => [id as number, { types: [...(p as { types: readonly string[] }).types] }])) as never;
+    const g = (pokemonId: number) => ({ pokemonId, pos: 'ST' as const });
+    const matches = [
+      { round: 1, home: 0, away: 1, hg: 3, ag: 2, homeScorers: [g(1), g(3), g(3)], awayScorers: [g(2), g(2)] },
+      { round: 2, home: 1, away: 0, hg: 1, ag: 1, homeScorers: [g(4)], awayScorers: [g(1)] },
+    ];
+    const { TYPE_KEYS } = await import('../src/config/pokemonTypes');
+    const tied = (['flying', 'water'] as const).slice().sort((a, b) => TYPE_KEYS.indexOf(a) - TYPE_KEYS.indexOf(b));
+    expect(goalsByType(matches, byId)).toEqual([{ type: 'fire', goals: 4 }, ...tied.map((type) => ({ type, goals: 2 }))]);
+    expect(goalsByType([], byId)).toEqual([]);
+  });
+});

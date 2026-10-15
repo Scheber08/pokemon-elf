@@ -8,6 +8,7 @@ import { PosBadge } from '../components/Badges';
 import { DraftPickFeed, DraftTypeChip, KindMarks, RoundBest } from '../components/DraftBoard';
 import type { FeedItem } from '../state/useDraftRoom';
 import { PoolStars, poolStars, StarsLanded } from '../components/PoolStars';
+import { TypeGoals } from '../components/TypeGoals';
 import { Confetti } from '../components/Confetti';
 import { FilterBar, typingElsewhere, useFilteredPokemon, type PokemonFilters } from '../components/FilterBar';
 import { CaptainPicker } from '../components/CaptainPicker';
@@ -1021,6 +1022,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 );
               })}
             </ol>
+            <TypeGoals matches={league.matches} byId={byId} />
           </section>
         </div>
         {/* Vorlagen, Scorerpunkte und Teamwerte wie im Online-Draft (Torjäger stehen schon oben) */}

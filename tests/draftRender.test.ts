@@ -2122,6 +2122,14 @@ describe('ManagerSeason', () => {
       const picksLine = container.querySelector('.draft-results__ownpicks')!.textContent!;
       expect(picksLine).toMatch(new RegExp(`^Dein bester Pick: .+ \\(\\S+, Fit ${Math.max(...fits)}, Pick \\d+\\) · dein schwächster: .+ \\(\\S+, Fit ${Math.min(...fits)}, Pick \\d+\\)$`));
     }
+    // Treffsicherste Typen unter der Torjägerliste (wie goalsByType)
+    {
+      const { goalsByType } = await import('../src/lib/leagueTimeline');
+      const top = goalsByType(s.league!.matches, new Map(ALL.map((p) => [p.id, p])));
+      const row = container.querySelector('.type-goals')!;
+      expect(row.textContent!.startsWith('Treffsicherste Typen:')).toBe(true);
+      expect(row.querySelectorAll('.type-goals__item').map((e) => e.querySelector('strong')!.textContent)).toEqual(top.map((x) => String(x.goals)));
+    }
     // 😬 Verpasste Chance: wie missedChance (ohne Legendäre & Co. als Alternative)
     {
       const { missedChance } = await import('../src/lib/leagueTimeline');

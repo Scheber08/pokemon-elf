@@ -10,7 +10,8 @@
 import { FORMATIONS } from '../config/formations';
 import { POSITIONS } from '../config/positions';
 import { messages } from '../i18n';
-import type { FormationId, Pokemon, PosCode } from '../types';
+import type { FormationId, Pokemon, PosCode, TypeKey } from '../types';
+import { TYPE_KEYS } from '../config/pokemonTypes';
 import type { DraftPickLog, DraftTeam } from './api/draftContract';
 import { storedCup } from './cup';
 import { positionFit, type Scale } from './fit';
@@ -489,6 +490,20 @@ export function goalMilestones(matches: LeagueResult['matches'], team: number, r
     if (mark > 0 && mark > (before.get(pokemonId) ?? 0)) out.push({ pokemonId, mark });
   }
   return out.sort((a, b) => b.mark - a.mark || a.pokemonId - b.pokemonId);
+}
+
+/**
+ * Tore der ganzen Liga nach Pokémon-Typ (Doppeltypen zählen für beide Typen), absteigend; bei Gleichstand in der
+ * Reihenfolge von TYPE_KEYS. Höchstens n Typen.
+ */
+export function goalsByType(matches: LeagueResult['matches'], byId: Map<number, Pick<Pokemon, 'types'>>, n = 3): { type: TypeKey; goals: number }[] {
+  const count = new Map<TypeKey, number>();
+  for (const m of matches)
+    for (const g of [...m.homeScorers, ...m.awayScorers]) for (const type of byId.get(g.pokemonId)?.types ?? []) count.set(type, (count.get(type) ?? 0) + 1);
+  return [...count]
+    .map(([type, goals]) => ({ type, goals }))
+    .sort((a, b) => b.goals - a.goals || TYPE_KEYS.indexOf(a.type) - TYPE_KEYS.indexOf(b.type))
+    .slice(0, n);
 }
 
 /** Mannschaftsteile für die Torverteilung (Standardschütze zählt zum Angriff, wie in POSITIONS) */
