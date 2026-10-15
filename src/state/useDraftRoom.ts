@@ -249,7 +249,12 @@ export interface FeedItem {
   pos?: PosCode;
   /** Positions-Fit dort (nur Feldslots und nur mit Skala) */
   fit?: number;
+  /** Blitz-Pick: selbst gewählt höchstens FAST_PICK_SECONDS nach dem vorigen Pick (Sekunden) */
+  fast?: number;
 }
+
+/** Bis zu so vielen Sekunden nach dem vorigen Pick gilt ein eigener (nicht automatischer) Pick als Blitz-Pick ⚡ */
+export const FAST_PICK_SECONDS = 5;
 
 /**
  * Anzeigename eines Teams: Vereinsnamen der CPU-Teams (intern deutsch gespeichert) in der Sprache
@@ -263,6 +268,7 @@ export function teamLabel(team: Pick<DraftTeam, 'name' | 'cpu'>, t: Messages = m
 export function pickFeed(s: DraftSnapshot, byId: Map<number, Pokemon>, limit = 8, t: Messages = messages(), scale?: Scale): FeedItem[] {
   const names = new Map(s.teams.map((tm) => [tm.id, teamLabel(tm, t)]));
   const teams = new Map(s.teams.map((tm) => [tm.id, tm]));
+  const atOf = new Map(s.picks.map((p) => [p.pick, p.at]));
   return s.picks
     .slice(-limit)
     .reverse()
@@ -278,6 +284,11 @@ export function pickFeed(s: DraftSnapshot, byId: Map<number, Pokemon>, limit = 8
       };
       if (p.roll) item.roll = { region: t.game.region[p.roll.gen] ?? '?', type: p.roll.type };
       if (p.shiny) item.shiny = true;
+      const prevAt = atOf.get(p.pick - 1);
+      if (!p.auto && prevAt != null) {
+        const secs = Math.max(0, Math.round((p.at - prevAt) / 1000));
+        if (secs <= FAST_PICK_SECONDS) item.fast = secs;
+      }
       // Position, an der das Pokémon jetzt steht (nach Tauschen), statt des ursprünglichen Slots
       const team = teams.get(p.teamId);
       const at = team ? team.slots.indexOf(p.pokemonId) : -1;

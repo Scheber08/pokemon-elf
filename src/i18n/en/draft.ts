@@ -265,6 +265,7 @@ const draft: Messages['draft'] = {
     fitTitle: (fit) => `Average positional fit of the picks so far: ${fit}`,
     topFit: 'Best average fit so far',
     typeTitle: (type, n) => `Type squad: ${n} ${type}-type Pokémon`,
+    feedFast: (s) => `Lightning pick: after ${s} ${s === 1 ? 'second' : 'seconds'}`,
     feedRun: (pos, n, of) => `Run on ${pos}: ${n} of the last ${of} picks`,
     feedFitTitle: (fit) => `Positional fit: ${fit}`,
     megasTitle: (n, max) => `${n} of at most ${plural(max, 'Mega', 'Megas')}`,

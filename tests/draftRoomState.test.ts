@@ -262,6 +262,25 @@ describe('Ansage pro Pick', () => {
     expect(none).not.toContain('Run auf');
   });
 
+  it('Blitz-Pick ⚡: eigener Pick höchstens 5 s nach dem vorigen', () => {
+    let s = startDraft(lobby(2), 'dev-h', 0, ALL);
+    // Picks bei 10 s, 13 s (⚡ 3 s), 25 s (12 s, kein Blitz) und automatisch bei 26 s (kein Blitz)
+    const pickAt = (st: typeof s, now: number, auto: boolean) => {
+      const team = currentTeam(st)!;
+      const c = autoPickChoice(st, team.id, ALL, SCALE, false);
+      return applyPick(st, team.id, c.pokemonId, c.slot, auto, now, ALL);
+    };
+    s = pickAt(s, 10_000, false);
+    s = pickAt(s, 13_000, false);
+    s = pickAt(s, 25_000, false);
+    s = pickAt(s, 26_000, true);
+    const items = pickFeed(snap(s), byId);
+    expect(items.map((f) => f.fast)).toEqual([undefined, undefined, 3, undefined]);
+    const html = renderToStaticMarkup(createElement(DraftPickFeed, { items, you: null }));
+    expect(html.match(/draft-feed__fast/g)).toHaveLength(1);
+    expect(html).toContain('Blitz-Pick: nach 3 Sekunden');
+  });
+
   it('Verlauf und Timer sind keine Live-Regionen mehr', () => {
     let s = startDraft(lobby(2), 'dev-h', 0, ALL);
     s = autoPick(autoPick(s));
