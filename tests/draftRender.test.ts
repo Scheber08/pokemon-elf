@@ -863,7 +863,7 @@ describe('ManagerSeason', () => {
     const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(st, 'h')), readOnly: false })));
     await settle();
     expect(container.querySelector('.manager__shiny')!.textContent).toContain(ALL.find((p) => p.id === inn)!.de);
-    expect(container.querySelector('.manager__place')!.textContent).toMatch(/^Dein Team: Platz \d+ · \d+ Pkt/);
+    expect(container.querySelector('.manager__place')!.textContent).toMatch(/^Dein Team: Platz \d+ · \d+ Pkt.* · (\d+ Pkt (Vorsprung|hinter Platz 1)|punktgleich)/);
     // Kader-Tabelle: Tore dieser Saison je Pokémon (Summe = eigene Tore am 1. Spieltag)
     const idx = st.teams.findIndex((t) => t.id === 'h');
     const m1 = st.league!.matches.find((m) => m.round === 1 && (m.home === idx || m.away === idx))!;

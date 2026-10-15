@@ -527,6 +527,8 @@ const draft = {
     colForm: 'Form',
     colGoals: 'Tore',
     yourPlace: (place: number, pts: number) => `Dein Team: Platz ${place} · ${pts} Pkt`,
+    leadBy: (n: number) => (n === 0 ? 'punktgleich mit Platz 2' : `${n} Pkt Vorsprung`),
+    behindTop: (n: number) => (n === 0 ? 'punktgleich mit der Spitze' : `${n} Pkt hinter Platz 1`),
     colAssists: 'Vorl.',
     assistsTitle: 'Vorlagen in dieser Saison',
     goalsTitle: 'Tore in dieser Saison',

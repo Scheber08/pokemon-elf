@@ -482,6 +482,8 @@ const draft: Messages['draft'] = {
     colForm: 'Form',
     colGoals: 'Goals',
     yourPlace: (place, pts) => `Your team: place ${place} · ${pts} pts`,
+    leadBy: (n) => (n === 0 ? 'level on points with 2nd' : `${n} pts clear`),
+    behindTop: (n) => (n === 0 ? 'level on points with the top' : `${n} pts behind 1st`),
     colAssists: 'Ast.',
     assistsTitle: 'Assists this season',
     goalsTitle: 'Goals this season',

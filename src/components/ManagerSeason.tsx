@@ -252,6 +252,14 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           return (
             <p className="manager__place">
               {tx.yourPlace(at + 1, shown.table[at].pts)} {delta != null && <Trend delta={delta} />}
+              {shown.table.length > 1 && (
+                <span className="muted">
+                  {' · '}
+                  {at === 0
+                    ? tx.leadBy(shown.table[0].pts - shown.table[1].pts)
+                    : tx.behindTop(shown.table[0].pts - shown.table[at].pts)}
+                </span>
+              )}
             </p>
           );
         })()}
