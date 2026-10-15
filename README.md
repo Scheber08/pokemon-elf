@@ -273,7 +273,7 @@ zwei Farben und ein Symbol bzw. ein Pokémon aus dem eigenen Team als Wappentier
 
 **Kapitän** (alle Modi): seine Passung zählt im Team-Score doppelt (`captainWeight`). Challenges: beim
 Abschluss (Server prüft, `entry_captains`); Builder/Testspiel: im Zustand und im Teilen-Link (`k`); Online-Draft:
-im Draft und im Vorlauf bis zum Anpfiff (Nachricht `captain`), Manager-Saison: jederzeit, zählt ab dem nächsten
+im Draft und im Vorlauf bis zum Anpfiff (Nachricht `captain`; der Host kann mit `kickoff` sofort anpfeifen), Manager-Saison: jederzeit, zählt ab dem nächsten
 Anpfiff. Wer nach dem letzten Pick keinen hat (CPU oder vergessen), bekommt den bestpassenden Spieler (`cpuCaptain`).
 
 ## Trainer & Erfolge

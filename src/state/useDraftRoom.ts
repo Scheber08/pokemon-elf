@@ -569,6 +569,8 @@ export interface DraftRoom extends DraftRoomView {
   setCheer(text: string): boolean;
   /** Lobby: eigenes Team bereit melden */
   setReady(ready: boolean): boolean;
+  /** Host: Saison sofort anpfeifen */
+  kickoff(): boolean;
   /** Wappen setzen (null = keins) */
   setCrest(crest: Crest | null): boolean;
   /** Manager-Saison: Tausch anbieten (eigenes give gegen get von Team to) */
@@ -963,6 +965,7 @@ export function useDraftRoom(code: string): DraftRoom {
     setKit: useCallback((kit: { home: string; away: string } | null) => send({ type: 'kit', kit }), [send]),
     setCheer: useCallback((text: string) => send({ type: 'cheer', text }), [send]),
     setReady: useCallback((ready: boolean) => send({ type: 'ready', ready }), [send]),
+    kickoff: useCallback(() => send({ type: 'kickoff' }), [send]),
     setCrest: useCallback((crest: Crest | null) => send({ type: 'crest', crest: crest as unknown as Record<string, unknown> | null }), [send]),
     offerTrade: useCallback((to: string, give: number, get: number) => send({ type: 'offer', to, give, get }), [send]),
     answerOffer: useCallback((id: number, accept: boolean) => send({ type: 'offer-reply', id, accept }), [send]),

@@ -15,6 +15,7 @@ const captain: Messages['captain'] = {
   windowNote: 'Their fit counts double. Choose now and the server plays the season with your captain.',
   localTitle: 'Choose captains',
   localNote: 'The draft is done. Every team now picks its captain – their fit counts double. Then it’s kickoff.',
+  kickoffNow: 'Kick off now (everyone done)',
   kickoff: 'Kick off the season',
   missing: 'No captain chosen yet – their fit would count double.',
 };

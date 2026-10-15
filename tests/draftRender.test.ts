@@ -487,6 +487,7 @@ function fakeRoom(s: DraftSnapshot, over: Partial<DraftRoom> = {}): DraftRoom {
     addCpu: vi.fn(() => true),
     fillCpu: vi.fn(() => true),
     setReady: vi.fn(() => true),
+    kickoff: vi.fn(() => true),
     removeTeam: vi.fn(() => true),
     setOrder: vi.fn(() => true),
     start: vi.fn(() => true),
@@ -991,6 +992,10 @@ describe('ManagerSeason', () => {
     const card = a.container.querySelector('.draft-captain-window')!;
     expect(card.textContent).toMatch(/Kapitän wählen – noch \d+ s bis zum Anpfiff/);
     expect(card.textContent).toMatch(/Wirkung auf den Team-Score: [+−]\d+\.\d/);
+    const go = card.querySelectorAll('button').find((b) => b.textContent === 'Jetzt anpfeifen (alle fertig)') as MiniElement | undefined;
+    expect(go).toBeTruthy();
+    await act(async () => go!.click());
+    expect(room.kickoff).toHaveBeenCalled();
     const select = card.querySelector('select') as MiniElement;
     const id = s.teams.find((t) => t.id === 'h')!.slots[4]!;
     await act(async () => {

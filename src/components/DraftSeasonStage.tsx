@@ -123,6 +123,11 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
               return tm.captain != null ? `${t.captain.windowNote} ${t.captain.effect(`${diff >= 0 ? '+' : '−'}${Math.abs(diff).toFixed(1)}`)}` : t.captain.windowNote;
             })()}
           />
+          {room.isHost && (
+            <button type="button" className="btn btn--small draft-captain-window__kickoff" onClick={() => room.kickoff()}>
+              {t.captain.kickoffNow}
+            </button>
+          )}
         </section>
       )}
       {ticker ? (

@@ -554,6 +554,8 @@ export type DraftClientMessage =
   | { type: 'cheer'; text: string }
   /** Lobby: eigenes Team bereit / nicht bereit */
   | { type: 'ready'; ready: boolean }
+  /** Host: Saison sofort anpfeifen (Vorlauf nach dem letzten Pick abkürzen) */
+  | { type: 'kickoff' }
   /** Wappen setzen (null = keins) – jederzeit, reine Optik */
   | { type: 'crest'; crest: Record<string, unknown> | null }
   | { type: 'offer-reply'; id: number; accept: boolean }

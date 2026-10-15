@@ -14,6 +14,7 @@ const captain = {
   localTitle: 'Kapitäne wählen',
   localNote: 'Der Draft ist durch. Jedes Team wählt jetzt seinen Kapitän – seine Passung zählt doppelt. Dann wird angepfiffen.',
   kickoff: 'Saison anpfeifen',
+  kickoffNow: 'Jetzt anpfeifen (alle fertig)',
   missing: 'Noch kein Kapitän gewählt – seine Passung würde doppelt zählen.',
 };
 

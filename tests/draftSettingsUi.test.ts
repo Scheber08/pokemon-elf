@@ -183,6 +183,7 @@ function fakeRoom(s: DraftSnapshot, over: Partial<DraftRoom> = {}): DraftRoom {
     addCpu: vi.fn(() => true),
     fillCpu: vi.fn(() => true),
     setReady: vi.fn(() => true),
+    kickoff: vi.fn(() => true),
     removeTeam: vi.fn(() => true),
     setOrder: vi.fn(() => true),
     start: vi.fn(() => true),

@@ -832,6 +832,13 @@ export function shinyFor(settings: DraftSettings, seed: DraftState['seed'], poke
   return s.shinies && shinyRoll(leagueSeed(seed, 'shiny'), pokemonId, s.shinyParty ? SHINY_PARTY_CHANCE : SHINY_CHANCE);
 }
 
+/** Host pfeift die Saison sofort an (Liga/Turnier, im Vorlauf nach dem letzten Pick) – Kapitäne stehen dann fest. */
+export function kickoffNow(state: DraftState, deviceId: string, now: number): DraftState {
+  requireHost(state, deviceId);
+  if (!captainWindowOpen(state, now)) fail('not_allowed', 'Die Saison läuft schon');
+  return { ...state, season: { ...state.season!, startsAt: now } };
+}
+
 /** Kapitän nach dem letzten Pick noch wählbar? (Liga/Turnier, bis zum Anpfiff) */
 export function captainWindowOpen(state: Pick<DraftState, 'phase' | 'season' | 'settings'>, now: number): boolean {
   return state.phase === 'done' && !!state.season && now < state.season.startsAt && upgradeSettings(state.settings).format !== 'manager';

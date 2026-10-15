@@ -64,6 +64,7 @@ import {
   setTeamCaptain,
   setTeamCheer,
   setTeamReady,
+  kickoffNow,
   setTeamCrest,
   setTeamKit,
   setTeamJerseys,
@@ -469,6 +470,7 @@ export function parseClientMessage(raw: unknown): ParsedMessage {
       if (d.fill === undefined) return ok({ type });
       return d.fill === true ? ok({ type, fill: true }) : badMessage();
     case 'start':
+    case 'kickoff':
     case 'ping':
       return ok({ type });
     default:
@@ -1613,6 +1615,8 @@ export class DraftRoomCore {
         return setTeamCheer(state, deviceId, msg.text);
       case 'ready':
         return setTeamReady(state, deviceId, msg.ready);
+      case 'kickoff':
+        return kickoffNow(state, deviceId, now);
       case 'crest':
         return setTeamCrest(state, deviceId, msg.crest);
       case 'captain':

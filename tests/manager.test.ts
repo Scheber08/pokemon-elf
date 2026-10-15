@@ -16,6 +16,8 @@ import {
   draftedIds,
   normalizeSettings,
   rosterOf,
+  kickoffNow,
+  captainWindowOpen,
   rounds,
   snapshotOf,
   startDraft,
@@ -808,6 +810,22 @@ describe('Karriere', () => {
     expect(later.history).toHaveLength(10);
     expect(later.history!.at(-1)).toEqual({ season: 11, tier: 1, places: { h: 1 } });
     expect(() => nextCareer(drafted({ format: 'league' }))).toThrow(/Manager/);
+  });
+});
+
+describe('Sofort anpfeifen (Liga/Turnier)', () => {
+  it('nur der Host, nur im Vorlauf; danach ist das Kapitänsfenster zu', () => {
+    const s = drafted({ format: 'league' });
+    expect(s.phase).toBe('done');
+    const at = s.season!.startsAt - 10_000;
+    expect(captainWindowOpen(s, at)).toBe(true);
+    expect(() => kickoffNow(s, 'dev-x', at)).toThrow();
+    const kicked = kickoffNow(s, 'dev-h', at);
+    expect(kicked.season!.startsAt).toBe(at);
+    expect(captainWindowOpen(kicked, at)).toBe(false);
+    expect(() => kickoffNow(kicked, 'dev-h', at)).toThrow(/läuft schon/);
+    // Manager-Saison hat kein Vorlauf-Fenster
+    expect(() => kickoffNow(drafted(), 'dev-h', 0)).toThrow();
   });
 });
 
