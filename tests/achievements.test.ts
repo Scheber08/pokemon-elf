@@ -130,7 +130,7 @@ describe('Kennzahlen und /api/me', () => {
     expect(s.dailyStreak).toBe(3);
     expect(s.dailyWins).toBe(1);
     expect(s.bestPlace).toBe(1);
-    expect(s.draft).toEqual({ leagues: 1, titles: 0, cups: 1, manager: 0, podiums: 1, unbeaten: 0, seasons: 0, managerPodiums: 0, managerCups: 0, shinies: 0, captainGoals: 0, blitz: 0, goalsReached: 0 });
+    expect(s.draft).toEqual({ leagues: 1, titles: 0, cups: 1, manager: 0, podiums: 1, unbeaten: 0, seasons: 0, managerPodiums: 0, managerCups: 0, shinies: 0, captainGoals: 0, blitz: 0, cleanSheets: 0, goalsReached: 0 });
     // Doppelt gespeichert (Neuversuch) zählt nicht doppelt
     expect(db.query('SELECT * FROM draft_results')).toHaveLength(1);
     // Manager-Saison als Zweiter: zählt als Saison, nicht als Titel
@@ -229,7 +229,30 @@ describe('Kennzahlen und /api/me', () => {
       5,
     );
     const cap = await achievementStats(db, dev, '2026-10-14');
-    expect(cap.draft).toMatchObject({ leagues: 5, captainGoals: 11, goalsReached: 1, blitz: 6, podiums: 5 });
+    expect(cap.draft).toMatchObject({ leagues: 5, captainGoals: 11, goalsReached: 1, blitz: 6, podiums: 5, cleanSheets: 2 });
+    expect(achievementStates(cap).find((a) => a.id === 'clean_10')).toMatchObject({ done: false, value: 2, goal: 10 });
+    // Bollwerk: 10 Spiele ohne Gegentor in einer Liga
+    await saveDraftResults(
+      db,
+      {
+        code: 'CLN234',
+        settings: { format: 'league' } as never,
+        teams: [{ id: 'c', cpu: true, slots: [], ss: null } as never, { id: 'h', cpu: false, slots: [1], ss: null } as never],
+        owners: { h: dev },
+        league: {
+          teams: [{ name: 'C', rating: 1 }, { name: 'H', rating: 1 }],
+          matches: Array.from({ length: 10 }, (_, k) => (k % 2 ? { round: k + 1, home: 0, away: 1, hg: 0, ag: 1, homeScorers: [], awayScorers: goal(1) } : { round: k + 1, home: 1, away: 0, hg: 1, ag: 0, homeScorers: goal(1), awayScorers: [] })),
+          table: [
+            { team: 1, name: 'H', rating: 1, isUser: false, played: 10, w: 10, d: 0, l: 0, gf: 10, ga: 0, gd: 10, pts: 30 },
+            { team: 0, name: 'C', rating: 1, isUser: false, played: 10, w: 0, d: 0, l: 10, gf: 0, ga: 10, gd: -10, pts: 0 },
+          ],
+        } as never,
+      },
+      6,
+    );
+    const fortress = await achievementStats(db, dev, '2026-10-14');
+    expect(fortress.draft).toMatchObject({ leagues: 6, cleanSheets: 10 });
+    expect(achievementStates(fortress).find((a) => a.id === 'clean_10')?.done).toBe(true);
     expect(achievementStates(cap).find((a) => a.id === 'blitz_5')).toMatchObject({ done: true, value: 5, goal: 5 });
     expect(achievementStates(cap).find((a) => a.id === 'goal_reached')?.done).toBe(true);
     expect(achievementStates(cap).find((a) => a.id === 'captain_10')?.done).toBe(true);

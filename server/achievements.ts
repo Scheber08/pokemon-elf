@@ -39,19 +39,20 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
       .bind(deviceId, today),
     db
       .prepare(
-        `SELECT SUM(CASE WHEN format NOT IN ('manager_cup', 'shiny', 'captain', 'goal', 'blitz') THEN 1 ELSE 0 END) AS leagues,
+        `SELECT SUM(CASE WHEN format NOT IN ('manager_cup', 'shiny', 'captain', 'goal', 'blitz', 'clean') THEN 1 ELSE 0 END) AS leagues,
            SUM(CASE WHEN format = 'shiny' THEN rank ELSE 0 END) AS shinies,
            MAX(CASE WHEN format = 'captain' THEN rank ELSE 0 END) AS captain_goals,
            MAX(CASE WHEN format = 'blitz' THEN rank ELSE 0 END) AS blitz,
+           MAX(CASE WHEN format = 'clean' THEN rank ELSE 0 END) AS clean_sheets,
            SUM(CASE WHEN format = 'goal' THEN 1 ELSE 0 END) AS goals_reached,
            SUM(CASE WHEN rank = 1 AND format = 'league' THEN 1 ELSE 0 END) AS titles,
            SUM(CASE WHEN rank = 1 AND format = 'manager_cup' THEN 1 ELSE 0 END) AS manager_cups,
            SUM(CASE WHEN rank = 1 AND format = 'cup' THEN 1 ELSE 0 END) AS cups,
            SUM(CASE WHEN rank = 1 AND format = 'manager' THEN 1 ELSE 0 END) AS manager,
-           SUM(CASE WHEN rank <= 3 AND format NOT IN ('manager_cup', 'shiny', 'captain', 'goal', 'blitz') THEN 1 ELSE 0 END) AS podiums,
+           SUM(CASE WHEN rank <= 3 AND format NOT IN ('manager_cup', 'shiny', 'captain', 'goal', 'blitz', 'clean') THEN 1 ELSE 0 END) AS podiums,
            SUM(CASE WHEN format = 'manager' THEN 1 ELSE 0 END) AS seasons,
            SUM(CASE WHEN format = 'manager' AND rank <= 3 THEN 1 ELSE 0 END) AS manager_podiums,
-           SUM(CASE WHEN losses = 0 AND format NOT IN ('cup', 'manager_cup', 'shiny', 'captain', 'goal', 'blitz') AND wins + draws > 0 THEN 1 ELSE 0 END) AS unbeaten
+           SUM(CASE WHEN losses = 0 AND format NOT IN ('cup', 'manager_cup', 'shiny', 'captain', 'goal', 'blitz', 'clean') AND wins + draws > 0 THEN 1 ELSE 0 END) AS unbeaten
          FROM draft_results WHERE device_id = ?`,
       )
       .bind(deviceId),
@@ -90,6 +91,7 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
       shinies: num(d.shinies),
       captainGoals: num(d.captain_goals),
       blitz: num(d.blitz),
+      cleanSheets: num(d.clean_sheets),
       goalsReached: num(d.goals_reached),
     },
   };
@@ -281,6 +283,22 @@ export async function saveDraftResults(
         .bind(`${state.code}#blitz`, device, count, now),
     );
   }
+  // Spiele ohne Gegentor je Mensch (eigene Zeile „…#clean“, rank = Anzahl) – zählt nur für den Erfolg „Bollwerk“
+  state.teams.forEach((team, idx) => {
+    const device = !team.cpu ? state.owners[team.id] : undefined;
+    if (!device) return;
+    const clean = league.matches.filter((m) => (m.home === idx && m.ag === 0) || (m.away === idx && m.hg === 0)).length;
+    if (!clean) return;
+    stmts.push(
+      db
+        .prepare(
+          `INSERT INTO draft_results (code, device_id, format, rank, teams, wins, draws, losses, points, finished_at)
+           VALUES (?, ?, 'clean', ?, 0, 0, 0, 0, 0, ?)
+           ON CONFLICT (code, device_id) DO UPDATE SET rank = excluded.rank`,
+        )
+        .bind(`${state.code}#clean`, device, clean, now),
+    );
+  });
   // Erreichte Saisonziele (eigene Zeile „…#goal“) – nur Liga und Manager-Saison, zählt nur für den Ziel-Erfolg
   if (format !== 'cup') {
     league.table.forEach((r, i) => {

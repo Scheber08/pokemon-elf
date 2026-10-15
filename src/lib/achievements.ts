@@ -41,6 +41,8 @@ export interface AchievementStats {
     captainGoals?: number;
     /** Meiste Blitz-Picks (⚡) in einer Online-Liga */
     blitz?: number;
+    /** Meiste Spiele ohne Gegentor in einer Online-Liga bzw. Manager-Saison */
+    cleanSheets?: number;
     /** Erreichte Saisonziele in Online-Ligen */
     goalsReached?: number;
   };
@@ -102,6 +104,7 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'shiny_5', category: 'draft', coins: 500, goal: 5, value: (s) => s.draft.shinies ?? 0 },
   { id: 'captain_10', category: 'draft', coins: 300, goal: 10, value: (s) => s.draft.captainGoals ?? 0 },
   { id: 'blitz_5', category: 'draft', coins: 150, goal: 5, value: (s) => s.draft.blitz ?? 0 },
+  { id: 'clean_10', category: 'draft', coins: 250, goal: 10, value: (s) => s.draft.cleanSheets ?? 0 },
   { id: 'goal_reached', category: 'draft', coins: 150, goal: 1, value: (s) => s.draft.goalsReached ?? 0 },
   { id: 'manager_5', category: 'draft', coins: 400, goal: 5, value: (s) => s.draft.seasons ?? 0 },
   { id: 'draft_manager', category: 'draft', coins: 400, goal: 1, value: (s) => s.draft.manager },
