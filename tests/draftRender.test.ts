@@ -1597,6 +1597,16 @@ describe('ManagerSeason', () => {
     expect(clean).not.toBeNull();
     const cleanName = clean!.team < s.teams.length ? s.teams[clean!.team].name : s.league!.teams[clean!.team].name;
     expect(rec.textContent).toContain(`Weiße Weste${cleanName} – ${clean!.n} Spiele ohne Gegentor`);
+    // Nur automatische Picks: kein Blitz-König
+    expect(rec.textContent).not.toContain('Blitz-König');
+    // Host pickt selbst, jeweils 1 s nach dem vorigen Pick → Blitz-König mit allen eigenen Picks außer dem ersten
+    {
+      const picks = done.picks.map((p, k) => ({ ...p, at: k * 1000, auto: p.teamId === 'h' ? false : p.auto }));
+      const n = picks.filter((p) => p.teamId === 'h' && p.pick > 0).length;
+      const r2 = await render(app(h(DraftSeasonStage, { room: fakeRoom(snap({ ...done, picks }, 'h')) })));
+      await settle();
+      expect(r2.container.querySelector('.draft-records')!.textContent).toContain(`Blitz-König${s.teams.find((t) => t.id === 'h')!.name} – ${n} Blitz-Picks ⚡`);
+    }
     // Herbstmeister: Führender nach der Hälfte der Spieltage
     const { leagueTimeline } = await import('../src/lib/leagueTimeline');
     const days = leagueTimeline(s.league!);

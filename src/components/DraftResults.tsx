@@ -32,7 +32,7 @@ import { Crest } from './Crest';
 import { shinyTeamBoost } from '../lib/shiny';
 import { FORMATIONS } from '../config/formations';
 import { positionFit } from '../lib/fit';
-import { goalReached, rosterOf } from '../lib/draftEngine';
+import { fastPickCounts, goalReached, rosterOf } from '../lib/draftEngine';
 
 interface Props {
   /** Shinys der Liga */
@@ -104,6 +104,13 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
   const fest = useMemo(() => (league.cup ? null : goalFest(league.matches)), [league]);
   const fastest = useMemo(() => fastestPicker(picks), [picks]);
   const fastestTeam = fastest ? teams.findIndex((tm) => tm.id === fastest.teamId) : -1;
+  // Blitz-König: meiste Blitz-Picks ⚡ (ab 3, bei Gleichstand das Team weiter vorn in der Teamliste)
+  const blitz = useMemo(() => {
+    const counts = fastPickCounts(picks);
+    const all = teams.map((tm, i) => ({ team: i, n: counts.get(tm.id) ?? 0 }));
+    const best = all.reduce<{ team: number; n: number } | null>((a, b) => (!a || b.n > a.n ? b : a), null);
+    return best && best.n >= 3 ? best : null;
+  }, [picks, teams]);
 
   // Vereinsnamen der CPU-Teams erst bei der Anzeige übersetzen – gespeichert bleibt der deutsche Name
   const nameOf = useCallback(
@@ -652,6 +659,12 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                 <div>
                   <dt>{tx.recordFest}</dt>
                   <dd>{tx.recordWinLine(nameOf(fest.home), `${fest.hg}:${fest.ag}`, nameOf(fest.away), fest.round)}</dd>
+                </div>
+              )}
+              {blitz && (
+                <div>
+                  <dt>{tx.recordBlitz}</dt>
+                  <dd>{tx.recordBlitzLine(nameOf(blitz.team), blitz.n)}</dd>
                 </div>
               )}
               {fastest && fastestTeam >= 0 && (

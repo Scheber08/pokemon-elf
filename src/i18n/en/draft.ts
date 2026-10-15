@@ -334,6 +334,8 @@ const draft: Messages['draft'] = {
     recordFlop: 'Disappointment of the season',
     recordSwingLine: (team, delta) =>
       `${team} – ${Math.abs(delta) === 1 ? '1 place' : `${Math.abs(delta)} places`} ${delta > 0 ? 'higher' : 'lower'} than their team score`,
+    recordBlitz: 'Lightning king',
+    recordBlitzLine: (team, n) => `${team} – ${n} lightning picks ⚡`,
     recordFastest: 'Fastest picker',
     recordFastestLine: (team, sec) => `${team} – avg ${sec} s per pick`,
     recordGoals: (team, n) => `${team} – ${n} goals`,

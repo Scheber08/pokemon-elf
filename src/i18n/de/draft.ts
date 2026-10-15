@@ -365,6 +365,8 @@ const draft = {
     recordFlop: 'Enttäuschung der Saison',
     recordSwingLine: (team: string, delta: number) =>
       `${team} – ${Math.abs(delta) === 1 ? '1 Platz' : `${Math.abs(delta)} Plätze`} ${delta > 0 ? 'besser' : 'schlechter'} als der Team-Score`,
+    recordBlitz: 'Blitz-König',
+    recordBlitzLine: (team: string, n: number) => `${team} – ${n} Blitz-Picks ⚡`,
     recordFastest: 'Schnellster Picker',
     recordFastestLine: (team: string, sec: number) => `${team} – Ø ${sec} s pro Pick`,
     recordGoals: (team: string, n: number) => `${team} – ${n} Tore`,
