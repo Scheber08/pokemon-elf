@@ -769,7 +769,11 @@ describe('DraftLobby', () => {
     expect(cpuRows).toBeGreaterThan(0);
     expect(r3.container.querySelectorAll('.draft-lobby__cpulevel')).toHaveLength(cpuRows);
     expect(r3.container.querySelector('.draft-lobby__cpulevel')!.textContent).toBe(' · Stark');
-    expect(r2.container.querySelectorAll('.draft-lobby__cpulevel')).toHaveLength(0);
+    // Mit CPU-Teams, aber Stärke „Normal“: kein Zusatz
+    const r4 = await render(app(h(DraftLobby, { room: fakeRoom(snap(withCpu, 'h')) })));
+    await settle();
+    expect(withCpu.settings.cpuLevel).toBe('normal');
+    expect(r4.container.querySelectorAll('.draft-lobby__cpulevel')).toHaveLength(0);
   });
 
   it('Host mischt die Draft-Reihenfolge (nur bei Reihenfolge wie in der Liste)', async () => {
