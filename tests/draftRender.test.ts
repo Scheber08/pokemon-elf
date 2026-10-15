@@ -546,6 +546,18 @@ describe('DraftLive', () => {
     expect(live()[0].textContent).toMatch(/^Pick 2: .+ an Team 1 \(automatisch\)\. Am Zug: Team 1\.$/);
   });
 
+  it('Wunschliste: Taste W setzt das ausgewählte Pokémon drauf', async () => {
+    const { DraftQueue } = await import('../src/components/DraftQueue');
+    const st = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
+    const id = ALL.find((p) => p.gen === 1)!.id;
+    const room = fakeRoom({ ...snap(st, 'h'), queue: [] });
+    await render(app(h(DraftQueue, { room, selected: id })));
+    await settle();
+    const ev = Object.assign(new MiniEvent('keydown', { bubbles: true, cancelable: true }), { key: 'w', ctrlKey: false, metaKey: false, altKey: false });
+    await act(async () => void window.dispatchEvent(ev as unknown as Event));
+    expect(room.setQueue).toHaveBeenCalledWith([id]);
+  });
+
   it('Wunschliste im Raster: „★ Wunsch n“ auf den Karten', async () => {
     const { DraftLive } = await import('../src/components/DraftLive');
     const st = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);

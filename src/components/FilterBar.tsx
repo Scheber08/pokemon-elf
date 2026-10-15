@@ -55,7 +55,7 @@ interface Props {
 }
 
 /** Tippt man gerade woanders (Eingabefeld, Dialog offen)? Dann gehört „/" dorthin. */
-function typingElsewhere(target: EventTarget | null): boolean {
+export function typingElsewhere(target: EventTarget | null): boolean {
   if (document.querySelector('[role="dialog"][aria-modal="true"]')) return true;
   const el = target as HTMLElement | null;
   if (!el?.tagName) return false;

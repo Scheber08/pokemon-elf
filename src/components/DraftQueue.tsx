@@ -1,4 +1,6 @@
+import { useEffect, useRef } from 'react';
 import { useT } from '../i18n';
+import { typingElsewhere } from './FilterBar';
 import { DRAFT_LIMITS } from '../lib/api/draftContract';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
@@ -21,6 +23,24 @@ export function DraftQueue({ room, selected }: { room: DraftRoom; selected: numb
   const taken = new Set((room.state?.teams ?? []).flatMap((tm) => rosterOf(tm)));
   const gone = queue.filter((id) => taken.has(id));
   const set = (ids: number[]) => room.setQueue(ids);
+  const toggle = () => {
+    if (selected == null) return;
+    if (inQueue) set(queue.filter((id) => id !== selected));
+    else if (queue.length < max) set([...queue, selected]);
+  };
+  // Taste „W“: ausgewähltes Pokémon auf die Wunschliste bzw. herunter (nicht beim Tippen)
+  const toggleRef = useRef(toggle);
+  toggleRef.current = toggle;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.key !== 'w' && e.key !== 'W') || e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
+      if (typingElsewhere(e.target)) return;
+      e.preventDefault();
+      toggleRef.current();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
   const name = (id: number) => {
     const p = byId.get(id);
     return p ? t.game.pokemon(p) : `#${id}`;
@@ -35,8 +55,9 @@ export function DraftQueue({ room, selected }: { room: DraftRoom; selected: numb
           type="button"
           className="btn btn--small"
           disabled={!inQueue && queue.length >= max}
-          title={!inQueue && queue.length >= max ? t.online.queueFull(max) : undefined}
-          onClick={() => set(inQueue ? queue.filter((id) => id !== selected) : [...queue, selected])}
+          title={!inQueue && queue.length >= max ? t.online.queueFull(max) : t.online.queueKey}
+          aria-keyshortcuts="W"
+          onClick={toggle}
         >
           {inQueue ? t.online.queueRemove : t.online.queueAdd}
         </button>
