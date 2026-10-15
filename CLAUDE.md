@@ -60,7 +60,7 @@ Erfolge für die Manager-Saison, Hinweis „Erfolg freigeschaltet" nach Runs und
 Trikotnummern in allen Modi,
 Kapitän in allen Modi (zählt doppelt; Rangliste dafür einmalig neu gestartet), Trikotfarben, Torjubel und Vereinswappen in allen Modi, Verletzungen, Sperren, Pokal und Karriere (Auf-/Abstieg) und Live-Spieltag in der Manager-Saison, Shinys im Draft (an/aus/Party, auch vom Transfermarkt, Erfolg „Shiny-Sammler“), Kapitän im Vorlauf nach dem letzten
 Pick (automatisch der bestpassende, „Beste Wahl“, Ersatzkapitän der CPU), „Mit CPU auffüllen“ und „🎲 Überraschung“-Vorlage in der Lobby, Vibration bei
-knapper Pick-Zeit, Shinys und Pokalsiege im Profil, Karriere-Verlauf, „Ich bin bereit“ in der Lobby, Wunschliste mit
+knapper Pick-Zeit, Shinys und Pokalsiege im Profil, Karriere-Verlauf, „Ich bin bereit“ und „👋 … ist dabei“ in der Lobby, Wunschliste mit
 Taste W/„★ Wunsch n“/Vergebene entfernen/💔 bei weggeschnapptem Wunsch, sortierbare Kader-Tabelle mit Toren und Vorlagen, Teambild auch im lokalen Draft,
 alle Picks und bester Kapitän im Ergebnis, Erfolge „Spielführer“ und „Blitzdrafter“, Ø Fit auf dem Board (👑 am besten Team, Typ-Elf-Chip), Position/Fit, „Run“, ⚡ Blitz-Pick (≤ 5 s) und 🏅 bester Fit (eigener mit Hinweis) im
 Pick-Verlauf, offene Positionen im Wartehinweis, Pool-Größe in der Lobby, weitere Saisonrekorde (Weiße Weste ab 3 Spielen ohne Gegentor, Blitz-König ab 3 Blitz-Picks, Herbstmeister,

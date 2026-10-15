@@ -805,6 +805,20 @@ describe('DraftLobby', () => {
     stubFetch();
   });
 
+  it('neuer Mitspieler: „👋 … ist dabei“ (nicht beim ersten Laden, nicht für CPU-Teams)', async () => {
+    let st = lobby(2, { region: 1, maxTeams: 6 });
+    const { container, root } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) })));
+    await settle();
+    const toasts = () => container.querySelectorAll('.toast').map((e) => e.textContent);
+    expect(toasts()).toEqual([]);
+    st = engine.addCpuTeam(st, 'dev-h', 'cpu1');
+    await act(async () => root.render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) }))));
+    expect(toasts()).toEqual([]);
+    st = engine.joinDraft(st, { teamId: 't9', deviceId: 'dev-9', name: 'Neue Elf', formation: '4-4-2' });
+    await act(async () => root.render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) }))));
+    expect(toasts()).toEqual(['👋 Neue Elf ist dabei']);
+  });
+
   it('Host-Hinweis: Pool-Größe und Picks, Draft-Dauer mit Bankrunden (Manager)', async () => {
     const st = lobby(2, { region: 1, format: 'manager', pickSeconds: 60 });
     const picks = engine.rounds(st.settings) * st.teams.length;

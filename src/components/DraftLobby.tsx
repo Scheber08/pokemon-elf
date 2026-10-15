@@ -282,6 +282,16 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
     showNotify(s.settings.name || t.online.leagueFallback(s.code), t.online.readyNotify(others.length), `draft-ready-${s.code}`);
   }, [allReady]);
 
+  // Neuer Mitspieler in der Lobby: kurz begrüßen (nicht beim ersten Laden, nicht das eigene Team)
+  const toast = useToast();
+  const humans = s.teams.filter((tm) => !tm.cpu).map((tm) => tm.id);
+  const seenHumans = useRef(humans);
+  useEffect(() => {
+    const fresh = s.teams.filter((tm) => !tm.cpu && !seenHumans.current.includes(tm.id) && tm.id !== me?.id);
+    seenHumans.current = humans;
+    for (const tm of fresh) toast(t.online.joinedLobby(tm.name));
+  }, [humans.join('|')]);
+
   useEffect(() => {
     if (leagueName == null || leagueName === s.settings.name) return;
     const id = window.setTimeout(() => room.updateSettings({ name: leagueName }), 600);

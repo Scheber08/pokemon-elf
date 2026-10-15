@@ -244,6 +244,7 @@ const online: Messages['online'] = {
   hintRoll: (region, type) => ` Wanted: ${region} + ${type}.`,
   presetRandom: 'Surprise me',
   presetRandomTitle: 'Apply a random preset',
+  joinedLobby: (team) => `👋 ${team} joined`,
   presets: 'Quick start',
   presetName: { classic: 'Classic', allRegions: 'All regions', megaChaos: 'Mega chaos', blitz: 'Blitz', cup: 'Knockout cup', shinyParty: 'Shiny party' },
   presetNote: {
