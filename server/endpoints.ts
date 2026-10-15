@@ -458,6 +458,7 @@ export async function playerProfile(rawId: string, env: Env): Promise<Response> 
       ...(stats.draft.shinies ? { shinies: stats.draft.shinies } : {}),
       ...(stats.draft.managerCups ? { managerCups: stats.draft.managerCups } : {}),
       ...(stats.draft.captainGoals ? { captainGoals: stats.draft.captainGoals } : {}),
+      ...(stats.draft.goalsReached ? { goalsReached: stats.draft.goalsReached } : {}),
     },
   };
   return json(body, 200, { 'Cache-Control': ENTRY_CACHE_CONTROL });

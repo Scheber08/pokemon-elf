@@ -315,6 +315,10 @@ describe('Kennzahlen und /api/me', () => {
     db.update("INSERT INTO draft_results (code, device_id, format, rank, teams, wins, draws, losses, points, finished_at) VALUES ('X#captain', ?, 'captain', 12, 0, 0, 0, 0, 0, 1)", auth.deviceId);
     const third = (await (await handleApi(new Request(`http://localhost/api/entries/${board.rows[0].entryId}/player`), { DB: db })).json()) as typeof profile;
     expect(third.online).toMatchObject({ captainGoals: 12 });
+    expect(third.online).not.toHaveProperty('goalsReached');
+    db.update("INSERT INTO draft_results (code, device_id, format, rank, teams, wins, draws, losses, points, finished_at) VALUES ('X#goal', ?, 'goal', 2, 18, 0, 0, 0, 0, 1)", auth.deviceId);
+    const fourth = (await (await handleApi(new Request(`http://localhost/api/entries/${board.rows[0].entryId}/player`), { DB: db })).json()) as typeof profile;
+    expect(fourth.online).toMatchObject({ goalsReached: 1, leagues: 0 });
   });
 });
 

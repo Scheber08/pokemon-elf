@@ -117,6 +117,7 @@ const leaderboard = {
       `🏆 ${titles} Titel in ${leagues} ${leagues === 1 ? 'Online-Liga' : 'Online-Ligen'}`,
     managerCups: (n: number) => `🥇 ${n === 1 ? '1 Pokalsieg' : `${n} Pokalsiege`}`,
     shinies: (n: number) => `✨ ${n === 1 ? '1 Shiny' : `${n} Shinys`}`,
+    goalsReached: (n: number) => `🎯 ${n === 1 ? '1 Saisonziel' : `${n} Saisonziele`} erreicht`,
     captainGoals: (n: number) => `Kapitän: bis zu ${n === 1 ? '1 Tor' : `${n} Tore`} in einer Saison`,
     perChallenge: 'Bestwerte',
     runsCol: 'Runs',
