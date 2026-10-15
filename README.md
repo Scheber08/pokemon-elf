@@ -230,6 +230,10 @@ lokal aus einem Zufallswert je Draft). Ein Shiny spielt besser (+10 Passung) und
 Manager-Saison kann auch ein Neuzugang vom Transfermarkt schillern (gleiche Chance, `ManagerTransfer.shiny`). Lobby-Einstellung
 „Shinys“: Aus / An (2 %) / Party (10 %, `shinyParty`).
 
+**Spielplan der Manager-Saison** (`managerSchedule`, `scheduleOf`): eine Hinrunde (jeder einmal gegen jeden). Neue
+Saisons (`ManagerState.venues = 'balanced'`) verteilen das Heimrecht ausgeglichen (je Team 8 oder 9 Heimspiele) – der
+alte Plan gab manchen Teams fast nie ein Heimspiel; laufende Saisons ohne Kennzeichen behalten ihn.
+
 **Ausfälle in der Manager-Saison** (`src/lib/manager.ts`: `rollAbsences`, `coverAbsences`): Nach jedem Spieltag
 kann sich ein eingesetztes Pokémon verletzen (3 %, 1–3 Spieltage) oder Rot sehen (1 %, 1 Spieltag gesperrt) –
 deterministisch aus dem Liga-Seed, gespeichert in `ManagerState.out`. Automatische Aufstellungen und CPU-Teams

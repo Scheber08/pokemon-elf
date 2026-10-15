@@ -16,6 +16,8 @@ const info = {
     /** „Was ist neu?" – die wichtigsten Neuerungen, neueste zuerst */
     newsTitle: 'Was ist neu?',
     news: [
+      'Neu: Elf der Saison (auch als Bild), Heim- und Auswärtstabelle, Spieler des Spieltags und Last-Minute-Sieg im Ticker, farbige Tabellen-Zonen',
+      'Manager-Saison: Heimrecht im Spielplan jetzt ausgeglichen (neue Saisons), Sterne für Spieler des Spieltags im Kader',
       'Online-Draft: Ø Fit je Team auf dem Board, Position und Fit im Verlauf samt „Run“-Hinweis, offene Positionen im Wartehinweis',
       'Saisonergebnis: Herbstmeister, bestes Team der Rückrunde, Überraschung/Enttäuschung, torreichstes Spiel und deine höchsten Siege/Niederlagen',
       'Manager-Saison: Formations-Tipp, beste Position der Bankspieler, Punkte-Hochrechnung und der gefährlichste Torschütze des nächsten Gegners',

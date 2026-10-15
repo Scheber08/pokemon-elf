@@ -14,6 +14,8 @@ const info: Messages['info'] = {
     guidePost: '.',
     newsTitle: 'What’s new?',
     news: [
+      'New: team of the season (also as an image), home and away tables, player of the matchday and late winners in the ticker, coloured table zones',
+      'Manager season: home games now evenly distributed in the fixture list (new seasons), stars for player of the matchday in the squad',
       'Online draft: average fit per team on the board, position and fit in the pick feed with a “run” alert, open positions in the waiting hint',
       'Season result: half-season champions, best team of the second half, surprise/disappointment, highest-scoring game and your biggest win/defeat',
       'Manager season: formation tip, best position for bench players, points projection and the next opponent’s most dangerous scorer',

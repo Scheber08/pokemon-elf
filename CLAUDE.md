@@ -65,7 +65,10 @@ Taste W/„★ Wunsch n“/Vergebene entfernen, sortierbare Kader-Tabelle mit To
 alle Picks und bester Kapitän im Ergebnis, Erfolg „Spielführer“, Ø Fit auf dem Board, Position/Fit und „Run“ im
 Pick-Verlauf, offene Positionen im Wartehinweis, Pool-Größe in der Lobby, weitere Saisonrekorde (Herbstmeister,
 Rückrunde, Überraschung/Enttäuschung, torreichstes Spiel, Remis-König), nächster Gegner im Ticker, Formations-Tipp,
-beste Position der Bankspieler, Punkte-Hochrechnung und Torjäger des Gegners in der Manager-Saison.
+beste Position der Bankspieler, Punkte-Hochrechnung und Torjäger des Gegners in der Manager-Saison, Elf der Saison (auch als Bild,
+lokal und online), Heim-/Auswärtstabelle, Tabellen-Zonen mit Legende, Spieler des Spieltags und Last-Minute-Sieg
+im Ticker, Führungsserie, Favorit vor dem Anpfiff, Vorschau der nächsten Picks, Taste V/„Vorschlag“ auch lokal,
+ausgeglichenes Heimrecht im Manager-Spielplan.
 
 1. Weitere Saisons im Shop (z. B. Muttertag, Schulanfang) – neue Einträge mit `seasonal(...)` in `src/lib/trainer.ts`
 2. Shiny-Party-Badge in der Liste öffentlicher Lobbys (braucht Feld in der Lobby-Zeile – Schema nur additiv)
