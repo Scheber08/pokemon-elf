@@ -581,6 +581,8 @@ const draft: Messages['draft'] = {
     behindTop: (n) => (n === 0 ? 'level on points with the top' : `${n} pts behind 1st`),
     colAssists: 'Ast.',
     assistsTitle: 'Assists this season',
+    colPoints: 'Pts',
+    pointsTitle: 'Goal involvements (goals + assists) this season',
     goalsTitle: 'Goals this season',
     formTitle: (n) => (n > 0 ? `Daily form +${n}` : n < 0 ? `Daily form ${n}` : 'Daily form normal'),
     formNote: (fit) => `Each form step shifts the fit by ${fit} points. The form applies to the next matchday.`,

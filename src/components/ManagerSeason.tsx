@@ -769,7 +769,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
 
 /** Eigene Aufstellung: tauschen (Feld, Standardschütze, Bank), Formation, automatisch, Kader mit Tagesform. */
 /** Saisontore je Pokémon eines Liga-Teams (gespielte Spiele) */
-type SquadSort = 'fit' | 'form' | 'goals' | 'assists';
+type SquadSort = 'fit' | 'form' | 'goals' | 'assists' | 'points';
 
 /** Saisonvorlagen je Pokémon eines Liga-Teams */
 function assistsOf(league: LeagueResult | null | undefined, team: number): Map<number, number> {
@@ -909,7 +909,15 @@ function LineupEditor({
   }
   // Sortierung per Klick auf den Spaltenkopf (absteigend; ohne: Elf, Standardschütze, Bank)
   const sortVal = (r: (typeof rows)[number]) =>
-    sortBy === 'fit' ? r.fit : sortBy === 'form' ? formOf(r.p.id) : sortBy === 'goals' ? (goals?.get(r.p.id) ?? 0) : (assists?.get(r.p.id) ?? 0);
+    sortBy === 'fit'
+      ? r.fit
+      : sortBy === 'form'
+        ? formOf(r.p.id)
+        : sortBy === 'goals'
+          ? (goals?.get(r.p.id) ?? 0)
+          : sortBy === 'assists'
+            ? (assists?.get(r.p.id) ?? 0)
+            : (goals?.get(r.p.id) ?? 0) + (assists?.get(r.p.id) ?? 0);
   const sorted = sortBy ? [...rows].sort((a, b) => sortVal(b) - sortVal(a)) : rows;
   const sortHead = (key: SquadSort, label: string, title?: string) => (
     <th scope="col" title={title} aria-sort={sortBy === key ? 'descending' : undefined}>
@@ -1071,6 +1079,7 @@ function LineupEditor({
               {sortHead('form', tx.colForm)}
               {sortHead('goals', tx.colGoals, tx.goalsTitle)}
               {sortHead('assists', tx.colAssists, tx.assistsTitle)}
+              {sortHead('points', tx.colPoints, tx.pointsTitle)}
             </tr>
           </thead>
           <tbody>
@@ -1121,6 +1130,7 @@ function LineupEditor({
                 </td>
                 <td>{goals?.get(r.p.id) || '–'}</td>
                 <td>{assists?.get(r.p.id) || '–'}</td>
+                <td>{(goals?.get(r.p.id) ?? 0) + (assists?.get(r.p.id) ?? 0) || '–'}</td>
               </tr>
             ))}
           </tbody>

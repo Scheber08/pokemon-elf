@@ -1270,6 +1270,14 @@ describe('ManagerSeason', () => {
     await act(async () => goalsBtn.click());
     const sortedGoals = container.querySelectorAll('.manager__squad tbody tr').map((tr) => Number(tr.querySelectorAll('td')[4].textContent) || 0);
     expect(sortedGoals).toEqual([...sortedGoals].sort((a, b) => b - a));
+    // Scorerpunkte = Tore + Vorlagen je Zeile; Sortieren danach absteigend
+    const pointsBtn = container.querySelectorAll('.manager__squad .manager__sort').find((b) => b.textContent === 'Sc.') as MiniElement;
+    await act(async () => pointsBtn.click());
+    const rowsNow = container.querySelectorAll('.manager__squad tbody tr').map((tr) => tr.querySelectorAll('td').map((td) => Number(td.textContent) || 0));
+    for (const r of rowsNow) expect(r[6]).toBe(r[4] + r[5]);
+    const pts = rowsNow.map((r) => r[6]);
+    expect(pts).toEqual([...pts].sort((a, b) => b - a));
+    expect(pts.reduce((a, b) => a + b, 0)).toBeGreaterThan(0);
   });
 
   it('Pokal: Auslosung vor der ersten Runde, nach dem Finale der Sieger', async () => {
