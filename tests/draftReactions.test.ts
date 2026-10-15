@@ -66,6 +66,8 @@ describe('Reaktionen', () => {
 
   it('nur Emojis aus der festen Auswahl', () => {
     expect(parseClientMessage(JSON.stringify({ type: 'react', emoji: '🔥' })).ok).toBe(true);
+    // Neu dazugekommen: Jubel, Fußball, Affe
+    for (const emoji of ['🎉', '⚽', '🙈']) expect(parseClientMessage(JSON.stringify({ type: 'react', emoji })).ok).toBe(true);
     expect(parseClientMessage(JSON.stringify({ type: 'react', emoji: 'hallo' })).ok).toBe(false);
   });
 });

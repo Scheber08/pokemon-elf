@@ -87,7 +87,7 @@ export type MatchdayMinutes = (typeof DRAFT_LIMITS.matchdayMinutes)[number];
 export type PickSeconds = (typeof DRAFT_LIMITS.pickSeconds)[number];
 
 /** Emoji-Reaktionen (feste Auswahl – kein Freitext) */
-export const DRAFT_REACTIONS = ['👏', '🔥', '😂', '😱', '👀', '💀'] as const;
+export const DRAFT_REACTIONS = ['👏', '🔥', '😂', '😱', '👀', '💀', '🎉', '⚽', '🙈'] as const;
 export type DraftReaction = (typeof DRAFT_REACTIONS)[number];
 
 /** Höchstens so viele Reaktionen am Stück pro Gerät, danach eine pro Sekunde */
