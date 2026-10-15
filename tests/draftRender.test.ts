@@ -1894,6 +1894,26 @@ describe('ManagerSeason', () => {
       expect(r6.container.querySelectorAll('.manager__milestone').map((e) => e.textContent)).toEqual(
         expected.map((x) => `🎯 ${ALL.find((p) => p.id === x.pokemonId)!.de} knackt die ${x.mark}-Tore-Marke!`),
       );
+      // 🔥 Torserie: drei eigene Spiele in Folge mit Tor desselben Pokémon (letzte drei Spieltage gepatcht)
+      const { scoringRuns } = await import('../src/lib/leagueTimeline');
+      const runIdx = raw.matches.flatMap((x, i) => (x.round > md - 3 && x.round <= md && (x.home === idx || x.away === idx) ? [i] : []));
+      const one = [goal(ids[4], 33)];
+      const run = {
+        ...s,
+        league: {
+          ...raw,
+          matches: raw.matches.map((x, i) =>
+            runIdx.includes(i) ? (x.home === idx ? { ...x, hg: 1, ag: 0, homeScorers: one, awayScorers: [] } : { ...x, hg: 0, ag: 1, homeScorers: [], awayScorers: one }) : x,
+          ),
+        },
+      };
+      const runs = scoringRuns(tl.storedLeague(run.league, run.teams.length)!.matches, idx, md);
+      expect(runs.find((x) => x.pokemonId === ids[4])?.games).toBeGreaterThanOrEqual(3);
+      const r7 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(run, 'h')), readOnly: false })));
+      await settle();
+      expect(r7.container.querySelectorAll('.manager__scorerun').map((e) => e.textContent)).toEqual(
+        runs.map((x) => `🔥 ${ALL.find((p) => p.id === x.pokemonId)!.de} trifft im ${x.games}. Spiel in Folge!`),
+      );
     }
     // Gezielt: 6:0 → „💥 Kantersieg“ beim letzten Spieltag (genau eine Zeile, eigenes Spiel fett)
     const rout = {

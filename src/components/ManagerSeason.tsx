@@ -4,7 +4,7 @@ import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
 import { loadTips, MATCH_TIPS, saveTip, tipScore } from '../lib/managerTips';
-import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance, goalMilestones } from '../lib/leagueTimeline';
+import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance, goalMilestones, scoringRuns } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -743,6 +743,15 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
               <p key={x.pokemonId} className="manager__milestone is-you">
                 <span aria-hidden="true">🎯 </span>
                 {tx.goalMilestone(pokemonName(x.pokemonId), x.mark)}
+              </p>
+            ))}
+          {liveMin == null &&
+            you != null &&
+            scoringRuns(shown.matches, you, m.played).map((x) => (
+              // 🔥 Torserie eines eigenen Spielers (ab drei Spielen in Folge mit Tor)
+              <p key={x.pokemonId} className="manager__scorerun is-you">
+                <span aria-hidden="true">🔥 </span>
+                {tx.scoringRun(pokemonName(x.pokemonId), x.games)}
               </p>
             ))}
           {liveMin == null && (() => {

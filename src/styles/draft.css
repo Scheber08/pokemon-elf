@@ -1524,7 +1524,8 @@ button.draft-bench__slot {
 .manager__rout,
 .manager__comeback,
 .manager__hat,
-.manager__milestone {
+.manager__milestone,
+.manager__scorerun {
   margin: 6px 0 0;
   font-size: 14px;
 }
@@ -1533,7 +1534,8 @@ button.draft-bench__slot {
 .manager__rout.is-you,
 .manager__comeback.is-you,
 .manager__hat.is-you,
-.manager__milestone.is-you {
+.manager__milestone.is-you,
+.manager__scorerun.is-you {
   font-weight: 600;
 }
 

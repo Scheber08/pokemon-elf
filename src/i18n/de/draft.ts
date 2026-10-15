@@ -658,6 +658,7 @@ const draft = {
     raceLeading: (max: number) => `Platz 1 noch nicht sicher – die Verfolger können noch auf ${max} Pkt kommen`,
     raceOpen: (max: number, top: number) => `Platz 1 noch möglich: höchstens ${max} Pkt drin (Spitze: ${top})`,
     goalMilestone: (pokemon: string, mark: number) => `${pokemon} knackt die ${mark}-Tore-Marke!`,
+    scoringRun: (pokemon: string, games: number) => `${pokemon} trifft im ${games}. Spiel in Folge!`,
     projection: (pts: number) => `Hochrechnung: ${pts} Pkt`,
     behindTop: (n: number) => (n === 0 ? 'punktgleich mit der Spitze' : `${n} Pkt hinter Platz 1`),
     colAssists: 'Vorl.',

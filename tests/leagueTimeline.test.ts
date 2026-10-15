@@ -504,3 +504,26 @@ describe('Tor-Marken', () => {
     expect(goalMilestones(matches, 1, 2)).toEqual([]);
   });
 });
+
+describe('Torserien', () => {
+  const g = (pokemonId: number) => ({ pokemonId, pos: 'ST' as const, minute: 10 });
+  const m = (round: number, home: number, away: number, hs: number[], as: number[]) => ({
+    round, home, away, hg: hs.length, ag: as.length, homeScorers: hs.map(g), awayScorers: as.map(g),
+  });
+  it('Spiele in Folge mit Tor bis zum Spieltag, ab drei, nur Torschützen dieses Spieltags', async () => {
+    const { scoringRuns } = await import('../src/lib/leagueTimeline');
+    const matches = [
+      m(1, 0, 1, [7, 8], [9]),
+      m(2, 2, 0, [9], [7, 8]),
+      m(3, 0, 3, [7], []),
+      m(4, 4, 0, [], [7, 8, 8]),
+      m(4, 1, 2, [9, 9], []),
+    ];
+    expect(scoringRuns(matches, 0, 2)).toEqual([]);
+    expect(scoringRuns(matches, 0, 3)).toEqual([{ pokemonId: 7, games: 3 }]);
+    // 8 traf an 3 nicht → Serie 1; 7 jetzt 4
+    expect(scoringRuns(matches, 0, 4)).toEqual([{ pokemonId: 7, games: 4 }]);
+    // Team 1 spielt an Spieltag 3 nicht → kein Eintrag für Spieltag 3
+    expect(scoringRuns(matches, 1, 3)).toEqual([]);
+  });
+});

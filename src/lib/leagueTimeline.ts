@@ -490,6 +490,28 @@ export function goalMilestones(matches: LeagueResult['matches'], team: number, r
   return out.sort((a, b) => b.mark - a.mark || a.pokemonId - b.pokemonId);
 }
 
+/** Ab so vielen Spielen in Folge mit Tor gilt eine Torserie */
+export const SCORING_RUN_MIN = 3;
+
+/**
+ * Torserien der Spieler von team bis Spieltag round: in wie vielen eigenen Spielen in Folge (bis einschließlich
+ * des Spiels an round) sie getroffen haben – nur Spieler, die an round trafen, ab SCORING_RUN_MIN; längste zuerst.
+ */
+export function scoringRuns(matches: LeagueResult['matches'], team: number, round: number): { pokemonId: number; games: number }[] {
+  const own = matches
+    .filter((m) => m.round <= round && (m.home === team || m.away === team))
+    .sort((a, b) => b.round - a.round);
+  if (!own.length || own[0].round !== round) return [];
+  const scorers = (m: Match) => new Set((m.home === team ? m.homeScorers : m.awayScorers).map((g) => g.pokemonId));
+  const out: { pokemonId: number; games: number }[] = [];
+  for (const id of scorers(own[0])) {
+    let games = 0;
+    while (games < own.length && scorers(own[games]).has(id)) games++;
+    if (games >= SCORING_RUN_MIN) out.push({ pokemonId: id, games });
+  }
+  return out.sort((a, b) => b.games - a.games || a.pokemonId - b.pokemonId);
+}
+
 /** Rechnerischer Titelkampf eines Teams: schon sicher vorn, noch möglich oder nicht mehr erreichbar */
 export type TitleChance = 'clinched' | 'open' | 'out';
 
