@@ -5,7 +5,8 @@ import { POSITIONS } from '../config/positions';
 import { REGIONS } from '../config/regions';
 import { CLUB_NAMES } from '../config/season';
 import { PosBadge } from '../components/Badges';
-import { DraftTypeChip, KindMarks } from '../components/DraftBoard';
+import { DraftPickFeed, DraftTypeChip, KindMarks } from '../components/DraftBoard';
+import type { FeedItem } from '../state/useDraftRoom';
 import { FilterBar, typingElsewhere, useFilteredPokemon, type PokemonFilters } from '../components/FilterBar';
 import { CaptainPicker } from '../components/CaptainPicker';
 import { JerseyEditor } from '../components/JerseyEditor';
@@ -1574,6 +1575,47 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               </div>
             ))}
           </section>
+          {(() => {
+            // Letzte Picks wie im Online-Draft: Position und Fit, ★/UB/M, ✨ und 🏅 bester Fit bisher
+            const log = state.log;
+            if (!log?.length) return null;
+            const sc = scale('all');
+            const placed = (x: (typeof log)[number]) => {
+              const tm = state.teams[x.team];
+              const at = tm ? tm.slots.indexOf(x.id) : -1;
+              const pos = tm && at >= 0 ? FORMATIONS[tm.formation].slots[at]?.pos : undefined;
+              const mon = byId.get(x.id);
+              return { mon, pos, fit: mon && pos ? Math.round(positionFit(mon, pos, sc)) : undefined };
+            };
+            let top = -1;
+            if (log.length >= 2) {
+              let best = -1;
+              log.forEach((x, k) => {
+                const fit = placed(x).fit;
+                if (fit != null && fit > best) [best, top] = [fit, k];
+              });
+            }
+            const items: FeedItem[] = log
+              .map((x, k) => {
+                const { mon, pos, fit } = placed(x);
+                const kinds = mon ? limitKindsOf(mon) : [];
+                return {
+                  key: `${k}-${x.id}`,
+                  no: k + 1,
+                  pokemon: mon ? t.game.pokemon(mon) : `#${x.id}`,
+                  team: teamName(state.teams[x.team]?.name ?? ''),
+                  teamId: String(x.team),
+                  auto: false,
+                  ...(pos ? { pos, fit } : {}),
+                  ...(state.shinies?.includes(x.id) ? { shiny: true } : {}),
+                  ...(k === top ? { top: true } : {}),
+                  ...(kinds.length ? { kinds } : {}),
+                };
+              })
+              .slice(-8)
+              .reverse();
+            return <DraftPickFeed items={items} you={null} />;
+          })()}
           <button type="button" className="btn btn--ghost btn--small abort" onClick={() => window.confirm(tx.abortConfirm) && reset()}>
             {tx.abort}
           </button>

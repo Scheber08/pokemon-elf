@@ -554,6 +554,33 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(tabs.some((x) => /Goals/.test(x ?? '') && !/Assists/.test(x ?? ''))).toBe(false);
   });
 
+  it('Lokaler Draft: „Recent picks“ mit Position, Fit und ★', async () => {
+    storeLang('en');
+    const empty = Array(11).fill(null);
+    // Team 0 (4-3-3): Mewtu im Tor, Bisasam auf Platz 2; Team 1 (4-4-2): Glumanda im Tor
+    const teams = [
+      { name: 'Mein Team', cpu: false, formation: '4-3-3', slots: [150, 1, ...empty.slice(2)] },
+      { name: 'Zweites Team', cpu: false, formation: '4-4-2', slots: [4, ...empty.slice(1)] },
+    ];
+    const log = [
+      { team: 0, slot: 0, id: 150 },
+      { team: 1, slot: 0, id: 4 },
+      { team: 0, slot: 1, id: 1 },
+    ];
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: true, pick: 3, selected: null, seed: null, log }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const items = container.querySelectorAll('.draft-feed li');
+    expect(items).toHaveLength(3);
+    expect(items[0].textContent).toMatch(/^#3Bulbasaur → My Team/);
+    expect(items[2].textContent).toMatch(/^#1Mewtwo ★Legendary\/mythical → My Team GK \d+/);
+    expect(items[2].querySelector('.draft-feed__kind')).toBeTruthy();
+    expect(items.filter((li) => li.querySelector('.draft-feed__kind'))).toHaveLength(1);
+    // 🏅 genau einmal (bester Fit bisher)
+    expect(container.querySelectorAll('.draft-feed__top')).toHaveLength(1);
+    localStorage.removeItem('pokemon-elf:draft');
+  });
+
   it('Pick-Verlauf: Start legt ihn an, jeder Pick wird angehängt; Liga zeigt das Schnäppchen des Drafts', async () => {
     storeLang('en');
     localStorage.removeItem('pokemon-elf:draft');
