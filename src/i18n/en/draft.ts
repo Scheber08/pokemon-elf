@@ -579,6 +579,7 @@ const draft: Messages['draft'] = {
         .filter(Boolean)
         .join(', '),
     topGame: (home, away) => `Top game: ${home} vs ${away}`,
+    cellarGame: (home, away) => `Bottom-of-the-table clash: ${home} vs ${away}`,
     upcoming: (n) => `Matchday ${n} – fixtures`,
     tableTitle: 'Table',
     spectator: 'You’re watching – only the teams of this league set lineups.',

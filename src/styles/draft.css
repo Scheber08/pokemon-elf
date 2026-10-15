@@ -1578,3 +1578,7 @@ button.draft-bench__slot {
 .draft-board__top {
   white-space: nowrap;
 }
+.manager__cellar {
+  font-weight: 500;
+  color: var(--text-dim);
+}

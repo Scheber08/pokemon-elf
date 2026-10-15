@@ -626,6 +626,8 @@ const draft = {
         .filter(Boolean)
         .join(', '),
     topGame: (home: string, away: string) => `Topspiel: ${home} – ${away}`,
+    /** Paarung mit der schlechtesten Platzsumme des nächsten Spieltags */
+    cellarGame: (home: string, away: string) => `Kellerduell: ${home} – ${away}`,
     upcoming: (n: number) => `Spieltag ${n} – die Paarungen`,
     tableTitle: 'Tabelle',
     spectator: 'Du schaust zu – Aufstellungen stellen nur die Teams dieser Liga.',

@@ -602,14 +602,18 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             {tx.upcoming(nextNo)}
           </h2>
           {m.played > 0 && (() => {
-            // Topspiel: die Paarung mit der besten Platzsumme (aktuelle Tabelle)
+            // Topspiel: die Paarung mit der besten Platzsumme (aktuelle Tabelle), Kellerduell: die mit der schlechtesten
             const placeOf = (i: number) => shown.table.findIndex((r) => r.team === i) + 1;
-            const top = [...upcoming].sort((a, b) => placeOf(a.home) + placeOf(a.away) - (placeOf(b.home) + placeOf(b.away)))[0];
+            const sum = (mt: (typeof upcoming)[number]) => placeOf(mt.home) + placeOf(mt.away);
+            const top = [...upcoming].sort((a, b) => sum(a) - sum(b))[0];
             if (!top) return null;
+            const cellar = upcoming.length >= 2 ? [...upcoming].sort((a, b) => sum(b) - sum(a))[0] : null;
+            const pair = (mt: (typeof upcoming)[number]) => [`${placeOf(mt.home)}. ${nameOf(mt.home)}`, `${placeOf(mt.away)}. ${nameOf(mt.away)}`] as const;
             return (
-              <p className="manager__topgame">
-                🔥 {tx.topGame(`${placeOf(top.home)}. ${nameOf(top.home)}`, `${placeOf(top.away)}. ${nameOf(top.away)}`)}
-              </p>
+              <>
+                <p className="manager__topgame">🔥 {tx.topGame(...pair(top))}</p>
+                {cellar && <p className="manager__topgame manager__cellar">🥶 {tx.cellarGame(...pair(cellar))}</p>}
+              </>
             );
           })()}
           <FixtureList matches={upcoming} you={you} nameOf={nameOf} pokemonName={pokemonName} upcoming />

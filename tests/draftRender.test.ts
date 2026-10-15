@@ -1377,6 +1377,13 @@ describe('ManagerSeason', () => {
       const top = [...next].sort((a, b) => placeOf(a[0]) + placeOf(a[1]) - (placeOf(b[0]) + placeOf(b[1])))[0];
       expect(r.container.querySelector('.manager__topgame')!.textContent).toContain(`Topspiel: ${placeOf(top[0])}. `);
       expect(r.container.querySelector('.manager__topgame')!.textContent).toContain(` – ${placeOf(top[1])}. `);
+      // Kellerduell: schlechteste Platzsumme
+      expect(next.length).toBeGreaterThanOrEqual(2);
+      const cellar = [...next].sort((a, b) => placeOf(b[0]) + placeOf(b[1]) - (placeOf(a[0]) + placeOf(a[1])))[0];
+      const ct = r.container.querySelector('.manager__cellar')!.textContent!;
+      expect(ct.startsWith(`🥶 Kellerduell: ${placeOf(cellar[0])}. `)).toBe(true);
+      expect(ct).toContain(` – ${placeOf(cellar[1])}. `);
+      expect(placeOf(cellar[0]) + placeOf(cellar[1])).toBeGreaterThan(placeOf(top[0]) + placeOf(top[1]));
     }
     // Zone des eigenen Platzes (Karriere-Start in Liga 2: Plätze 1–3 sind Aufstiegsplätze)
     const place = s.league!.table.findIndex((x) => x.team === idx) + 1;
