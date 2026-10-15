@@ -16,10 +16,11 @@ import {
   topScorers,
   biggestUpset,
   playerOfRound,
+  lateWinner,
   type Matchday,
 } from '../lib/leagueTimeline';
 import { cupPens, cupStageOf, cupStatus, cupWinner, type CupInfo } from '../lib/cup';
-import { buildTable, type LeagueResult, type Match, type TableRow } from '../lib/season';
+import { buildTable, formatMinute, type LeagueResult, type Match, type TableRow } from '../lib/season';
 import { ReplayToggle, useMatchReport } from './MatchReport';
 import type { ReplayLineup } from '../lib/matchReplay';
 import { scorerSummary } from '../lib/seasonTimeline';
@@ -370,6 +371,18 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
                   )}
                 </p>
               )}
+              {(() => {
+                // Last-Minute-Sieg des Spieltags (Siegtor ab der 85. Minute)
+                const late = lateWinner(day.matches);
+                if (!late) return null;
+                const score = late.match.home === late.winner ? `${late.match.hg}:${late.match.ag}` : `${late.match.ag}:${late.match.hg}`;
+                return (
+                  <p className="league-board__late">
+                    <span aria-hidden="true">⏱ </span>
+                    {tx.lateWinner(nameOf(late.winner), nameOf(late.loser), score, formatMinute(late.minute))}
+                  </p>
+                );
+              })()}
               {(() => {
                 // Spieler des Spieltags (wie in der Manager-Saison): meiste Torbeteiligungen, Tore doppelt
                 const star = playerOfRound(day.matches);

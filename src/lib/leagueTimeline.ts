@@ -816,6 +816,50 @@ export interface Upset {
   gap: number;
 }
 
+/** Last-Minute-Sieg: Spiel, in dem der Sieger erst spät (ab LATE_WINNER_MINUTE) beim Gleichstand das Siegtor schoss. */
+export interface LateWinner {
+  match: Match;
+  winner: number;
+  loser: number;
+  minute: number;
+}
+
+/** Ab dieser Minute zählt ein Siegtor als „Last Minute“ */
+export const LATE_WINNER_MINUTE = 85;
+
+/**
+ * Spätestes Siegtor unter den Spielen: Tor des späteren Siegers aus einem Unentschieden heraus, nach dem er nicht
+ * mehr eingeholt wurde, ab LATE_WINNER_MINUTE. Bei Gleichstand der Minute das erste Spiel. Nur mit Torminuten.
+ */
+export function lateWinner(matches: readonly Match[]): LateWinner | null {
+  let best: LateWinner | null = null;
+  for (const m of matches) {
+    if (m.hg === m.ag) continue;
+    const homeWon = m.hg > m.ag;
+    const goals = [
+      ...m.homeScorers.map((g) => ({ home: true, minute: g.minute })),
+      ...m.awayScorers.map((g) => ({ home: false, minute: g.minute })),
+    ];
+    if (goals.some((g) => g.minute == null)) continue;
+    goals.sort((a, b) => a.minute! - b.minute!);
+    // Letzte Führungsübernahme des Siegers aus dem Gleichstand
+    let h = 0;
+    let a = 0;
+    let decisive: number | null = null;
+    for (const g of goals) {
+      const level = h === a;
+      if (g.home) h++;
+      else a++;
+      if (level && g.home === homeWon) decisive = g.minute!;
+    }
+    if (decisive == null || decisive < LATE_WINNER_MINUTE) continue;
+    if (!best || decisive > best.minute) {
+      best = { match: m, winner: homeWon ? m.home : m.away, loser: homeWon ? m.away : m.home, minute: decisive };
+    }
+  }
+  return best;
+}
+
 /** Größte Überraschung unter den Spielen (Rückstand mindestens minGap) – null ohne. */
 export function biggestUpset(matches: readonly Match[], ratings: readonly number[], minGap = 100): Upset | null {
   let best: Upset | null = null;

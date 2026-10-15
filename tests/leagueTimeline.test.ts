@@ -363,3 +363,25 @@ describe('Tabellenführer seit', () => {
     expect(leaderSince([], 3)).toBe(0);
   });
 });
+
+describe('Last-Minute-Sieg', () => {
+  const g = (minute: number) => ({ pokemonId: 1, pos: 'ST' as const, minute });
+  const m = (round: number, home: number, away: number, hs: number[], as: number[]) => ({
+    round, home, away, hg: hs.length, ag: as.length, homeScorers: hs.map(g), awayScorers: as.map(g),
+  });
+  it('Siegtor aus dem Gleichstand ab der 85. Minute, das späteste gewinnt', async () => {
+    const { lateWinner } = await import('../src/lib/leagueTimeline');
+    // 1:1, Heim trifft in der 88. → spät; Gast führt 2:0 früh → nicht spät
+    const a = m(1, 0, 1, [10, 88], [50]);
+    const b = m(1, 2, 3, [], [5, 89]);
+    const c = m(1, 4, 5, [20, 91], [30]);
+    expect(lateWinner([a, b])).toEqual({ match: a, winner: 0, loser: 1, minute: 88 });
+    expect(lateWinner([a, c])!.minute).toBe(91);
+    // Ausgleich und erneute Führung: zählt die letzte Führungsübernahme
+    const d = m(1, 6, 7, [80, 86], [83]);
+    expect(lateWinner([d])!.minute).toBe(86);
+    // Remis oder ohne Minuten: nichts
+    expect(lateWinner([m(1, 0, 1, [90], [91])])).toBeNull();
+    expect(lateWinner([{ round: 1, home: 0, away: 1, hg: 1, ag: 0, homeScorers: [{ pokemonId: 1, pos: 'ST' as const }], awayScorers: [] }])).toBeNull();
+  });
+});

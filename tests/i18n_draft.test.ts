@@ -561,6 +561,9 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
       if (c.expect.includes('Results')) {
         const star = timeline.playerOfRound(league.matches.filter((m) => m.round === 2));
         if (star) expect(container.querySelector('.league-board__star')!.textContent).toMatch(/Player of the matchday/);
+        const late = timeline.lateWinner(league.matches.filter((m) => m.round === 2));
+        if (late) expect(container.querySelector('.league-board__late')!.textContent).toMatch(/Late winner: .+ – winning goal in the \d/);
+        else expect(container.querySelector('.league-board__late')).toBeNull();
       }
       // Serie des Tabellenführers: sichtbar ab 3 Spieltagen in Folge, nicht am Saisonende
       const streak = container.querySelector('.league-ticker__leader');

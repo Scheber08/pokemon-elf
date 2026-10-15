@@ -399,6 +399,7 @@ const draft = {
     statusSoon: 'Gleich',
     sharedSeason: 'Gemeinsame Saison',
     /** Außenseitersieg des Spieltags; score aus Sicht des Siegers */
+    lateWinner: (winner: string, loser: string, score: string, minute: string) => `Last-Minute-Sieg: ${winner} schlägt ${loser} ${score} – Siegtor in der ${minute}`,
     upset: (winner: string, loser: string, score: string) => `Überraschung: ${winner} schlägt ${loser} ${score}`,
     title: 'Saison-Ticker',
     toResult: 'Zum Ergebnis',
