@@ -2084,6 +2084,8 @@ button.sheet__row:hover {
   text-align: center;
 }
 .draft__board {
+  /* Bezugsrahmen für absolut positionierte Kinder (.sr-only) – sonst ragen sie aus dem Scroll-Bereich und die Seite scrollt seitlich */
+  position: relative;
   display: flex;
   gap: 8px;
   overflow-x: auto;

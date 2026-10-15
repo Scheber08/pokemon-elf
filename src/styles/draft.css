@@ -827,6 +827,8 @@
   min-width: 2.6em;
 }
 .draft-feed__text {
+  /* Schrumpft neben der Pick-Nummer, statt in eine eigene Zeile zu rutschen */
+  flex: 1 1 10em;
   min-width: 0;
   overflow-wrap: anywhere;
 }
