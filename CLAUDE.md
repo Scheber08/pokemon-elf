@@ -56,7 +56,7 @@ Saison auf 18 Teams mit Ranglisten-Teams aufgefüllt, KO-Turnier mit optionaler 
 Cosmetics-Shop (auch in Rangliste, Profil und Draft), Transfermarkt und Erinnerung vor dem Anpfiff in der
 Manager-Saison, eigener Menüpunkt „Manager", Spielbericht + 2D-Wiedergabe in allen Modi (einstellbar),
 Erfolge für die Manager-Saison, Hinweis „Erfolg freigeschaltet" nach Runs und Ligen, Saisonartikel im Shop
-(Halloween, Weihnachten, Frühling/Ostern, Sommer, Neujahr, Valentinstag, Herbst, Fußball-Sommer, Oktoberfest, Karneval, Muttertag), Spieler des Spieltags, Tausch-Angebote zwischen Teams in der Manager-Saison,
+(Halloween, Weihnachten, Frühling/Ostern, Sommer, Neujahr, Valentinstag, Herbst, Fußball-Sommer, Oktoberfest, Karneval, Muttertag, Schulanfang), Spieler des Spieltags, Tausch-Angebote zwischen Teams in der Manager-Saison,
 Trikotnummern in allen Modi,
 Kapitän in allen Modi (zählt doppelt; Rangliste dafür einmalig neu gestartet), Trikotfarben, Torjubel und Vereinswappen in allen Modi, Verletzungen, Sperren, Pokal und Karriere (Auf-/Abstieg) und Live-Spieltag in der Manager-Saison, Shinys im Draft (an/aus/Party, auch vom Transfermarkt, Erfolg „Shiny-Sammler“), Kapitän im Vorlauf nach dem letzten
 Pick (automatisch der bestpassende, „Beste Wahl“, Ersatzkapitän der CPU), „Mit CPU auffüllen“ in der Lobby, Vibration bei
@@ -70,7 +70,7 @@ lokal und online), Heim-/Auswärtstabelle, Tabellen-Zonen mit Legende, Spieler d
 im Ticker, Führungsserie, Favorit vor dem Anpfiff, Vorschau der nächsten Picks, Taste V/„Vorschlag“ auch lokal,
 ausgeglichenes Heimrecht im Manager-Spielplan.
 
-1. Weitere Saisons im Shop (z. B. Schulanfang, Nikolaus) – neue Einträge mit `seasonal(...)` in `src/lib/trainer.ts`
+1. Weitere Saisons im Shop (z. B. Nikolaus, Sankt Martin) – neue Einträge mit `seasonal(...)` in `src/lib/trainer.ts`
 2. Shiny-Party-Badge in der Liste öffentlicher Lobbys (braucht Feld in der Lobby-Zeile – Schema nur additiv)
 
 ## Daten

@@ -402,6 +402,14 @@ function hat(c: Canvas, id: string, cloth: string) {
       }
       c.dots([[15, 4], [16, 5]], '#7a5236');
       break;
+    case 'mortarboard':
+      // Doktorhut: Kappe, flaches Brett mit hellem Rand und goldene Quaste
+      c.fill(and(ellipse(15.5, 9.5, 7.2, 4), above(9)), '#2b2d36', '#15161b');
+      c.fill((x, y) => y >= 4 && y <= 6 && Math.abs(x - 15.5) <= 10 - Math.abs(y - 5) * 2, '#2b2d36', '#6a7182');
+      c.dots([[15, 5], [16, 5]], '#f2c230');
+      c.dots([[17, 5], [18, 5], [19, 5], [20, 5], [21, 6], [21, 7], [21, 8]], '#f2c230');
+      c.dots([[21, 9], [22, 9]], '#c99a1c');
+      break;
     case 'wizard':
       c.fill((x, y) => y <= 9 && y >= 0 && Math.abs(x - 15.5) <= 1 + y * 0.9, '#5b3fb0');
       c.rect(6, 9, 20, 2, '#4a3191');

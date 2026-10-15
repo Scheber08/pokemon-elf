@@ -55,6 +55,8 @@ const OKTOBERFEST = ['09-16', '10-06', '🥨'] as const;
 const CARNIVAL = ['02-01', '03-10', '🎭'] as const;
 /** Muttertag (zweiter Sonntag im Mai liegt jedes Jahr darin) */
 const MOTHERSDAY = ['05-01', '05-14', '💐'] as const;
+/** Schulanfang (Einschulungen in allen Bundesländern liegen darin) */
+const SCHOOL = ['08-01', '09-15', '🎒'] as const;
 /** Valentinstag */
 const VALENTINE = ['02-07', '02-14', '💘'] as const;
 
@@ -153,6 +155,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('hat', 'leaves', 250), ...AUTUMN),
   seasonal(item('hat', 'tyrolean', 250), ...OKTOBERFEST),
   seasonal(item('hat', 'jester', 250), ...CARNIVAL),
+  seasonal(item('hat', 'mortarboard', 250), ...SCHOOL),
   // Accessoire
   item('accessory', 'none', 0),
   item('accessory', 'freckles', 0),
@@ -222,6 +225,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('companion', '813', 400), ...FOOTBALL),
   seasonal(item('companion', '122', 350), ...CARNIVAL),
   seasonal(item('companion', '115', 450), ...MOTHERSDAY),
+  seasonal(item('companion', '164', 350), ...SCHOOL),
   item('companion', '6', 600),
   item('companion', '149', 600),
   item('companion', '448', 600),

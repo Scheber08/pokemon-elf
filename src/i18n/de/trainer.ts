@@ -115,6 +115,7 @@ const trainer = {
       straw: 'Strohhut',
       bunny: 'Hasenohren',
       party: 'Partyhut',
+      mortarboard: 'Doktorhut',
       jester: 'Narrenkappe',
       tyrolean: 'Tirolerhut',
       leaves: 'Herbstkranz',
