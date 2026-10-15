@@ -752,6 +752,14 @@ describe('DraftLobby', () => {
     await settle();
     const pool = engine.poolOf(st.settings, ALL).length;
     expect(container.textContent).toContain(`Pool: ${pool} Pokémon für ${picks} Picks.`);
+    // CPU-Stärke als Lobby-Einstellung (Standard normal), Klick schickt den Patch
+    expect(container.textContent).toContain('CPU-Stärke');
+    const room = fakeRoom(snap(st, 'h'));
+    const r2 = await render(app(h(DraftLobby, { room })));
+    await settle();
+    const easy = r2.container.querySelectorAll('.draft-settings button').find((b) => b.textContent === 'Leicht') as MiniElement;
+    await act(async () => easy.click());
+    expect(room.updateSettings).toHaveBeenCalledWith({ cpuLevel: 'easy' });
   });
 
   it('Host mischt die Draft-Reihenfolge (nur bei Reihenfolge wie in der Liste)', async () => {

@@ -191,7 +191,13 @@ export interface DraftSettings {
   bench: BenchSize;
   /** Manager-Saison: Minuten zwischen zwei Spieltagen */
   matchdayMinutes: MatchdayMinutes;
+  /** Stärke der CPU-Teams im Draft: mehr bzw. weniger Zufall bei ihren Picks */
+  cpuLevel: DraftCpuLevel;
 }
+
+/** CPU-Stärke im Online-Draft (Zufallsanteil der CPU-Picks) */
+export type DraftCpuLevel = 'easy' | 'normal' | 'hard';
+export const DRAFT_CPU_LEVELS: readonly DraftCpuLevel[] = ['easy', 'normal', 'hard'];
 
 /**
  * Spielmodus nach dem Draft: Liga bzw. KO-Turnier (sofort durchgespielt) oder Manager-Saison –
@@ -240,6 +246,7 @@ export const DEFAULT_DRAFT_SETTINGS: DraftSettings = {
   cupGroups: true,
   bench: 3,
   matchdayMinutes: 720,
+  cpuLevel: 'normal',
 };
 
 export interface DraftTeam {

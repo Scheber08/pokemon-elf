@@ -269,6 +269,7 @@ export const SETTING_KEYS = [
   'cupGroups',
   'bench',
   'matchdayMinutes',
+  'cpuLevel',
   'region',
   'legends',
 ] as const satisfies readonly (keyof DraftSettingsPatch)[];
@@ -317,6 +318,7 @@ export function cleanSettingsPatch(raw: unknown): DraftSettingsPatch {
   }
   if (patch.roll !== undefined && typeof patch.roll !== 'string') badSettings('Ungültiger Zufallsmodus');
   if (patch.format !== undefined && typeof patch.format !== 'string') badSettings('Ungültiger Spielmodus');
+  if (patch.cpuLevel !== undefined && typeof patch.cpuLevel !== 'string') badSettings('Ungültige Einstellung');
   if (patch.bench !== undefined && !isInt(patch.bench)) badSettings('Ungültige Bank');
   if (patch.matchdayMinutes !== undefined && !isInt(patch.matchdayMinutes)) badSettings('Ungültiger Spieltag-Takt');
   if (patch.rerolls !== undefined) {

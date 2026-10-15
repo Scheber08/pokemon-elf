@@ -338,6 +338,7 @@ describe('Ältere Ligen und Clients (region / legends)', () => {
       cupGroups: true,
       bench: 3,
       matchdayMinutes: 720,
+      cpuLevel: 'normal',
     });
     expect(up).not.toHaveProperty('region');
     expect(up).not.toHaveProperty('legends');
@@ -1024,5 +1025,41 @@ describe('Ewige Tabelle: Ø Platz', () => {
       ['x', 5, 2.5],
       ['y', 7, 3.5],
     ]);
+  });
+});
+
+describe('CPU-Stärke (cpuLevel)', () => {
+  it('Standard normal, Patch prüft Werte, ältere Ligen ohne Feld werden normal', async () => {
+    const { DEFAULT_DRAFT_SETTINGS } = await import('../src/lib/api/draftContract');
+    expect(DEFAULT_DRAFT_SETTINGS.cpuLevel).toBe('normal');
+    const old: Record<string, unknown> = { ...DEFAULT_DRAFT_SETTINGS };
+    delete old.cpuLevel;
+    expect(upgradeSettings(old).cpuLevel).toBe('normal');
+    expect(upgradeSettings({ ...DEFAULT_DRAFT_SETTINGS, cpuLevel: 'hard' }).cpuLevel).toBe('hard');
+    expect(upgradeSettings({ ...DEFAULT_DRAFT_SETTINGS, cpuLevel: 'brutal' }).cpuLevel).toBe('normal');
+    // Lobby: Host setzt die Stärke, Unsinn wird abgelehnt
+    const s = lobby({ gens: [1] });
+    expect(updateSettings(s, 'dev-h', { cpuLevel: 'easy' }, ALL).settings.cpuLevel).toBe('easy');
+    expect(codeOf(() => updateSettings(s, 'dev-h', { cpuLevel: 'brutal' as never }, ALL))).toBe('bad_settings');
+    // Server: cleanSettingsPatch lässt das Feld durch (Typprüfung)
+    const { cleanSettingsPatch } = await import('../server/draftCore');
+    expect(cleanSettingsPatch({ cpuLevel: 'hard' })).toEqual({ cpuLevel: 'hard' });
+    expect(() => cleanSettingsPatch({ cpuLevel: 3 })).toThrow();
+  });
+
+  it('CPU-Picks bleiben deterministisch; „stark“ nimmt öfter den bestpassenden als „leicht“', async () => {
+    const { autoPickChoice } = await import('../src/lib/draftEngine');
+    let agreeHard = 0;
+    let agreeEasy = 0;
+    for (let seed = 1; seed <= 40; seed++) {
+      const base = startDraft(lobby({ gens: [1], pickSeconds: 0 }, { seed }), 'dev-h', 0, ALL);
+      const st = (lvl: 'easy' | 'normal' | 'hard') => ({ ...base, settings: { ...base.settings, cpuLevel: lvl } });
+      const best = autoPickChoice(st('normal'), base.teams[0].id, ALL, SCALE, false).pokemonId;
+      const hard = autoPickChoice(st('hard'), base.teams[0].id, ALL, SCALE, true);
+      expect(autoPickChoice(st('hard'), base.teams[0].id, ALL, SCALE, true)).toEqual(hard);
+      if (hard.pokemonId === best) agreeHard++;
+      if (autoPickChoice(st('easy'), base.teams[0].id, ALL, SCALE, true).pokemonId === best) agreeEasy++;
+    }
+    expect(agreeHard).toBeGreaterThan(agreeEasy);
   });
 });

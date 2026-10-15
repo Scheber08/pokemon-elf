@@ -617,6 +617,15 @@ export function DraftSettingsForm({ value, onChange, list, teamsJoined = 0, disa
             note={value.snake ? tx.snakeNote : tx.fixedNote}
           />
         </div>
+        <DraftChoice
+          label={t.draft.local.cpuLevel}
+          value={value.cpuLevel ?? 'normal'}
+          disabled={disabled}
+          busy={busy}
+          onChange={(cpuLevel) => change({ cpuLevel })}
+          options={(['easy', 'normal', 'hard'] as const).map((v) => ({ value: v, label: t.draft.local.cpuLevels[v] }))}
+          note={t.draft.local.cpuLevelTitles[value.cpuLevel ?? 'normal']}
+        />
         <DraftChoice<DraftRollMode>
           label={tx.roll}
           value={value.roll}

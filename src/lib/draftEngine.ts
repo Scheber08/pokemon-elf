@@ -30,6 +30,7 @@ import {
   DEFAULT_DRAFT_SETTINGS,
   DRAFT_ALL_GENS,
   DRAFT_BENCH_SLOT,
+  DRAFT_CPU_LEVELS,
   DRAFT_FORMATS,
   DRAFT_LIMITS,
   DRAFT_REROLL_KINDS,
@@ -332,6 +333,7 @@ export function upgradeSettings(raw: unknown): DraftSettings {
     matchdayMinutes: (DRAFT_LIMITS.matchdayMinutes as readonly unknown[]).includes(r.matchdayMinutes)
       ? (r.matchdayMinutes as DraftSettings['matchdayMinutes'])
       : d.matchdayMinutes,
+    cpuLevel: (DRAFT_CPU_LEVELS as readonly unknown[]).includes(r.cpuLevel) ? (r.cpuLevel as DraftSettings['cpuLevel']) : d.cpuLevel,
   };
   const keys = Object.keys(next) as (keyof DraftSettings)[];
   // Die älteren Schlüssel region/legends dürfen zusätzlich dastehen (Schnappschüsse spiegeln sie
@@ -589,6 +591,10 @@ export function normalizeSettings(patch: DraftSettingsPatch, base: DraftSettings
   if (p.order !== undefined) {
     if (p.order !== 'random' && p.order !== 'host') fail('bad_settings', 'Ungültige Reihenfolge');
     s.order = p.order;
+  }
+  if (p.cpuLevel !== undefined) {
+    if (!(DRAFT_CPU_LEVELS as readonly unknown[]).includes(p.cpuLevel)) fail('bad_settings', 'Ungültige Einstellung');
+    s.cpuLevel = p.cpuLevel;
   }
   if (p.roll !== undefined) {
     if (!isRollMode(p.roll)) fail('bad_settings', 'Ungültiger Zufallsmodus');
@@ -1649,6 +1655,9 @@ export function applyPick(
  * Zufall aus dem Liga-Seed, Auto-Picks für Menschen (Timer) nicht. Gewählt wird nur,
  * was die Regeln erlauben (Wurf, Legendären-Limit – siehe pickAllowed); CPU-Teams würfeln nie neu.
  */
+/** Spannweite des Zufalls bei CPU-Picks je Stärke (Fit-Punkte) */
+const CPU_NOISE: Record<DraftSettings['cpuLevel'], number> = { easy: 24, normal: 8, hard: 2 };
+
 export function autoPickChoice(
   state: DraftState,
   teamId: string,
@@ -1676,7 +1685,8 @@ export function autoPickChoice(
     // Standardschütze zählt nicht zum Team-Score → erst am Ende besetzen, die Bank noch danach
     const weight = bench ? 0.4 : pos === 'SS' ? 0.5 : 0.92 + 0.08 * POSITIONS[pos!].teamWeight;
     for (const p of pool) {
-      const noise = rng ? (rng() - 0.5) * 8 : 0;
+      // CPU-Stärke: Zufallsanteil der Bewertung (normal wie bisher ±4)
+      const noise = rng ? (rng() - 0.5) * CPU_NOISE[state.settings.cpuLevel ?? 'normal'] : 0;
       const fit = pos ? positionFit(p, pos, scale) : Math.max(...benchPositions.map((bp) => positionFit(p, bp, scale)));
       const score = fit * weight + noise;
       if (!best || score > best.score || (score === best.score && p.id < best.pokemonId)) {

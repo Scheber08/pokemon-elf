@@ -172,7 +172,8 @@ Jede Liga ist ein Durable Object `DraftRoom` (`server/draftRoom.ts`, Logik in `s
 reinen Engine `src/lib/draftEngine.ts`). Ablauf: `POST /api/drafts` legt die Liga an (6-stelliger Code),
 alle verbinden sich per WebSocket (`/api/drafts/:code/ws`, Hibernation API) und bekommen bei jeder
 Änderung den vollen Stand. Lobby: Host stellt Pool, Timer (aus/30/60/90 s), Reihenfolge und
-Sichtbarkeit ein, fügt CPU-Teams hinzu (einzeln oder „Mit CPU auffüllen“: `add-cpu` mit `fill`) und startet. Mitspieler melden sich mit „Ich bin bereit“
+Sichtbarkeit ein, fügt CPU-Teams hinzu (einzeln oder „Mit CPU auffüllen“: `add-cpu` mit `fill`; Stärke `cpuLevel`
+leicht/normal/stark = Zufall ±12/±4/±1 Fit-Punkte beim CPU-Pick, aus dem Liga-Seed) und startet. Mitspieler melden sich mit „Ich bin bereit“
 (`ready`, reine Anzeige) bereit. Jedes Team kann ein Saisonziel setzen (`goal`: Meister, Top 3, obere Hälfte,
 nicht auf den letzten 3) – das Ergebnis zeigt, ob es erreicht wurde. Timer, CPU-Picks und Auto-Picks laufen auf dem
 Server (Alarme). Ist das Team am Zug 20 s offline (ohne Timer: 3 min am Zug), darf jedes Mitglied für
