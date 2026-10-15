@@ -215,7 +215,7 @@ pro Team; Zufallsmodus mit Rerolls; Wunschliste für Auto-Picks (privat, 💔-Hi
 nicht gespeichert); „Du bist dran" als Ton und Browser-Benachrichtigung, bei 10 s Restzeit vibriert das Handy einmal; QR-Code des Liga-Links in der
 Lobby; Taste „/" springt ins Suchfeld; auf dem Board zeigt 👑 das Team mit dem besten Ø Fit, ein Typ-Chip („Feuer ×4") eine Typ-Elf ab vier Pokémon eines Typs (beides auch lokal); „🎲 Zufall“ (auch lokal) merkt ein zufälliges erlaubtes Pokémon auf seinem bestpassenden Platz vor; im Pick-Verlauf markiert ⚡ einen Blitz-Pick (selbst gewählt, höchstens 5 s nach dem vorigen Pick) und 🏅 den Pick mit dem besten Positions-Fit des Drafts bisher (eigener Rekord-Pick mit kurzem Hinweis). Das Ergebnis zeigt Draft-Noten, das „Schnäppchen des Drafts"
 (bester später Pick), „Deine Duelle" (Bilanz gegen jeden Gegner), Saisonrekorde, den eigenen Saisonverlauf
-und die Formkurve. Der Ticker zeigt Torjäger live und die Überraschung des Spieltags; mit Hinweisen meldet der
+und die Formkurve. Der Ticker zeigt Torjäger live, die Überraschung des Spieltags und bei den eigenen Toren 🧤 die Spiele ohne Gegentor; mit Hinweisen meldet der
 Browser auch das Saisonende. Nach der Saison legt
 `POST /api/drafts/:code/rematch` eine **Revanche** an (gleiche Teams und Einstellungen); jede Revanche
 trägt die Ergebnisse ihrer Vorgänger mit – daraus die **ewige Tabelle**. Für `/draft/:code` liefert der

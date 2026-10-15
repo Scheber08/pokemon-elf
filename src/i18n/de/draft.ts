@@ -418,6 +418,8 @@ const draft = {
     avgTitle: 'Durchschnittlicher Platz über alle Ligen',
   },
   ticker: {
+    /** Eigene Spiele ohne Gegentor bisher (🧤 n bei den Toren) */
+    cleanSheets: (n: number) => (n === 1 ? 'ein Spiel ohne Gegentor' : `${n} Spiele ohne Gegentor`),
     startsSoon: 'Die gemeinsame Saison beginnt gleich.',
     fullTime: 'Abpfiff!',
     matchdayColon: (n: number) => `${n}. Spieltag:`,

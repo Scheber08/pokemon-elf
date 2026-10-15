@@ -383,6 +383,7 @@ const draft: Messages['draft'] = {
   },
 
   ticker: {
+    cleanSheets: (n) => (n === 1 ? 'one clean sheet' : `${n} clean sheets`),
     startsSoon: 'The shared season is about to start.',
     fullTime: 'Full time!',
     matchdayColon: (n) => `Matchday ${n}:`,

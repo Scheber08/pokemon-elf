@@ -1167,3 +1167,11 @@
   letter-spacing: 0;
   text-transform: none;
 }
+
+/* Saison-Ticker: eigene Spiele ohne Gegentor neben den Toren */
+.league-ticker__clean {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+}

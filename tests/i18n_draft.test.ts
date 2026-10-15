@@ -1119,6 +1119,15 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
         expect(next!.textContent).toMatch(/ · \d+(st|nd|rd|th)/);
       }
       if (c.expect.includes('Full time!')) expect(next).toBeNull();
+      // 🧤 eigene Spiele ohne Gegentor bis zum gezeigten Spieltag (bei den Toren)
+      {
+        const upTo = c.expect.includes('Full time!') ? total : c.expect.includes('Next opponent') ? 2 : 0;
+        const clean = league.matches.filter((m) => m.round <= upTo && ((m.home === 0 && m.ag === 0) || (m.away === 0 && m.hg === 0))).length;
+        const el = container.querySelector('.league-ticker__clean');
+        if (upTo === total) expect(clean).toBeGreaterThan(0);
+        if (clean > 0) expect(el!.textContent).toBe(` 🧤 ${clean} – ${clean === 1 ? 'one clean sheet' : `${clean} clean sheets`}`);
+        else expect(el).toBeNull();
+      }
       // Spieler des Spieltags auf der Ergebnistafel (sobald es Torbeteiligungen gab)
       if (c.expect.includes('Results')) {
         const star = timeline.playerOfRound(league.matches.filter((m) => m.round === 2));

@@ -310,6 +310,17 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
             <dt>{tx.goals}</dt>
             <dd>
               {ownRow.gf}:{ownRow.ga}
+              {/* Spiele ohne Gegentor bis zu diesem Spieltag */}
+              {(() => {
+                const clean = league.matches.filter((m) => m.round <= md && ((m.home === you && m.ag === 0) || (m.away === you && m.hg === 0))).length;
+                return clean > 0 ? (
+                  <small className="muted league-ticker__clean" title={tx.cleanSheets(clean)}>
+                    {' '}
+                    🧤 {clean}
+                    <span className="sr-only"> – {tx.cleanSheets(clean)}</span>
+                  </small>
+                ) : null;
+              })()}
             </dd>
           </div>
           {nextLeague && (() => {
