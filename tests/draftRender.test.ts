@@ -597,6 +597,19 @@ describe('DraftLive', () => {
     expect(r.container.querySelector('.draft-turnbar__until')).toBeNull();
   });
 
+  it('Turnbar: höchstens verbleibende Draft-Dauer bei Pick-Uhr', async () => {
+    // Ohne Pick-Uhr keine Angabe
+    let r = await renderLive(fakeRoom(snap(drafting(), 'h')));
+    expect(r.container.querySelector('.draft-turnbar__rest')).toBeNull();
+    const s = engine.startDraft(lobby(2, { region: 0, maxTeams: 4, order: 'host', pickSeconds: 90 }), 'dev-h', 0, ALL);
+    const total = s.teams.length * engine.rounds(s.settings);
+    const humans = s.teams.filter((tm) => !tm.cpu).length;
+    expect(humans).toBe(2);
+    r = await renderLive(fakeRoom(snap(s, 'h')));
+    // Nach dem aktuellen Pick noch total − 1 menschliche Picks à 90 s
+    expect(r.container.querySelector('.draft-turnbar__rest')!.textContent).toBe(` · Draft-Ende spätestens in ~${Math.ceil(((total - 1) * 90) / 60)} Min.`);
+  });
+
   it('Taste V holt einen Vorschlag (wie der Knopf)', async () => {
     const st = drafting();
     const { container } = await renderLive(fakeRoom(snap(st, 'h')));

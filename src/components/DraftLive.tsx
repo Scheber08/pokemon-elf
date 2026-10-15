@@ -534,10 +534,15 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
             }
           }
           if (!next.length) return null;
+          // Restdauer höchstens: offene Picks menschlicher Teams × Pick-Zeit (CPU wählt sofort)
+          let humanLeft = 0;
+          for (let p = s.pickIndex + 1; p < total; p++) if (!s.teams[teamIndexForPick(p, s.teams.length, s.settings.snake ?? true)]?.cpu) humanLeft++;
+          const restMin = s.settings.pickSeconds > 0 && humanLeft > 0 ? Math.ceil((humanLeft * s.settings.pickSeconds) / 60) : 0;
           return (
             <p className="draft-turnbar__last draft-turnbar__next">
               {t.online.nextUp(next.join(' → '))}
               {until > 0 && <strong className="draft-turnbar__until"> · {t.online.untilYou(until)}</strong>}
+              {restMin > 0 && <span className="draft-turnbar__rest"> · {t.online.restMax(restMin)}</span>}
             </p>
           );
         })()}
