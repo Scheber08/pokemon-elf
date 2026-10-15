@@ -575,6 +575,9 @@ function goalsOf(league: LeagueResult | null | undefined, team: number): Map<num
   return out;
 }
 
+/** So viel stärker muss eine andere Formation sein, damit der Formations-Tipp erscheint (kleinere Gewinne sind Rauschen) */
+const FORMATION_TIP_MIN = 5;
+
 function LineupEditor({
   team,
   lineup,
@@ -734,13 +737,13 @@ function LineupEditor({
       </div>
       <p className="muted small">{lineup.auto ? tx.autoNote : tx.manualNote}</p>
       {(() => {
-        // Andere Formation mit höherer bestmöglicher Stärke? (Tipp mit Knopf zum Übernehmen)
+        // Andere Formation mit spürbar höherer bestmöglicher Stärke? (Tipp mit Knopf zum Übernehmen)
         let tip: { formation: FormationId; strength: number; lineup: Omit<ManagerLineup, 'auto'> } | null = null;
         for (const f of FORMATION_IDS) {
           if (f === lineup.formation) continue;
           const l = bestLineup(team, f, byId, sc, form, setPiece, absent, shinySet, team.captain);
           const n = lineupScore(squadOf(l), sc, formOf, team.captain, shinySet);
-          if (n > Math.max(bestStrength, tip?.strength ?? 0)) tip = { formation: f, strength: n, lineup: l };
+          if (n >= bestStrength + FORMATION_TIP_MIN && n > (tip?.strength ?? 0)) tip = { formation: f, strength: n, lineup: l };
         }
         if (!tip) return null;
         const chosen = tip;

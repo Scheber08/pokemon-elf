@@ -1043,7 +1043,7 @@ describe('ManagerSeason', () => {
     const ranked = [...FORMATION_IDS].map((f) => ({ f, ...scoreOf(f) })).sort((a, b) => a.n - b.n);
     const worst = ranked[0];
     const top = ranked.at(-1)!;
-    expect(top.n).toBeGreaterThan(worst.n);
+    expect(top.n).toBeGreaterThanOrEqual(worst.n + 5);
     const st = { ...s, manager: { ...s.manager!, lineups: { ...s.manager!.lineups, h: { ...worst.l, auto: false } } } };
     const room = fakeRoom(snap(st, 'h'));
     const { container } = await render(app(h(ManagerSeason, { room, readOnly: false })));
@@ -1052,6 +1052,11 @@ describe('ManagerSeason', () => {
     expect(tip.textContent).toContain(`Tipp: Mit ${top.f} wäre Stärke ${top.n} möglich.`);
     await act(async () => (tip.querySelector('button') as MiniElement).click());
     expect((room.setLineup as ReturnType<typeof vi.fn>).mock.calls.at(-1)![0].formation).toBe(top.f);
+    // In der stärksten Formation: kein Tipp
+    const best = { ...s, manager: { ...s.manager!, lineups: { ...s.manager!.lineups, h: { ...top.l, auto: false } } } };
+    const r2 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(best, 'h')), readOnly: false })));
+    await settle();
+    expect(r2.container.querySelector('.manager__formation-tip')).toBeNull();
   });
 
   it('Eigener Platz: Hochrechnung der Punkte aufs Saisonende ab dem 3. Spieltag', async () => {
