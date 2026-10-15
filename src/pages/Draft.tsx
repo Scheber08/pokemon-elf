@@ -440,18 +440,23 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     return r.gen === 1 ? rp.first151 : rp.range(t.game.region[r.gen], r.from, r.to);
   }, [state.region, t]);
 
+  /** Team-Score eines Teams wie in der Liga (Kapitän zählt doppelt, Shinys mit Bonus) */
+  const teamRating = (tm: DraftTeam): number => {
+    const players = tm.slots.map((id) => (id != null ? byId.get(id) ?? null : null));
+    const shinies = state.shinies?.length ? new Set(state.shinies) : undefined;
+    const ev = evaluateTeam(tm.formation, players, scale('all'), captainOf(tm), shinies ? (id) => (shinies.has(id) ? SHINY_FIT_BONUS : 0) : undefined);
+    return Math.min(1000, ev.score + shinyBonus(players, shinies));
+  };
+
   // ---------- Liga ----------
   const league = useMemo(() => {
     if (state.phase !== 'league' || state.seed == null) return null;
-    const sc = scale('all');
     const leagueTeams: LeagueTeam[] = state.teams.map((tm) => {
       const players = tm.slots.map((id) => (id != null ? byId.get(id) ?? null : null));
-      const shinies = state.shinies?.length ? new Set(state.shinies) : undefined;
-      const ev = evaluateTeam(tm.formation, players, sc, captainOf(tm), shinies ? (id) => (shinies.has(id) ? SHINY_FIT_BONUS : 0) : undefined);
       const defs = FORMATIONS[tm.formation].slots;
       return {
         name: tm.name,
-        rating: Math.min(1000, ev.score + shinyBonus(players, shinies)),
+        rating: teamRating(tm),
         isUser: !tm.cpu,
         squad: players.flatMap((p, i) => (p ? [{ pokemonId: p.id, pos: defs[i].pos, atk: p.atk, spa: p.spa }] : [])),
       };
@@ -710,6 +715,19 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
             {t.captain.localTitle}
           </h1>
           <p className="muted small">{t.captain.localNote}</p>
+          {(() => {
+            // Vor dem Anpfiff: Favorit nach Team-Score und der Rang jedes menschlichen Teams (wie online)
+            const ratings = state.teams.map(teamRating);
+            const fav = ratings.reduce((a, r, i) => (r > ratings[a] ? i : a), 0);
+            const ranks = state.teams.flatMap((tm, i) =>
+              tm.cpu ? [] : [`${teamName(tm.name)}: ${ratings.filter((r) => r > ratings[i]).length + 1}.`],
+            );
+            return (
+              <p className="small muted draft__odds">
+                {t.captain.favorite(teamName(state.teams[fav].name), Math.round(ratings[fav]))} · {tx.humanRanks(ranks.join(', '))}
+              </p>
+            );
+          })()}
         </section>
         <section className="draft__rosters" aria-label={tx.squads}>
           {state.teams.map((tm, i) =>

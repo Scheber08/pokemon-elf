@@ -113,6 +113,7 @@ const draft: Messages['draft'] = {
     cpuTag: '(CPU)',
     cpuScouting: (team) => `${team} is scouting …`,
     cpuNeeds: (positions) => `(still looking for: ${positions})`,
+    humanRanks: (list) => `Team score rank – ${list}`,
     localPresetNote: {
       classic: 'Kanto without legendaries, forms and Megas',
       allRegions: 'All regions with legendaries and forms',

@@ -114,6 +114,8 @@ const draft = {
     cpuTag: '(CPU)',
     cpuScouting: (team: string) => `${team} scoutet …`,
     cpuNeeds: (positions: string) => `(sucht noch: ${positions})`,
+    /** Kapitänsphase: Ränge der menschlichen Teams nach Team-Score */
+    humanRanks: (list: string) => `Team-Score-Platz – ${list}`,
     /** Schnellstart-Vorlagen im lokalen Setup (Titel) */
     localPresetNote: {
       classic: 'Kanto ohne Legendäre, Formen und Megas',

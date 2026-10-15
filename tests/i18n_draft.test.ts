@@ -412,6 +412,25 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(saved.teams[0].slots.filter((x: number | null) => x != null)).toHaveLength(1);
   });
 
+  it('Kapitänswahl lokal: Favorit nach Team-Score und Rang der menschlichen Teams', async () => {
+    const total = (p: (typeof ALL)[number]) => p.hp + p.atk + p.def + p.spa + p.spd + p.spe;
+    const pool = ALL.filter((p) => !p.leg && !p.myth && !p.form).sort((a, b) => total(b) - total(a));
+    const f = FORMATION_IDS[0];
+    const team = (name: string, cpu: boolean, mons: typeof pool) => ({ name, cpu, formation: f, slots: emptySlots(f).map((_, j) => mons[j].id) });
+    const teams = [
+      team('Mein Team', false, pool.slice(0, 11)),
+      team(CLUB_NAMES[1], true, pool.slice(200, 211)),
+      team('Zweites Team', false, pool.slice(-11)),
+    ];
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'captains', teams, region: 0, legends: false, pick: 33, selected: null, seed: 5 }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    expect(container.querySelector('.draft__odds')!.textContent).toMatch(
+      /^Favorit: Mein Team \(Team-Score \d+\) · Team-Score-Platz – Mein Team: 1\., Zweites Team: 3\.$/,
+    );
+    localStorage.removeItem('pokemon-elf:draft');
+  });
+
   it('Lokale Liga: Konfetti nur, wenn ein menschliches Team Meister wird', async () => {
     const total = (p: (typeof ALL)[number]) => p.hp + p.atk + p.def + p.spa + p.spd + p.spe;
     const pool = ALL.filter((p) => !p.leg && !p.myth && !p.form).sort((a, b) => total(b) - total(a));
