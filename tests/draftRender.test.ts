@@ -687,12 +687,19 @@ describe('DraftLive', () => {
   it('Pool-Kopf: ★ n Legendäre frei (nur mit Legendären im Pool)', async () => {
     const plain = await renderLive(fakeRoom(snap(drafting(), 'h')));
     expect(plain.container.querySelector('.draft-pool__legends')).toBeNull();
+    // Alle Regionen: Ultrabestien im Pool → „UB n“
+    const ubs = ALL.filter((p) => engine.hasKind(p, 'ub')).length;
+    expect(ubs).toBeGreaterThan(0);
+    expect(plain.container.querySelector('.draft-pool__ub')!.textContent).toBe(` UB ${ubs}${ubs} Ultrabestien noch frei`);
+    expect(plain.container.querySelector('.draft-pool__mega')).toBeNull();
     let st = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, legendary: true, mythical: true }), 'dev-h', 0, ALL);
     const legends = ALL.filter((p) => p.gen === 1 && (p.leg || p.myth));
     expect(legends.length).toBeGreaterThan(0);
     // Host nimmt ein Legendäres → eins weniger frei
     st = engine.applyPick(st, 'h', legends[0].id, 0, false, 1000, ALL);
     const { container } = await renderLive(fakeRoom(snap(st, 'h')));
+    // Nur Kanto: keine Ultrabestien
+    expect(container.querySelector('.draft-pool__ub')).toBeNull();
     const n = legends.length - 1;
     expect(container.querySelector('.draft-pool__legends')!.textContent).toBe(` ★ ${n}${n === 1 ? 'Ein Legendäres/Mysteriöses noch frei' : `${n} Legendäre/Mysteriöse noch frei`}`);
   });

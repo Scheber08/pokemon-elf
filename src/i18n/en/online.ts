@@ -208,6 +208,8 @@ const online: Messages['online'] = {
   yourTurn: 'It’s your turn!',
   pool: 'Pool',
   legendsFreeTitle: (n) => (n === 1 ? 'One legendary/mythical still available' : `${n} legendaries/mythicals still available`),
+  ubFreeTitle: (n) => (n === 1 ? 'One Ultra Beast still available' : `${n} Ultra Beasts still available`),
+  megasFreeTitle: (n) => (n === 1 ? 'One Mega still available' : `${n} Megas still available`),
   poolFree: (n) => `(${n} available)`,
   randomPick: 'Random',
   randomPickTitle: 'Pre-select a random fitting Pokémon – tap the highlighted slot to take it',

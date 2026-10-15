@@ -11,6 +11,7 @@ import {
   DRAFT_SS_SLOT,
   effectiveRoll,
   fastPickCounts,
+  hasKind,
   isLegend,
   freeSlots,
   legendsOf,
@@ -674,6 +675,21 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                     </span>
                   );
                 })()}
+                {(['ub', 'mega'] as const).map((kind) => {
+                  // Ebenso freie Ultrabestien bzw. Megas (nur wenn der Pool welche hat)
+                  if (!pool.some((p) => hasKind(p, kind))) return null;
+                  const free = pool.filter((p) => hasKind(p, kind) && !owners.has(p.id)).length;
+                  const label = kind === 'ub' ? t.online.ubFreeTitle(free) : t.online.megasFreeTitle(free);
+                  return (
+                    <span key={kind} className={`muted draft-pool__${kind}`} title={label}>
+                      {' '}
+                      <span aria-hidden="true">
+                        {kind === 'ub' ? 'UB' : 'M'} {free}
+                      </span>
+                      <span className="sr-only">{label}</span>
+                    </span>
+                  );
+                })}
               </h2>
               <p className={`hint ${myTurn || selectedMon ? 'hint--active' : ''}`}>{hint}</p>
               {myTurn &&

@@ -226,6 +226,8 @@ const online = {
   pool: 'Pool',
   /** Noch freie Legendäre/Mysteriöse im Pool (★ n) */
   legendsFreeTitle: (n: number) => (n === 1 ? 'Ein Legendäres/Mysteriöses noch frei' : `${n} Legendäre/Mysteriöse noch frei`),
+  ubFreeTitle: (n: number) => (n === 1 ? 'Eine Ultrabestie noch frei' : `${n} Ultrabestien noch frei`),
+  megasFreeTitle: (n: number) => (n === 1 ? 'Ein Mega noch frei' : `${n} Megas noch frei`),
   poolFree: (n: number) => `(${n} frei)`,
   randomPick: 'Zufall',
   randomPickTitle: 'Ein zufälliges passendes Pokémon vormerken – zum Übernehmen den markierten Platz antippen',
