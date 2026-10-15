@@ -523,7 +523,23 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
             const tm = s.teams[teamIndexForPick(p, s.teams.length, s.settings.snake ?? true)];
             if (tm) next.push(tm.id === me?.id ? t.online.you : teamLabel(tm, t));
           }
-          return next.length ? <p className="draft-turnbar__last draft-turnbar__next">{t.online.nextUp(next.join(' → '))}</p> : null;
+          // Wie viele Picks noch bis zum eigenen (nur wenn man gerade nicht dran ist)
+          let until = 0;
+          if (me && !myTurn && !readOnly) {
+            for (let p = s.pickIndex + 1; p < total; p++) {
+              if (s.teams[teamIndexForPick(p, s.teams.length, s.settings.snake ?? true)]?.id === me.id) {
+                until = p - s.pickIndex;
+                break;
+              }
+            }
+          }
+          if (!next.length) return null;
+          return (
+            <p className="draft-turnbar__last draft-turnbar__next">
+              {t.online.nextUp(next.join(' → '))}
+              {until > 0 && <strong className="draft-turnbar__until"> · {t.online.untilYou(until)}</strong>}
+            </p>
+          );
         })()}
         {s.settings.shinies !== false && s.settings.shinyParty && <p className="draft-turnbar__last">{t.shiny.note(Math.round(SHINY_PARTY_CHANCE * 100))}</p>}
       </div>

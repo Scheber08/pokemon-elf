@@ -205,6 +205,7 @@ const online = {
   anotherTeam: 'Ein anderes Team',
   /** Hinter hintWaiting, mit Leerzeichen vorn */
   hintOpen: (list: string) => ` Noch offen: ${list}.`,
+  untilYou: (n: number) => (n === 1 ? 'du bist als Nächstes dran' : `du bist in ${n} Picks dran`),
   nextUp: (list: string) => `Danach: ${list}`,
   hintUntil: (n: number) => (n === 1 ? ' Danach bist du dran.' : ` Noch ${n} Picks bis zu deinem Zug.`),
   round: 'Runde',
