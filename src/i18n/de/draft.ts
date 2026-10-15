@@ -311,6 +311,8 @@ const draft = {
     recordFest: 'Torreichstes Spiel',
     recordDraws: 'Remis-König',
     recordDrawsLine: (team: string, n: number) => `${team} – ${n} Unentschieden`,
+    recordHalf: 'Herbstmeister',
+    recordHalfLine: (team: string, pts: number, round: number) => `${team} – ${pts} Pkt nach der Hinrunde (${round}. Spieltag)`,
     recordStreak: 'Längste Siegesserie',
     recordSurprise: 'Überraschung der Saison',
     recordFlop: 'Enttäuschung der Saison',

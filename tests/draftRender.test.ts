@@ -1043,6 +1043,12 @@ describe('ManagerSeason', () => {
     expect(most).toBeGreaterThanOrEqual(4);
     expect(rec.textContent).toContain(`Remis-König`);
     expect(rec.textContent).toContain(`${most} Unentschieden`);
+    // Herbstmeister: Führender nach der Hälfte der Spieltage
+    const { leagueTimeline } = await import('../src/lib/leagueTimeline');
+    const days = leagueTimeline(s.league!);
+    const half = days[days.length / 2 - 1];
+    expect(rec.textContent).toContain(`Herbstmeister`);
+    expect(rec.textContent).toContain(`${half.leader.pts} Pkt nach der Hinrunde (${days.length / 2}. Spieltag)`);
     // Eigene Extreme: höchster Sieg / höchste Niederlage aus eigener Sicht
     const me = s.teams.findIndex((t) => t.id === 'h');
     const own = s.league!.matches.filter((m) => m.home === me || m.away === me).map((m) => (m.home === me ? [m.hg, m.ag] : [m.ag, m.hg]));

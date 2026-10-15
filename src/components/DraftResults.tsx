@@ -532,6 +532,16 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                   </>
                 );
               })()}
+              {/* Herbstmeister: Tabellenführer nach der Hinrunde (doppelte Runde, mindestens 4 Spieltage) */}
+              {days.length >= 4 && days.length % 2 === 0 && (() => {
+                const half = days[days.length / 2 - 1];
+                return (
+                  <div>
+                    <dt>{tx.recordHalf}</dt>
+                    <dd>{tx.recordHalfLine(nameOf(half.leader.team), half.leader.pts, half.round)}</dd>
+                  </div>
+                );
+              })()}
               {bigWin && (
                 <div>
                   <dt>{tx.recordWin}</dt>
