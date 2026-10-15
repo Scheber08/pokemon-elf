@@ -817,6 +817,10 @@ describe('DraftLobby', () => {
     st = engine.joinDraft(st, { teamId: 't9', deviceId: 'dev-9', name: 'Neue Elf', formation: '4-4-2' });
     await act(async () => root.render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) }))));
     expect(toasts()).toEqual(['👋 Neue Elf ist dabei']);
+    // Meldet sich bereit → „✅ … ist bereit“
+    st = engine.setTeamReady(st, 'dev-9', true);
+    await act(async () => root.render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) }))));
+    expect(toasts()).toContain('✅ Neue Elf ist bereit');
     // Verlässt die Lobby → Abschied (CPU-Team entfernen bleibt still)
     st = engine.leaveDraft(st, 'dev-9');
     await act(async () => root.render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) }))));

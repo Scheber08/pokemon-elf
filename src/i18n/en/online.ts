@@ -246,6 +246,7 @@ const online: Messages['online'] = {
   presetRandomTitle: 'Apply a random preset',
   joinedLobby: (team) => `👋 ${team} joined`,
   leftLobby: (team) => `🚪 ${team} left`,
+  readyLobby: (team) => `✅ ${team} is ready`,
   presets: 'Quick start',
   presetName: { classic: 'Classic', allRegions: 'All regions', megaChaos: 'Mega chaos', blitz: 'Blitz', cup: 'Knockout cup', shinyParty: 'Shiny party' },
   presetNote: {

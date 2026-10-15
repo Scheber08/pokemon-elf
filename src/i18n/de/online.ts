@@ -271,6 +271,8 @@ const online = {
   joinedLobby: (team: string) => `👋 ${team} ist dabei`,
   /** Mitspieler hat die Lobby verlassen (Hinweis) */
   leftLobby: (team: string) => `🚪 ${team} ist nicht mehr dabei`,
+  /** Mitspieler ist bereit (Hinweis) */
+  readyLobby: (team: string) => `✅ ${team} ist bereit`,
   presets: 'Schnellstart',
   presetName: { classic: 'Klassisch', allRegions: 'Alle Regionen', megaChaos: 'Mega-Chaos', blitz: 'Blitz', cup: 'KO-Turnier', shinyParty: 'Shiny-Party' } as Record<
     DraftPresetId,
