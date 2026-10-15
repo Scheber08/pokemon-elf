@@ -337,6 +337,25 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     }
   }, [s.picks.length]);
 
+  // ★ Erstes legendäres Pokémon des Drafts und das letzte freie: kurz ansagen (einmal je Pick, nicht beim Laden)
+  const legendSeen = useRef(s.picks.length);
+  useEffect(() => {
+    const before = legendSeen.current;
+    legendSeen.current = s.picks.length;
+    if (s.picks.length <= before) return;
+    for (const pk of s.picks.slice(before)) {
+      const mon = byId.get(pk.pokemonId);
+      const team = s.teams.find((x) => x.id === pk.teamId);
+      if (!mon || !team || !isLegend(mon)) continue;
+      const upTo = s.picks.slice(0, s.picks.indexOf(pk) + 1);
+      const taken = new Set(upTo.map((x) => x.pokemonId));
+      const left = pool.filter((p) => isLegend(p) && !taken.has(p.id)).length;
+      if (left === 0) setInfo(t.online.legendLast(t.game.pokemon(mon), teamLabel(team, t)));
+      else if (upTo.filter((x) => { const m = byId.get(x.pokemonId); return !!m && isLegend(m); }).length === 1)
+        setInfo(t.online.legendFirst(t.game.pokemon(mon), teamLabel(team, t)));
+    }
+  }, [s.picks.length]);
+
   // Pick schillert: kurz ansagen (einmal je Pick) – eigener gefeiert, fremder als Hinweis
   const newestPick = s.picks[s.picks.length - 1];
   const shinySeen = useRef(s.picks.length);

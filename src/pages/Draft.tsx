@@ -47,7 +47,7 @@ import { cleanCheer } from '../lib/cheer';
 import { cleanCrest, type Crest as CrestData } from '../lib/crest';
 import { Crest } from '../components/Crest';
 import { CrestEditor } from '../components/CrestEditor';
-import { cpuCaptain, limitKindsOf, pickNumbersLabel } from '../lib/draftEngine';
+import { cpuCaptain, isLegend, limitKindsOf, pickNumbersLabel } from '../lib/draftEngine';
 import { SHINY_CHANCE, SHINY_FIT_BONUS, SHINY_PARTY_CHANCE, shinyBonus, shinyRoll, shinyTeamBoost } from '../lib/shiny';
 import { useToast } from '../state/Toast';
 import { copyText, downloadBlob } from '../lib/exportImage';
@@ -234,6 +234,22 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   );
   /** Teamname für die Anzeige: Vorgabe „Mein Team" und Vereinsnamen (CPU) in der aktiven Sprache */
   const teamName = (name: string) => (name === OWN_TEAM ? tx.myTeam : t.game.club(name));
+  // ★ Erstes legendäres Pokémon des Drafts und das letzte freie (wie online; nur beim Vorwärtsdraften)
+  const legendPickRef = useRef(state.pick);
+  useEffect(() => {
+    const before = legendPickRef.current;
+    legendPickRef.current = state.pick;
+    const last = state.log?.at(-1);
+    if (state.pick !== before + 1 || !last || state.log!.length !== state.pick) return;
+    const mon = byId.get(last.id);
+    const tm = state.teams[last.team];
+    if (!mon || !tm || !isLegend(mon)) return;
+    const taken = new Set(state.log!.map((x) => x.id));
+    const left = all.filter((p) => inPool(p) && isLegend(p) && !taken.has(p.id)).length;
+    const picked = state.log!.filter((x) => { const m = byId.get(x.id); return !!m && isLegend(m); }).length;
+    if (left === 0) toast(t.online.legendLast(t.game.pokemon(mon), teamName(tm.name)));
+    else if (picked === 1) toast(t.online.legendFirst(t.game.pokemon(mon), teamName(tm.name)));
+  }, [state.pick]);
   // 🔔 Ende einer Draft-Runde: kurzer Hinweis mit dem Top-Pick der Runde (Fit an seiner Position) – nur beim Vorwärtsdraften
   const lastPickRef = useRef(state.pick);
   useEffect(() => {

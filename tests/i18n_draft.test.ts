@@ -1063,6 +1063,34 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(r.container.querySelectorAll('.toast').filter((e) => e.textContent!.startsWith('🔔'))).toHaveLength(0);
   });
 
+  it('★ das letzte freie legendäre Pokémon wird angesagt', async () => {
+    const { isLegend } = await import('../src/lib/draftEngine');
+    const f = FORMATION_IDS[0];
+    const legends = ALL.filter((p) => p.gen === 1 && !p.form && isLegend(p));
+    const teams = [
+      { name: 'Mein Team', cpu: false, formation: f, slots: emptySlots(f) },
+      { name: 'Zweites Team', cpu: false, formation: f, slots: emptySlots(f) },
+    ];
+    // Alle Legendären bis auf eins schon gewählt (Snake: 0, 1, 1, 0, 0, 1 …)
+    const log: { team: number; slot: number; id: number }[] = [];
+    legends.slice(0, -1).forEach((p, k) => {
+      const team = Math.floor(k / 2) % 2 === 0 ? k % 2 : 1 - (k % 2);
+      const slot = teams[team].slots.findIndex((x) => x == null);
+      teams[team].slots[slot] = p.id;
+      log.push({ team, slot, id: p.id });
+    });
+    const last = legends.at(-1)!;
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: true, pick: log.length, selected: last.id, seed: null, log }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    expect(container.querySelectorAll('.toast').filter((e) => e.textContent!.startsWith('★'))).toHaveLength(0);
+    await act(async () => (container.querySelector('.pitch .slot--target') as MiniElement).click());
+    const k = log.length;
+    const who = (Math.floor(k / 2) % 2 === 0 ? k % 2 : 1 - (k % 2)) === 0 ? 'Mein Team' : 'Zweites Team';
+    expect(container.querySelectorAll('.toast').map((e) => e.textContent)).toContain(`★ Das letzte legendäre Pokémon ist vergeben: ${last.de} (${who})`);
+    localStorage.removeItem('pokemon-elf:draft');
+  });
+
   it('Auswahl: bester freier Platz und Ø Fit vorher → nachher (wie online)', async () => {
     const f = FORMATION_IDS[0];
     const kanto = ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth);

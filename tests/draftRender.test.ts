@@ -579,6 +579,24 @@ describe('DraftLive', () => {
     expect(container.querySelector('.run-notice__text')!.textContent).toMatch(new RegExp(`^🏅 Draft-Rekord: ${best.de} passt mit ${fit} als .+ – bester Fit bisher!$`));
   });
 
+  it('★ erstes legendäres Pokémon des Drafts wird angesagt (nicht beim Laden)', async () => {
+    let s = engine.startDraft(lobby(2, { gens: [1], legendary: true, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
+    const { container, root } = await renderLive(fakeRoom(snap(s, 'h')));
+    expect(container.querySelector('.run-notice')).toBeNull();
+    // Host nimmt ein Legendäres auf den ersten passenden Platz
+    const team = engine.currentTeam(s)!;
+    let pick: { id: number; slot: number } | null = null;
+    for (const p of ALL.filter((x) => x.gen === 1 && engine.isLegend(x)))
+      for (let slot = 0; slot < 11 && !pick; slot++) if (engine.pickError(s, team.id, p.id, slot, ALL) == null) pick = { id: p.id, slot };
+    s = engine.applyPick(s, team.id, pick!.id, pick!.slot, false, 1000, ALL);
+    await act(async () => root.render(app(h(DraftLive, { room: fakeRoom(snap(s, 'h')) }))));
+    const name = ALL.find((p) => p.id === pick!.id)!.de;
+    expect(container.querySelector('.run-notice__text')!.textContent).toBe(`★ Erstes legendäres Pokémon des Drafts: ${name} (Host FC)`);
+    // Neu geladen mit diesem Stand: keine Ansage
+    const fresh = await renderLive(fakeRoom(snap(s, 'h')));
+    expect(fresh.container.querySelector('.run-notice')).toBeNull();
+  });
+
   it('fremder Pick von der Wunschliste: 💔-Hinweis mit Rang', async () => {
     let s = autoPick(drafting());
     // Team 1 ist dran – sein Auto-Pick steht auf Platz 2 der Host-Wunschliste
