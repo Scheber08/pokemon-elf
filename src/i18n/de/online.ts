@@ -263,6 +263,8 @@ const online = {
   /** Hinweis unter „Pool", wenn ein Wurf gilt (mit Leerzeichen vorn) */
   hintRoll: (region: string, type: string) => ` Gesucht: ${region} + ${type}.`,
   /** Schnellstart-Vorlagen beim Erstellen */
+  presetRandom: 'Überraschung',
+  presetRandomTitle: 'Eine zufällige Vorlage übernehmen',
   presets: 'Schnellstart',
   presetName: { classic: 'Klassisch', allRegions: 'Alle Regionen', megaChaos: 'Mega-Chaos', blitz: 'Blitz', cup: 'KO-Turnier', shinyParty: 'Shiny-Party' } as Record<
     DraftPresetId,

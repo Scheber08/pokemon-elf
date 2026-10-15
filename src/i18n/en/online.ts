@@ -240,6 +240,8 @@ const online: Messages['online'] = {
   blockedMegas: (max) => `Limit: ${plural(max, 'Mega', 'Megas')}`,
   favouriteNoMatch: (name) => `${name} doesn’t match your roll – pick one that does.`,
   hintRoll: (region, type) => ` Wanted: ${region} + ${type}.`,
+  presetRandom: 'Surprise me',
+  presetRandomTitle: 'Apply a random preset',
   presets: 'Quick start',
   presetName: { classic: 'Classic', allRegions: 'All regions', megaChaos: 'Mega chaos', blitz: 'Blitz', cup: 'Knockout cup', shinyParty: 'Shiny party' },
   presetNote: {

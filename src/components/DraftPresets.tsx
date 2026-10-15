@@ -37,6 +37,22 @@ export function DraftPresets({ value, list, teamsJoined = 0, onApply, disabled }
             </button>
           );
         })}
+        {/* Überraschung: eine zufällige passende Vorlage */}
+        <button
+          type="button"
+          className="chip draft-presets__random"
+          title={t.online.presetRandomTitle}
+          disabled={disabled}
+          onClick={() => {
+            const fitting = DRAFT_PRESET_IDS.flatMap((id) => {
+              const fitted = fitSettingsPatch(value, DRAFT_PRESETS[id], list, teamsJoined);
+              return fitted ? [fitted] : [];
+            });
+            if (fitting.length) onApply(fitting[Math.floor(Math.random() * fitting.length)]);
+          }}
+        >
+          🎲 {t.online.presetRandom}
+        </button>
       </div>
     </div>
   );

@@ -1091,3 +1091,25 @@ describe('Reroll über useDraftRoom', () => {
     expect(hook.draftErrorText('Kein anderer Wurf möglich', 'no_other_roll', ALL, 'de')).toBe('Kein anderer Wurf möglich');
   });
 });
+
+describe('Vorlagen: 🎲 Überraschung', () => {
+  it('übernimmt eine zufällige passende Vorlage', async () => {
+    const { DraftPresets } = await import('../src/components/DraftPresets');
+    const { DRAFT_PRESET_IDS, DRAFT_PRESETS } = await import('../src/config/draftPresets');
+    const onApply = vi.fn();
+    const { container } = await render(app(h(DraftPresets, { value: DEFAULT_DRAFT_SETTINGS, list: ALL, onApply })));
+    const fitting = DRAFT_PRESET_IDS.flatMap((id) => {
+      const f = hook.fitSettingsPatch(DEFAULT_DRAFT_SETTINGS, DRAFT_PRESETS[id], ALL, 0);
+      return f ? [f] : [];
+    });
+    expect(fitting.length).toBeGreaterThan(1);
+    const dice = button(container, '🎲 Überraschung');
+    vi.spyOn(Math, 'random').mockReturnValue(0.999);
+    await act(async () => dice.click());
+    expect(onApply).toHaveBeenLastCalledWith(fitting[fitting.length - 1]);
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    await act(async () => dice.click());
+    expect(onApply).toHaveBeenLastCalledWith(fitting[0]);
+    vi.restoreAllMocks();
+  });
+});
