@@ -9,6 +9,7 @@ import {
   secondsToKickoff,
   tableRowClass,
   tableZone,
+  leaderSince,
   TABLE_BOTTOM_ZONE,
   titleRace,
   titleTieNote,
@@ -187,12 +188,12 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
     parts.push(
       finale
         ? tx.championLine(nameOf(day.leader.team), day.leader.pts)
-        : tx.leaderLine(nameOf(day.leader.team), day.leader.pts),
+        : tx.leaderLine(nameOf(day.leader.team), day.leader.pts, leaderSince(days, day.round)),
     );
     if (tieNote) parts.push(`${tieNote}.`);
     return parts.join(' ');
     // dayLabel hängt nur von cup und t ab
-  }, [day, finale, you, nameOf, tieNote, t, tx, cup, ownStatus, winner]);
+  }, [day, days, finale, you, nameOf, tieNote, t, tx, cup, ownStatus, winner]);
 
   const status = finale ? 'ende' : day ? 'live' : 'gleich';
   const statusLabel = finale ? tx.statusEnd : day ? tx.statusLive : tx.statusSoon;
@@ -234,6 +235,11 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
           <span style={{ width: `${total ? (md / total) * 100 : 0}%` }} />
         </div>
       </div>
+      {!cup && day && !finale && leaderSince(days, day.round) >= 3 && (
+        <p className="league-ticker__leader small muted">
+          👑 {tx.leaderStreak(nameOf(day.leader.team), leaderSince(days, day.round))}
+        </p>
+      )}
 
       {cup && ownRow && (
         <dl className="facts league-ticker__facts">

@@ -347,3 +347,15 @@ describe('Tabellen-Zonen', () => {
     expect(tableRowClass(false, 9, 18)).toBe('');
   });
 });
+
+describe('Tabellenführer seit', () => {
+  it('zählt die Spieltage in Folge bis zum gegebenen', async () => {
+    const { leaderSince } = await import('../src/lib/leagueTimeline');
+    const d = (round: number, team: number) => ({ round, leader: { team } as never });
+    const days = [d(1, 0), d(2, 1), d(3, 1), d(4, 1), d(5, 2)];
+    expect(leaderSince(days, 4)).toBe(3);
+    expect(leaderSince(days, 5)).toBe(1);
+    expect(leaderSince(days, 1)).toBe(1);
+    expect(leaderSince([], 3)).toBe(0);
+  });
+});

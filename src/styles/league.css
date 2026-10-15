@@ -1123,3 +1123,8 @@
   background: var(--red);
   margin-left: 8px;
 }
+
+/* Ticker: Serie des Tabellenführers */
+.league-ticker__leader {
+  margin: 6px 0 0;
+}

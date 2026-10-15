@@ -522,8 +522,21 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
         expect(next!.textContent).toMatch(/ · \d+(st|nd|rd|th)/);
       }
       if (c.expect.includes('Full time!')) expect(next).toBeNull();
+      // Serie des Tabellenführers: sichtbar ab 3 Spieltagen in Folge, nicht am Saisonende
+      const streak = container.querySelector('.league-ticker__leader');
+      if (c.expect.includes('Full time!')) expect(streak).toBeNull();
+      else if (streak) expect(streak.textContent).toMatch(/have led the table for \d+ matchdays$/);
       expect(germanLeft(container)).toEqual([]);
     }
+    // Spieltag mit einer Führungsserie ≥ 3: Zeile sichtbar mit der richtigen Zahl
+    const days = timeline.leagueTimeline(league);
+    const k = days.findIndex((d, i) => i < days.length - 1 && timeline.leaderSince(days, d.round) >= 3);
+    expect(k).toBeGreaterThanOrEqual(0);
+    const { container } = await render(
+      app(h(LeagueTicker, { league, teamNames: names, highlight: 0, startsAt: Date.now() - (k + 0.5) * step, stepMs: step, clockOffset: 0, onDone: () => {} })),
+    );
+    await settle();
+    expect(container.querySelector('.league-ticker__leader')!.textContent).toContain(`have led the table for ${timeline.leaderSince(days, k + 1)} matchdays`);
   });
 });
 

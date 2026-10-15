@@ -360,7 +360,9 @@ const draft: Messages['draft'] = {
       `${outcome} ${gf}:${ga} ${home ? 'v' : 'at'} ${opponent}, ${ordinal(place)} place.`,
     bye: (place) => `Your team has a bye, ${ordinal(place)} place.`,
     championLine: (team, pts) => `Champions: ${team} with ${plural(pts, 'point', 'points')}.`,
-    leaderLine: (team, pts) => `Top of the table: ${team} with ${plural(pts, 'point', 'points')}.`,
+    leaderStreak: (team, n) => `${team} have led the table for ${n} matchdays`,
+    leaderLine: (team, pts, since = 0) =>
+      `Top of the table: ${team} with ${plural(pts, 'point', 'points')}${since >= 3 ? ` (top for ${since} matchdays)` : ''}.`,
     statusEnd: 'FT',
     statusLive: 'Live',
     statusSoon: 'Soon',

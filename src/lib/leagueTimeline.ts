@@ -617,6 +617,16 @@ export function draftSteal(
   return best && { pick: best.pick, teamId: best.teamId, pokemonId: best.pokemonId, pos: best.pos };
 }
 
+/** Seit wie vielen Spieltagen (bis einschließlich `round`) der aktuelle Tabellenführer ununterbrochen vorn steht. */
+export function leaderSince(days: readonly Pick<Matchday, 'round' | 'leader'>[], round: number): number {
+  const upTo = days.filter((d) => d.round <= round);
+  const team = upTo.at(-1)?.leader.team;
+  if (team == null) return 0;
+  let n = 0;
+  for (let k = upTo.length - 1; k >= 0 && upTo[k].leader.team === team; k--) n++;
+  return n;
+}
+
 /** Unten wird es eng: so viele Plätze bilden die rote Zone (wie das Saisonziel „nicht auf den letzten 3 Plätzen“) */
 export const TABLE_BOTTOM_ZONE = 3;
 
