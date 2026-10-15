@@ -1447,3 +1447,12 @@ button.draft-bench__slot {
     box-shadow: 0 0 0 3px rgba(242, 194, 48, 0.45);
   }
 }
+
+/* Schnellstart-Vorlagen: auf schmalen Bildschirmen umbrechen statt die Karte zu verbreitern */
+.draft-presets {
+  min-width: 0;
+}
+.draft-presets .chips {
+  flex-wrap: wrap;
+  overflow-x: visible;
+}
