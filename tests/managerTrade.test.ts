@@ -52,6 +52,7 @@ async function render(offers: ManagerOffer[]) {
             nameOf: (id: string) => ({ h: 'Host-Elf', g: 'Gast-Elf', c1: 'CPU-Elf' })[id] ?? '?',
             onOffer,
             onAnswer,
+            goalsOf: (id: string) => new Map(id === 'h' ? [[ids[0], 4]] : id === 'g' ? [[ids[14], 1]] : []),
           }),
         ),
       ),
@@ -73,6 +74,10 @@ describe('Tausch-Karte', () => {
     const text = container.textContent;
     expect(text).toContain('Gast-Elf bietet');
     expect(text).toContain('Dein Angebot an Gast-Elf');
+    // Saisontore in den Auswahlen (eigene und die des Partners)
+    const opts = container.querySelectorAll('.manager__trade option').map((o) => o.textContent);
+    expect(opts.some((o) => o.endsWith(', 4 Tore)'))).toBe(true);
+    expect(opts.some((o) => o.endsWith(', 1 Tor)'))).toBe(true);
     expect(container.querySelectorAll('.manager__effect').length).toBeGreaterThanOrEqual(2);
     expect(text).toMatch(/Deine beste Elf: [+−±]\d+,\d/);
     const b = buttons(container);

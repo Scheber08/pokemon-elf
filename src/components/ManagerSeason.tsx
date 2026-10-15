@@ -413,6 +413,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             return tm ? teamLabel(tm, t) : '?';
           }}
           error={room.error}
+          goalsOf={(id) => goalsOf(league, s.teams.findIndex((x) => x.id === id))}
           onOffer={(to, give, get) => room.offerTrade(to, give, get)}
           onAnswer={(id, accept) => room.answerOffer(id, accept)}
         />

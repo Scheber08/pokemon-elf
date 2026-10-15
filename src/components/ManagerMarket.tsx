@@ -161,6 +161,7 @@ export function TradePanel({
   nameOf,
   onOffer,
   onAnswer,
+  goalsOf,
 }: {
   state: Pick<DraftSnapshot, 'teams'>;
   team: DraftTeam;
@@ -172,6 +173,8 @@ export function TradePanel({
   nameOf: (teamId: string) => string;
   onOffer: (to: string, give: number, get: number) => void;
   onAnswer: (id: number, accept: boolean) => void;
+  /** Saisontore je Pokémon eines Teams (Team-ID) */
+  goalsOf?: (teamId: string) => ReadonlyMap<number, number>;
 }) {
   const t = useT();
   const tx = t.draft.manager;
@@ -199,6 +202,9 @@ export function TradePanel({
   };
   const validGive = roster.includes(give) ? give : roster[0];
   const validGet = get != null && theirs.includes(get) ? get : theirs[0];
+  const myGoals = goalsOf?.(team.id);
+  const theirGoals = partner ? goalsOf?.(partner.id) : undefined;
+  const goalText = (g: ReadonlyMap<number, number> | undefined, id: number) => (g?.get(id) ? `, ${tx.marketGoals(g.get(id)!)}` : '');
 
   const incoming = offers.filter((o) => o.to === team.id);
   const outgoing = offers.filter((o) => o.from === team.id);
@@ -260,7 +266,8 @@ export function TradePanel({
           >
             {roster.map((id) => (
               <option key={id} value={id}>
-                {name(id)} ({fitFor(id)})
+                {name(id)} ({fitFor(id)}
+                {goalText(myGoals, id)})
               </option>
             ))}
           </select>
@@ -296,7 +303,8 @@ export function TradePanel({
           >
             {theirs.map((id) => (
               <option key={id} value={id}>
-                {name(id)} ({fitFor(id)})
+                {name(id)} ({fitFor(id)}
+                {goalText(theirGoals, id)})
               </option>
             ))}
           </select>
