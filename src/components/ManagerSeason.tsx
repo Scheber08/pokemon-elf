@@ -311,6 +311,24 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             </p>
           );
         })()}
+        {you != null && m.played >= 1 && (() => {
+          // Eigene Bilanz: Siege–Remis–Niederlagen, Tore und Spiele ohne Gegentor
+          const row = shown.table.find((r) => r.team === you);
+          if (!row || !row.played) return null;
+          const clean = shown.matches.filter((x) => (x.home === you && x.ag === 0) || (x.away === you && x.hg === 0)).length;
+          return (
+            <p className="small muted manager__record">
+              {tx.ownRecord(row.w, row.d, row.l, `${row.gf}:${row.ga}`)}
+              {clean > 0 && (
+                <span title={t.draft.ticker.cleanSheets(clean)}>
+                  {' · 🧤 '}
+                  {clean}
+                  <span className="sr-only"> – {t.draft.ticker.cleanSheets(clean)}</span>
+                </span>
+              )}
+            </p>
+          );
+        })()}
         {you != null && m.played >= 3 && (() => {
           // Aktuelle Serie des eigenen Teams: ungeschlagen bzw. sieglos (ab 3 Spielen)
           const r = currentRun(shown.matches, you);

@@ -613,6 +613,8 @@ const draft = {
     ownScorer: (name: string, goals: number, rank: number) => `Dein Torjäger: ${name} – ${goals} ${goals === 1 ? 'Tor' : 'Tore'} (Platz ${rank} der Torjägerliste)`,
     /** Spitze der Torjägerliste (wenn der eigene Torjäger nicht vorn ist) */
     scorerLead: (name: string, team: string, goals: number) => `vorn: ${name} (${team}) mit ${goals}`,
+    /** Eigene Bilanz in der Statuskarte */
+    ownRecord: (w: number, d: number, l: number, goals: string) => `Bilanz ${w}–${d}–${l} · Tore ${goals}`,
     upNext: (list: string) => `Die nächsten Gegner: ${list}`,
     toSafety: (n: number) => (n === 0 ? 'punktgleich mit dem rettenden Platz' : `${n} Pkt bis zum rettenden Platz`),
     aboveDrop: (n: number) => (n === 0 ? 'punktgleich mit der Abstiegszone' : `${n} Pkt vor der Abstiegszone`),

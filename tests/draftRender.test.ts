@@ -1488,6 +1488,16 @@ describe('ManagerSeason', () => {
     const row = s.league!.table.find((x) => x.team === idx)!;
     expect(row.played).toBe(4);
     expect(r.container.querySelector('.manager__projection')!.textContent).toContain(`Hochrechnung: ${Math.round((row.pts / 4) * s.manager!.total)} Pkt`);
+    // Eigene Bilanz mit Toren und ggf. 🧤 Spielen ohne Gegentor
+    {
+      const { storedLeague } = await import('../src/lib/leagueTimeline');
+      const lg = storedLeague(s.league, s.teams.length)!;
+      const clean = lg.matches.filter((x) => (x.home === idx && x.ag === 0) || (x.away === idx && x.hg === 0)).length;
+      const rec = r.container.querySelector('.manager__record')!.textContent!;
+      expect(rec.startsWith(`Bilanz ${row.w}–${row.d}–${row.l} · Tore ${row.gf}:${row.ga}`)).toBe(true);
+      if (clean) expect(rec).toContain(` · 🧤 ${clean} – `);
+      else expect(rec).not.toContain('🧤');
+    }
     // Restprogramm: Ø Platz der restlichen Gegner
     {
       const { scheduleOf } = await import('../src/lib/manager');

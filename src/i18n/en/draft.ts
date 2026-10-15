@@ -561,6 +561,7 @@ const draft: Messages['draft'] = {
     seriesWinless: (n) => `Winless in ${n} games`,
     ownScorer: (name, goals, rank) => `Your top scorer: ${name} – ${goals} ${goals === 1 ? 'goal' : 'goals'} (#${rank} in the scoring chart)`,
     scorerLead: (name, team, goals) => `leader: ${name} (${team}) with ${goals}`,
+    ownRecord: (w, d, l, goals) => `Record ${w}–${d}–${l} · goals ${goals}`,
     upNext: (list) => `Next opponents: ${list}`,
     toSafety: (n) => (n === 0 ? 'level with safety' : `${n} pts from safety`),
     aboveDrop: (n) => (n === 0 ? 'level with the drop zone' : `${n} pts above the drop zone`),
