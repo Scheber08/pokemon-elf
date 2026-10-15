@@ -245,6 +245,7 @@ const draft: Messages['draft'] = {
   // ---------------------------------------------------------------- Online league result
   results: {
     allPicks: (n) => `All ${n} picks`,
+    onlyMyPicks: 'Only my picks',
     none: 'There’s no result for this league yet.',
     copied: 'Result copied',
     copyFailed: 'Couldn’t copy',

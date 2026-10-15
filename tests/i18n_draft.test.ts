@@ -420,6 +420,17 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     expect(all).toMatch(/Top captain: [^|]+ \([^|]+\) with \d+ goals?/);
     expect(container.querySelectorAll('.draft-results .captain-badge').length).toBeGreaterThan(0);
     expect(all).toMatch(/All \d+ picks/);
+    // Nur eigene Picks: Liste schrumpft auf die eigenen
+    const allPicks = container.querySelectorAll('.draft-results__picklist li').length;
+    const mine = container.querySelector('.draft-results__mine input') as unknown as { click(): void; checked: boolean };
+    await act(async () => {
+      mine.checked = true;
+      mine.click();
+    });
+    const own = container.querySelectorAll('.draft-results__picklist li');
+    expect(own.length).toBeGreaterThan(0);
+    expect(own.length).toBeLessThan(allPicks);
+    expect(own.every((li) => li.className.includes('is-you'))).toBe(true);
     expect(all).toContain('Season records');
     expect(all).toContain('Your season');
     expect(all).toContain('Time travel');

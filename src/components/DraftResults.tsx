@@ -63,6 +63,7 @@ const TOP_SCORERS = 10;
 export function DraftResults({ league, teams, ratings, highlight, sprite, code, leagueName, picks = [], transfers = [], shinies }: Props) {
   const t = useT();
   const tx = t.draft.results;
+  const [onlyMine, setOnlyMine] = useState(false);
   const c = t.draft.col;
   const { byId, scale } = usePokemonData();
   const toast = useToast();
@@ -641,8 +642,13 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
       {picks.length > 0 && (
         <details className="card details draft-results__picks">
           <summary>{tx.allPicks(picks.length)}</summary>
+          {you != null && (
+            <label className="draft-results__mine">
+              <input type="checkbox" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} /> {tx.onlyMyPicks}
+            </label>
+          )}
           <ol className="draft-results__picklist">
-            {picks.map((pk) => {
+            {picks.filter((pk) => !onlyMine || teams.findIndex((tm) => tm?.id === pk.teamId) === you).map((pk) => {
               const ti = teams.findIndex((tm) => tm?.id === pk.teamId);
               const p = byId.get(pk.pokemonId);
               return (

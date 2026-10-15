@@ -1065,3 +1065,10 @@
 .draft-results__picklist li.is-you {
   font-weight: 700;
 }
+.draft-results__mine {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
