@@ -1647,6 +1647,27 @@ describe('ManagerSeason', () => {
     else expect(f).toBeNull();
   });
 
+  it('Manager: Tore nach Mannschaftsteil als Balken (ab drei Toren)', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    const { storedLeague, goalsByLine, GOAL_LINES } = await import('../src/lib/leagueTimeline');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    const me = s.teams.findIndex((t) => t.id === 'h');
+    for (let i = 0; i < 6; i++) s = playMatchday(s, ALL, SCALE);
+    const lines = goalsByLine(storedLeague(s.league, s.teams.length)!.matches, me);
+    const total = GOAL_LINES.reduce((a, k) => a + lines[k], 0);
+    const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    const el = container.querySelector('.manager__lines');
+    if (total < 3) return expect(el).toBeNull();
+    const names = { att: 'Angriff', mid: 'Mittelfeld', def: 'Abwehr', gk: 'Tor' } as const;
+    const parts = GOAL_LINES.filter((k) => lines[k] > 0);
+    expect(el!.querySelector('.manager__lines-bar')!.querySelectorAll('span')).toHaveLength(parts.length);
+    expect(el!.querySelector('.manager__lines-bar')!.getAttribute('aria-label')).toBe(`Tore nach Mannschaftsteil: ${parts.map((k) => `${names[k]} ${lines[k]}`).join(' · ')}`);
+  });
+
   it('Manager: 🏆 rechnerischer Titelkampf erst ab der Saisonhälfte', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');

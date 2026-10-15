@@ -527,3 +527,16 @@ describe('Torserien', () => {
     expect(scoringRuns(matches, 1, 3)).toEqual([]);
   });
 });
+
+describe('Tore nach Mannschaftsteil', () => {
+  it('zählt die Tore eines Teams nach Linie des Torschützen (SS = Angriff)', async () => {
+    const { goalsByLine } = await import('../src/lib/leagueTimeline');
+    const g = (pos: 'ST' | 'ZM' | 'IV' | 'TW' | 'SS' | 'LF') => ({ pokemonId: 1, pos });
+    const matches = [
+      { round: 1, home: 0, away: 1, hg: 4, ag: 1, homeScorers: [g('ST'), g('LF'), g('ZM'), g('SS')], awayScorers: [g('IV')] },
+      { round: 2, home: 2, away: 0, hg: 0, ag: 2, homeScorers: [], awayScorers: [g('IV'), g('TW')] },
+    ];
+    expect(goalsByLine(matches, 0)).toEqual({ att: 3, mid: 1, def: 1, gk: 1 });
+    expect(goalsByLine(matches, 1)).toEqual({ att: 0, mid: 0, def: 1, gk: 0 });
+  });
+});

@@ -8,6 +8,7 @@
  * Punktgleichheit und der Teilen-Text.
  */
 import { FORMATIONS } from '../config/formations';
+import { POSITIONS } from '../config/positions';
 import { messages } from '../i18n';
 import type { FormationId, Pokemon, PosCode } from '../types';
 import type { DraftPickLog, DraftTeam } from './api/draftContract';
@@ -488,6 +489,20 @@ export function goalMilestones(matches: LeagueResult['matches'], team: number, r
     if (mark > 0 && mark > (before.get(pokemonId) ?? 0)) out.push({ pokemonId, mark });
   }
   return out.sort((a, b) => b.mark - a.mark || a.pokemonId - b.pokemonId);
+}
+
+/** Mannschaftsteile für die Torverteilung (Standardschütze zählt zum Angriff, wie in POSITIONS) */
+export const GOAL_LINES = ['att', 'mid', 'def', 'gk'] as const;
+export type GoalLine = (typeof GOAL_LINES)[number];
+
+/** Tore eines Teams nach Mannschaftsteil (Position des Torschützen im Spiel) */
+export function goalsByLine(matches: LeagueResult['matches'], team: number): Record<GoalLine, number> {
+  const out: Record<GoalLine, number> = { att: 0, mid: 0, def: 0, gk: 0 };
+  for (const m of matches) {
+    const own = m.home === team ? m.homeScorers : m.away === team ? m.awayScorers : [];
+    for (const g of own) out[POSITIONS[g.pos]?.line ?? 'att']++;
+  }
+  return out;
 }
 
 /** Ab so vielen Spielen in Folge mit Tor gilt eine Torserie */

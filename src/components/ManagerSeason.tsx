@@ -4,7 +4,7 @@ import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
 import { loadTips, MATCH_TIPS, saveTip, tipScore } from '../lib/managerTips';
-import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance, goalMilestones, scoringRuns } from '../lib/leagueTimeline';
+import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance, goalMilestones, scoringRuns, goalsByLine, GOAL_LINES } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -330,6 +330,27 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
                 </span>
               )}
             </p>
+          );
+        })()}
+        {you != null && m.played >= 1 && (() => {
+          // Tore nach Mannschaftsteil: gestapelter Balken in den Farben der Positions-Badges (ab drei Toren)
+          const lines = goalsByLine(shown.matches, you);
+          const total = GOAL_LINES.reduce((a, k) => a + lines[k], 0);
+          if (total < 3) return null;
+          const parts = GOAL_LINES.filter((k) => lines[k] > 0);
+          const text = parts.map((k) => `${tx.lineNames[k]} ${lines[k]}`).join(' · ');
+          return (
+            <div className="manager__lines">
+              <span className="small muted">{tx.linesTitle}</span>
+              <span className="manager__lines-bar" role="img" aria-label={`${tx.linesTitle}: ${text}`}>
+                {parts.map((k) => (
+                  <span key={k} className={`pos-badge--${k}`} style={{ width: `${(lines[k] / total) * 100}%` }} />
+                ))}
+              </span>
+              <span className="small" aria-hidden="true">
+                {text}
+              </span>
+            </div>
           );
         })()}
         {you != null && m.played * 2 >= m.total && m.played < m.total && (() => {

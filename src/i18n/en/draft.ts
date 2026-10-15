@@ -602,6 +602,8 @@ const draft: Messages['draft'] = {
     raceOpen: (max, top) => `First place still possible: up to ${max} pts (top: ${top})`,
     goalMilestone: (pokemon, mark) => `${pokemon} reaches ${mark} goals this season!`,
     scoringRun: (pokemon, games) => `${pokemon} has scored in ${games} straight games!`,
+    linesTitle: 'Goals by unit',
+    lineNames: { att: 'Attack', mid: 'Midfield', def: 'Defence', gk: 'Keeper' },
     projection: (pts) => `Projection: ${pts} pts`,
     behindTop: (n) => (n === 0 ? 'level on points with the top' : `${n} pts behind 1st`),
     colAssists: 'Ast.',
