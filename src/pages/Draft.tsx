@@ -19,7 +19,7 @@ import { useT } from '../i18n';
 import { draftsSupported } from '../lib/api/draftClient';
 import { positionFit } from '../lib/fit';
 import { emptySlots } from '../lib/formation';
-import { draftGrades } from '../lib/leagueTimeline';
+import { draftGrades, seasonEleven } from '../lib/leagueTimeline';
 import { createRng, gaussian, randomSeed, shuffle } from '../lib/rng';
 import { CLASSIC_MODEL, DRAFT_MODEL, formatRecord, simulateLeague, type LeagueTeam } from '../lib/season';
 import { scorerSummary } from '../lib/seasonTimeline';
@@ -31,6 +31,7 @@ import type { FormationId, Pokemon, RegionFilter, Slots } from '../types';
 import { DraftOnline } from './DraftOnline';
 import { ReplayToggle, useMatchReport } from '../components/MatchReport';
 import '../styles/draft.css';
+import '../styles/league.css';
 import { cleanCheer } from '../lib/cheer';
 import { cleanCrest, type Crest as CrestData } from '../lib/crest';
 import { Crest } from '../components/Crest';
@@ -636,6 +637,30 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
             </ol>
           </section>
         </div>
+        {state.teams.length >= 2 && (() => {
+          // Elf der Saison wie im Online-Draft: beste Scorer je Position über alle Teams
+          const eleven = seasonEleven(league, state.teams, byId, scale('all'));
+          if (!eleven) return null;
+          return (
+            <section className="card draft-results__eleven" aria-labelledby="draft-eleven">
+              <h2 id="draft-eleven" className="section-title">
+                {t.draft.results.elevenTitle}
+              </h2>
+              <p className="muted small">{t.draft.results.elevenNote(eleven.formation)}</p>
+              <Pitch formation={eleven.formation} slots={eleven.slots} sprite={sprite} ariaLabel={t.draft.results.elevenTitle} jerseys={false} shinies={state.shinies} />
+              <ul className="draft-results__eleven-list small">
+                {eleven.slots.map((id, j) => {
+                  const p = byId.get(id);
+                  return (
+                    <li key={id} className={state.teams[eleven.teamOf[j]]?.cpu ? '' : 'is-mine'}>
+                      {p ? t.game.pokemon(p) : `#${id}`} <span className="muted">({teamName(state.teams[eleven.teamOf[j]].name)})</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          );
+        })()}
         <details className="card details">
           <summary>{tx.allMatches}</summary>
           <ReplayToggle />
