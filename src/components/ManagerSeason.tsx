@@ -290,6 +290,23 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             </p>
           );
         })()}
+        {you != null && m.played >= 3 && m.total - m.played >= 2 && (() => {
+          // Restprogramm: Ø aktueller Tabellenplatz der noch ausstehenden Gegner (leicht/mittel/schwer)
+          const placeOf = (i: number) => shown.table.findIndex((r) => r.team === i) + 1;
+          const opps = schedule.slice(m.played).flatMap((round) => round.flatMap(([a, b]) => (a === you ? [b] : b === you ? [a] : [])));
+          if (opps.length < 2 || placeOf(you) === 0) return null;
+          const avg = opps.reduce((sum, o) => sum + placeOf(o), 0) / opps.length;
+          // Erwartung: Ø Platz aller anderen Teams
+          const n = shown.table.length;
+          const mid = ((n * (n + 1)) / 2 - placeOf(you)) / (n - 1);
+          const level = avg < mid - 1.5 ? 'hard' : avg > mid + 1.5 ? 'easy' : 'medium';
+          const shownAvg = avg.toLocaleString(localeOf(lang), { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+          return (
+            <p className={`small muted manager__rest is-${level}`} title={tx.restTitle}>
+              {tx.rest(shownAvg, opps.length, tx.restLevel[level])}
+            </p>
+          );
+        })()}
         {m.played >= 3 && (() => {
           // Führungsserie des Tabellenführers (wie im Saison-Ticker)
           const days = leagueTimeline(shown);

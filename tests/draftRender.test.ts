@@ -1152,6 +1152,7 @@ describe('ManagerSeason', () => {
     let r = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
     await settle();
     expect(r.container.querySelector('.manager__projection')).toBeNull();
+    expect(r.container.querySelector('.manager__rest')).toBeNull();
     for (let k = 0; k < 2; k++) s = playMatchday(s, ALL, SCALE);
     r = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
     await settle();
@@ -1159,6 +1160,20 @@ describe('ManagerSeason', () => {
     const row = s.league!.table.find((x) => x.team === idx)!;
     expect(row.played).toBe(4);
     expect(r.container.querySelector('.manager__projection')!.textContent).toContain(`Hochrechnung: ${Math.round((row.pts / 4) * s.manager!.total)} Pkt`);
+    // Restprogramm: Ø Platz der restlichen Gegner
+    {
+      const { scheduleOf } = await import('../src/lib/manager');
+      const table = s.league!.table;
+      const placeOf = (i: number) => table.findIndex((x) => x.team === i) + 1;
+      const opps = scheduleOf(s.manager, table.length)
+        .slice(s.manager!.played)
+        .flatMap((round) => round.flatMap(([a, b]) => (a === idx ? [b] : b === idx ? [a] : [])));
+      expect(opps).toHaveLength(s.manager!.total - s.manager!.played);
+      const avg = opps.reduce((sum, o) => sum + placeOf(o), 0) / opps.length;
+      expect(r.container.querySelector('.manager__rest')!.textContent).toContain(
+        `Restprogramm: Ø Platz ${avg.toFixed(1).replace('.', ',')} der ${opps.length} Gegner`,
+      );
+    }
     // Topspiel des nächsten Spieltags: beste Platzsumme
     {
       const { scheduleOf } = await import('../src/lib/manager');
