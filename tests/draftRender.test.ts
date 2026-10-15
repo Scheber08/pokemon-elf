@@ -1249,8 +1249,8 @@ describe('ManagerSeason', () => {
     // Vor Spieltag 1: Tipp „Sieg“ abgeben
     const r1 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
     await settle();
-    expect(r1.container.querySelector('.manager__tip-score')).toBeNull();
-    const win = r1.container.querySelectorAll('.manager__tip button').find((b) => b.textContent === 'Sieg') as MiniElement;
+    expect(r1.container.querySelector('.manager__predict-score')).toBeNull();
+    const win = r1.container.querySelectorAll('.manager__predict button').find((b) => b.textContent === 'Sieg') as MiniElement;
     await act(async () => win.click());
     expect(win.getAttribute('aria-pressed')).toBe('true');
     expect(JSON.parse(localStorage.getItem('pokemon-elf:manager-tips')!)[s.code]).toEqual({ 1: 'w' });
@@ -1261,9 +1261,9 @@ describe('ManagerSeason', () => {
     const hit = outcomeFor(m1, idx) === 'w';
     const r2 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
     await settle();
-    expect(r2.container.querySelector('.manager__tip-score')!.textContent).toBe(`Spieltag 1: ${hit ? '✅' : '❌'} · ${hit ? 1 : 0} von 1 Tipps richtig`);
+    expect(r2.container.querySelector('.manager__predict-score')!.textContent).toBe(`Spieltag 1: ${hit ? '✅' : '❌'} · ${hit ? 1 : 0} von 1 Tipps richtig`);
     // Für Spieltag 2 noch kein Tipp gewählt
-    expect(r2.container.querySelectorAll('.manager__tip button[aria-pressed="true"]')).toHaveLength(0);
+    expect(r2.container.querySelectorAll('.manager__predict button[aria-pressed="true"]')).toHaveLength(0);
     localStorage.removeItem('pokemon-elf:manager-tips');
   });
 

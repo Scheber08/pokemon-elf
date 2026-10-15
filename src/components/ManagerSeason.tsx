@@ -527,9 +527,9 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             const score = tipScore(tips, league?.matches ?? [], you, m.played);
             const mineNow = tips[m.played + 1];
             return (
-              <div className="manager__tip">
+              <div className="manager__predict">
                 <span className="small">🔮 {tx.tipLabel}</span>
-                <span className="manager__tip-buttons" role="group" aria-label={tx.tipLabel}>
+                <span className="manager__predict-buttons" role="group" aria-label={tx.tipLabel}>
                   {MATCH_TIPS.map((tip) => (
                     <button
                       key={tip}
@@ -543,7 +543,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
                   ))}
                 </span>
                 {score.total > 0 && (
-                  <span className="small muted manager__tip-score">
+                  <span className="small muted manager__predict-score">
                     {score.last && `${tx.tipLast(score.last.round, score.last.hit)} · `}
                     {tx.tipScore(score.hits, score.total)}
                     {score.streak >= 2 && ` · 🔥 ${tx.tipStreak(score.streak)}`}

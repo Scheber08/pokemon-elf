@@ -1673,19 +1673,19 @@ button.draft-bench__slot {
   }
 }
 
-/* Manager-Saison: eigener Tipp aufs nächste Spiel */
-.manager__tip {
+/* Manager-Saison: eigener Tipp aufs nächste Spiel (nicht .manager__tip – das ist der Transfermarkt-Tipp) */
+.manager__predict {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 8px;
   margin-top: 8px;
 }
-.manager__tip-buttons {
+.manager__predict-buttons {
   display: inline-flex;
   gap: 4px;
 }
-.manager__tip-score {
+.manager__predict-score {
   flex-basis: 100%;
 }
 
