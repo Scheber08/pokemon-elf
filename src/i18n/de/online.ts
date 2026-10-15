@@ -192,6 +192,8 @@ const online = {
   autoPicking: 'Wird gewählt …',
   autoPickFor: (team: string) => `Automatisch für ${team} wählen`,
   favouriteFallback: 'Dein Favorit',
+  /** Eigener Pick mit dem besten Positions-Fit des Drafts bisher (🏅) */
+  recordPick: (name: string, fit: number, pos: string) => `🏅 Draft-Rekord: ${name} passt mit ${fit} als ${pos} – bester Fit bisher!`,
   favouriteGone: (name: string, team: string) => `${name} ist weg – ${team} war schneller.`,
   /** Ein anderes Team hat ein Pokémon von der eigenen Wunschliste gepickt */
   wishGone: (name: string, n: number, team: string) => `💔 ${name} (Wunsch ${n}) ist weg – ${team} war schneller.`,

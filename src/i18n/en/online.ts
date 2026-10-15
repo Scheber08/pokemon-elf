@@ -179,6 +179,7 @@ const online: Messages['online'] = {
   autoPicking: 'Picking …',
   autoPickFor: (team) => `Pick automatically for ${team}`,
   favouriteFallback: 'Your favourite',
+  recordPick: (name, fit, pos) => `🏅 Draft record: ${name} fits ${fit} as ${pos} – best fit so far!`,
   favouriteGone: (name, team) => `${name} is gone – ${team} got there first.`,
   wishGone: (name, n, team) => `💔 ${name} (wish ${n}) is gone – ${team} got there first.`,
   noSuggestion: 'No suggestion available',

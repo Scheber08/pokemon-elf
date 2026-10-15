@@ -309,6 +309,17 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   const ultraBeastLimit = maxUltraBeasts != null && ultraBeasts ? maxUltraBeasts : null;
   const megaLimit = maxMegas != null && megas ? maxMegas : null;
 
+  // Eigener Pick setzt den besten Positions-Fit des Drafts (🏅 im Verlauf): kurz feiern (ein Shiny-Hinweis geht vor)
+  const recordSeen = useRef(s.picks.length);
+  useEffect(() => {
+    if (s.picks.length <= recordSeen.current) return;
+    recordSeen.current = s.picks.length;
+    const top = feed[0];
+    if (top?.top && top.teamId === me?.id && top.pos && top.fit != null) {
+      setInfo(t.online.recordPick(top.pokemon, top.fit, t.game.posName[top.pos]));
+    }
+  }, [s.picks.length]);
+
   // Pick schillert: kurz ansagen (einmal je Pick) – eigener gefeiert, fremder als Hinweis
   const newestPick = s.picks[s.picks.length - 1];
   const shinySeen = useRef(s.picks.length);

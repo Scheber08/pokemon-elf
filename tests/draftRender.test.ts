@@ -549,6 +549,36 @@ describe('DraftLive', () => {
     expect(live()[0].textContent).toMatch(/^Pick 2: .+ an Team 1 \(automatisch\)\. Am Zug: Team 1\.$/);
   });
 
+  it('eigener Pick mit dem besten Fit des Drafts: 🏅-Hinweis', async () => {
+    const { FORMATIONS } = await import('../src/config/formations');
+    const { positionFit } = await import('../src/lib/fit');
+    // Schwächste bzw. stärkste freie Wahl für den ersten freien Platz des Teams am Zug
+    const choose = (st: DraftState, strong: boolean) => {
+      const team = engine.currentTeam(st)!;
+      const slot = team.slots.findIndex((x) => x == null);
+      const pos = FORMATIONS[team.formation].slots[slot].pos;
+      const free = ALL.filter((p) => engine.pickError(st, team.id, p.id, slot, ALL) == null);
+      const mon = free.reduce((a, b) => ((positionFit(b, pos, SCALE) > positionFit(a, pos, SCALE)) === strong ? b : a));
+      return { team, slot, pos, mon };
+    };
+    const weak = (st: DraftState) => {
+      const c = choose(st, false);
+      return engine.applyPick(st, c.team.id, c.mon.id, c.slot, false, 1000, ALL);
+    };
+    let s = weak(weak(drafting()));
+    const { container, root } = await renderLive(fakeRoom(snap(s, 'h')));
+    expect(container.querySelector('.run-notice')).toBeNull();
+    // Team 1 ist noch einmal dran (Snake), dann der Host mit dem bestpassenden freien Pokémon
+    s = weak(s);
+    await act(async () => root.render(app(h(DraftLive, { room: fakeRoom(snap(s, 'h')) }))));
+    expect(container.querySelector('.run-notice')).toBeNull();
+    const { slot, pos, mon: best } = choose(s, true);
+    s = engine.applyPick(s, 'h', best.id, slot, false, 5000, ALL);
+    await act(async () => root.render(app(h(DraftLive, { room: fakeRoom(snap(s, 'h')) }))));
+    const fit = Math.round(positionFit(best, pos, SCALE));
+    expect(container.querySelector('.run-notice__text')!.textContent).toMatch(new RegExp(`^🏅 Draft-Rekord: ${best.de} passt mit ${fit} als .+ – bester Fit bisher!$`));
+  });
+
   it('fremder Pick von der Wunschliste: 💔-Hinweis mit Rang', async () => {
     let s = autoPick(drafting());
     // Team 1 ist dran – sein Auto-Pick steht auf Platz 2 der Host-Wunschliste
