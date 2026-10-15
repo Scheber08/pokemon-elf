@@ -4,8 +4,9 @@ import { POSITIONS } from '../config/positions';
 import { useT } from '../i18n';
 import { positionFit, type Scale } from '../lib/fit';
 import { useSettings } from '../state/Settings';
-import type { FormationId, Pokemon, PosCode } from '../types';
-import { PosBadge } from './Badges';
+import type { FormationId, Pokemon, PosCode, TypeKey } from '../types';
+import { PosBadge, TypeBadge } from './Badges';
+import { TYPE_KEYS } from '../config/pokemonTypes';
 import { KindMarks } from './DraftBoard';
 import { limitKindsOf } from '../lib/draftEngine';
 import { Sprite } from './Sprite';
@@ -67,11 +68,22 @@ export function poolScarcity(pool: readonly Pokemon[], scale: Scale, formations:
   return out.slice(0, n);
 }
 
+/** Häufigste Typen im Pool (Doppeltypen zählen für beide), absteigend; bei Gleichstand Reihenfolge von TYPE_KEYS */
+export function poolTypes(pool: readonly Pokemon[], n = 3): { type: TypeKey; count: number }[] {
+  const count = new Map<TypeKey, number>();
+  for (const p of pool) for (const type of p.types) count.set(type, (count.get(type) ?? 0) + 1);
+  return [...count]
+    .map(([type, c]) => ({ type, count: c }))
+    .sort((a, b) => b.count - a.count || TYPE_KEYS.indexOf(a.type) - TYPE_KEYS.indexOf(b.type))
+    .slice(0, n);
+}
+
 /** Lobby: Vorschau der fünf stärksten Pokémon im Pool – damit man vor dem Draft weiß, um wen es geht. */
 export function PoolStars({ pool, scale, formations }: { pool: readonly Pokemon[]; scale: Scale; formations?: readonly FormationId[] }) {
   const t = useT();
   const { sprite } = useSettings();
   const stars = useMemo(() => poolStars(pool, scale), [pool, scale]);
+  const types = useMemo(() => poolTypes(pool), [pool]);
   const formationKey = formations?.join(',') ?? '';
   const scarce = useMemo(() => (formations?.length ? poolScarcity(pool, scale, formations) : []), [pool, scale, formationKey]);
   if (!stars.length) return null;
@@ -95,6 +107,16 @@ export function PoolStars({ pool, scale, formations }: { pool: readonly Pokemon[
         ))}
       </ol>
       <p className="hint">{t.online.poolStarsNote}</p>
+      {types.length > 0 && (
+        <p className="small pool-stars__types">
+          <span className="muted">{t.online.poolTypes}</span>
+          {types.map((x) => (
+            <span key={x.type} className="type-goals__item">
+              <TypeBadge type={x.type} small /> <strong>{x.count}</strong>
+            </span>
+          ))}
+        </p>
+      )}
       {scarce.length > 0 && (
         <p className="small pool-stars__scarce" title={t.online.poolScarceTitle(SCARCE_FIT)}>
           ⚠️ {t.online.poolScarce(scarce.map((x) => t.online.poolScarceItem(t.game.posShort[x.pos], x.strong, x.need)).join(', '))}

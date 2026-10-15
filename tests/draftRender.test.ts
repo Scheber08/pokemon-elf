@@ -954,6 +954,22 @@ describe('DraftLobby', () => {
     expect(room.updateTeam).toHaveBeenCalledWith({ formation: expected });
   });
 
+  it('Häufigste Typen im Pool: drei Typ-Badges mit Anzahl (Doppeltypen zählen doppelt)', async () => {
+    const { poolTypes } = await import('../src/components/PoolStars');
+    const { poolOf } = await import('../src/lib/draftEngine');
+    const st = lobby(1, { region: 1, maxTeams: 4 });
+    const pool = poolOf(st.settings, ALL);
+    const top = poolTypes(pool);
+    expect(top).toHaveLength(3);
+    for (const x of top) expect(x.count).toBe(pool.filter((p) => p.types.includes(x.type)).length);
+    expect(top[0].count).toBeGreaterThanOrEqual(top[1].count);
+    const { container } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) })));
+    await settle();
+    const row = container.querySelector('.pool-stars__types')!;
+    expect(row.textContent!.startsWith('Häufigste Typen:')).toBe(true);
+    expect(row.querySelectorAll('strong').map((e) => e.textContent)).toEqual(top.map((x) => String(x.count)));
+  });
+
   it('Knapp im Pool: weniger starke Kandidaten als Plätze in allen Formationen', async () => {
     const { poolScarcity, SCARCE_FIT } = await import('../src/components/PoolStars');
     const { poolOf } = await import('../src/lib/draftEngine');

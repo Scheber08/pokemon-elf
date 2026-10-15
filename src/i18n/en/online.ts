@@ -173,6 +173,7 @@ const online: Messages['online'] = {
   poolScarce: (list) => `Scarce in the pool: ${list} – grab them early!`,
   poolScarceItem: (pos, strong, need) => `${pos} ${strong} for ${need} spots`,
   poolScarceTitle: (fit) => `Strong candidates (fit ${fit}+) vs. the spots in all formations`,
+  poolTypes: 'Most common types:',
   poolStarsNote: 'The five strongest Pokémon with these settings – at their best position.',
   poolLine: (pool, picks) => `Pool: ${pool} Pokémon for ${picks} picks.`,
   durationNoTimer: (season) => `After the draft the season ticker runs ~${season} min.`,

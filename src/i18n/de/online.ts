@@ -186,6 +186,7 @@ const online = {
   poolScarce: (list: string) => `Knapp im Pool: ${list} – früh zugreifen!`,
   poolScarceItem: (pos: string, strong: number, need: number) => `${pos} ${strong} für ${need} Plätze`,
   poolScarceTitle: (fit: number) => `Starke Kandidaten (Fit ab ${fit}) gegen die Plätze aller Formationen`,
+  poolTypes: 'Häufigste Typen:',
   poolStarsNote: 'Die fünf stärksten Pokémon dieser Einstellungen – mit ihrer besten Position.',
   poolLine: (pool: number, picks: number) => `Pool: ${pool} Pokémon für ${picks} Picks.`,
   durationNoTimer: (season: number) => `Nach dem Draft läuft der Saison-Ticker ~${season} Min.`,
