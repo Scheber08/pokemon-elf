@@ -1164,6 +1164,26 @@ describe('ManagerSeason', () => {
     const lateEl = r3.container.querySelector('.manager__late');
     if (late) expect(lateEl!.textContent).toMatch(/Last-Minute-Sieg: .+ – Siegtor in der \d/);
     else expect(lateEl).toBeNull();
+    // Gezielt: ein Spiel des letzten Spieltags als 2:1 mit Siegtor in der 89. Minute → Zeile erscheint
+    const md = s.manager!.played;
+    const raw = s.league!;
+    const at = raw.matches.findIndex((x) => x.round === md && x.home === idx);
+    const pick = raw.matches.findIndex((x) => x.round === md);
+    const k2 = at >= 0 ? at : pick;
+    const ids = s.teams[idx].slots.filter((x): x is number => x != null);
+    const goal = (id: number, minute: number) => ({ pokemonId: id, pos: 'ST' as const, minute });
+    const patched = {
+      ...s,
+      league: {
+        ...raw,
+        matches: raw.matches.map((x, i) =>
+          i === k2 ? { ...x, hg: 2, ag: 1, homeScorers: [goal(ids[0], 10), goal(ids[1], 89)], awayScorers: [goal(ids[2], 40)] } : x,
+        ),
+      },
+    };
+    const r4 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(patched, 'h')), readOnly: false })));
+    await settle();
+    expect(r4.container.querySelector('.manager__late')!.textContent).toContain("Siegtor in der 89'");
   });
 
   it('Saisonende: Saisonrekorde mit Angriff, Abwehr und ggf. Remis-König', async () => {

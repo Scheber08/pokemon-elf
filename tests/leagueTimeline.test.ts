@@ -383,5 +383,7 @@ describe('Last-Minute-Sieg', () => {
     // Remis oder ohne Minuten: nichts
     expect(lateWinner([m(1, 0, 1, [90], [91])])).toBeNull();
     expect(lateWinner([{ round: 1, home: 0, away: 1, hg: 1, ag: 0, homeScorers: [{ pokemonId: 1, pos: 'ST' as const }], awayScorers: [] }])).toBeNull();
+    // Unvollständig erfasst (Gegentor ohne Torschütze): nichts
+    expect(lateWinner([{ ...m(1, 0, 1, [10, 88], []), ag: 1 }])).toBeNull();
   });
 });

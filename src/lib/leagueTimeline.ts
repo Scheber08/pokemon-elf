@@ -829,7 +829,8 @@ export const LATE_WINNER_MINUTE = 85;
 
 /**
  * Spätestes Siegtor unter den Spielen: Tor des späteren Siegers aus einem Unentschieden heraus, nach dem er nicht
- * mehr eingeholt wurde, ab LATE_WINNER_MINUTE. Bei Gleichstand der Minute das erste Spiel. Nur mit Torminuten.
+ * mehr eingeholt wurde, ab LATE_WINNER_MINUTE. Bei Gleichstand der Minute das erste Spiel. Nur Spiele, deren Tore
+ * alle mit Minute erfasst sind.
  */
 export function lateWinner(matches: readonly Match[]): LateWinner | null {
   let best: LateWinner | null = null;
@@ -840,7 +841,8 @@ export function lateWinner(matches: readonly Match[]): LateWinner | null {
       ...m.homeScorers.map((g) => ({ home: true, minute: g.minute })),
       ...m.awayScorers.map((g) => ({ home: false, minute: g.minute })),
     ];
-    if (goals.some((g) => g.minute == null)) continue;
+    // Nur vollständig erfasste Spiele (Auffüllteams haben keine Torschützen – die Reihenfolge wäre unklar)
+    if (goals.length !== m.hg + m.ag || goals.some((g) => g.minute == null)) continue;
     goals.sort((a, b) => a.minute! - b.minute!);
     // Letzte Führungsübernahme des Siegers aus dem Gleichstand
     let h = 0;
