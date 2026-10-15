@@ -34,7 +34,7 @@ import {
   teamLabel,
   type DraftRoom,
 } from '../state/useDraftRoom';
-import type { Pokemon } from '../types';
+import type { Pokemon, PosCode } from '../types';
 import { TypeBadge } from './Badges';
 import { BenchRow } from './BenchRow';
 import { CaptainPicker } from './CaptainPicker';
@@ -255,6 +255,22 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     );
     return [...shown].sort((a, b) => score.get(b.id)! - score.get(a.id)! || a.id - b.id);
   }, [pool, owners, showTaken, fitOnly, allowed, bestFirst, freeKey, me?.formation]);
+  // Bestpassender freier Feldplatz eines Pokémon (Position und Fit) – für die Notiz auf den Karten
+  const freeFieldPos = useMemo(() => {
+    if (!me) return [];
+    const defs = FORMATIONS[me.formation].slots;
+    return [...new Set(freeSlots(me, s.settings).filter((slot) => slot !== DRAFT_SS_SLOT && defs[slot]).map((slot) => defs[slot].pos))];
+  }, [freeKey, me?.formation]);
+  const bestFreeFit = (p: Pokemon): { pos: PosCode; fit: number } | null => {
+    if (!freeFieldPos.length) return null;
+    const sc = scale('all');
+    let best: { pos: PosCode; fit: number } | null = null;
+    for (const pos of freeFieldPos) {
+      const fit = Math.round(positionFit(p, pos, sc));
+      if (!best || fit > best.fit) best = { pos, fit };
+    }
+    return best;
+  };
   // Regionsfilter nur, solange er zu sehen ist (mehrere Generationen, kein eigener Wurf mit „Nur
   // passende") – ein vorher gewählter Wert bliebe sonst unsichtbar wirksam und leerte das Raster
   const regionShown = gens.length > 1 && !(fitOnly && myRoll);
@@ -577,9 +593,12 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                   return null;
                 }}
                 note={(p) => {
-                  // Auf der eigenen Wunschliste: Platz zeigen
+                  // Auf der eigenen Wunschliste: Platz zeigen; mit „Beste zuerst“ dazu der bestpassende freie Platz
                   const at = (s.queue ?? []).indexOf(p.id);
-                  return at >= 0 ? t.online.queueMark(at + 1) : null;
+                  const queued = at >= 0 ? t.online.queueMark(at + 1) : null;
+                  const best = bestFirst && !owners.has(p.id) ? bestFreeFit(p) : null;
+                  const fit = best ? `${t.game.posShort[best.pos]} ${best.fit}` : null;
+                  return [queued, fit].filter(Boolean).join(' · ') || null;
                 }}
                 className="pgrid-wrap--compact pgrid-wrap--scroll"
               />

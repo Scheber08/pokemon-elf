@@ -596,6 +596,26 @@ describe('DraftLive', () => {
     expect(notes).toContain('★ Wunsch 2');
   });
 
+  it('„Beste zuerst“: Karten zeigen den bestpassenden freien Platz mit Fit', async () => {
+    const { DraftLive } = await import('../src/components/DraftLive');
+    const st = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
+    const { container } = await render(app(h(DraftLive, { room: fakeRoom({ ...snap(st, 'h'), queue: [] }) })));
+    await settle();
+    expect(container.querySelectorAll('.pcard__note')).toHaveLength(0);
+    const box = container
+      .querySelectorAll('label')
+      .find((l) => l.textContent?.includes('Beste für mein Team zuerst'))!
+      .querySelector('input') as MiniElement;
+    await act(async () => {
+      (box as unknown as { checked: boolean }).checked = true;
+      box.click();
+    });
+    await settle();
+    const notes = container.querySelectorAll('.pcard__note').map((n) => n.textContent!);
+    expect(notes.length).toBeGreaterThan(0);
+    expect(notes[0]).toMatch(/^[A-ZÄÖÜ]{2,3} \d+$/);
+  });
+
   // CLIENT-1
   it('Pool behält die angezeigte Menge, wenn ein Schnappschuss kommt', async () => {
     let s = drafting();
