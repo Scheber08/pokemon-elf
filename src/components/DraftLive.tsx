@@ -308,6 +308,20 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   const gridKey = `${poolKey}|${showTaken}|${bestFirst ? `best:${freeKey}` : ''}|${fitOnly ? rollKey || 'fit' : ''}|${effFilters.region}|${effFilters.type ?? ''}|${effFilters.query}`;
   const filtering = !!effFilters.query.trim() || !!effFilters.type || effFilters.region !== 0;
   const randomMode = s.settings.roll === 'pick' || s.settings.roll === 'round';
+  // Ist als Nächstes eine CPU dran: ihr wahrscheinlicher Pick (ohne Zufall) – am eigenen Zug zum Wegschnappen
+  const cpuGuess = useMemo(() => {
+    if (s.phase !== 'drafting' || randomMode) return null;
+    const total = s.teams.length * engineRounds(s.settings);
+    if (s.pickIndex + 1 >= total) return null;
+    const next = s.teams[teamIndexForPick(s.pickIndex + 1, s.teams.length, s.settings.snake ?? true)];
+    if (!next?.cpu) return null;
+    try {
+      const mon = byId.get(autoPickChoice(snapshotState(s), next.id, list, scale('all'), false).pokemonId);
+      return mon ? { team: next, mon } : null;
+    } catch {
+      return null;
+    }
+  }, [takenKey, s.pickIndex, s.phase, randomMode, list, byId, scale]);
   const legendLimit = maxLegends != null && poolHasLegends(s.settings) ? maxLegends : null;
   const ultraBeastLimit = maxUltraBeasts != null && ultraBeasts ? maxUltraBeasts : null;
   const megaLimit = maxMegas != null && megas ? maxMegas : null;
@@ -631,6 +645,11 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
               {nextTeam && needs.size > 0 && (
                 <p className="draft-turnbar__last draft-turnbar__needs">
                   {t.online.nextNeeds(teamLabel(nextTeam, t), [...needs].map(([pos, n]) => (n > 1 ? `${n}× ${pos}` : pos)).join(', '))}
+                </p>
+              )}
+              {cpuGuess && myTurn && (
+                <p className="draft-turnbar__last draft-turnbar__cpuguess" title={t.online.cpuGuessTitle}>
+                  {t.online.cpuGuess(teamLabel(cpuGuess.team, t), t.game.pokemon(cpuGuess.mon))}
                 </p>
               )}
             </>

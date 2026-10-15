@@ -638,6 +638,21 @@ describe('DraftLive', () => {
     expect(view.container.querySelector('.draft__bestfree')).toBeNull();
   });
 
+  it('Turnbar: ist als Nächstes eine CPU dran, zeigt sie am eigenen Zug ihren wahrscheinlichen Pick', async () => {
+    let st = engine.addCpuTeam(lobby(1, { region: 1, maxTeams: 4, order: 'host' }), 'dev-h', 'cpu1');
+    st = engine.startDraft(st, 'dev-h', 0, ALL);
+    const cpu = st.teams.find((t) => t.cpu)!;
+    const { buildScale } = await import('../src/lib/fit');
+    const guess = engine.autoPickChoice(st, cpu.id, ALL, buildScale(ALL, 'all'), false);
+    const { container } = await renderLive(fakeRoom(snap(st, 'h')));
+    const line = container.querySelector('.draft-turnbar__cpuguess')!.textContent!;
+    expect(line).toMatch(/^🤖 .+ nimmt wohl /);
+    expect(line.endsWith(ALL.find((p) => p.id === guess.pokemonId)!.de)).toBe(true);
+    // Ohne CPU als Nächstes keine Zeile
+    const humans = await renderLive(fakeRoom(snap(drafting(), 'h')));
+    expect(humans.container.querySelector('.draft-turnbar__cpuguess')).toBeNull();
+  });
+
   it('Turnbar: die nächsten drei Picks in Snake-Reihenfolge', async () => {
     const { container } = await renderLive(fakeRoom(snap(drafting(), 'h')));
     // 2 Teams, Snake: Pick 1 Host (jetzt), dann Team 1, Team 1, Host

@@ -909,6 +909,10 @@
   .draft-roll__round {
     display: none;
   }
+  /* Ausnahme: die CPU-Prognose am eigenen Zug (zum Wegschnappen) */
+  .draft-turnbar__last.draft-turnbar__cpuguess {
+    display: block;
+  }
   .draft-roll {
     gap: 6px 8px;
   }

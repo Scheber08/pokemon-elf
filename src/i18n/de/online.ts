@@ -215,6 +215,8 @@ const online = {
   /** Hinter hintWaiting, mit Leerzeichen vorn */
   hintOpen: (list: string) => ` Noch offen: ${list}.`,
   restMax: (min: number) => `Draft-Ende spätestens in ~${min} Min.`,
+  cpuGuess: (team: string, mon: string) => `🤖 ${team} nimmt wohl ${mon}`,
+  cpuGuessTitle: 'Prognose ohne den Zufall der CPU – schnapp ihn dir vorher weg!',
   nextNeeds: (team: string, list: string) => `${team} braucht noch: ${list}`,
   nextUp: (list: string) => `Danach: ${list}`,
   hintUntil: (n: number) => (n === 1 ? ' Danach bist du dran.' : ` Noch ${n} Picks bis zu deinem Zug.`),
