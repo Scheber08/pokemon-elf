@@ -27,6 +27,8 @@ import { rosterOf } from '../lib/draftEngine';
 import { ManagerCupView, useServerNow } from './ManagerSeason';
 import { CaptainPicker } from './CaptainPicker';
 import { captainWindowOpen, nextCareer } from '../lib/draftEngine';
+import { evaluateTeam } from '../lib/teamScore';
+import { SHINY_FIT_BONUS } from '../lib/shiny';
 
 /**
  * Nach dem letzten Pick: Das Ergebnis der Saison kommt vom Server (im Schnappschuss
@@ -111,7 +113,15 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
             slots={s.teams[meIndex].slots}
             captain={s.teams[meIndex].captain ?? null}
             onChange={(c) => room.setCaptain(c)}
-            hint={t.captain.windowNote}
+            hint={(() => {
+              // Wirkung des Kapitäns auf den eigenen Team-Score (mit Shiny-Bonus wie in der Saison)
+              const tm = s.teams[meIndex];
+              const players = tm.slots.map((id) => (id != null ? byId.get(id) : undefined));
+              const bonus = s.shinies?.length ? (id: number) => (s.shinies!.includes(id) ? SHINY_FIT_BONUS : 0) : undefined;
+              const sc = scale('all');
+              const diff = tm.captain != null ? evaluateTeam(tm.formation, players, sc, tm.captain, bonus).exact - evaluateTeam(tm.formation, players, sc, null, bonus).exact : 0;
+              return tm.captain != null ? `${t.captain.windowNote} ${t.captain.effect(`${diff >= 0 ? '+' : '−'}${Math.abs(diff).toFixed(1)}`)}` : t.captain.windowNote;
+            })()}
           />
         </section>
       )}

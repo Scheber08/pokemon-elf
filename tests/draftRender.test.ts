@@ -960,6 +960,7 @@ describe('ManagerSeason', () => {
     await settle();
     const card = a.container.querySelector('.draft-captain-window')!;
     expect(card.textContent).toMatch(/Kapitän wählen – noch \d+ s bis zum Anpfiff/);
+    expect(card.textContent).toMatch(/Wirkung auf den Team-Score: [+−]\d+\.\d/);
     const select = card.querySelector('select') as MiniElement;
     const id = s.teams.find((t) => t.id === 'h')!.slots[4]!;
     await act(async () => {
