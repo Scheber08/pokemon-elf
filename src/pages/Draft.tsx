@@ -1443,6 +1443,10 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   </>
                 )}
               </p>
+              {state.pick + 1 < totalPicks && teamForPick(state.pick + 1, n) === currentTeam && (
+                // Snake-Wende: dasselbe Team ist gleich noch einmal dran (wie online)
+                <p className="small draft-double">🐍 {t.online.doublePick}</p>
+              )}
               <div className="draft-pooltools">
                 <button
                   type="button"

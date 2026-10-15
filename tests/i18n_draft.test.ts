@@ -383,6 +383,8 @@ describe('/draft an einem Gerät auf Englisch', () => {
     const chosen = container.querySelectorAll('.hint strong').map((e) => e.textContent);
     expect(chosen.length).toBe(1);
     expect(ALL.some((p) => p.en === chosen[0] && p.gen === 1)).toBe(true);
+    // Erster Pick von zwei Teams: kein Doppelpick (danach ist das andere Team dran)
+    expect(container.querySelector('.draft-double')).toBeNull();
     // „🎲 Random“: erstes bzw. letztes freies Pokémon des Pools (Kanto, nach Nummer)
     const rnd = container.querySelectorAll('.draft-pooltools button').find((b) => b.textContent === '🎲 Random') as MiniElement;
     const kantoFree = ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth);
@@ -812,6 +814,21 @@ describe('/draft an einem Gerät auf Englisch', () => {
     const cols = container.querySelectorAll('.draft__board .draft__col');
     expect(cols[0].querySelector('.draft-board__type')!.textContent).toBe('Feuer ×4Typ-Elf: 4 Pokémon vom Typ Feuer');
     expect(cols[1].querySelector('.draft-board__type')).toBeNull();
+  });
+
+  it('Draft läuft: „🐍 Double pick“ an der Snake-Wende', async () => {
+    storeLang('en');
+    const [f, g] = [FORMATION_IDS[0], FORMATION_IDS[1]];
+    const kanto = ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth);
+    // Zwei Menschen, Pick 2 (Index 1): Team 2 ist dran und gleich noch einmal (Snake)
+    const teams = [
+      { name: 'Mein Team', cpu: false, formation: f, slots: emptySlots(f).map((x, j) => (j === 0 ? kanto[0].id : x)) },
+      { name: 'Zweites Team', cpu: false, formation: g, slots: emptySlots(g) },
+    ];
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: false, pick: 1, selected: null, seed: null }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    expect(container.querySelector('.draft-double')!.textContent).toBe('🐍 Double pick – you’re up again right after this one.');
   });
 
   it('Draft läuft: 👑 am Team mit dem alleinigen besten Ø Fit', async () => {
