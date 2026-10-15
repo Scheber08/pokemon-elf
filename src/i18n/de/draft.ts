@@ -532,6 +532,8 @@ const draft = {
     manualNote: 'Deine Aufstellung gilt, bis du sie änderst – auch über mehrere Spieltage.',
     best: 'Beste Elf aufstellen',
     strength: (n: number) => `Stärke ${n}`,
+    formationTip: (formation: string, n: number) => `Tipp: Mit ${formation} wäre Stärke ${n} möglich.`,
+    formationTipApply: (formation: string) => `${formation} übernehmen`,
     bestStrength: (n: number) => `bestmöglich ${n}`,
     strengthTitle: 'Team-Score dieser Elf samt Tagesform',
     swapHint: 'Tippe zwei Spieler an, um sie zu tauschen – auf dem Feld, mit dem Standardschützen oder mit der Bank.',

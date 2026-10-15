@@ -487,6 +487,8 @@ const draft: Messages['draft'] = {
     manualNote: 'Your lineup stays until you change it – across matchdays.',
     best: 'Field the best eleven',
     strength: (n) => `Strength ${n}`,
+    formationTip: (formation, n) => `Tip: with ${formation} a strength of ${n} is possible.`,
+    formationTipApply: (formation) => `Switch to ${formation}`,
     bestStrength: (n) => `best possible ${n}`,
     strengthTitle: 'Team score of this eleven including daily form',
     swapHint: 'Tap two players to swap them – on the pitch, with the set-piece taker or with the bench.',

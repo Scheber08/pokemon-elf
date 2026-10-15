@@ -1025,6 +1025,35 @@ describe('ManagerSeason', () => {
     expect(el!.textContent).toContain(`(${best} Tore)`);
   });
 
+  it('Aufstellung: Tipp für eine stärkere Formation, Knopf übernimmt sie', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, bestLineup, lineupScore } = await import('../src/lib/manager');
+    const { FORMATIONS, FORMATION_IDS } = await import('../src/config/formations');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    const me = s.teams.find((t) => t.id === 'h')!;
+    const form = s.manager!.form;
+    const byIdAll = new Map(ALL.map((p) => [p.id, p]));
+    const scoreOf = (f: (typeof FORMATION_IDS)[number]) => {
+      const l = bestLineup(me, f, byIdAll, SCALE, form, s.settings.setPiece, new Set(), undefined, me.captain);
+      const squad = l.slots.flatMap((id, i) => [{ p: byIdAll.get(id)!, pos: FORMATIONS[f].slots[i].pos }]);
+      return { l, n: lineupScore(squad, SCALE, (id) => form[id] ?? 0, me.captain) };
+    };
+    const ranked = [...FORMATION_IDS].map((f) => ({ f, ...scoreOf(f) })).sort((a, b) => a.n - b.n);
+    const worst = ranked[0];
+    const top = ranked.at(-1)!;
+    expect(top.n).toBeGreaterThan(worst.n);
+    const st = { ...s, manager: { ...s.manager!, lineups: { ...s.manager!.lineups, h: { ...worst.l, auto: false } } } };
+    const room = fakeRoom(snap(st, 'h'));
+    const { container } = await render(app(h(ManagerSeason, { room, readOnly: false })));
+    await settle();
+    const tip = container.querySelector('.manager__formation-tip')!;
+    expect(tip.textContent).toContain(`Tipp: Mit ${top.f} wäre Stärke ${top.n} möglich.`);
+    await act(async () => (tip.querySelector('button') as MiniElement).click());
+    expect((room.setLineup as ReturnType<typeof vi.fn>).mock.calls.at(-1)![0].formation).toBe(top.f);
+  });
+
   it('Eigener Platz: Hochrechnung der Punkte aufs Saisonende ab dem 3. Spieltag', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');

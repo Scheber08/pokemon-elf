@@ -734,6 +734,33 @@ function LineupEditor({
       </div>
       <p className="muted small">{lineup.auto ? tx.autoNote : tx.manualNote}</p>
       {(() => {
+        // Andere Formation mit höherer bestmöglicher Stärke? (Tipp mit Knopf zum Übernehmen)
+        let tip: { formation: FormationId; strength: number; lineup: Omit<ManagerLineup, 'auto'> } | null = null;
+        for (const f of FORMATION_IDS) {
+          if (f === lineup.formation) continue;
+          const l = bestLineup(team, f, byId, sc, form, setPiece, absent, shinySet, team.captain);
+          const n = lineupScore(squadOf(l), sc, formOf, team.captain, shinySet);
+          if (n > Math.max(bestStrength, tip?.strength ?? 0)) tip = { formation: f, strength: n, lineup: l };
+        }
+        if (!tip) return null;
+        const chosen = tip;
+        return (
+          <p className="hint manager__formation-tip">
+            💡 {tx.formationTip(chosen.formation, chosen.strength)}{' '}
+            <button
+              type="button"
+              className="btn btn--small"
+              onClick={() => {
+                setPick(null);
+                onChange({ ...chosen.lineup, auto: lineup.auto });
+              }}
+            >
+              {tx.formationTipApply(chosen.formation)}
+            </button>
+          </p>
+        );
+      })()}
+      {(() => {
         // Startelf in schlechter Tagesform (nur bei eigener Aufstellung – automatisch rotiert ohnehin)
         const weak = lineup.auto ? [] : lineup.slots.filter((id) => formOf(id) < 0);
         if (!weak.length) return null;
