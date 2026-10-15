@@ -1,4 +1,5 @@
 /** Texte: Online-Liga – Fantasy-Draft mit Lobby, Live-Draft und Verbindung (Deutsch – Quelle). */
+import type { DraftGoal } from '../../lib/api/draftContract';
 import type { DraftPresetId } from '../../config/draftPresets';
 
 const online = {
@@ -141,6 +142,11 @@ const online = {
   orderHost: 'Draft-Reihenfolge wie in der Liste (Runde 2 rückwärts – Snake-Draft).',
   orderHostFixed: 'Draft-Reihenfolge wie in der Liste – jede Runde gleich.',
   addCpu: 'CPU-Team hinzufügen',
+  goalLabel: 'Saisonziel',
+  goalNone: 'Kein Ziel',
+  goal: { title: 'Meister werden', top3: 'Top 3', upper: 'Obere Tabellenhälfte', stay: 'Nicht auf den letzten 3 Plätzen' } as Record<DraftGoal, string>,
+  goalReached: (goal: string) => `🎯 Saisonziel erreicht: ${goal} ✓`,
+  goalMissed: (goal: string) => `🎯 Saisonziel verfehlt: ${goal}`,
   readyOff: 'Ich bin bereit',
   readyOn: '✓ Bereit – zurücknehmen',
   readyMark: 'bereit',

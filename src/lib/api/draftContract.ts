@@ -272,6 +272,8 @@ export interface DraftTeam {
   crest?: { shape: string; pattern: string; primary: string; secondary: string; symbol: string };
   /** In der Lobby „bereit“ gemeldet (nur Menschen, reine Anzeige) */
   ready?: true;
+  /** Saisonziel (nur Anzeige): Meister, Top 3, obere Hälfte, Klassenerhalt (nicht auf den letzten 3) */
+  goal?: DraftGoal;
 }
 
 /** Draft-Slot des ersten Bankplatzes (Manager-Saison): Bankplatz i = DRAFT_BENCH_SLOT + i */
@@ -383,6 +385,9 @@ export interface DraftSeason {
 export type DraftSnapshotSettings = DraftSettings & LegacySettingsPatch;
 
 /** Karriere: Saison-Nummer und Liga-Stufe (1 = oberste) samt Auf-/Abstieg gegenüber der Vorsaison */
+export const DRAFT_GOALS = ['title', 'top3', 'upper', 'stay'] as const;
+export type DraftGoal = (typeof DRAFT_GOALS)[number];
+
 export interface DraftCareer {
   season: number;
   tier: 1 | 2 | 3;
@@ -554,6 +559,8 @@ export type DraftClientMessage =
   | { type: 'cheer'; text: string }
   /** Lobby: eigenes Team bereit / nicht bereit */
   | { type: 'ready'; ready: boolean }
+  /** Saisonziel setzen (null = keins) – vor dem Anpfiff */
+  | { type: 'goal'; goal: DraftGoal | null }
   /** Host: Saison sofort anpfeifen (Vorlauf nach dem letzten Pick abkürzen) */
   | { type: 'kickoff' }
   /** Wappen setzen (null = keins) – jederzeit, reine Optik */

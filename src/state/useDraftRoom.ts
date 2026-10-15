@@ -16,6 +16,7 @@ import {
   DRAFT_LIMITS,
   type DraftActiveRoll,
   type DraftClientMessage,
+  type DraftGoal,
   type DraftPickLog,
   type DraftReaction,
   type DraftRerollKind,
@@ -569,6 +570,8 @@ export interface DraftRoom extends DraftRoomView {
   setCheer(text: string): boolean;
   /** Lobby: eigenes Team bereit melden */
   setReady(ready: boolean): boolean;
+  /** Saisonziel setzen (null = keins) */
+  setGoal(goal: DraftGoal | null): boolean;
   /** Host: Saison sofort anpfeifen */
   kickoff(): boolean;
   /** Wappen setzen (null = keins) */
@@ -965,6 +968,7 @@ export function useDraftRoom(code: string): DraftRoom {
     setKit: useCallback((kit: { home: string; away: string } | null) => send({ type: 'kit', kit }), [send]),
     setCheer: useCallback((text: string) => send({ type: 'cheer', text }), [send]),
     setReady: useCallback((ready: boolean) => send({ type: 'ready', ready }), [send]),
+    setGoal: useCallback((goal: DraftGoal | null) => send({ type: 'goal', goal }), [send]),
     kickoff: useCallback(() => send({ type: 'kickoff' }), [send]),
     setCrest: useCallback((crest: Crest | null) => send({ type: 'crest', crest: crest as unknown as Record<string, unknown> | null }), [send]),
     offerTrade: useCallback((to: string, give: number, get: number) => send({ type: 'offer', to, give, get }), [send]),

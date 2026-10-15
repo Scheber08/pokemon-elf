@@ -488,6 +488,7 @@ function fakeRoom(s: DraftSnapshot, over: Partial<DraftRoom> = {}): DraftRoom {
     fillCpu: vi.fn(() => true),
     setReady: vi.fn(() => true),
     kickoff: vi.fn(() => true),
+    setGoal: vi.fn(() => true),
     removeTeam: vi.fn(() => true),
     setOrder: vi.fn(() => true),
     start: vi.fn(() => true),
@@ -675,6 +676,7 @@ describe('DraftLobby', () => {
     await settle();
     expect(container.querySelector('.draft-start')!.textContent).toContain('1/2 Mitspieler bereit');
     expect(container.textContent).toContain('✓ bereit');
+    expect(container.querySelector('.draft-lobby__goal select')).toBeTruthy();
     expect(container.querySelectorAll('.draft-start--go')).toHaveLength(0);
     const all = engine.setTeamReady(st, 'dev-2', true);
     const r2 = await render(app(h(DraftLobby, { room: fakeRoom(snap(all, 'h')) })));

@@ -59,3 +59,30 @@ describe('Bereit in der Lobby', () => {
     expect(parseClientMessage(JSON.stringify({ type: 'ready', ready: 'ja' })).ok).toBe(false);
   });
 });
+
+describe('Saisonziel', () => {
+  it('gesetzt in der Lobby, gespiegelt an alle; ungültige Ziele abgelehnt; erreicht je nach Platz', async () => {
+    const { goalReached } = await import('../src/lib/draftEngine');
+    const hostDev = newDevice();
+    const res = await handleApi(
+      new Request('http://localhost/api/drafts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...hostDev, settings: {}, teamName: 'Host-Elf', formation: '4-3-3' }),
+      }),
+      env,
+    );
+    const { code } = (await res.json()) as CreateDraftResponse;
+    const room = drafts.room(code);
+    const host = room.connect(null);
+    await room.send(host, { type: 'hello', ...hostDev });
+    await room.send(host, { type: 'goal', goal: 'top3' });
+    expect(room.stored!.state.teams[0].goal).toBe('top3');
+    await room.send(host, { type: 'goal', goal: null });
+    expect(room.stored!.state.teams[0]).not.toHaveProperty('goal');
+    expect(parseClientMessage(JSON.stringify({ type: 'goal', goal: 'weltmeister' })).ok).toBe(false);
+    expect([goalReached('title', 1, 18), goalReached('title', 2, 18)]).toEqual([true, false]);
+    expect([goalReached('top3', 3, 18), goalReached('upper', 9, 18), goalReached('upper', 10, 18)]).toEqual([true, true, false]);
+    expect([goalReached('stay', 15, 18), goalReached('stay', 16, 18)]).toEqual([true, false]);
+  });
+});

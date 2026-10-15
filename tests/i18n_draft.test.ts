@@ -402,10 +402,13 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     storeLang('en');
     const s = runnerUpView(finishedDraft());
     s.season = { ...s.season!, startsAt: Date.now() - 10 * 24 * 3600 * 1000 };
+    // Saisonziel „Meister“ – als Zweiter verfehlt
+    s.teams = s.teams.map((tm) => (tm.id === s.you ? { ...tm, goal: 'title' as const } : tm));
     const { container } = await render(app(h(DraftSeasonStage, { room: fakeRoom(s) })));
     await settle();
     const all = texts(container).join(' | ');
     expect(all).toContain('Online draft K7MPQ2');
+    expect(all).toContain('Season goal missed: Win the title');
     expect(all).toContain('Champions: ');
     expect(all).toContain('Final table');
     expect(all).toContain('Top scorers');

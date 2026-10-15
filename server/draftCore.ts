@@ -20,11 +20,13 @@ import { TYPE_KEYS } from '../src/config/pokemonTypes';
 import type { DeviceAuth } from '../src/lib/api/contract';
 import {
   DRAFT_ALL_GENS,
+  DRAFT_GOALS,
   DRAFT_LIMITS,
   DRAFT_REACTION_RATE,
   DRAFT_REACTIONS,
   DRAFT_REROLL_KINDS,
   type DraftClientMessage,
+  type DraftGoal,
   type DraftPhase,
   type DraftReaction,
   type DraftRerollKind,
@@ -64,6 +66,7 @@ import {
   setTeamCaptain,
   setTeamCheer,
   setTeamReady,
+  setTeamGoal,
   kickoffNow,
   setTeamCrest,
   setTeamKit,
@@ -443,6 +446,8 @@ export function parseClientMessage(raw: unknown): ParsedMessage {
     }
     case 'ready':
       return isBool(d.ready) ? ok({ type: 'ready', ready: d.ready }) : badMessage();
+    case 'goal':
+      return d.goal === null || (DRAFT_GOALS as readonly unknown[]).includes(d.goal) ? ok({ type: 'goal', goal: d.goal as DraftGoal | null }) : badMessage();
     case 'cheer':
       // Wie Teamnamen säubern (Steuer- und Formatzeichen raus) – Länge prüft die Engine
       return typeof d.text === 'string' && d.text.length <= 200 ? ok({ type: 'cheer', text: cleanText(d.text) }) : badMessage();
@@ -774,7 +779,7 @@ const sameState = (a: DraftState, b: DraftState) => a === b || JSON.stringify(a)
  * Lobby-Änderungen – zusätzlich pro Gerät gedrosselt (jede kostet Speichern und ggf. D1). Züge im
  * Draft (pick, auto-pick, reroll) nicht: Sie begrenzt schon die Engine (nur am Zug, Rerolls je Team).
  */
-const LOBBY_CHANGES = new Set<DraftClientMessage['type']>(['join', 'leave', 'update-team', 'settings', 'add-cpu', 'remove-team', 'set-order', 'queue', 'jerseys', 'captain', 'kit', 'cheer', 'crest', 'ready']);
+const LOBBY_CHANGES = new Set<DraftClientMessage['type']>(['join', 'leave', 'update-team', 'settings', 'add-cpu', 'remove-team', 'set-order', 'queue', 'jerseys', 'captain', 'kit', 'cheer', 'crest', 'ready', 'goal']);
 
 interface Bucket {
   tokens: number;
@@ -1615,6 +1620,8 @@ export class DraftRoomCore {
         return setTeamCheer(state, deviceId, msg.text);
       case 'ready':
         return setTeamReady(state, deviceId, msg.ready);
+      case 'goal':
+        return setTeamGoal(state, deviceId, msg.goal);
       case 'kickoff':
         return kickoffNow(state, deviceId, now);
       case 'crest':

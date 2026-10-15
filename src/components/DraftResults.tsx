@@ -29,7 +29,7 @@ import { cleanKit } from '../lib/kits';
 import { cleanCrest } from '../lib/crest';
 import { Crest } from './Crest';
 import { shinyTeamBoost } from '../lib/shiny';
-import { rosterOf } from '../lib/draftEngine';
+import { goalReached, rosterOf } from '../lib/draftEngine';
 
 interface Props {
   /** Shinys der Liga */
@@ -293,6 +293,13 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
               : youAreChampion
                 ? tx.youChampion
                 : tx.yourPlace(nameOf(ownRow.team), ownIndex + 1, ownRow.pts)}
+          </p>
+        )}
+        {ownRow && !cup && you != null && teams[you]?.goal && (
+          <p className="draft-results__goal">
+            {goalReached(teams[you].goal!, ownIndex + 1, table.length)
+              ? t.online.goalReached(t.online.goal[teams[you].goal!])
+              : t.online.goalMissed(t.online.goal[teams[you].goal!])}
           </p>
         )}
         {ownPath.length > 0 && (

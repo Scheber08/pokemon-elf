@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
-import { DRAFT_LIMITS, type DraftSettings } from '../lib/api/draftContract';
+import { DRAFT_GOALS, DRAFT_LIMITS, type DraftGoal, type DraftSettings } from '../lib/api/draftContract';
 import { CUP_SIZE } from '../lib/cup';
 import { copyText } from '../lib/exportImage';
 import { qrPath, type QrPath } from '../lib/qr';
@@ -235,6 +235,23 @@ function MyTeamCard({ room }: { room: DraftRoom }) {
           if (formation !== me.formation && room.updateTeam({ formation })) saveTeamPrefs({ name: me.name, formation });
         }}
       />
+      {room.state?.settings.format !== 'cup' && (
+        <label className="field draft-lobby__goal">
+          <span className="field__label">{t.online.goalLabel}</span>
+          <select
+            className="input"
+            value={me.goal ?? ''}
+            onChange={(e) => room.setGoal(e.target.value ? (e.target.value as DraftGoal) : null)}
+          >
+            <option value="">{t.online.goalNone}</option>
+            {DRAFT_GOALS.map((g) => (
+              <option key={g} value={g}>
+                {t.online.goal[g]}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       <KitPicker kit={cleanKit(me.kit)} onChange={(kit) => room.setKit(kit)} cheer={me.cheer ?? ''} onCheer={(c) => room.setCheer(c)} />
       <CrestEditor crest={cleanCrest(me.crest)} onChange={(c) => room.setCrest(c)} pokemon={rosterOf(me)} />
       <button type="button" className="btn btn--ghost btn--small" onClick={leave}>

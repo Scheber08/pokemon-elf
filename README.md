@@ -171,7 +171,8 @@ reinen Engine `src/lib/draftEngine.ts`). Ablauf: `POST /api/drafts` legt die Lig
 alle verbinden sich per WebSocket (`/api/drafts/:code/ws`, Hibernation API) und bekommen bei jeder
 Änderung den vollen Stand. Lobby: Host stellt Pool, Timer (aus/30/60/90 s), Reihenfolge und
 Sichtbarkeit ein, fügt CPU-Teams hinzu (einzeln oder „Mit CPU auffüllen“: `add-cpu` mit `fill`) und startet. Mitspieler melden sich mit „Ich bin bereit“
-(`ready`, reine Anzeige) bereit. Timer, CPU-Picks und Auto-Picks laufen auf dem
+(`ready`, reine Anzeige) bereit. Jedes Team kann ein Saisonziel setzen (`goal`: Meister, Top 3, obere Hälfte,
+nicht auf den letzten 3) – das Ergebnis zeigt, ob es erreicht wurde. Timer, CPU-Picks und Auto-Picks laufen auf dem
 Server (Alarme). Ist das Team am Zug 20 s offline (ohne Timer: 3 min am Zug), darf jedes Mitglied für
 es auto-picken; ein abwesender Host gibt die Rolle nach 30 s (Lobby: 5 min) ab. Nach dem letzten Pick
 rechnet der Server die Saison einmal und alle sehen sie gleichzeitig im Ticker. Die Saison spielt immer mit

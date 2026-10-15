@@ -51,6 +51,7 @@ import {
   type DraftTeam,
   type LegacySettingsPatch,
   type LobbyRegion,
+  type DraftGoal,
 } from './api/draftContract';
 import { buildScale, positionFit, type Scale } from './fit';
 import { createRng, hashSeed, shuffle, streamRng, type Rng } from './rng';
@@ -761,6 +762,31 @@ export function setTeamCheer(state: DraftState, deviceId: string, raw: unknown):
       return { ...t, cheer };
     }),
   };
+}
+
+/** Saisonziel des eigenen Teams (null = keins) – in Lobby und Draft, reine Anzeige. */
+export function setTeamGoal(state: DraftState, deviceId: string, goal: DraftGoal | null): DraftState {
+  if (state.phase !== 'lobby' && state.phase !== 'drafting') fail('not_allowed', 'Das Saisonziel steht schon fest');
+  const teamId = teamOfDevice(state, deviceId) ?? fail('not_joined', 'Du bist in dieser Liga nicht dabei');
+  return {
+    ...state,
+    teams: state.teams.map((t) => {
+      if (t.id !== teamId) return t;
+      if (goal == null) {
+        const { goal: _drop, ...rest } = t;
+        return rest;
+      }
+      return { ...t, goal };
+    }),
+  };
+}
+
+/** Saisonziel erreicht? place 1-basiert, teams = Liga-Größe */
+export function goalReached(goal: DraftGoal, place: number, teams: number): boolean {
+  if (goal === 'title') return place === 1;
+  if (goal === 'top3') return place <= 3;
+  if (goal === 'upper') return place <= Math.ceil(teams / 2);
+  return place <= teams - 3;
 }
 
 /** „Bereit“ in der Lobby melden bzw. zurücknehmen – reine Anzeige für den Host. */
