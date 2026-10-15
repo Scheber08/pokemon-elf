@@ -63,6 +63,8 @@ const MARTIN = ['11-01', '11-11', '🏮'] as const;
 const NICHOLAS = ['12-01', '12-06', '🎅'] as const;
 /** Erntedank (erster Sonntag im Oktober) */
 const HARVEST = ['09-25', '10-10', '🌾'] as const;
+/** Winterzauber (zwischen Neujahr und Karneval) */
+const WINTER = ['01-11', '01-31', '❄️'] as const;
 /** Valentinstag */
 const VALENTINE = ['02-07', '02-14', '💘'] as const;
 
@@ -164,6 +166,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('hat', 'mortarboard', 250), ...SCHOOL),
   seasonal(item('hat', 'mitre', 300), ...NICHOLAS),
   seasonal(item('hat', 'wheat', 250), ...HARVEST),
+  seasonal(item('hat', 'snowcap', 250), ...WINTER),
   // Accessoire
   item('accessory', 'none', 0),
   item('accessory', 'freckles', 0),
@@ -238,6 +241,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('companion', '608', 400), ...MARTIN),
   seasonal(item('companion', '216', 350), ...NICHOLAS),
   seasonal(item('companion', '840', 350), ...HARVEST),
+  seasonal(item('companion', '613', 350), ...WINTER),
   item('companion', '6', 600),
   item('companion', '149', 600),
   item('companion', '448', 600),

@@ -118,6 +118,7 @@ const trainer = {
       mortarboard: 'Doktorhut',
       mitre: 'Bischofsmütze',
       wheat: 'Erntekranz',
+      snowcap: 'Schneeflockenmütze',
       jester: 'Narrenkappe',
       tyrolean: 'Tirolerhut',
       leaves: 'Herbstkranz',
