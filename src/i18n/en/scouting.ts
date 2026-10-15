@@ -84,6 +84,10 @@ const scouting: Messages['scouting'] = {
       a: 'League opponents and CPU teams are named after real teams from the online leaderboards (team name, otherwise player name) – in the challenge seasons, the one-device draft, online and in the manager season. Your own entries never appear. Offline, fantasy clubs from the Pokémon world play instead. The names never change strength or results.',
     },
     {
+      q: 'What do ⚡, 🏅, 👑 and 💔 mean in the draft?',
+      a: '⚡ in the pick log: a lightning pick – your own pick within 5 seconds of the previous one (five in one online league earn the “Lightning drafter” achievement). 🏅: the pick with the best positional fit of the draft so far. 👑 on the board: the team with the best average fit; a coloured chip like “Fire ×4” marks a type squad. 💔: another team took a Pokémon from your wishlist. “🎲 Random” pre-selects a random fitting Pokémon.',
+    },
+    {
       q: 'Are there keyboard shortcuts in the draft?',
       a: '“/” jumps to the Pokémon search, “W” puts the selected Pokémon on your wishlist (or takes it off), “V” fetches a suggestion, and in the one-device draft “Z” takes back the last pick. Arrow keys move through the grid, Enter selects a Pokémon. While typing in a field, the shortcuts are off.',
     },
