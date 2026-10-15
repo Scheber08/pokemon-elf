@@ -1509,6 +1509,7 @@ button.draft-bench__slot {
 .manager__late,
 .manager__upset,
 .manager__rout,
+.manager__comeback,
 .manager__hat {
   margin: 6px 0 0;
   font-size: 14px;
@@ -1516,6 +1517,7 @@ button.draft-bench__slot {
 .manager__late.is-you,
 .manager__upset.is-you,
 .manager__rout.is-you,
+.manager__comeback.is-you,
 .manager__hat.is-you {
   font-weight: 600;
 }

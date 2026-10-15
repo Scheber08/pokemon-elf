@@ -1708,6 +1708,25 @@ describe('ManagerSeason', () => {
     expect(routEls).toHaveLength(1);
     expect(routEls[0].textContent).toMatch(/^💥 Kantersieg: .+ schlägt .+ 6:0$/);
     expect(routEls[0].className.includes('is-you')).toBe(raw.matches[k2].home === idx || raw.matches[k2].away === idx);
+    // Gezielt: Heim liegt 0:2 zurück und gewinnt 3:2 → „🔄 Comeback“ beim letzten Spieltag
+    const back = {
+      ...s,
+      league: {
+        ...raw,
+        matches: raw.matches.map((x, i) =>
+          i === k2
+            ? { ...x, hg: 3, ag: 2, homeScorers: [goal(ids[0], 50), goal(ids[1], 60), goal(ids[2], 70)], awayScorers: [goal(ids[3], 5), goal(ids[4], 20)] }
+            : x,
+        ),
+      },
+    };
+    const r7 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(back, 'h')), readOnly: false })));
+    await settle();
+    const cb = tl.comebackOf(back.league.matches.filter((x) => x.round === md))!;
+    expect(cb.behind).toEqual([0, 2]);
+    const cbEl = r7.container.querySelector('.manager__comeback')!;
+    expect(cbEl.textContent).toMatch(/^🔄 Comeback: .+ dreht ein 0:2 gegen .+ zum 3:2$/);
+    expect(cbEl.className.includes('is-you')).toBe(cb.winner === idx || cb.loser === idx);
   });
 
   it('Saisonende: Saisonrekorde mit Angriff, Abwehr und ggf. Remis-König', async () => {

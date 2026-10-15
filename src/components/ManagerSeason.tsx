@@ -3,7 +3,7 @@ import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
-import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf } from '../lib/leagueTimeline';
+import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -707,6 +707,18 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
               <p className={`manager__rout ${rout.winner === you || rout.loser === you ? 'is-you' : ''}`}>
                 <span aria-hidden="true">💥 </span>
                 {t.draft.ticker.rout(nameOf(rout.winner), nameOf(rout.loser), score)}
+              </p>
+            );
+          })()}
+          {liveMin == null && (() => {
+            // Comeback des Spieltags (wie im Saison-Ticker): Sieg nach mindestens zwei Toren Rückstand
+            const cb = comebackOf(last);
+            if (!cb) return null;
+            const score = cb.match.home === cb.winner ? `${cb.match.hg}:${cb.match.ag}` : `${cb.match.ag}:${cb.match.hg}`;
+            return (
+              <p className={`manager__comeback ${cb.winner === you || cb.loser === you ? 'is-you' : ''}`}>
+                <span aria-hidden="true">🔄 </span>
+                {t.draft.ticker.comeback(nameOf(cb.winner), nameOf(cb.loser), `${cb.behind[0]}:${cb.behind[1]}`, score)}
               </p>
             );
           })()}
