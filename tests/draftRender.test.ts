@@ -1164,6 +1164,17 @@ describe('ManagerSeason', () => {
     const lateEl = r3.container.querySelector('.manager__late');
     if (late) expect(lateEl!.textContent).toMatch(/Last-Minute-Sieg: .+ – Siegtor in der \d/);
     else expect(lateEl).toBeNull();
+    // Manager-Tabelle: Umschalter auf „Auswärts“ zeigt die Auswärtstabelle (ohne Zonen)
+    {
+      const { sideTable } = await import('../src/lib/season');
+      const awayBtn = r3.container.querySelectorAll('[role="radio"]').find((b) => b.textContent === 'Auswärts') as MiniElement;
+      await act(async () => awayBtn.click());
+      const away = sideTable(lg.teams, lg.matches, 'away');
+      const tableEl = r3.container.querySelectorAll('table.league-table').find((tb) => !tb.className.includes('manager__squad'))!;
+      const first = tableEl.querySelectorAll('tbody tr')[0];
+      expect(first.querySelector('strong')!.textContent).toBe(String(away[0].pts));
+      expect(first.className).not.toContain('is-zone');
+    }
     // Gezielt: ein Spiel des letzten Spieltags als 2:1 mit Siegtor in der 89. Minute → Zeile erscheint
     const md = s.manager!.played;
     const raw = s.league!;

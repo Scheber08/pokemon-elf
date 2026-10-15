@@ -8,13 +8,14 @@ import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
 import { bestLineup, FORM_FIT, formFit, kickoffAt, lineupScore, managerSchedule, squadStrength } from '../lib/manager';
-import { buildTable, formatMinute, type LeagueResult, type Match } from '../lib/season';
+import { buildTable, formatMinute, sideTable, type LeagueResult, type Match } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import { teamLabel, type DraftRoom } from '../state/useDraftRoom';
 import type { FormationId, Pokemon, PosCode } from '../types';
 import { PosBadge } from './Badges';
 import { BenchRow } from './BenchRow';
+import { Segmented } from './Segmented';
 import { FixtureList, FormDots, TableLegend, Trend } from './LeagueTicker';
 import { ReplayToggle, useMatchReport } from './MatchReport';
 import { CaptainPicker } from './CaptainPicker';
@@ -1086,72 +1087,86 @@ function ManagerTable({
     if (played < 2) return null;
     return leagueTimeline(league).at(-1)?.delta ?? null;
   }, [league, played]);
+  // Gesamt-, Heim- oder Auswärtstabelle (wie im Saisonergebnis)
+  const [view, setView] = useState<'all' | 'home' | 'away'>('all');
+  const shownRows = useMemo(() => (view === 'all' ? rows : sideTable(league.teams, matches, view)), [view, rows, league, matches]);
   return (
-    <div className="table-scroll">
-      <table className="league-table">
-        <thead>
-          <tr>
-            <th scope="col" title={c.placeTitle}>
-              {c.place}
-            </th>
-            <th scope="col" className="left">
-              {c.team}
-            </th>
-            <th scope="col" title={c.playedTitle}>
-              {c.played}
-            </th>
-            <th scope="col" title={c.wonTitle}>
-              {c.won}
-            </th>
-            <th scope="col" title={c.drawnTitle}>
-              {c.drawn}
-            </th>
-            <th scope="col" title={c.lostTitle}>
-              {c.lost}
-            </th>
-            <th scope="col">{c.goals}</th>
-            <th scope="col" title={c.ptsTitle}>
-              {c.pts}
-            </th>
-            {played > 0 && (
-              <th scope="col" title={c.formTitle} className="league-live__form-col">
-                {c.form}
+    <>
+      {played > 0 && (
+        <Segmented
+          label={t.draft.results.tableView}
+          hideLabel
+          value={view}
+          onChange={setView}
+          options={(['all', 'home', 'away'] as const).map((v) => ({ value: v, label: t.draft.results.tableViews[v] }))}
+        />
+      )}
+      <div className="table-scroll">
+        <table className="league-table">
+          <thead>
+            <tr>
+              <th scope="col" title={c.placeTitle}>
+                {c.place}
               </th>
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r, i) => (
-            <tr key={r.team} className={tableRowClass(r.team === you, i + 1, rows.length, top)}>
-              <td>
-                {i + 1} {delta && <Trend delta={delta[r.team]} />}
-              </td>
-              <td className="left">
-                {crestOf(r.team) && (
-                  <>
-                    <Crest crest={crestOf(r.team)!} size={16} />{' '}
-                  </>
-                )}
-                {nameOf(r.team)}
-              </td>
-              <td>{r.played}</td>
-              <td>{r.w}</td>
-              <td>{r.d}</td>
-              <td>{r.l}</td>
-              <td>{`${r.gf}:${r.ga}`}</td>
-              <td>
-                <strong>{r.pts}</strong>
-              </td>
+              <th scope="col" className="left">
+                {c.team}
+              </th>
+              <th scope="col" title={c.playedTitle}>
+                {c.played}
+              </th>
+              <th scope="col" title={c.wonTitle}>
+                {c.won}
+              </th>
+              <th scope="col" title={c.drawnTitle}>
+                {c.drawn}
+              </th>
+              <th scope="col" title={c.lostTitle}>
+                {c.lost}
+              </th>
+              <th scope="col">{c.goals}</th>
+              <th scope="col" title={c.ptsTitle}>
+                {c.pts}
+              </th>
               {played > 0 && (
-                <td className="league-live__form-col">
-                  <FormDots form={recentForm(matches, r.team, played)} />
-                </td>
+                <th scope="col" title={c.formTitle} className="league-live__form-col">
+                  {c.form}
+                </th>
               )}
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <TableLegend total={rows.length} top={top} />
-    </div>
+          </thead>
+          <tbody>
+            {shownRows.map((r, i) => (
+              <tr key={r.team} className={view === 'all' ? tableRowClass(r.team === you, i + 1, rows.length, top) : r.team === you ? 'is-user' : ''}>
+                <td>
+                  {i + 1} {view === 'all' && delta && <Trend delta={delta[r.team]} />}
+                </td>
+                <td className="left">
+                  {crestOf(r.team) && (
+                    <>
+                      <Crest crest={crestOf(r.team)!} size={16} />{' '}
+                    </>
+                  )}
+                  {nameOf(r.team)}
+                </td>
+                <td>{r.played}</td>
+                <td>{r.w}</td>
+                <td>{r.d}</td>
+                <td>{r.l}</td>
+                <td>{`${r.gf}:${r.ga}`}</td>
+                <td>
+                  <strong>{r.pts}</strong>
+                </td>
+                {played > 0 && (
+                  <td className="league-live__form-col">
+                    <FormDots form={recentForm(matches, r.team, played)} />
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {view === 'all' && <TableLegend total={rows.length} top={top} />}
+      </div>
+    </>
   );
 }
