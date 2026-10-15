@@ -111,6 +111,7 @@ const leaderboard: Messages['leaderboard'] = {
     achievements: (done, total) => `🏅 ${done}/${total} achievements`,
     online: (titles, leagues) => `🏆 ${titles} ${titles === 1 ? 'title' : 'titles'} in ${leagues} online ${leagues === 1 ? 'league' : 'leagues'}`,
     managerCups: (n) => `🥇 ${n === 1 ? '1 cup win' : `${n} cup wins`}`,
+    captainGoals: (n) => `Captain: up to ${n === 1 ? '1 goal' : `${n} goals`} in a season`,
     shinies: (n) => `✨ ${n === 1 ? '1 shiny' : `${n} shinies`}`,
     perChallenge: 'Best runs',
     runsCol: 'Runs',

@@ -311,6 +311,9 @@ describe('Kennzahlen und /api/me', () => {
     db.update("INSERT INTO draft_results (code, device_id, format, rank, teams, wins, draws, losses, points, finished_at) VALUES ('X#cup', ?, 'manager_cup', 1, 16, 4, 0, 0, 0, 1)", auth.deviceId);
     const again = (await (await handleApi(new Request(`http://localhost/api/entries/${board.rows[0].entryId}/player`), { DB: db })).json()) as typeof profile;
     expect(again.online).toEqual({ leagues: 0, titles: 0, shinies: 3, managerCups: 1 });
+    db.update("INSERT INTO draft_results (code, device_id, format, rank, teams, wins, draws, losses, points, finished_at) VALUES ('X#captain', ?, 'captain', 12, 0, 0, 0, 0, 0, 1)", auth.deviceId);
+    const third = (await (await handleApi(new Request(`http://localhost/api/entries/${board.rows[0].entryId}/player`), { DB: db })).json()) as typeof profile;
+    expect(third.online).toMatchObject({ captainGoals: 12 });
   });
 });
 

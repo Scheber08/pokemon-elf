@@ -93,6 +93,7 @@ export function Profile() {
               {p.online && p.online.leagues > 0 && <> · {tp.online(p.online.titles, p.online.leagues)}</>}
               {!!p.online?.managerCups && <> · {tp.managerCups(p.online.managerCups)}</>}
               {!!p.online?.shinies && <> · {tp.shinies(p.online.shinies)}</>}
+              {!!p.online?.captainGoals && <> · {tp.captainGoals(p.online.captainGoals)}</>}
             </p>
           </div>
         </div>
