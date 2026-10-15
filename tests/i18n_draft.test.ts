@@ -381,6 +381,7 @@ describe('/draft an einem Gerät auf Englisch', () => {
     // Elf der Saison (englisch): Feld und elf Namen
     expect(texts(container).join(' | ')).toContain('Team of the season');
     expect(container.querySelectorAll('.draft-results__eleven-list li')).toHaveLength(11);
+    expect(container.querySelector('.draft-results__eleven button')!.getAttribute('aria-label')).toBe('Save the team of the season as an image');
     expect(germanLeft(container)).toEqual([]);
   });
 });

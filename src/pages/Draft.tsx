@@ -30,6 +30,7 @@ import { useSettings } from '../state/Settings';
 import type { FormationId, Pokemon, RegionFilter, Slots } from '../types';
 import { DraftOnline } from './DraftOnline';
 import { TableLegend } from '../components/LeagueTicker';
+import { SaveImageButton } from '../components/SaveImageButton';
 import { ReplayToggle, useMatchReport } from '../components/MatchReport';
 import '../styles/draft.css';
 import '../styles/league.css';
@@ -141,6 +142,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   const [state, setState] = useState<DraftState>(() => ({ ...INITIAL, ...load<Partial<DraftState>>(STORAGE_KEYS.draft, {}) }));
   const [filters, setFilters] = useState<PokemonFilters>({ query: '', type: null, region: 0 });
   const pitchRef = useRef<HTMLDivElement>(null);
+  const elevenRef = useRef<HTMLElement>(null);
 
   useEffect(() => save(STORAGE_KEYS.draft, state), [state]);
 
@@ -644,10 +646,18 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           const eleven = seasonEleven(league, state.teams, byId, scale('all'));
           if (!eleven) return null;
           return (
-            <section className="card draft-results__eleven" aria-labelledby="draft-eleven">
-              <h2 id="draft-eleven" className="section-title">
-                {t.draft.results.elevenTitle}
-              </h2>
+            <section className="card draft-results__eleven" aria-labelledby="draft-eleven" ref={elevenRef}>
+              <div className="draft-results__table-head">
+                <h2 id="draft-eleven" className="section-title">
+                  {t.draft.results.elevenTitle}
+                </h2>
+                <SaveImageButton
+                  target={elevenRef}
+                  filename="elf-der-saison.png"
+                  label={t.draft.results.saveTable}
+                  aria={t.draft.results.saveElevenAria}
+                />
+              </div>
               <p className="muted small">{t.draft.results.elevenNote(eleven.formation)}</p>
               <Pitch formation={eleven.formation} slots={eleven.slots} sprite={sprite} ariaLabel={t.draft.results.elevenTitle} jerseys={false} shinies={state.shinies} />
               <ul className="draft-results__eleven-list small">
