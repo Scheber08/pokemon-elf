@@ -509,6 +509,21 @@ describe('Seiten (en)', () => {
     expectEnglishIn(container, '.page-head, .draft-offline');
   });
 
+  it('/draft – öffentliche Lobbys: freie vor vollen, sonst Reihenfolge vom Server', async () => {
+    const base = { hostName: 'H', region: 0 as const, legends: false, pickSeconds: 60 as const, createdAt: Date.now() - 60_000 };
+    stubFetch([
+      { ...base, code: 'FULL01', name: 'Full one', teams: 4, maxTeams: 4 },
+      { ...base, code: 'OPEN01', name: 'Open one', teams: 1, maxTeams: 4 },
+      { ...base, code: 'FULL02', name: 'Full two', teams: 2, maxTeams: 2 },
+      { ...base, code: 'OPEN02', name: 'Open two', teams: 3, maxTeams: 4 },
+    ]);
+    const { container } = await render(
+      app(h(DraftOnline, { modeSwitch: null, supported: true, onRetry: vi.fn(), onLocal: vi.fn() })),
+    );
+    const names = container.querySelectorAll('.draft-lobbies__name').map((n) => n.textContent);
+    expect(names).toEqual(['Open one', 'Open two', 'Full one', 'Full two']);
+  });
+
   it('/draft – Liga erstellen, beitreten, eigene und öffentliche Ligen', async () => {
     save('draft-online:recent', [{ code: 'XYZ789', name: '', team: 'FC Test', phase: 'drafting', at: Date.now() - 120_000 }]);
     stubFetch([

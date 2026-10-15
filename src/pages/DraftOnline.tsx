@@ -261,7 +261,8 @@ function PublicLobbies() {
       )}
       {lobbies && lobbies.length > 0 && (
         <ul className="draft-lobbies__list">
-          {lobbies.map((l) => {
+          {/* Freie Lobbys zuerst (stabil: innerhalb der Gruppen bleibt „neueste zuerst“ vom Server) */}
+          {[...lobbies].sort((a, b) => Number(a.teams >= a.maxTeams) - Number(b.teams >= b.maxTeams)).map((l) => {
             const full = l.teams >= l.maxTeams;
             return (
               <li key={l.code} className="draft-lobbies__item">
