@@ -376,6 +376,34 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           const r = currentRun(shown.matches, you);
           return r && <SeriesLine run={r} />;
         })()}
+        {you != null && (() => {
+          // Saisonstreifen: je Spieltag ein Kästchen – gespielt in Ergebnisfarbe (eigene Tore zuerst), offen mit Platz des Gegners
+          const placeOf = (i: number) => shown.table.findIndex((r) => r.team === i) + 1;
+          const cells = schedule.slice(0, m.total).flatMap((round, r) => {
+            const pair = round.find(([a, b]) => a === you || b === you);
+            if (!pair) return [];
+            const opp = pair[0] === you ? pair[1] : pair[0];
+            const match = r < m.played ? shown.matches.find((x) => x.round === r + 1 && (x.home === you || x.away === you)) : undefined;
+            if (match) {
+              const own = match.home === you ? match.hg : match.ag;
+              const other = match.home === you ? match.ag : match.hg;
+              const kind = own > other ? 'w' : own < other ? 'l' : 'd';
+              return [{ r, kind, text: `${own}:${other}`, title: tx.stripPlayed(r + 1, nameOf(opp), `${own}:${other}`) }];
+            }
+            return [{ r, kind: 'next', text: String(placeOf(opp) || '–'), title: tx.stripNext(r + 1, nameOf(opp), placeOf(opp)) }];
+          });
+          if (!cells.length) return null;
+          return (
+            <ol className="manager__strip" aria-label={tx.stripLabel} style={{ gridTemplateColumns: `repeat(${cells.length}, 1fr)` }}>
+              {cells.map((c) => (
+                <li key={c.r} className={`manager__strip-cell is-${c.kind} ${c.r === m.played ? 'is-current' : ''}`} title={c.title}>
+                  <span aria-hidden="true">{c.text}</span>
+                  <span className="sr-only">{c.title}</span>
+                </li>
+              ))}
+            </ol>
+          );
+        })()}
         {you != null && m.played >= 3 && m.total - m.played >= 2 && (() => {
           // Restprogramm: Ø aktueller Tabellenplatz der noch ausstehenden Gegner (leicht/mittel/schwer)
           const placeOf = (i: number) => shown.table.findIndex((r) => r.team === i) + 1;
