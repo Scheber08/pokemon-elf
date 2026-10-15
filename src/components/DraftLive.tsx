@@ -542,6 +542,11 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                   if (block === 'mega_limit') return t.online.blockedMegas(maxMegas ?? 0);
                   return null;
                 }}
+                note={(p) => {
+                  // Auf der eigenen Wunschliste: Platz zeigen
+                  const at = (s.queue ?? []).indexOf(p.id);
+                  return at >= 0 ? t.online.queueMark(at + 1) : null;
+                }}
                 className="pgrid-wrap--compact pgrid-wrap--scroll"
               />
             </section>

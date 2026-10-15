@@ -546,6 +546,17 @@ describe('DraftLive', () => {
     expect(live()[0].textContent).toMatch(/^Pick 2: .+ an Team 1 \(automatisch\)\. Am Zug: Team 1\.$/);
   });
 
+  it('Wunschliste im Raster: „★ Wunsch n“ auf den Karten', async () => {
+    const { DraftLive } = await import('../src/components/DraftLive');
+    const st = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
+    const [a, b] = ALL.filter((p) => p.gen === 1).slice(0, 2).map((p) => p.id);
+    const { container } = await render(app(h(DraftLive, { room: fakeRoom({ ...snap(st, 'h'), queue: [b, a] }) })));
+    await settle();
+    const notes = container.querySelectorAll('.pcard__note').map((n) => n.textContent);
+    expect(notes).toContain('★ Wunsch 1');
+    expect(notes).toContain('★ Wunsch 2');
+  });
+
   // CLIENT-1
   it('Pool behält die angezeigte Menge, wenn ein Schnappschuss kommt', async () => {
     let s = drafting();
