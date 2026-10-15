@@ -24,7 +24,7 @@ import { draftsSupported } from '../lib/api/draftClient';
 import { positionFit, roundBestPicks, soleTopIndex } from '../lib/fit';
 import { rankingNames } from '../lib/rankingNames';
 import { emptySlots } from '../lib/formation';
-import { biggestWin, comebackOf, draftGrades, hatTricks, localShareText, mostCleanSheets, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
+import { biggestWin, comebackOf, missedChance, draftGrades, hatTricks, localShareText, mostCleanSheets, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
 import { createRng, randomSeed, shuffle } from '../lib/rng';
 import { cpuLevelOf, cpuPickChoice } from '../lib/localCpu';
 import { buildTable, CLASSIC_MODEL, DRAFT_MODEL, formatRecord, sideTable, simulateLeague, type LeagueTeam } from '../lib/season';
@@ -1342,6 +1342,33 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 </table>
               </div>
             </details>
+          );
+        })()}
+        {state.log && state.log.length === state.teams.length * ROUNDS && (() => {
+          // 😬 Verpasste Chance je menschlichem Team (wie online; Legendäre & Co. zählen nicht als Alternative)
+          const log = state.log;
+          const picks = log.map((e, k) => ({ pick: k, teamId: String(e.team), pokemonId: e.id, slot: e.slot }));
+          const ids = state.teams.map((tm, i) => ({ id: String(i), formation: tm.formation }));
+          const humans = state.teams.flatMap((tm, i) => (tm.cpu ? [] : [i]));
+          const lines = humans.flatMap((i) => {
+            const m = missedChance(picks, ids, String(i), all.filter(inPool), scale('all'), (p) => limitKindsOf(p).length === 0);
+            const mon = m && byId.get(m.pokemonId);
+            const alt = m && byId.get(m.altId);
+            return m && mon && alt ? [{ i, m, mon, alt }] : [];
+          });
+          if (!lines.length) return null;
+          return (
+            <section className="card draft__missed">
+              {lines.map(({ i, m, mon, alt }) => (
+                <p key={i} className="draft-results__missed muted small">
+                  😬 {humans.length > 1 && <strong>{teamName(state.teams[i].name)}: </strong>}
+                  {t.draft.results.missed(m.pick + 1, t.game.pokemon(mon), m.fit, t.game.posShort[m.pos], t.game.pokemon(alt), m.altFit)}{' '}
+                  {m.takenBy
+                    ? t.draft.results.missedTaken(teamName(state.teams[Number(m.takenBy.teamId)].name), m.takenBy.pick + 1)
+                    : t.draft.results.missedFree}
+                </p>
+              ))}
+            </section>
           );
         })()}
         {state.log && state.log.length === state.teams.length * ROUNDS && (

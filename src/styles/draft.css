@@ -1741,3 +1741,12 @@ button.draft-bench__slot {
 .manager__formavg.is-down {
   color: var(--red);
 }
+
+/* Lokales Ergebnis: verpasste Chancen der menschlichen Teams */
+.draft__missed {
+  display: grid;
+  gap: 6px;
+}
+.draft__missed p {
+  margin: 0;
+}

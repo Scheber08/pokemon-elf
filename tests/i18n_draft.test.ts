@@ -733,6 +733,20 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(bests).toHaveLength(11);
     for (let rd = 1; rd <= 11; rd++) expect(bests.filter((li) => li.textContent!.includes(` · R${rd} `))).toHaveLength(1);
     expect(bests[0].querySelector('.draft-results__roundbest')!.textContent).toBe(' 🏅Best pick of the round (positional fit)');
+    // 😬 Verpasste Chance (nur das menschliche Team; ein Mensch → ohne Teamnamen)
+    {
+      const missed = timeline.missedChance(
+        log.map((x, i) => ({ pick: i, teamId: String(x.team), pokemonId: x.id, slot: x.slot })),
+        teams.map((tm, i) => ({ id: String(i), formation: tm.formation })),
+        '0',
+        ALL.filter((p) => !p.leg && !p.myth && !p.form),
+        SCALE,
+      )!;
+      expect(missed).toBeTruthy();
+      const rows = r.container.querySelectorAll('.draft__missed .draft-results__missed');
+      expect(rows).toHaveLength(1);
+      expect(rows[0].textContent).toMatch(new RegExp(`^😬 Missed chance: pick ${missed.pick + 1} .+ \\(fit ${missed.fit}\\) – .+ \\(fit ${missed.altFit}\\) was still free at \\S+ – `));
+    }
     // ★ hinter Mewtu (und nur dort)
     const marked = list.filter((li) => li.querySelector('.draft-feed__kind'));
     expect(marked).toHaveLength(1);
