@@ -1114,6 +1114,15 @@ describe('ManagerSeason', () => {
     const { buildTable } = await import('../src/lib/season');
     const second = buildTable(s.league!.teams, s.league!.matches.filter((m) => m.round > days.length / 2))[0];
     expect(rec.textContent).toContain(`${second.pts} Pkt in der Rückrunde`);
+    // Eigener bester / schwächster Pick nach Positions-Fit
+    {
+      const { FORMATIONS } = await import('../src/config/formations');
+      const { positionFit } = await import('../src/lib/fit');
+      const mine = s.teams.find((t) => t.id === 'h')!;
+      const fits = FORMATIONS[mine.formation].slots.map((d, j) => Math.round(positionFit(ALL.find((p) => p.id === mine.slots[j])!, d.pos, SCALE)));
+      const picksLine = container.querySelector('.draft-results__ownpicks')!.textContent!;
+      expect(picksLine).toMatch(new RegExp(`^Dein bester Pick: .+ \\(\\S+, Fit ${Math.max(...fits)}, Pick \\d+\\) · dein schwächster: .+ \\(\\S+, Fit ${Math.min(...fits)}, Pick \\d+\\)$`));
+    }
     // Eigene Extreme: höchster Sieg / höchste Niederlage aus eigener Sicht
     const me = s.teams.findIndex((t) => t.id === 'h');
     const own = s.league!.matches.filter((m) => m.home === me || m.away === me).map((m) => (m.home === me ? [m.hg, m.ag] : [m.ag, m.hg]));

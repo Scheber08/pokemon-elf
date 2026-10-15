@@ -29,6 +29,8 @@ import { cleanKit } from '../lib/kits';
 import { cleanCrest } from '../lib/crest';
 import { Crest } from './Crest';
 import { shinyTeamBoost } from '../lib/shiny';
+import { FORMATIONS } from '../config/formations';
+import { positionFit } from '../lib/fit';
 import { goalReached, rosterOf } from '../lib/draftEngine';
 
 interface Props {
@@ -308,6 +310,29 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
               {best && tx.ownBest(`${view(best).gf}:${view(best).ga}`, nameOf(view(best).opp))}
               {best && worst && ' · '}
               {worst && tx.ownWorst(`${view(worst).gf}:${view(worst).ga}`, nameOf(view(worst).opp))}
+            </p>
+          );
+        })()}
+        {you != null && teams[you] && (() => {
+          // Eigener bester und schwächster Pick nach Positions-Fit (Feldspieler, Position am Saisonende)
+          const team = teams[you];
+          const sc = scale('all');
+          const rated = FORMATIONS[team.formation].slots.flatMap((d, j) => {
+            const p = team.slots[j] != null ? byId.get(team.slots[j]!) : undefined;
+            return p ? [{ p, pos: d.pos, fit: Math.round(positionFit(p, d.pos, sc)) }] : [];
+          });
+          if (rated.length < 2) return null;
+          const top = rated.reduce((a, b) => (b.fit > a.fit ? b : a));
+          const low = rated.reduce((a, b) => (b.fit < a.fit ? b : a));
+          if (top.fit === low.fit) return null;
+          const pickNo = (id: number) => {
+            const k = picks.findIndex((x) => x.pokemonId === id);
+            return k >= 0 ? picks[k].pick + 1 : null;
+          };
+          const line = (x: (typeof rated)[number]) => tx.pickLine(t.game.pokemon(x.p), t.game.posShort[x.pos], x.fit, pickNo(x.p.id));
+          return (
+            <p className="draft-results__ownpicks muted small">
+              {tx.ownTopPick(line(top))} · {tx.ownLowPick(line(low))}
             </p>
           );
         })()}
