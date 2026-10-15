@@ -549,7 +549,7 @@
 }
 .scorers.draft-results__scorers li.is-you {
   background: rgba(255, 203, 5, 0.12);
-  box-shadow: inset 3px 0 0 var(--yellow);
+  box-shadow: inset 3px 0 0 #2e9a44;
   border-radius: 4px;
   padding-left: 6px;
 }
@@ -1092,4 +1092,12 @@
 }
 :root[data-theme='light'] .draft-results__eleven-list li.is-mine {
   color: #b45309;
+}
+
+/* Tabellen-Zonen: oben Meister bzw. Aufstiegsplätze, unten die letzten drei (Rand an der Platz-Spalte) */
+.league-table tr.is-zone-top td:first-child {
+  box-shadow: inset 3px 0 0 #2e9a44;
+}
+.league-table tr.is-zone-bottom td:first-child {
+  box-shadow: inset 3px 0 0 var(--red);
 }

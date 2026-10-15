@@ -3,7 +3,7 @@ import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
-import { leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague } from '../lib/leagueTimeline';
+import { leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -546,6 +546,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           played={m.played}
           league={shown}
           crestOf={(i) => cleanCrest(s.teams[i]?.crest)}
+          top={(s.career?.tier ?? 2) > 1 ? 3 : 1}
         />
       </section>
     </div>
@@ -1011,7 +1012,10 @@ function ManagerTable({
   played,
   league,
   crestOf,
+  top,
 }: {
+  /** Grüne/goldene Zone oben: Aufstiegsplätze (Karriere unter der 1. Liga) bzw. nur der Meister */
+  top: number;
   /** Wappen eines Teams (null = keins) */
   crestOf: (i: number) => CrestData | null;
   rows: import('../lib/season').TableRow[];
@@ -1065,7 +1069,7 @@ function ManagerTable({
         </thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr key={r.team} className={r.team === you ? 'is-user' : ''}>
+            <tr key={r.team} className={tableRowClass(r.team === you, i + 1, rows.length, top)}>
               <td>
                 {i + 1} {delta && <Trend delta={delta[r.team]} />}
               </td>

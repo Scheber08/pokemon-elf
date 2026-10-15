@@ -7,6 +7,7 @@ import {
   recentForm,
   seasonFinishAt,
   secondsToKickoff,
+  tableRowClass,
   titleRace,
   titleTieNote,
   topScorers,
@@ -614,7 +615,7 @@ function LiveTable({ table, day, you, nameOf, matches }: LiveTableProps) {
         </thead>
         <tbody>
           {table.map((r, i) => (
-            <tr key={r.team} className={r.team === you ? 'is-user' : ''}>
+            <tr key={r.team} className={tableRowClass(r.team === you, i + 1, table.length)}>
               <td className="league-live__place">
                 {day ? i + 1 : '–'}
                 {day && <Trend delta={day.delta[r.team]} />}

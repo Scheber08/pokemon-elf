@@ -1,6 +1,6 @@
 import { useId, useState } from 'react';
 import { useT } from '../i18n';
-import type { Matchday } from '../lib/leagueTimeline';
+import { tableRowClass, type Matchday } from '../lib/leagueTimeline';
 
 interface Props {
   days: Matchday[];
@@ -53,7 +53,7 @@ export function TableTimeTravel({ days, you, nameOf }: Props) {
           </thead>
           <tbody>
             {d.table.map((r, i) => (
-              <tr key={r.team} className={r.team === you ? 'is-user' : ''}>
+              <tr key={r.team} className={tableRowClass(r.team === you, i + 1, d.table.length)}>
                 <td>{i + 1}</td>
                 <td className="left">{nameOf(r.team)}</td>
                 <td>{r.played}</td>

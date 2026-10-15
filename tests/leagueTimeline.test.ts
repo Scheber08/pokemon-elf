@@ -332,3 +332,18 @@ describe('Schnellster Picker', () => {
     expect(fastestPicker([])).toBeNull();
   });
 });
+
+describe('Tabellen-Zonen', () => {
+  it('oben Meister bzw. Aufstiegsplätze, unten die letzten drei – erst ab 6 Teams', async () => {
+    const { tableZone, tableRowClass } = await import('../src/lib/leagueTimeline');
+    expect(tableZone(1, 18)).toBe('top');
+    expect(tableZone(2, 18)).toBeNull();
+    expect(tableZone(3, 18, 3)).toBe('top');
+    expect(tableZone(15, 18)).toBeNull();
+    expect(tableZone(16, 18)).toBe('bottom');
+    expect(tableZone(18, 18)).toBe('bottom');
+    expect(tableZone(1, 4)).toBeNull();
+    expect(tableRowClass(true, 18, 18)).toBe('is-user is-zone-bottom');
+    expect(tableRowClass(false, 9, 18)).toBe('');
+  });
+});

@@ -4,7 +4,7 @@ import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftTeam, ManagerTransfer } from '../lib/api/draftContract';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { bestTransfer, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { bestTransfer, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { buildTable, formatRecord, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -440,7 +440,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
               </thead>
               <tbody>
                 {table.map((r, i) => (
-                  <tr key={r.team} className={r.team === you ? 'is-user' : ''}>
+                  <tr key={r.team} className={cup ? (r.team === you ? 'is-user' : '') : tableRowClass(r.team === you, i + 1, table.length)}>
                     <td>{i + 1}</td>
                     <td className="left draft-results__name">
                       {teams[r.team]?.trainer && (

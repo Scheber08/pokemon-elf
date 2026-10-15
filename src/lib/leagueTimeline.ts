@@ -617,6 +617,26 @@ export function draftSteal(
   return best && { pick: best.pick, teamId: best.teamId, pokemonId: best.pokemonId, pos: best.pos };
 }
 
+/** Unten wird es eng: so viele Plätze bilden die rote Zone (wie das Saisonziel „nicht auf den letzten 3 Plätzen“) */
+export const TABLE_BOTTOM_ZONE = 3;
+
+/**
+ * Tabellen-Zone eines Platzes (1-basiert) für die farbige Markierung: 'top' für die ersten `top` Plätze (Meister,
+ * in der Karriere die Aufstiegsplätze), 'bottom' für die letzten TABLE_BOTTOM_ZONE – erst ab 6 Teams.
+ */
+export function tableZone(place: number, total: number, top = 1): 'top' | 'bottom' | null {
+  if (total < 6) return null;
+  if (place <= top) return 'top';
+  if (place > total - TABLE_BOTTOM_ZONE) return 'bottom';
+  return null;
+}
+
+/** CSS-Klassen einer Tabellenzeile: eigenes Team und Zone */
+export function tableRowClass(isUser: boolean, place: number, total: number, top = 1): string {
+  const zone = tableZone(place, total, top);
+  return [isUser ? 'is-user' : '', zone ? `is-zone-${zone}` : ''].filter(Boolean).join(' ');
+}
+
 /** Elf der Saison: Formation, Pokémon je Slot und das Team (Index) jedes Spielers */
 export interface SeasonEleven {
   formation: FormationId;
