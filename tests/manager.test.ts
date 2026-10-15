@@ -166,6 +166,39 @@ describe('Saison', () => {
     expect(pairs.size).toBe((18 * 17) / 2);
   });
 
+  it('Neue Saisons: Heimrecht ausgeglichen (8 oder 9 Heimspiele), gleiche Paarungen; alte Saisons behalten ihren Plan', () => {
+    const old = managerSchedule(18);
+    const bal = managerSchedule(18, true);
+    const key = (r: [number, number][]) => r.map(([a, b]) => [a, b].sort((x, y) => x - y).join('-')).sort().join(',');
+    expect(bal.map(key)).toEqual(old.map(key));
+    const home = new Array(18).fill(0);
+    for (const r of bal) for (const [h] of r) home[h]++;
+    expect(Math.min(...home)).toBeGreaterThanOrEqual(8);
+    expect(Math.max(...home)).toBeLessThanOrEqual(9);
+    // Der alte Plan war unausgeglichen (Team 1 nie zu Hause) – deshalb das Kennzeichen
+    const oldHome = new Array(18).fill(0);
+    for (const r of old) for (const [h] of r) oldHome[h]++;
+    expect(oldHome[1]).toBe(0);
+    // Neue Saison: Kennzeichen gesetzt, im Schnappschuss sichtbar, gespielt wird nach dem ausgeglichenen Plan
+    const s = startManagerSeason(drafted(), ALL, SCALE);
+    expect(s.manager!.venues).toBe('balanced');
+    expect(snapshotOf(s, 'h', 0).manager!.venues).toBe('balanced');
+    // Erster Spieltag, an dem sich die Pläne im Heimrecht unterscheiden
+    const k = bal.findIndex((r, i) => JSON.stringify(r) !== JSON.stringify(old[i]));
+    expect(k).toBeGreaterThan(0);
+    const legacy = { ...s, manager: { ...s.manager!, venues: undefined } };
+    let a: DraftState = s;
+    let b: DraftState = legacy;
+    for (let i = 0; i <= k; i++) {
+      a = playMatchday(a, ALL, SCALE);
+      b = playMatchday(b, ALL, SCALE);
+    }
+    const at = (x: DraftState) => x.league!.matches.filter((m) => m.round === k + 1).map((m) => [m.home, m.away]);
+    expect(at(a)).toEqual(bal[k]);
+    expect(at(b)).toEqual(old[k]);
+    expect(b.manager!.venues).toBeUndefined();
+  });
+
   it('Spieltage zum Anpfiff, deterministisch; am Ende Phase „done"', () => {
     const start = startManagerSeason(drafted(), ALL, SCALE);
     const before = playDueMatchdays(start, start.season!.startsAt - 1, ALL, SCALE);

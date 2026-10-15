@@ -1908,6 +1908,7 @@ function managerView(m: ManagerState, season: DraftSeason | null, you: string | 
     ...(m.playedLineups ? { playedLineups: m.playedLineups } : {}),
     ...(m.out ? { out: m.out } : {}),
     ...(m.cup ? { cup: m.cup } : {}),
+    ...(m.venues ? { venues: m.venues } : {}),
   };
 }
 

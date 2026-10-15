@@ -7,7 +7,7 @@ import { leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tabl
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
-import { bestLineup, FORM_FIT, formFit, kickoffAt, lineupScore, managerSchedule, squadStrength } from '../lib/manager';
+import { bestLineup, FORM_FIT, formFit, kickoffAt, lineupScore, scheduleOf, squadStrength } from '../lib/manager';
 import { buildTable, formatMinute, sideTable, type LeagueResult, type Match } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
@@ -199,7 +199,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
         })();
 
   const nextNo = m.played + 1;
-  const schedule = managerSchedule(league.teams.length);
+  const schedule = scheduleOf(m, league.teams.length);
   const upcoming: Match[] = (schedule[m.played] ?? []).map(([home, away]) => ({
     round: nextNo,
     home,

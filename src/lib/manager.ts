@@ -82,6 +82,8 @@ export interface ManagerState {
   out?: Record<string, ManagerAbsence>;
   /** Pokal neben der Liga (fehlt bei Saisons von vor dem Pokal) */
   cup?: ManagerCup;
+  /** Heim/Auswärts ausgeglichen verteilt (fehlt bei älteren Saisons – die behalten ihren Spielplan) */
+  venues?: 'balanced';
 }
 
 /** Pokal der Manager-Saison: 16 Teams, eine KO-Runde an jedem Spieltag aus CUP_MATCHDAYS */
@@ -198,10 +200,29 @@ export function rosterForm(state: Pick<DraftState, 'seed' | 'teams'>, matchday: 
   return out;
 }
 
-/** Spielplan: Hinrunde (jeder einmal gegen jeden) */
-export function managerSchedule(teams: number): [number, number][][] {
+/**
+ * Spielplan: Hinrunde (jeder einmal gegen jeden). balanced: gleiche Paarungen, aber Heimrecht so verteilt, dass jedes
+ * Team etwa gleich oft zu Hause spielt (sonst hätte z. B. Team 1 nie ein Heimspiel – mit Heimvorteil unfair).
+ * Ältere Saisons laufen ohne balanced weiter, damit sich ihre Spiele nicht verschieben.
+ */
+export function managerSchedule(teams: number, balanced = false): [number, number][][] {
   const all = roundRobin(teams);
-  return all.slice(0, all.length / 2);
+  const first = all.slice(0, all.length / 2);
+  if (!balanced) return first;
+  // Gierig, deterministisch: Heimrecht bekommt, wer bisher seltener zu Hause war (bei Gleichstand wie im Grundplan)
+  const home = new Array<number>(teams).fill(0);
+  return first.map((round) =>
+    round.map(([a, b]) => {
+      const pair: [number, number] = home[b] < home[a] ? [b, a] : [a, b];
+      home[pair[0]]++;
+      return pair;
+    }),
+  );
+}
+
+/** Spielplan einer laufenden Manager-Saison (je nach Stand mit ausgeglichenem Heimrecht) */
+export function scheduleOf(m: Pick<ManagerState, 'venues'> | null | undefined, teams: number): [number, number][][] {
+  return managerSchedule(teams, m?.venues === 'balanced');
 }
 
 /** Anpfiff eines Spieltags (1-basiert) */
@@ -402,7 +423,7 @@ export function startManagerSeason(
   const form = rosterForm(state, 1);
   const lineups = refreshAuto(state, {}, form, byId, scale);
   const teams = [...drafted, ...fill];
-  const manager: ManagerState = { played: 0, total: managerSchedule(n).length, lineups, form, fill: fillTeamsStored, ...(cup ? { cup } : {}) };
+  const manager: ManagerState = { played: 0, total: managerSchedule(n).length, lineups, form, fill: fillTeamsStored, ...(cup ? { cup } : {}), venues: 'balanced' };
   const league: LeagueResult = { teams: compactTeams(teams), matches: [], table: buildTable(compactTeams(teams), []) };
   return { ...state, manager, league };
 }
@@ -515,7 +536,7 @@ export function playMatchday(before: DraftState, list: Pokemon[], scale: Scale):
   const teams = matchdayTeams(state, cur, k, byId, scale);
   const form = teamForm(state.seed, teams.length, k);
   const rng = leagueRng(state.seed, 'md', k);
-  const round = managerSchedule(teams.length)[k - 1] ?? [];
+  const round = scheduleOf(cur, teams.length)[k - 1] ?? [];
   const played = round.map(([h, a]) => playMatch(rng, teams, k, h, a, false, DRAFT_MODEL, form));
   const matches = [...state.league.matches, ...played];
   // Pokalrunde nach dem Ligaspiel – gleiche Aufstellungen und Tagesform, eigener Zufallsstrom
