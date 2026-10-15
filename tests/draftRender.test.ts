@@ -1028,6 +1028,11 @@ describe('ManagerSeason', () => {
     const { container } = await render(app(h(DraftSeasonStage, { room: fakeRoom(snap(s, 'h')) })));
     await settle();
     expect(container.querySelector('.draft-career__preview')!.textContent).toMatch(/Nächste Saison: \d\. Pokémon-Liga/);
+    // Manager-Saison (Karriere-Start in Liga 2): Abschlusstabelle mit drei Aufstiegsplätzen
+    const rows = container.querySelectorAll('.draft-results__table tbody tr');
+    expect(rows.slice(0, 3).every((r) => r.className.includes('is-zone-top'))).toBe(true);
+    expect(rows[3].className).not.toContain('is-zone-top');
+    expect(container.querySelector('.table-legend')!.textContent).toContain('Aufstieg');
   });
 
   it('Nächster Gegner: seine Ausfälle stehen dabei', async () => {

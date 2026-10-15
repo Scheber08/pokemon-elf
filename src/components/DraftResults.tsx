@@ -37,6 +37,8 @@ import { goalReached, rosterOf } from '../lib/draftEngine';
 interface Props {
   /** Shinys der Liga */
   shinies?: readonly number[];
+  /** Grüne Zone oben: Aufstiegsplätze (Manager-Karriere unter der 1. Liga) bzw. 1 = nur der Meister */
+  zoneTop?: number;
   league: LeagueResult;
   /** Draft-Teams in derselben Reihenfolge wie league.teams */
   teams: DraftTeam[];
@@ -63,7 +65,7 @@ const TOP_SCORERS = 10;
  * entschieden wurde. „Ergebnis teilen" (mit Link zur Liga) nutzt das Teilen-Menü oder die
  * Zwischenablage.
  */
-export function DraftResults({ league, teams, ratings, highlight, sprite, code, leagueName, picks = [], transfers = [], shinies }: Props) {
+export function DraftResults({ league, teams, ratings, highlight, sprite, code, leagueName, picks = [], transfers = [], shinies, zoneTop = 1 }: Props) {
   const t = useT();
   const tx = t.draft.results;
   const [onlyMine, setOnlyMine] = useState(false);
@@ -459,7 +461,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                 {shownTable.map((r, i) => (
                   <tr
                     key={r.team}
-                    className={cup || tableView !== 'all' ? (r.team === you ? 'is-user' : '') : tableRowClass(r.team === you, i + 1, table.length)}
+                    className={cup || tableView !== 'all' ? (r.team === you ? 'is-user' : '') : tableRowClass(r.team === you, i + 1, table.length, zoneTop)}
                   >
                     <td>{i + 1}</td>
                     <td className="left draft-results__name">
@@ -503,7 +505,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
               </tbody>
             </table>
           </div>
-          {!cup && tableView === 'all' && <TableLegend total={table.length} />}
+          {!cup && tableView === 'all' && <TableLegend total={table.length} top={zoneTop} />}
         </section>
 
         <section className="card" aria-labelledby="draft-results-scorers">

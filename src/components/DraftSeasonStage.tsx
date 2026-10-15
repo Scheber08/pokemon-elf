@@ -176,6 +176,7 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
         />
       ) : (
         <DraftResults
+          zoneTop={s.settings.format === 'manager' && (s.career?.tier ?? 2) > 1 ? 3 : 1}
           league={league}
           teams={s.teams}
           ratings={ratings}
