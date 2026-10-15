@@ -1072,3 +1072,8 @@
   margin-top: 0.5rem;
   font-size: 0.9rem;
 }
+
+/* Ticker (Liga): nächster Gegner in einer eigenen, vollen Zeile unter den Kennzahlen */
+.league-ticker__fact-next {
+  grid-column: 1 / -1;
+}

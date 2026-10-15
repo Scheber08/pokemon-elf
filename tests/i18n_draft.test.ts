@@ -470,7 +470,7 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     const step = 60_000;
     const cases = [
       { startsAt: Date.now() + 5_000, expect: ['Kick-off in', 'Fixtures', 'Matchday 1', 'Skip'] },
-      { startsAt: Date.now() - 1.5 * step, expect: ['Matchday 2', 'Results', 'Table after matchday 2', 'Position'] },
+      { startsAt: Date.now() - 1.5 * step, expect: ['Matchday 2', 'Results', 'Table after matchday 2', 'Position', 'Next opponent'] },
       { startsAt: Date.now() - (total - 1) * step - 100, expect: ['Full time!', 'Final scores', 'See result', 'Champions: '] },
     ];
     for (const c of cases) {
@@ -490,6 +490,15 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
       await settle();
       const all = texts(container).join(' | ');
       for (const e of c.expect) expect(all).toContain(e);
+      // Nächster Gegner (Liga): nach Spieltag 2 der Gegner von Spieltag 3 mit seinem Platz, am Saisonende nicht mehr
+      const next = container.querySelector('.league-ticker__next');
+      if (c.expect.includes('Next opponent')) {
+        const m = league.matches.find((x) => x.round === 3 && (x.home === 0 || x.away === 0))!;
+        const opp = m.home === 0 ? m.away : m.home;
+        expect(next!.textContent).toContain(names[opp] ?? clubEn(league.teams[opp].name));
+        expect(next!.textContent).toMatch(/ · \d+(st|nd|rd|th)/);
+      }
+      if (c.expect.includes('Full time!')) expect(next).toBeNull();
       expect(germanLeft(container)).toEqual([]);
     }
   });

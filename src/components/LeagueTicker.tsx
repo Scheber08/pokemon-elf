@@ -132,6 +132,11 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
     cup && you != null && ownStatus === 'alive'
       ? league.matches.filter((m) => m.round > md && (m.home === you || m.away === you)).sort((a, b) => a.round - b.round)[0] ?? null
       : null;
+  /** Liga: nächstes Spiel des eigenen Teams (nach dem aktuellen Spieltag) */
+  const nextLeague =
+    !cup && you != null && md < total
+      ? league.matches.filter((m) => m.round > md && (m.home === you || m.away === you)).sort((a, b) => a.round - b.round)[0] ?? null
+      : null;
   /** Spieltag bzw. (Turnier) Rundenname */
   const dayLabel = (round: number) => {
     const stage = cup ? cupStageOf(cup, round) : null;
@@ -282,6 +287,19 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
               {ownRow.gf}:{ownRow.ga}
             </dd>
           </div>
+          {nextLeague && (() => {
+            const opp = nextLeague.home === you ? nextLeague.away : nextLeague.home;
+            const oppPlace = table.findIndex((r) => r.team === opp) + 1;
+            return (
+              <div className="league-ticker__fact-next">
+                <dt>{t.draft.cup.next}</dt>
+                <dd className="league-ticker__next">
+                  {nameOf(opp)}
+                  {day && oppPlace > 0 && <small className="muted">{` · ${t.draft.placeNo(oppPlace)}`}</small>}
+                </dd>
+              </div>
+            );
+          })()}
         </dl>
       )}
 
