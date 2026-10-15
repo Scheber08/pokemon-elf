@@ -216,6 +216,7 @@ const online = {
   slotBest: (fit: number) => `bester freier Fit hier: ${fit}`,
   peekLabel: 'Feld von',
   peekCurrent: 'Team am Zug',
+  goneSoon: 'bald weg',
   legendFirst: (name: string, team: string) => `★ Erstes legendäres Pokémon des Drafts: ${name} (${team})`,
   legendLast: (name: string, team: string) => `★ Das letzte legendäre Pokémon ist vergeben: ${name} (${team})`,
   favouriteGone: (name: string, team: string) => `${name} ist weg – ${team} war schneller.`,

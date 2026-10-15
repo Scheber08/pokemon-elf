@@ -744,6 +744,33 @@ describe('DraftLive', () => {
     expect(title()).toMatch(/^Dein Team · /);
   });
 
+  it('⏳ „bald weg“: die stärksten Freien, die vor dem nächsten eigenen Pick wohl vergeben sind', async () => {
+    const { POSITIONS } = await import('../src/config/positions');
+    const { positionFit } = await import('../src/lib/fit');
+    const { poolOf } = await import('../src/lib/draftEngine');
+    const field = (Object.keys(POSITIONS) as (keyof typeof POSITIONS)[]).filter((p) => p !== 'SS');
+    const top = (st: DraftState, k: number) =>
+      poolOf(st.settings, ALL)
+        .filter((p) => !engine.draftedIds(st).has(p.id))
+        .map((p) => ({ p, fit: Math.max(...field.map((pos) => positionFit(p, pos, SCALE))) }))
+        .sort((a, b) => b.fit - a.fit || a.p.id - b.p.id)
+        .slice(0, k)
+        .map((x) => x.p.de);
+    const check = async (st: DraftState, k: number) => {
+      const { container } = await renderLive(fakeRoom(snap(st, 'h')));
+      const cards = container.querySelectorAll('.pcard').filter((c) => c.querySelector('.pcard__name'));
+      const expected = new Set(top(st, k));
+      const visibleExpected = cards.filter((c) => expected.has(c.querySelector('.pcard__name')!.textContent!));
+      const marked = cards.filter((c) => (c.querySelector('.pcard__note')?.textContent ?? '').includes('⏳ bald weg'));
+      expect(marked.map((c) => c.querySelector('.pcard__name')!.textContent)).toEqual(visibleExpected.map((c) => c.querySelector('.pcard__name')!.textContent));
+    };
+    // 2 Teams, Snake: Host am Zug (Pick 0), nächster eigener Pick 3 → 2 fremde Picks dazwischen
+    const st = drafting();
+    await check(st, 2);
+    // Team 1 am Zug (Pick 1): bis zum Host noch 2 Picks
+    await check(autoPick(st), 2);
+  });
+
   it('Turnbar: die nächsten drei Picks in Snake-Reihenfolge', async () => {
     const { container } = await renderLive(fakeRoom(snap(drafting(), 'h')));
     // 2 Teams, Snake: Pick 1 Host (jetzt), dann Team 1, Team 1, Host
@@ -896,7 +923,8 @@ describe('DraftLive', () => {
     const st = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
     const { container } = await render(app(h(DraftLive, { room: fakeRoom({ ...snap(st, 'h'), queue: [] }) })));
     await settle();
-    expect(container.querySelectorAll('.pcard__note')).toHaveLength(0);
+    // Ohne „Beste zuerst“ nur die ⏳-Hinweise (die stärksten Freien vor dem nächsten eigenen Pick)
+    expect(container.querySelectorAll('.pcard__note').filter((n) => !n.textContent!.startsWith('⏳'))).toHaveLength(0);
     const box = container
       .querySelectorAll('label')
       .find((l) => l.textContent?.includes('Beste für mein Team zuerst'))!
@@ -908,7 +936,8 @@ describe('DraftLive', () => {
     await settle();
     const notes = container.querySelectorAll('.pcard__note').map((n) => n.textContent!);
     expect(notes.length).toBeGreaterThan(0);
-    expect(notes[0]).toMatch(/^[A-ZÄÖÜ]{2,3} \d+$/);
+    // Ganz vorn stehen die Stärksten – mit ⏳ vor der Position
+    expect(notes[0]).toMatch(/^(⏳ bald weg · )?[A-ZÄÖÜ]{2,3} \d+$/);
   });
 
   // CLIENT-1

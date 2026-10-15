@@ -280,6 +280,29 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     });
     return out;
   }, [pool, owners, allowed, freeKey, me?.formation, readOnly]);
+  // ⏳ Wohl weg, bevor man wieder dran ist: die k stärksten freien Pokémon (bester Feld-Fit), k = fremde Picks bis zum nächsten eigenen
+  const goneSoon = useMemo(() => {
+    if (!me || s.phase !== 'drafting') return new Set<number>();
+    const n = s.teams.length;
+    const mine = s.teams.findIndex((x) => x.id === me.id);
+    const total = n * engineRounds(s.settings);
+    let next = -1;
+    for (let p = s.pickIndex + (myTurn ? 1 : 0); p < total; p++)
+      if (teamIndexForPick(p, n, s.settings.snake ?? true) === mine) {
+        next = p;
+        break;
+      }
+    // Picks anderer Teams dazwischen (am eigenen Zug zählt der eigene jetzt nicht mit)
+    const k = next < 0 ? 0 : next - s.pickIndex - (myTurn ? 1 : 0);
+    if (k <= 0) return new Set<number>();
+    const sc = scale('all');
+    const field = (Object.keys(POSITIONS) as PosCode[]).filter((pos) => pos !== 'SS');
+    const ranked = pool
+      .filter((p) => !owners.has(p.id))
+      .map((p) => ({ id: p.id, fit: Math.max(...field.map((pos) => positionFit(p, pos, sc))) }))
+      .sort((a, b) => b.fit - a.fit || a.id - b.id);
+    return new Set(ranked.slice(0, k).map((x) => x.id));
+  }, [pool, owners, s.pickIndex, s.phase, myTurn, me?.id]);
   // Bestpassender freier Feldplatz eines Pokémon (Position und Fit) – für die Notiz auf den Karten
   const freeFieldPos = useMemo(() => {
     if (!me) return [];
@@ -852,7 +875,8 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                   const queued = at >= 0 ? t.online.queueMark(at + 1) : null;
                   const best = bestFirst && !owners.has(p.id) ? bestFreeFit(p) : null;
                   const fit = best ? `${t.game.posShort[best.pos]} ${best.fit}` : null;
-                  return [queued, fit].filter(Boolean).join(' · ') || null;
+                  const soon = goneSoon.has(p.id) ? `⏳ ${t.online.goneSoon}` : null;
+                  return [soon, queued, fit].filter(Boolean).join(' · ') || null;
                 }}
                 className="pgrid-wrap--compact pgrid-wrap--scroll"
               />

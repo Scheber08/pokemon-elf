@@ -199,6 +199,7 @@ const online: Messages['online'] = {
   slotBest: (fit) => `best free fit here: ${fit}`,
   peekLabel: 'Pitch of',
   peekCurrent: 'Team on the clock',
+  goneSoon: 'gone soon',
   legendFirst: (name, team) => `★ First legendary of the draft: ${name} (${team})`,
   legendLast: (name, team) => `★ The last legendary is gone: ${name} (${team})`,
   favouriteGone: (name, team) => `${name} is gone – ${team} got there first.`,
