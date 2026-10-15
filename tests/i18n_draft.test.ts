@@ -291,7 +291,30 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(all).toContain('My Team, you’re up.');
     expect(all).toContain(clubEn(CLUB_NAMES[0]));
     expect(all).toContain('Cancel draft');
+    // Noch keine Picks: kein Ø Fit auf dem Board
+    expect(container.querySelector('.draft__board .draft-board__fit')).toBeNull();
     expect(germanLeft(container)).toEqual([]);
+  });
+
+  it('Draft läuft: Board zeigt den Ø Fit der gesetzten Picks', async () => {
+    storeLang('en');
+    const { positionFit } = await import('../src/lib/fit');
+    const { FORMATIONS } = await import('../src/config/formations');
+    const f = FORMATION_IDS[0];
+    const kanto = ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth);
+    const slots = emptySlots(f).map((x, j) => (j < 2 ? kanto[j].id : x));
+    const teams = [
+      { name: 'Mein Team', cpu: false, formation: f, slots },
+      { name: CLUB_NAMES[0], cpu: true, formation: FORMATION_IDS[1], slots: emptySlots(FORMATION_IDS[1]) },
+    ];
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: false, pick: 2, selected: null, seed: null }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const fits = [0, 1].map((j) => positionFit(kanto[j], FORMATIONS[f].slots[j].pos, SCALE));
+    const avg = Math.round((fits[0] + fits[1]) / 2);
+    const el = container.querySelectorAll('.draft__board .draft-board__fit');
+    expect(el).toHaveLength(1);
+    expect(el[0].textContent).toBe(`Ø ${avg}Average positional fit of the picks so far: ${avg}`);
   });
 
   it('Liga: Tabelle, Torjäger, Spiele, Kader', async () => {

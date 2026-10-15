@@ -814,6 +814,24 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
             {state.teams.map((tm, i) => (
               <div key={i} className={`draft__col ${i === currentTeam ? 'is-current' : ''}`}>
                 <h3>{teamName(tm.name)}</h3>
+                {(() => {
+                  // Ø Positions-Fit der gesetzten Elf – grobe Live-Stärke wie im Online-Draft
+                  const sc = scale('all');
+                  const fits = FORMATIONS[tm.formation].slots.flatMap((d, j) => {
+                    const p = tm.slots[j] != null ? byId.get(tm.slots[j]!) : undefined;
+                    return p ? [positionFit(p, d.pos, sc)] : [];
+                  });
+                  if (!fits.length) return null;
+                  const avg = Math.round(fits.reduce((a, b) => a + b, 0) / fits.length);
+                  return (
+                    <p className="draft-board__meta">
+                      <span className="draft-board__fit" title={t.draft.board.fitTitle(avg)}>
+                        <span aria-hidden="true">Ø {avg}</span>
+                        <span className="sr-only">{t.draft.board.fitTitle(avg)}</span>
+                      </span>
+                    </p>
+                  );
+                })()}
                 <ol>
                   {FORMATIONS[tm.formation].slots.map((d, j) => {
                     const p = tm.slots[j] != null ? byId.get(tm.slots[j]!) : undefined;
