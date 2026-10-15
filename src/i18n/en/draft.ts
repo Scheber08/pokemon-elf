@@ -286,6 +286,8 @@ const draft: Messages['draft'] = {
     recordDrawsLine: (team, n) => `${team} – ${n} draws`,
     recordHalf: 'Half-season champions',
     recordHalfLine: (team, pts, round) => `${team} – ${pts} pts after the first half (matchday ${round})`,
+    recordSecond: 'Best team of the second half',
+    recordSecondLine: (team, pts) => `${team} – ${pts} pts in the second half`,
     recordStreak: 'Longest winning run',
     recordSurprise: 'Surprise of the season',
     recordFlop: 'Disappointment of the season',

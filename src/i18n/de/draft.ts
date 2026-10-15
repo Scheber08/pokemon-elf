@@ -313,6 +313,8 @@ const draft = {
     recordDrawsLine: (team: string, n: number) => `${team} – ${n} Unentschieden`,
     recordHalf: 'Herbstmeister',
     recordHalfLine: (team: string, pts: number, round: number) => `${team} – ${pts} Pkt nach der Hinrunde (${round}. Spieltag)`,
+    recordSecond: 'Bestes Team der Rückrunde',
+    recordSecondLine: (team: string, pts: number) => `${team} – ${pts} Pkt in der Rückrunde`,
     recordStreak: 'Längste Siegesserie',
     recordSurprise: 'Überraschung der Saison',
     recordFlop: 'Enttäuschung der Saison',

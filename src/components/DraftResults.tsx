@@ -6,7 +6,7 @@ import type { DraftPickLog, DraftTeam, ManagerTransfer } from '../lib/api/draftC
 import { copyText, downloadBlob } from '../lib/exportImage';
 import { bestTransfer, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
-import { formatRecord, type LeagueResult } from '../lib/season';
+import { buildTable, formatRecord, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
 import { teamLabel } from '../state/useDraftRoom';
@@ -535,11 +535,21 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
               {/* Herbstmeister: Tabellenführer nach der Hinrunde (doppelte Runde, mindestens 4 Spieltage) */}
               {days.length >= 4 && days.length % 2 === 0 && (() => {
                 const half = days[days.length / 2 - 1];
+                // Rückrunden-Tabelle: nur die Spiele nach der Hinrunde (Gleichstand wie in der Tabelle)
+                const second = buildTable(league.teams, league.matches.filter((m) => m.round > half.round))[0];
                 return (
-                  <div>
-                    <dt>{tx.recordHalf}</dt>
-                    <dd>{tx.recordHalfLine(nameOf(half.leader.team), half.leader.pts, half.round)}</dd>
-                  </div>
+                  <>
+                    <div>
+                      <dt>{tx.recordHalf}</dt>
+                      <dd>{tx.recordHalfLine(nameOf(half.leader.team), half.leader.pts, half.round)}</dd>
+                    </div>
+                    {second && (
+                      <div>
+                        <dt>{tx.recordSecond}</dt>
+                        <dd>{tx.recordSecondLine(nameOf(second.team), second.pts)}</dd>
+                      </div>
+                    )}
+                  </>
                 );
               })()}
               {bigWin && (

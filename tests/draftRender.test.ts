@@ -1049,6 +1049,9 @@ describe('ManagerSeason', () => {
     const half = days[days.length / 2 - 1];
     expect(rec.textContent).toContain(`Herbstmeister`);
     expect(rec.textContent).toContain(`${half.leader.pts} Pkt nach der Hinrunde (${days.length / 2}. Spieltag)`);
+    const { buildTable } = await import('../src/lib/season');
+    const second = buildTable(s.league!.teams, s.league!.matches.filter((m) => m.round > days.length / 2))[0];
+    expect(rec.textContent).toContain(`${second.pts} Pkt in der Rückrunde`);
     // Eigene Extreme: höchster Sieg / höchste Niederlage aus eigener Sicht
     const me = s.teams.findIndex((t) => t.id === 'h');
     const own = s.league!.matches.filter((m) => m.home === me || m.away === me).map((m) => (m.home === me ? [m.hg, m.ag] : [m.ag, m.hg]));
