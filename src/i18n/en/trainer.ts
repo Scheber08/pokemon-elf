@@ -136,6 +136,7 @@ const trainer: Messages['trainer'] = {
       eyepatch: 'Eyepatch',
       facepaint: 'Face paint',
       locket: 'Heart locket',
+      lantern: 'Lantern',
       medal: 'Medal',
     },
     background: {

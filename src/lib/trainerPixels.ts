@@ -489,6 +489,16 @@ function accessory(c: Canvas, id: string, cloth: string) {
       c.rect(15, 28, 3, 1, '#f08a8a');
       c.dots([[16, 29]], '#f08a8a');
       break;
+    case 'lantern':
+      // Laterne am Stab: dunkler Stab über der Schulter, leuchtend orange Laterne mit Rahmen
+      c.dots([[20, 23], [21, 22], [22, 21], [23, 20], [24, 20], [25, 21]], '#b07a3e');
+      c.dots([[25, 22]], '#26282e');
+      c.rect(24, 23, 3, 1, '#26282e');
+      c.rect(23, 24, 5, 4, '#f08a2a');
+      c.rect(24, 25, 3, 2, '#ffd34d');
+      c.dots([[23, 24], [27, 24], [23, 27], [27, 27]], '#26282e');
+      c.rect(24, 28, 3, 1, '#26282e');
+      break;
     case 'whistle':
       c.dots([[12, 24], [13, 25], [14, 26], [19, 24], [18, 25], [17, 26]], '#26282e');
       c.rect(15, 27, 3, 2, '#c9ced6');

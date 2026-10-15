@@ -135,6 +135,7 @@ const trainer = {
       eyepatch: 'Augenklappe',
       facepaint: 'Fanschminke',
       locket: 'Herz-Medaillon',
+      lantern: 'Laterne',
       medal: 'Medaille',
     },
     background: {
