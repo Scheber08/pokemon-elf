@@ -180,6 +180,7 @@ const online: Messages['online'] = {
   autoPickFor: (team) => `Pick automatically for ${team}`,
   favouriteFallback: 'Your favourite',
   favouriteGone: (name, team) => `${name} is gone – ${team} got there first.`,
+  wishGone: (name, n, team) => `💔 ${name} (wish ${n}) is gone – ${team} got there first.`,
   noSuggestion: 'No suggestion available',
   chooseFirst: 'Choose a Pokémon from the pool first.',
   notYourTurnYet: 'It’s not your turn yet – your favourite stays shortlisted.',

@@ -348,6 +348,21 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     setSuggestSlot(null);
   }, [myTurn, rollKey, selected]);
 
+  // Fremder Pick von der eigenen Wunschliste: kurz bedauern (der Server streicht ihn danach aus der Liste)
+  const wishSeen = useRef({ n: s.picks.length, queue: s.queue ?? [] });
+  useEffect(() => {
+    const before = wishSeen.current;
+    wishSeen.current = { n: s.picks.length, queue: s.queue ?? [] };
+    if (s.picks.length <= before.n) return;
+    const hit = s.picks
+      .slice(before.n)
+      .filter((p) => p.teamId !== me?.id && p.pokemonId !== selected && before.queue.includes(p.pokemonId))
+      .sort((a, b) => before.queue.indexOf(a.pokemonId) - before.queue.indexOf(b.pokemonId))[0];
+    const mon = hit && byId.get(hit.pokemonId);
+    const team = hit && s.teams.find((x) => x.id === hit.teamId);
+    if (mon && team) setInfo(t.online.wishGone(t.game.pokemon(mon), before.queue.indexOf(mon.id) + 1, teamLabel(team, t)));
+  }, [s.picks.length, s.queue]);
+
   // Hinweise verschwinden von selbst
   useEffect(() => {
     if (!info) return;

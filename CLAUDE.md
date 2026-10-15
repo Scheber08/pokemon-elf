@@ -61,7 +61,7 @@ Trikotnummern in allen Modi,
 Kapitän in allen Modi (zählt doppelt; Rangliste dafür einmalig neu gestartet), Trikotfarben, Torjubel und Vereinswappen in allen Modi, Verletzungen, Sperren, Pokal und Karriere (Auf-/Abstieg) und Live-Spieltag in der Manager-Saison, Shinys im Draft (an/aus/Party, auch vom Transfermarkt, Erfolg „Shiny-Sammler“), Kapitän im Vorlauf nach dem letzten
 Pick (automatisch der bestpassende, „Beste Wahl“, Ersatzkapitän der CPU), „Mit CPU auffüllen“ in der Lobby, Vibration bei
 knapper Pick-Zeit, Shinys und Pokalsiege im Profil, Karriere-Verlauf, „Ich bin bereit“ in der Lobby, Wunschliste mit
-Taste W/„★ Wunsch n“/Vergebene entfernen, sortierbare Kader-Tabelle mit Toren und Vorlagen, Teambild auch im lokalen Draft,
+Taste W/„★ Wunsch n“/Vergebene entfernen/💔 bei weggeschnapptem Wunsch, sortierbare Kader-Tabelle mit Toren und Vorlagen, Teambild auch im lokalen Draft,
 alle Picks und bester Kapitän im Ergebnis, Erfolg „Spielführer“, Ø Fit auf dem Board (👑 am besten Team), Position/Fit und „Run“ im
 Pick-Verlauf, offene Positionen im Wartehinweis, Pool-Größe in der Lobby, weitere Saisonrekorde (Herbstmeister,
 Rückrunde, Überraschung/Enttäuschung, torreichstes Spiel, Remis-König), nächster Gegner im Ticker, Formations-Tipp,

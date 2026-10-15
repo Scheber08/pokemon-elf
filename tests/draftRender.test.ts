@@ -549,6 +549,22 @@ describe('DraftLive', () => {
     expect(live()[0].textContent).toMatch(/^Pick 2: .+ an Team 1 \(automatisch\)\. Am Zug: Team 1\.$/);
   });
 
+  it('fremder Pick von der Wunschliste: 💔-Hinweis mit Rang', async () => {
+    let s = autoPick(drafting());
+    // Team 1 ist dran – sein Auto-Pick steht auf Platz 2 der Host-Wunschliste
+    const c = engine.autoPickChoice(s, 't1', ALL, SCALE, false);
+    const other = ALL.find((p) => p.id !== c.pokemonId && !engine.draftedIds(s).has(p.id) && !p.leg && !p.myth)!;
+    s = engine.setQueue(s, 'dev-h', [other.id, c.pokemonId], ALL);
+    expect(snap(s, 'h').queue).toEqual([other.id, c.pokemonId]);
+    const { container, root } = await renderLive(fakeRoom(snap(s, 'h')));
+    expect(container.querySelector('.run-notice')).toBeNull();
+    s = engine.applyPick(s, 't1', c.pokemonId, c.slot, false, 2000, ALL);
+    expect(snap(s, 'h').queue).toEqual([other.id]);
+    await act(async () => root.render(app(h(DraftLive, { room: fakeRoom(snap(s, 'h')) }))));
+    const name = ALL.find((p) => p.id === c.pokemonId)!.de;
+    expect(container.querySelector('.run-notice__text')!.textContent).toBe(`💔 ${name} (Wunsch 2) ist weg – Team 1 war schneller.`);
+  });
+
   it('Wartehinweis nennt die noch offenen Positionen der eigenen Elf', async () => {
     const { FORMATIONS } = await import('../src/config/formations');
     const s = autoPick(drafting());

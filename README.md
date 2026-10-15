@@ -209,7 +209,7 @@ mit Hinweisen meldet der Browser jeden gespielten Spieltag und erinnert 5 Minute
 `src/lib/api/draftContract.ts`.
 
 Weitere Liga-Funktionen: Pool mit Legendären/Mysteriösen, Ultrabestien, Formen und Megas – je mit Limit
-pro Team; Zufallsmodus mit Rerolls; Wunschliste für Auto-Picks (privat); Emoji-Reaktionen (nur verteilt,
+pro Team; Zufallsmodus mit Rerolls; Wunschliste für Auto-Picks (privat, 💔-Hinweis, wenn ein anderes Team einen Wunsch wegschnappt); Emoji-Reaktionen (nur verteilt,
 nicht gespeichert); „Du bist dran" als Ton und Browser-Benachrichtigung, bei 10 s Restzeit vibriert das Handy einmal; QR-Code des Liga-Links in der
 Lobby; Taste „/" springt ins Suchfeld; auf dem Board zeigt 👑 das Team mit dem besten Ø Fit (auch lokal). Das Ergebnis zeigt Draft-Noten, das „Schnäppchen des Drafts"
 (bester später Pick), „Deine Duelle" (Bilanz gegen jeden Gegner), Saisonrekorde, den eigenen Saisonverlauf

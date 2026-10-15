@@ -193,6 +193,8 @@ const online = {
   autoPickFor: (team: string) => `Automatisch für ${team} wählen`,
   favouriteFallback: 'Dein Favorit',
   favouriteGone: (name: string, team: string) => `${name} ist weg – ${team} war schneller.`,
+  /** Ein anderes Team hat ein Pokémon von der eigenen Wunschliste gepickt */
+  wishGone: (name: string, n: number, team: string) => `💔 ${name} (Wunsch ${n}) ist weg – ${team} war schneller.`,
   noSuggestion: 'Kein Vorschlag möglich',
   chooseFirst: 'Wähle zuerst ein Pokémon aus dem Pool.',
   notYourTurnYet: 'Du bist noch nicht dran – dein Favorit bleibt vorgemerkt.',
