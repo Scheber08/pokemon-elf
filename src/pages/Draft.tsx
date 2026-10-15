@@ -1014,6 +1014,12 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
             {tx.onTheClock} <strong>{team && teamName(team.name)}</strong> {team?.cpu ? tx.cpuTag : ''}
           </span>
         </div>
+        {(() => {
+          // Die nächsten Picks nach dem aktuellen (Snake), höchstens drei – wie im Online-Draft
+          const next: string[] = [];
+          for (let p = state.pick + 1; p < totalPicks && next.length < 3; p++) next.push(teamName(state.teams[teamForPick(p, n)].name));
+          return next.length ? <p className="small muted draft__next">{t.online.nextUp(next.join(' → '))}</p> : null;
+        })()}
       </header>
       <div className="challenge__play">
         <div className="challenge__controls">

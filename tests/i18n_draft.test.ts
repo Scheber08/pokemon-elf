@@ -302,6 +302,8 @@ describe('/draft an einem Gerät auf Englisch', () => {
     // Noch offene Positionen (noch kein Pick: alle elf)
     expect(container.querySelectorAll('.hint').map((e) => e.textContent).find((x) => x?.includes('you’re up'))).toMatch(/Still open: .+\.$/);
     expect(all).toContain(clubEn(CLUB_NAMES[0]));
+    // Vorschau der nächsten Picks (Snake mit 2 Teams: CPU, CPU, ich)
+    expect(container.querySelector('.draft__next')!.textContent).toBe(`Then: ${clubEn(CLUB_NAMES[0])} → ${clubEn(CLUB_NAMES[0])} → My Team`);
     expect(all).toContain('Cancel draft');
     // „Suggest“ wählt ein Pokémon aus (Hinweis zeigt es fett)
     const btn = container.querySelectorAll('.draft-pooltools button').find((b) => b.textContent === 'Suggest') as MiniElement;
