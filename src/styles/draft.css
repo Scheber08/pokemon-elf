@@ -1877,6 +1877,11 @@ button.draft-bench__slot {
   height: 80px;
   flex: none;
 }
+.formation-mini--sm {
+  width: 22px;
+  height: 28px;
+  vertical-align: middle;
+}
 .formation-mini__pitch {
   fill: var(--grass-1);
 }

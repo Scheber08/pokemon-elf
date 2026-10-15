@@ -26,6 +26,7 @@ import { SeasonStats } from './SeasonStats';
 import { Sprite } from './Sprite';
 import { Pitch, SS_INDEX, type SlotState } from './Pitch';
 import { TradePanel, TransferMarket } from './ManagerMarket';
+import { FormationMini } from './FormationMini';
 import { KitPicker } from './KitPicker';
 import '../styles/draft.css';
 import { cleanKit } from '../lib/kits';
@@ -489,7 +490,10 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             <strong>{nameOf(rival)}</strong> <span className="muted">({myNext.home === you ? tx.rivalHome : tx.rivalAway})</span>
             {/* Aktuelle Formation des Gegners (Aufstellungen stehen für alle im Schnappschuss; Auffüllteams haben keine) */}
             {s.teams[rival] && m.lineups[s.teams[rival].id] && (
-              <span className="small muted manager__rival-formation"> · {tx.rivalFormation(m.lineups[s.teams[rival].id].formation)}</span>
+              <span className="small muted manager__rival-formation">
+                {' · '}
+                {tx.rivalFormation(m.lineups[s.teams[rival].id].formation)} <FormationMini formation={m.lineups[s.teams[rival].id].formation} small />
+              </span>
             )}
           </p>
           {m.played > 0 && (

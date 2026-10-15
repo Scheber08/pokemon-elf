@@ -1567,7 +1567,8 @@ describe('ManagerSeason', () => {
     expect(best).toBeGreaterThanOrEqual(2);
     expect(el!.textContent).toContain(`(${best} Tore)`);
     // Gedrafteter Gegner: seine aktuelle Formation steht neben dem Namen
-    expect(container.querySelector('.manager__rival-formation')!.textContent).toBe(` · spielt ${s.manager!.lineups[s.teams[rival].id].formation}`);
+    expect(container.querySelector('.manager__rival-formation')!.textContent!.trimEnd()).toBe(` · spielt ${s.manager!.lineups[s.teams[rival].id].formation}`);
+    expect(container.querySelector('.manager__rival-formation .formation-mini--sm')!.getAttribute('aria-label')).toBe(`Formation ${s.manager!.lineups[s.teams[rival].id].formation} als Vorschau`);
     // Kapitän des Gegners
     const cap = s.teams[rival].captain;
     expect(cap).not.toBeNull();
@@ -1698,7 +1699,7 @@ describe('ManagerSeason', () => {
     // Formation des Gegners (nur gedraftete Teams haben eine Aufstellung)
     const lineup = s.teams[rival] ? s.manager!.lineups[s.teams[rival].id] : undefined;
     const f = container.querySelector('.manager__rival-formation');
-    if (lineup) expect(f!.textContent).toBe(` · spielt ${lineup.formation}`);
+    if (lineup) expect(f!.textContent!.trimEnd()).toBe(` · spielt ${lineup.formation}`);
     else expect(f).toBeNull();
   });
 
