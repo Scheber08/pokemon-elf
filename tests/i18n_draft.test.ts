@@ -585,6 +585,8 @@ describe('/draft an einem Gerät auf Englisch', () => {
     const btn = container.querySelectorAll('.draft-pooltools button').find((b) => b.textContent === '↶ Undo') as MiniElement;
     expect(btn).toBeTruthy();
     expect(btn.getAttribute('aria-keyshortcuts')).toBe('Z');
+    // Letzter Pick aus dem Verlauf in der Kopfzeile
+    expect(container.querySelector('.draft__last')!.textContent).toBe(`Last pick: ${pool[2].en} → ${clubEn(CLUB_NAMES[0])}`);
     // Taste Z wirkt wie der Knopf
     const { MiniEvent } = await import('./miniDom');
     const ev = Object.assign(new MiniEvent('keydown', { bubbles: true, cancelable: true }), { key: 'z', ctrlKey: false, metaKey: false, altKey: false });

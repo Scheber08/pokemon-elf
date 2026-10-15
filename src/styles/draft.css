@@ -1551,6 +1551,7 @@ button.draft-bench__slot {
 }
 
 /* Lokaler Draft: Vorschau der nächsten Picks und Bedarf des nächsten Teams eng untereinander */
+.draft__last,
 .draft__next,
 .draft__needs {
   margin: 4px 0 0;

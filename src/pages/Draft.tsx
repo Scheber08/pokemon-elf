@@ -1229,6 +1229,18 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           </span>
         </div>
         {(() => {
+          // Letzter Pick (aus dem Verlauf) – wie im Online-Draft; zeigt v. a. die schnellen CPU-Picks
+          const last = state.log?.at(-1);
+          const mon = last ? byId.get(last.id) : undefined;
+          if (!last || !mon) return null;
+          return (
+            <p className="small muted draft__last">
+              {t.online.lastPick} <strong>{t.game.pokemon(mon)}</strong>
+              {state.shinies?.includes(last.id) && <span title={t.shiny.title}> ✨</span>} → {teamName(state.teams[last.team].name)}
+            </p>
+          );
+        })()}
+        {(() => {
           // Die nächsten Picks nach dem aktuellen (Snake), höchstens drei – wie im Online-Draft
           const next: string[] = [];
           for (let p = state.pick + 1; p < totalPicks && next.length < 3; p++) next.push(teamName(state.teams[teamForPick(p, n)].name));
