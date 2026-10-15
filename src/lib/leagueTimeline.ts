@@ -542,6 +542,13 @@ export function draftShareText(i: DraftShareInput): string {
   ].join('\n');
 }
 
+/** Text zum Teilen einer lokalen Liga: Meister, Platz jedes menschlichen Teams, Link (Namen schon in der Anzeigesprache) */
+export function localShareText(champion: string, pts: number, humans: readonly { name: string | null; place: number }[], url: string): string {
+  const tx = messages().draft.share;
+  // name null: Standardname „Mein Team“ – ohne Namen, sonst hieße es „Mein Team Mein Team“
+  return [tx.localLine(champion, pts) + humans.map((h) => (h.name == null ? tx.ownPlain(h.place) : tx.own(h.name, h.place))).join(''), url].join('\n');
+}
+
 /** Noten des Drafts, beste zuerst */
 export const DRAFT_GRADES = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D'] as const;
 

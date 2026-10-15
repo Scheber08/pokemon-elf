@@ -740,6 +740,8 @@ const draft: Messages['draft'] = {
     line: (code, champion, pts, tie) =>
       `Pokémon Elf – Online draft ${code}: ${champion} won the league (${plural(pts, 'pt', 'pts')})${tie}.`,
     own: (team, place) => ` My team ${team} finished ${ordinal(place)}.`,
+    ownPlain: (place) => ` My team finished ${ordinal(place)}.`,
+    localLine: (champion, pts) => `Pokémon Elf – one-device fantasy draft: ${champion} won the league (${plural(pts, 'pt', 'pts')}).`,
   },
 };
 

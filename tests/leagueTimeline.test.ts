@@ -455,3 +455,12 @@ describe('Comeback', () => {
     expect(comebackOf([{ ...a, awayScorers: a.awayScorers.map((x) => ({ pokemonId: x.pokemonId, pos: x.pos })) }])).toBeNull();
   });
 });
+
+describe('Lokale Liga teilen', () => {
+  it('Meister, Platz jedes menschlichen Teams (Standardname ohne Doppelung) und Link', async () => {
+    const { localShareText } = await import('../src/lib/leagueTimeline');
+    expect(localShareText('FC Glurak', 18, [{ name: null, place: 2 }, { name: 'Team Blau', place: 5 }], 'https://x/draft')).toBe(
+      'Pokémon Elf – Fantasy-Draft an einem Gerät: Meister FC Glurak (18 Pkt). Mein Team: Platz 2. Mein Team Team Blau: Platz 5.\nhttps://x/draft',
+    );
+  });
+});

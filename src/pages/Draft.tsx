@@ -24,7 +24,7 @@ import { draftsSupported } from '../lib/api/draftClient';
 import { positionFit, roundBestPicks, soleTopIndex } from '../lib/fit';
 import { rankingNames } from '../lib/rankingNames';
 import { emptySlots } from '../lib/formation';
-import { biggestWin, comebackOf, draftGrades, hatTricks, mostCleanSheets, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
+import { biggestWin, comebackOf, draftGrades, hatTricks, localShareText, mostCleanSheets, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
 import { createRng, randomSeed, shuffle } from '../lib/rng';
 import { cpuLevelOf, cpuPickChoice } from '../lib/localCpu';
 import { buildTable, CLASSIC_MODEL, DRAFT_MODEL, formatRecord, sideTable, simulateLeague, type LeagueTeam } from '../lib/season';
@@ -50,7 +50,7 @@ import { CrestEditor } from '../components/CrestEditor';
 import { cpuCaptain, limitKindsOf, pickNumbersLabel } from '../lib/draftEngine';
 import { SHINY_CHANCE, SHINY_FIT_BONUS, SHINY_PARTY_CHANCE, shinyBonus, shinyRoll, shinyTeamBoost } from '../lib/shiny';
 import { useToast } from '../state/Toast';
-import { downloadBlob } from '../lib/exportImage';
+import { copyText, downloadBlob } from '../lib/exportImage';
 import { lineupImage, slugify } from '../lib/lineupImage';
 
 const ROUNDS = 11;
@@ -809,6 +809,28 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 {r.name === OWN_TEAM ? t.draft.manager.yourPlace(i + 1, r.pts) : t.draft.results.yourPlace(teamName(r.name), i + 1, r.pts)}
               </p>
             ) : null,
+          )}
+          {champion && (
+            <button
+              type="button"
+              className="btn btn--small draft__share"
+              onClick={async () => {
+                // Wie online: Teilen-Menü, sonst (oder wenn nicht erlaubt) in die Zwischenablage
+                const humans = league.table.flatMap((r, i) => (state.teams[r.team] && !state.teams[r.team].cpu ? [{ name: r.name === OWN_TEAM ? null : teamName(r.name), place: i + 1 }] : []));
+                const text = localShareText(teamName(champion.name), champion.pts, humans, `${location.origin}/draft`);
+                if (typeof navigator.share === 'function') {
+                  try {
+                    await navigator.share({ text });
+                    return;
+                  } catch (e) {
+                    if ((e as Error).name === 'AbortError') return;
+                  }
+                }
+                toast((await copyText(text)) ? t.draft.results.copied : t.draft.results.copyFailed);
+              }}
+            >
+              {t.draft.results.share}
+            </button>
           )}
         </header>
         <div className="result-grid">

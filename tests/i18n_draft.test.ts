@@ -449,6 +449,17 @@ describe('/draft an einem Gerät auf Englisch', () => {
       const champ = container.querySelector('.draft__champion strong')!.textContent;
       expect(champ).toBe(humanStrong ? 'Mein Team' : CLUB_NAMES[1]);
       expect(doc.body.querySelectorAll('canvas').filter((c) => c.className === 'confetti')).toHaveLength(humanStrong ? 1 : 0);
+      // „Ergebnis teilen“: ohne Teilen-Menü in die Zwischenablage (Hinweis als Toast)
+      if (humanStrong) {
+        const writes: string[] = [];
+        Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (s: string) => void writes.push(s) }, configurable: true });
+        const shareBtn = container.querySelector('.draft__share') as MiniElement;
+        await act(async () => shareBtn.click());
+        await settle();
+        expect(writes).toHaveLength(1);
+        expect(writes[0]).toMatch(/^Pokémon Elf – Fantasy-Draft an einem Gerät: Meister Mein Team \(\d+ Pkt\)\. Mein Team: Platz 1\.\n.+\/draft$/);
+        expect(container.querySelector('.toast')?.textContent ?? doc.body.querySelector('.toast')?.textContent).toBe('Ergebnis kopiert');
+      }
       await act(async () => root.unmount());
     }
     localStorage.removeItem('pokemon-elf:draft');

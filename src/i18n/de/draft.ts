@@ -807,6 +807,9 @@ const draft = {
     line: (code: string, champion: string, pts: number, tie: string) =>
       `Pokémon Elf – Online-Draft ${code}: Meister ${champion} (${pts} Pkt)${tie}.`,
     own: (team: string, place: number) => ` Mein Team ${team}: Platz ${place}.`,
+    /** Lokale Liga (an einem Gerät) */
+    ownPlain: (place: number) => ` Mein Team: Platz ${place}.`,
+    localLine: (champion: string, pts: number) => `Pokémon Elf – Fantasy-Draft an einem Gerät: Meister ${champion} (${pts} Pkt).`,
   },
 };
 
