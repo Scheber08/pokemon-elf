@@ -690,6 +690,75 @@ export function draftSteal(
   return best && { pick: best.pick, teamId: best.teamId, pokemonId: best.pokemonId, pos: best.pos };
 }
 
+/** Ab so viel Fit-Abstand zur besten freien Alternative gilt ein Pick als verpasste Chance */
+export const MISSED_GAP = 10;
+
+export interface MissedChance {
+  /** Eigener Pick (0-basiert) und gewähltes Pokémon */
+  pick: number;
+  pokemonId: number;
+  fit: number;
+  pos: PosCode;
+  /** Beste damals freie Alternative auf derselben Position */
+  altId: number;
+  altFit: number;
+  /** Wer die Alternative später bekam (fehlt: blieb frei) */
+  takenBy?: { teamId: string; pick: number };
+}
+
+/**
+ * „Verpasste Chance“ eines Teams: der eigene Feld-Pick, bei dem die beste damals noch freie Alternative auf
+ * derselben Position am meisten besser gepasst hätte (mindestens MISSED_GAP Fit). eligible schränkt die
+ * Alternativen ein (z. B. ohne Legendäre/Ultrabestien/Megas, die Limits unterliegen). Bei Gleichstand der frühere Pick.
+ */
+export function missedChance(
+  picks: readonly Pick<DraftPickLog, 'pick' | 'teamId' | 'pokemonId' | 'slot'>[],
+  teams: readonly Pick<DraftTeam, 'id' | 'formation'>[],
+  teamId: string,
+  pool: readonly Pokemon[],
+  scale: Scale,
+  eligible: (p: Pokemon) => boolean = () => true,
+): MissedChance | null {
+  const team = teams.find((t) => t.id === teamId);
+  if (!team) return null;
+  const byPick = [...picks].sort((a, b) => a.pick - b.pick);
+  const takenAt = new Map(byPick.map((pk) => [pk.pokemonId, pk]));
+  const byId = new Map(pool.map((p) => [p.id, p]));
+  let best: (MissedChance & { gap: number }) | null = null;
+  for (const pk of byPick) {
+    if (pk.teamId !== teamId) continue;
+    const def = FORMATIONS[team.formation].slots[pk.slot];
+    const mon = byId.get(pk.pokemonId);
+    if (!def || !mon) continue;
+    const fit = positionFit(mon, def.pos, scale);
+    let alt: { id: number; fit: number } | null = null;
+    for (const p of pool) {
+      if (p.id === pk.pokemonId || !eligible(p)) continue;
+      const at = takenAt.get(p.id);
+      if (at && at.pick < pk.pick) continue;
+      const f = positionFit(p, def.pos, scale);
+      if (!alt || f > alt.fit || (f === alt.fit && p.id < alt.id)) alt = { id: p.id, fit: f };
+    }
+    if (!alt) continue;
+    const gap = alt.fit - fit;
+    if (gap < MISSED_GAP || (best && gap <= best.gap)) continue;
+    const later = takenAt.get(alt.id);
+    best = {
+      pick: pk.pick,
+      pokemonId: pk.pokemonId,
+      fit: Math.round(fit),
+      pos: def.pos,
+      altId: alt.id,
+      altFit: Math.round(alt.fit),
+      ...(later ? { takenBy: { teamId: later.teamId, pick: later.pick } } : {}),
+      gap,
+    };
+  }
+  if (!best) return null;
+  const { gap: _gap, ...out } = best;
+  return out;
+}
+
 /** Seit wie vielen Spieltagen (bis einschließlich `round`) der aktuelle Tabellenführer ununterbrochen vorn steht. */
 export function leaderSince(days: readonly Pick<Matchday, 'round' | 'leader'>[], round: number): number {
   const upTo = days.filter((d) => d.round <= round);

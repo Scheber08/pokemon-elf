@@ -438,3 +438,39 @@ describe('Elf der Saison', () => {
     expect(seasonEleven({ matches: [] }, [], byId, scale)).toBeNull();
   });
 });
+
+describe('Verpasste Chance', () => {
+  it('eigener Pick mit dem größten Abstand zur besten damals freien Alternative (ab 10 Fit)', async () => {
+    const { missedChance, MISSED_GAP } = await import('../src/lib/leagueTimeline');
+    const { buildScale, positionFit } = await import('../src/lib/fit');
+    const { FORMATIONS } = await import('../src/config/formations');
+    const { ALL } = await import('./helpers');
+    const sc = buildScale(ALL, 'all');
+    const pos = FORMATIONS['4-4-2'].slots[0].pos;
+    const pool = ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth);
+    const ranked = [...pool].sort((a, b) => positionFit(b, pos, sc) - positionFit(a, pos, sc) || a.id - b.id);
+    const weak = ranked.at(-1)!;
+    const teams = [{ id: 'a', formation: '4-4-2' as const }, { id: 'b', formation: '4-4-2' as const }];
+    // a nimmt den schwächsten für Slot 0, b danach den besten für Slot 0
+    const picks = [
+      { pick: 0, teamId: 'a', pokemonId: weak.id, slot: 0 },
+      { pick: 1, teamId: 'b', pokemonId: ranked[0].id, slot: 0 },
+    ];
+    const m = missedChance(picks, teams, 'a', pool, sc)!;
+    expect(m).toEqual({
+      pick: 0, pokemonId: weak.id, fit: Math.round(positionFit(weak, pos, sc)), pos,
+      altId: ranked[0].id, altFit: Math.round(positionFit(ranked[0], pos, sc)), takenBy: { teamId: 'b', pick: 1 },
+    });
+    // b hat den Besten genommen: keine bessere Alternative
+    const mb = missedChance(picks, teams, 'b', pool, sc);
+    expect(mb).toBeNull();
+    // Eingeschränkte Alternativen: ohne den besten bleibt der zweitbeste, frei geblieben
+    const m2 = missedChance(picks, teams, 'a', pool, sc, (p) => p.id !== ranked[0].id)!;
+    expect(m2.altId).toBe(ranked[1].id);
+    expect(m2.takenBy).toBeUndefined();
+    // Kleiner Abstand: nichts
+    const close = ranked.find((p) => positionFit(ranked[0], pos, sc) - positionFit(p, pos, sc) < MISSED_GAP && p.id !== ranked[0].id)!;
+    expect(missedChance([{ pick: 0, teamId: 'a', pokemonId: close.id, slot: 0 }], teams, 'a', pool, sc)).toBeNull();
+    expect(missedChance(picks, teams, 'x', pool, sc)).toBeNull();
+  });
+});

@@ -5,7 +5,7 @@ import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftSettings, DraftTeam, ManagerTransfer } from '../lib/api/draftContract';
 import { poolStars, StarsLanded } from './PoolStars';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { bestTransfer, comebackOf, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { bestTransfer, comebackOf, missedChance, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { buildTable, formatRecord, sideTable, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -111,6 +111,12 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
     return new Set([...idx].map((i) => sorted[i].pick));
   }, [picks, teams, byId, scale]);
   const steal = useMemo(() => draftSteal(picks, teams, byId, scale('all')), [picks, teams, byId, scale]);
+  // 😬 Verpasste Chance des eigenen Teams (nur ohne Zufallswurf; Legendäre & Co. zählen wegen der Limits nicht als Alternative)
+  const missed = useMemo(() => {
+    const own = highlight != null ? teams[highlight] : undefined;
+    if (!own || !settings || (settings.roll && settings.roll !== 'off') || !all.length || !picks.length) return null;
+    return missedChance(picks, teams, own.id, poolOf(settings, all), scale('all'), (p) => limitKindsOf(p).length === 0);
+  }, [picks, teams, highlight, settings, all, scale]);
   const signing = useMemo(
     () => bestTransfer(league.matches, transfers, (id) => teams.findIndex((tm) => tm.id === id)),
     [league, transfers, teams],
@@ -379,6 +385,22 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
             </p>
           );
         })()}
+        {missed && byId.get(missed.pokemonId) && byId.get(missed.altId) && (
+          <p className="draft-results__missed muted small">
+            😬{' '}
+            {tx.missed(
+              missed.pick + 1,
+              t.game.pokemon(byId.get(missed.pokemonId)!),
+              missed.fit,
+              t.game.posShort[missed.pos],
+              t.game.pokemon(byId.get(missed.altId)!),
+              missed.altFit,
+            )}{' '}
+            {missed.takenBy
+              ? tx.missedTaken(nameOf(teams.findIndex((tm) => tm.id === missed.takenBy!.teamId)), missed.takenBy.pick + 1)
+              : tx.missedFree}
+          </p>
+        )}
         {ownRow && !cup && you != null && teams[you]?.goal && (
           <p className="draft-results__goal">
             {goalReached(teams[you].goal!, ownIndex + 1, table.length)

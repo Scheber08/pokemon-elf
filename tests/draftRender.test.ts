@@ -2058,6 +2058,18 @@ describe('ManagerSeason', () => {
       const picksLine = container.querySelector('.draft-results__ownpicks')!.textContent!;
       expect(picksLine).toMatch(new RegExp(`^Dein bester Pick: .+ \\(\\S+, Fit ${Math.max(...fits)}, Pick \\d+\\) · dein schwächster: .+ \\(\\S+, Fit ${Math.min(...fits)}, Pick \\d+\\)$`));
     }
+    // 😬 Verpasste Chance: wie missedChance (ohne Legendäre & Co. als Alternative)
+    {
+      const { missedChance } = await import('../src/lib/leagueTimeline');
+      const { poolOf, limitKindsOf } = await import('../src/lib/draftEngine');
+      const missed = missedChance(s.picks, s.teams, 'h', poolOf(s.settings, ALL), SCALE, (p) => limitKindsOf(p).length === 0);
+      const el = container.querySelector('.draft-results__missed');
+      if (missed) {
+        const name = (id: number) => ALL.find((p) => p.id === id)!.de;
+        expect(el!.textContent).toContain(`Verpasste Chance: Pick ${missed.pick + 1} ${name(missed.pokemonId)} (Fit ${missed.fit})`);
+        expect(el!.textContent).toContain(`war noch ${name(missed.altId)} frei (Fit ${missed.altFit})`);
+      } else expect(el).toBeNull();
+    }
     // Eigene Extreme: höchster Sieg / höchste Niederlage aus eigener Sicht
     const me = s.teams.findIndex((t) => t.id === 'h');
     const own = s.league!.matches.filter((m) => m.home === me || m.away === me).map((m) => (m.home === me ? [m.hg, m.ag] : [m.ag, m.hg]));

@@ -405,6 +405,10 @@ const draft = {
     /** Bester später Pick */
     topCaptain: (pokemon: string, team: string, goals: number) =>
       `Bester Kapitän: ${pokemon} (${team}) mit ${goals === 1 ? '1 Tor' : `${goals} Toren`}`,
+    missed: (pick: number, name: string, fit: number, pos: string, alt: string, altFit: number) =>
+      `Verpasste Chance: Pick ${pick} ${name} (Fit ${fit}) – als ${pos} war noch ${alt} frei (Fit ${altFit}),`,
+    missedTaken: (team: string, pick: number) => `den sich ${team} mit Pick ${pick} holte.`,
+    missedFree: 'der sogar bis zum Schluss frei blieb.',
     steal: (pokemon: string, pick: number, team: string, pos: string) => `Schnäppchen des Drafts: ${pokemon} (Pick ${pick}) für ${team} als ${pos}`,
     signing: (pokemon: string, team: string, matchday: number, line: string) =>
       `Transfer der Saison: ${pokemon} zu ${team} (vor Spieltag ${matchday}) – danach ${line}`,
