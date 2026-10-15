@@ -7,6 +7,7 @@ import { CLUB_NAMES } from '../config/season';
 import { PosBadge } from '../components/Badges';
 import { DraftPickFeed, DraftTypeChip, KindMarks } from '../components/DraftBoard';
 import type { FeedItem } from '../state/useDraftRoom';
+import { PoolStars } from '../components/PoolStars';
 import { FilterBar, typingElsewhere, useFilteredPokemon, type PokemonFilters } from '../components/FilterBar';
 import { CaptainPicker } from '../components/CaptainPicker';
 import { JerseyEditor } from '../components/JerseyEditor';
@@ -643,6 +644,8 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               {tx.start}
             </button>
           </section>
+          {/* Die stärksten Pokémon der gewählten Einstellungen – wie in der Online-Lobby */}
+          {!poolTooSmall && <PoolStars pool={pool} scale={scale('all')} />}
         </div>
       </div>
     );

@@ -586,6 +586,9 @@ describe('/draft an einem Gerät auf Englisch', () => {
     localStorage.removeItem('pokemon-elf:draft');
     let r = await render(app(h(Draft)));
     await settle();
+    // Setup: „Stars in the pool“ mit fünf Pokémon
+    expect(r.container.querySelector('.pool-stars h2')!.textContent).toBe('⭐ Stars in the pool');
+    expect(r.container.querySelectorAll('.pool-stars li')).toHaveLength(5);
     const start = r.container.querySelectorAll('button').find((b) => b.textContent === 'Start draft') as MiniElement;
     await act(async () => start.click());
     await settle();
