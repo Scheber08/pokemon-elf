@@ -117,6 +117,7 @@ const trainer: Messages['trainer'] = {
       bunny: 'Bunny ears',
       party: 'Party hat',
       mortarboard: 'Graduation cap',
+      mitre: 'Mitre',
       jester: 'Jester cap',
       tyrolean: 'Tyrolean hat',
       leaves: 'Autumn wreath',

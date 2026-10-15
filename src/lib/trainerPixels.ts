@@ -410,6 +410,13 @@ function hat(c: Canvas, id: string, cloth: string) {
       c.dots([[17, 5], [18, 5], [19, 5], [20, 5], [21, 6], [21, 7], [21, 8]], '#f2c230');
       c.dots([[21, 9], [22, 9]], '#c99a1c');
       break;
+    case 'mitre':
+      // Bischofsmütze (Nikolaus): hohe weiße Mitra mit rotem Mittelstreifen, goldenem Band und Kreuz, oben gespalten
+      c.fill((x, y) => y >= 0 && y <= 9 && Math.abs(x - 15.5) <= 2.5 + y * 0.55 && !(y <= 1 && Math.abs(x - 15.5) < 1), '#f3efe0', '#b8ad8f');
+      c.fill((x, y) => y >= 2 && y <= 9 && Math.abs(x - 15.5) <= 1 && !(y >= 4 && y <= 6), '#d8342a', null);
+      c.dots([[15, 4], [16, 4], [14, 5], [15, 5], [16, 5], [17, 5], [15, 6], [16, 6]], '#f2c230');
+      c.fill((x, y) => y === 9 && Math.abs(x - 15.5) <= 7, '#f2c230', null);
+      break;
     case 'wizard':
       c.fill((x, y) => y <= 9 && y >= 0 && Math.abs(x - 15.5) <= 1 + y * 0.9, '#5b3fb0');
       c.rect(6, 9, 20, 2, '#4a3191');

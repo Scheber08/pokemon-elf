@@ -56,7 +56,7 @@ Saison auf 18 Teams mit Ranglisten-Teams aufgefüllt, KO-Turnier mit optionaler 
 Cosmetics-Shop (auch in Rangliste, Profil und Draft), Transfermarkt und Erinnerung vor dem Anpfiff in der
 Manager-Saison, eigener Menüpunkt „Manager", Spielbericht + 2D-Wiedergabe in allen Modi (einstellbar),
 Erfolge für die Manager-Saison, Hinweis „Erfolg freigeschaltet" nach Runs und Ligen, Saisonartikel im Shop
-(Halloween, Weihnachten, Frühling/Ostern, Sommer, Neujahr, Valentinstag, Herbst, Fußball-Sommer, Oktoberfest, Karneval, Muttertag, Schulanfang, Sankt Martin), Spieler des Spieltags, Tausch-Angebote zwischen Teams in der Manager-Saison,
+(Halloween, Weihnachten, Frühling/Ostern, Sommer, Neujahr, Valentinstag, Herbst, Fußball-Sommer, Oktoberfest, Karneval, Muttertag, Schulanfang, Sankt Martin, Nikolaus), Spieler des Spieltags, Tausch-Angebote zwischen Teams in der Manager-Saison,
 Trikotnummern in allen Modi,
 Kapitän in allen Modi (zählt doppelt; Rangliste dafür einmalig neu gestartet), Trikotfarben, Torjubel und Vereinswappen in allen Modi, Verletzungen, Sperren, Pokal und Karriere (Auf-/Abstieg) und Live-Spieltag in der Manager-Saison, Shinys im Draft (an/aus/Party, auch vom Transfermarkt, Erfolg „Shiny-Sammler“), Kapitän im Vorlauf nach dem letzten
 Pick (automatisch der bestpassende, „Beste Wahl“, Ersatzkapitän der CPU), „Mit CPU auffüllen“ in der Lobby, Vibration bei
@@ -71,7 +71,7 @@ im Ticker, Führungsserie, Favorit vor dem Anpfiff, Vorschau der nächsten Picks
 ausgeglichenes Heimrecht im Manager-Spielplan, lokale Liga mit Heim/Auswärts, Pick-Verlauf (alle Picks, Rückgängig, Schnäppchen), Saisonrekorden, Meisterchancen, Zeitreise, Kreuztabelle, Duellen,
 Revanche und Titelsammlung, „Reihenfolge mischen“ (Lobby und lokal), „Beste Freie“ je offener Position (lokal und online), Restdauer und CPU-Stärke (`cpuLevel`) im Online-Draft, Bedarf des nächsten Teams und gestrichelte Board-Spalte (online und lokal), Restprogramm mit den nächsten drei Gegnern, Abstand zur Abstiegszone, Serie (`currentRun`) und Spielort-Bilanz, Formation und Kapitän des Gegners in der Manager-Saison, Serie und Abstand zur Spitze im Ticker, „Neuer Tabellenführer“ in Ticker und Manager-Saison.
 
-1. Weitere Saisons im Shop (z. B. Nikolaus, Erntedank) – neue Einträge mit `seasonal(...)` in `src/lib/trainer.ts`
+1. Weitere Saisons im Shop (z. B. Erntedank, Fasten-/Zuckerfest) – neue Einträge mit `seasonal(...)` in `src/lib/trainer.ts`
 2. Shiny-Party-Badge in der Liste öffentlicher Lobbys (braucht Feld in der Lobby-Zeile – Schema nur additiv)
 
 ## Daten

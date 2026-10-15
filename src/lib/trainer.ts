@@ -59,6 +59,8 @@ const MOTHERSDAY = ['05-01', '05-14', '💐'] as const;
 const SCHOOL = ['08-01', '09-15', '🎒'] as const;
 /** Sankt Martin (Laternenumzüge rund um den 11. November) */
 const MARTIN = ['11-01', '11-11', '🏮'] as const;
+/** Nikolaus (6. Dezember) */
+const NICHOLAS = ['12-01', '12-06', '🎅'] as const;
 /** Valentinstag */
 const VALENTINE = ['02-07', '02-14', '💘'] as const;
 
@@ -158,6 +160,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('hat', 'tyrolean', 250), ...OKTOBERFEST),
   seasonal(item('hat', 'jester', 250), ...CARNIVAL),
   seasonal(item('hat', 'mortarboard', 250), ...SCHOOL),
+  seasonal(item('hat', 'mitre', 300), ...NICHOLAS),
   // Accessoire
   item('accessory', 'none', 0),
   item('accessory', 'freckles', 0),
@@ -230,6 +233,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('companion', '115', 450), ...MOTHERSDAY),
   seasonal(item('companion', '164', 350), ...SCHOOL),
   seasonal(item('companion', '608', 400), ...MARTIN),
+  seasonal(item('companion', '216', 350), ...NICHOLAS),
   item('companion', '6', 600),
   item('companion', '149', 600),
   item('companion', '448', 600),
