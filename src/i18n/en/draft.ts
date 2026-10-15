@@ -525,6 +525,7 @@ const draft: Messages['draft'] = {
     formTitle: (n) => (n > 0 ? `Daily form +${n}` : n < 0 ? `Daily form ${n}` : 'Daily form normal'),
     formNote: (fit) => `Each form step shifts the fit by ${fit} points. The form applies to the next matchday.`,
     lastResults: (n) => `Results matchday ${n}`,
+    starsTitle: (n) => (n === 1 ? 'Player of the matchday once' : `Player of the matchday ${n} times`),
     starTitle: 'Player of the matchday:',
     rivalTitle: 'Next opponent',
     rivalHome: 'home',

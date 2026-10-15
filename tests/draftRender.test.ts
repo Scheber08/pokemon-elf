@@ -1149,6 +1149,16 @@ describe('ManagerSeason', () => {
     const r3 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
     await settle();
     expect(r3.container.querySelector('.manager__leader')!.textContent).toContain(`führt seit ${k} Spieltagen die Tabelle an`);
+    // Kader-Tabelle: ⭐ für „Spieler des Spieltags“ je eigenem Pokémon
+    const lg = tl.storedLeague(s.league, s.teams.length)!;
+    const starCount = new Map<number, number>();
+    for (let rd = 1; rd <= s.manager!.played; rd++) {
+      const st = tl.playerOfRound(lg.matches.filter((m) => m.round === rd));
+      if (st && st.teamIndex === idx) starCount.set(st.pokemonId, (starCount.get(st.pokemonId) ?? 0) + 1);
+    }
+    const marks = r3.container.querySelectorAll('.manager__squad .manager__stars');
+    expect(marks).toHaveLength(starCount.size);
+    for (const el of marks) expect(el.textContent).toMatch(/Spieler des Spieltags/);
   });
 
   it('Saisonende: Saisonrekorde mit Angriff, Abwehr und ggf. Remis-König', async () => {

@@ -412,6 +412,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           shinies={s.shinies}
           goals={goalsOf(league, meIndex)}
           assists={assistsOf(league, meIndex)}
+          stars={starsOf(league, meIndex)}
         />
       ) : (
         <p className="notice">{tx.spectator}</p>
@@ -586,6 +587,18 @@ function assistsOf(league: LeagueResult | null | undefined, team: number): Map<n
   return out;
 }
 
+/** Wie oft jedes Pokémon des Teams „Spieler des Spieltags“ war (je Spieltag eine Auszeichnung) */
+function starsOf(league: LeagueResult | null | undefined, team: number): Map<number, number> {
+  const out = new Map<number, number>();
+  const rounds = new Map<number, Match[]>();
+  for (const m of league?.matches ?? []) rounds.set(m.round, [...(rounds.get(m.round) ?? []), m]);
+  for (const ms of rounds.values()) {
+    const star = playerOfRound(ms);
+    if (star && star.teamIndex === team) out.set(star.pokemonId, (out.get(star.pokemonId) ?? 0) + 1);
+  }
+  return out;
+}
+
 function goalsOf(league: LeagueResult | null | undefined, team: number): Map<number, number> {
   const out = new Map<number, number>();
   for (const m of league?.matches ?? []) {
@@ -609,7 +622,10 @@ function LineupEditor({
   shinies,
   goals,
   assists,
+  stars,
 }: {
+  /** Auszeichnungen „Spieler des Spieltags“ je Pokémon des eigenen Teams */
+  stars?: ReadonlyMap<number, number>;
   team: DraftTeam;
   lineup: ManagerLineup;
   form: Record<string, number>;
@@ -880,6 +896,12 @@ function LineupEditor({
                     <span title={t.shiny.title}>
                       {' '}
                       ✨<span className="sr-only">{t.shiny.title}</span>
+                    </span>
+                  )}
+                  {(stars?.get(r.p.id) ?? 0) > 0 && (
+                    <span className="manager__stars" title={tx.starsTitle(stars!.get(r.p.id)!)}>
+                      {' '}⭐{stars!.get(r.p.id)! > 1 ? ` ${stars!.get(r.p.id)}` : ''}
+                      <span className="sr-only"> – {tx.starsTitle(stars!.get(r.p.id)!)}</span>
                     </span>
                   )}
                   {outText(r.p.id) && (

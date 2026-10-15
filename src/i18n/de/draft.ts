@@ -570,6 +570,7 @@ const draft = {
     formTitle: (n: number) => (n > 0 ? `Tagesform +${n}` : n < 0 ? `Tagesform ${n}` : 'Tagesform normal'),
     formNote: (fit: number) => `Jede Formstufe verschiebt den Fit um ${fit} Punkte. Die Form gilt für den nächsten Spieltag.`,
     lastResults: (n: number) => `Ergebnisse Spieltag ${n}`,
+    starsTitle: (n: number) => (n === 1 ? 'Einmal Spieler des Spieltags' : `${n}× Spieler des Spieltags`),
     starTitle: 'Spieler des Spieltags:',
     rivalTitle: 'Nächster Gegner',
     rivalHome: 'Heimspiel',
