@@ -829,6 +829,20 @@ describe('/draft an einem Gerät auf Englisch', () => {
     const { container } = await render(app(h(Draft)));
     await settle();
     expect(container.querySelector('.draft-double')!.textContent).toBe('🐍 Double pick – you’re up again right after this one.');
+    // Erst Runde 1: noch keine Zielflagge
+    expect(container.querySelector('.draft-turnbar__final')).toBeNull();
+  });
+
+  it('Draft läuft: 🏁 in der letzten Runde', async () => {
+    storeLang('en');
+    const f = FORMATION_IDS[0];
+    const kanto = ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth);
+    // Zwei Teams, je 10 Picks gesetzt → Pick 21 (Runde 11)
+    const teams = [0, 1].map((i) => ({ name: i ? 'Zweites Team' : 'Mein Team', cpu: false, formation: f, slots: emptySlots(f).map((x, j) => (j < 10 ? kanto[i * 10 + j].id : x)) }));
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: false, pick: 20, selected: null, seed: null }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    expect(container.querySelector('.draft-turnbar__final')!.textContent).toBe('Round 11/11 🏁Final round');
   });
 
   it('Draft läuft: 👑 am Team mit dem alleinigen besten Ø Fit', async () => {

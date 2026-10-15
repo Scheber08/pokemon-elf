@@ -1359,8 +1359,16 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
       <header className="page-head">
         <h1 className="page-title">{tx.title}</h1>
         <div className="statusline" role="status">
-          <span className="statusline__item">
+          <span className={`statusline__item ${round === ROUNDS ? 'draft-turnbar__final' : ''}`}>
             {tx.round} <strong>{round}/{ROUNDS}</strong>
+            {round === ROUNDS && (
+              // Letzte Draft-Runde (wie online)
+              <span title={t.online.finalRound}>
+                {' '}
+                <span aria-hidden="true">🏁</span>
+                <span className="sr-only">{t.online.finalRound}</span>
+              </span>
+            )}
           </span>
           <span className="statusline__item">
             {tx.pick} <strong>{state.pick + 1}/{totalPicks}</strong>
