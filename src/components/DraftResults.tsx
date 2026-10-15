@@ -296,6 +296,21 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                 : tx.yourPlace(nameOf(ownRow.team), ownIndex + 1, ownRow.pts)}
           </p>
         )}
+        {ownRow && !cup && you != null && (() => {
+          // Eigener höchster Sieg und höchste Niederlage (aus eigener Sicht, Ergebnis eigene Tore zuerst)
+          const own = league.matches.filter((m) => m.home === you || m.away === you);
+          const view = (m: (typeof own)[number]) => (m.home === you ? { gf: m.hg, ga: m.ag, opp: m.away } : { gf: m.ag, ga: m.hg, opp: m.home });
+          const best = biggestWin(own.filter((m) => view(m).gf > view(m).ga));
+          const worst = biggestWin(own.filter((m) => view(m).gf < view(m).ga));
+          if (!best && !worst) return null;
+          return (
+            <p className="draft-results__extremes muted small">
+              {best && tx.ownBest(`${view(best).gf}:${view(best).ga}`, nameOf(view(best).opp))}
+              {best && worst && ' · '}
+              {worst && tx.ownWorst(`${view(worst).gf}:${view(worst).ga}`, nameOf(view(worst).opp))}
+            </p>
+          );
+        })()}
         {ownRow && !cup && you != null && teams[you]?.goal && (
           <p className="draft-results__goal">
             {goalReached(teams[you].goal!, ownIndex + 1, table.length)

@@ -277,6 +277,8 @@ const draft = {
       `${r.pts} Pkt · ${r.w}–${r.d}–${r.l} · Tore ${r.gf}:${r.ga} · Team-Score ${rating}`,
     youChampion: 'Glückwunsch – dein Team ist Meister!',
     yourPlace: (team: string, place: number, pts: number) => `Dein Team ${team}: Platz ${place} · ${pts} Pkt`,
+    ownBest: (score: string, opp: string) => `Dein höchster Sieg: ${score} gegen ${opp}`,
+    ownWorst: (score: string, opp: string) => `Deine höchste Niederlage: ${score} gegen ${opp}`,
     share: 'Ergebnis teilen',
     saveOwnImage: 'Meine Elf als Bild',
     saveTable: 'Als Bild',

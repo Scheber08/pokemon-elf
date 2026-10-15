@@ -1043,6 +1043,18 @@ describe('ManagerSeason', () => {
     expect(most).toBeGreaterThanOrEqual(4);
     expect(rec.textContent).toContain(`Remis-König`);
     expect(rec.textContent).toContain(`${most} Unentschieden`);
+    // Eigene Extreme: höchster Sieg / höchste Niederlage aus eigener Sicht
+    const me = s.teams.findIndex((t) => t.id === 'h');
+    const own = s.league!.matches.filter((m) => m.home === me || m.away === me).map((m) => (m.home === me ? [m.hg, m.ag] : [m.ag, m.hg]));
+    const ext = container.querySelector('.draft-results__extremes')!.textContent!;
+    const wins = own.filter(([a, b]) => a > b);
+    if (wins.length) {
+      const top = Math.max(...wins.map(([a, b]) => a - b));
+      expect(ext).toMatch(/Dein höchster Sieg: (\d+):(\d+) gegen/);
+      const [, a, b] = ext.match(/Dein höchster Sieg: (\d+):(\d+)/)!;
+      expect(Number(a) - Number(b)).toBe(top);
+    }
+    if (own.some(([a, b]) => a < b)) expect(ext).toMatch(/Deine höchste Niederlage: (\d+):(\d+) gegen/);
   });
 
   it('Nach dem letzten Pick: Kapitän bis zum Anpfiff wählbar (mit Countdown), danach nicht mehr', async () => {

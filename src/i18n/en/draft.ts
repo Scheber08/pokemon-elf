@@ -256,6 +256,8 @@ const draft: Messages['draft'] = {
       `${plural(r.pts, 'pt', 'pts')} · ${r.w}–${r.d}–${r.l} · Goals ${r.gf}:${r.ga} · Team score ${rating}`,
     youChampion: 'Congratulations – your team won the league!',
     yourPlace: (team, place, pts) => `Your team ${team}: ${ordinal(place)} place · ${plural(pts, 'pt', 'pts')}`,
+    ownBest: (score, opp) => `Your biggest win: ${score} against ${opp}`,
+    ownWorst: (score, opp) => `Your heaviest defeat: ${score} against ${opp}`,
     share: 'Share result',
     saveOwnImage: 'My XI as image',
     saveTable: 'As image',
