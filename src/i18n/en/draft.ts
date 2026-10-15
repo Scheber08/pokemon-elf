@@ -320,6 +320,8 @@ const draft: Messages['draft'] = {
     recordAttack: 'Best attack',
     recordDefense: 'Best defence',
     recordWin: 'Biggest win',
+    recordHatTricks: 'Hat-tricks',
+    recordHatTricksLine: (n, pokemon, team, round) => `${n} – ${n === 1 ? '' : 'first '}${pokemon} (${team}) on matchday ${round}`,
     recordFest: 'Highest-scoring game',
     recordClean: 'Clean-sheet kings',
     recordCleanLine: (team, n) => `${team} – ${n} clean sheets`,

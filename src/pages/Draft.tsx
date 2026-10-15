@@ -21,7 +21,7 @@ import { draftsSupported } from '../lib/api/draftClient';
 import { positionFit, soleTopIndex } from '../lib/fit';
 import { rankingNames } from '../lib/rankingNames';
 import { emptySlots } from '../lib/formation';
-import { biggestWin, draftGrades, mostCleanSheets, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
+import { biggestWin, draftGrades, hatTricks, mostCleanSheets, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
 import { createRng, randomSeed, shuffle } from '../lib/rng';
 import { cpuLevelOf, cpuPickChoice } from '../lib/localCpu';
 import { buildTable, CLASSIC_MODEL, DRAFT_MODEL, formatRecord, sideTable, simulateLeague, type LeagueTeam } from '../lib/season';
@@ -1007,6 +1007,18 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     <dd>{line(bigWin)}</dd>
                   </div>
                 )}
+                {(() => {
+                  // Hattricks der Saison: Anzahl und der erste (wie online)
+                  const hats = hatTricks(league.matches);
+                  const first = hats[0];
+                  const mon = first ? byId.get(first.pokemonId) : undefined;
+                  return first && mon ? (
+                    <div>
+                      <dt>{r.recordHatTricks}</dt>
+                      <dd>{r.recordHatTricksLine(hats.length, t.game.pokemon(mon), nameOf(first.team), first.round)}</dd>
+                    </div>
+                  ) : null;
+                })()}
                 {fest && fest !== bigWin && (
                   <div>
                     <dt>{r.recordFest}</dt>

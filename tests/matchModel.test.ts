@@ -246,3 +246,20 @@ describe('Saisonrekord Weiße Weste', () => {
     expect(mostCleanSheets(matches.slice(0, 3), [0, 1, 2])).toBeNull();
   });
 });
+
+describe('Saisonrekord Hattricks', () => {
+  it('drei Tore desselben Pokémon in einem Spiel, nach Spieltag', async () => {
+    const { hatTricks } = await import('../src/lib/leagueTimeline');
+    const g = (pokemonId: number) => ({ pokemonId, pos: 'ST' as const });
+    const matches = [
+      { round: 3, home: 0, away: 1, homeScorers: [g(6), g(6), g(6), g(9)], awayScorers: [g(25), g(25)] },
+      { round: 1, home: 2, away: 0, homeScorers: [g(1)], awayScorers: [g(150), g(150), g(150), g(150)] },
+      { round: 2, home: 1, away: 2, homeScorers: [g(25), g(26), g(25)], awayScorers: [] },
+    ];
+    expect(hatTricks(matches)).toEqual([
+      { round: 1, team: 0, pokemonId: 150, goals: 4 },
+      { round: 3, team: 0, pokemonId: 6, goals: 3 },
+    ]);
+    expect(hatTricks([])).toEqual([]);
+  });
+});

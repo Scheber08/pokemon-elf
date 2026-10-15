@@ -1695,6 +1695,15 @@ describe('ManagerSeason', () => {
     expect(clean).not.toBeNull();
     const cleanName = clean!.team < s.teams.length ? s.teams[clean!.team].name : s.league!.teams[clean!.team].name;
     expect(rec.textContent).toContain(`Weiße Weste${cleanName} – ${clean!.n} Spiele ohne Gegentor`);
+    // Hattricks: Anzahl und der erste (falls es welche gab)
+    {
+      const { hatTricks } = await import('../src/lib/leagueTimeline');
+      const hats = hatTricks(s.league!.matches);
+      expect(hats.length).toBeGreaterThan(0);
+      const mon = ALL.find((p) => p.id === hats[0].pokemonId)!.de;
+      expect(rec.textContent).toContain(`Hattricks${hats.length === 1 ? 'Einer – ' : `${hats.length} – zuerst `}${mon} (`);
+      expect(rec.textContent).toContain(`) am ${hats[0].round}. Spieltag`);
+    }
     // Nur automatische Picks: kein Blitz-König
     expect(rec.textContent).not.toContain('Blitz-König');
     // Host pickt selbst, jeweils 1 s nach dem vorigen Pick → Blitz-König mit allen eigenen Picks außer dem ersten

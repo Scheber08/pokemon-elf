@@ -4,7 +4,7 @@ import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftTeam, ManagerTransfer } from '../lib/api/draftContract';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { bestTransfer, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { bestTransfer, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { buildTable, formatRecord, sideTable, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -655,6 +655,18 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                   <dd>{tx.recordWinLine(nameOf(bigWin.home), `${bigWin.hg}:${bigWin.ag}`, nameOf(bigWin.away), bigWin.round)}</dd>
                 </div>
               )}
+              {(() => {
+                // Hattricks der Saison: Anzahl und der erste
+                const hats = hatTricks(league.matches);
+                const first = hats[0];
+                const mon = first ? byId.get(first.pokemonId) : undefined;
+                return first && mon ? (
+                  <div>
+                    <dt>{tx.recordHatTricks}</dt>
+                    <dd>{tx.recordHatTricksLine(hats.length, t.game.pokemon(mon), nameOf(first.team), first.round)}</dd>
+                  </div>
+                ) : null;
+              })()}
               {fest && fest !== bigWin && (
                 <div>
                   <dt>{tx.recordFest}</dt>

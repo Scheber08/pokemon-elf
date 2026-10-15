@@ -442,6 +442,10 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(labels).toContain('Half-season champions');
     expect(labels).toContain('Best team of the second half');
     expect(rows.find((r) => r[0] === 'Half-season champions')![1]).toMatch(/after the first half \(matchday 5\)$/);
+    // Hattricks: Anzahl und Spieltag des ersten (in dieser Liga gibt es welche)
+    const hat = rows.find((r) => r[0] === 'Hat-tricks');
+    expect(hat).toBeTruthy();
+    expect(hat![1]).toMatch(/^\d+ – (first )?.+ \(.+\) on matchday \d+$/);
     // Weiße Weste (ab 3 Spielen ohne Gegentor)
     const clean = rows.find((r) => r[0] === 'Clean-sheet kings')!;
     expect(clean[1]).toMatch(/ – \d+ clean sheets$/);

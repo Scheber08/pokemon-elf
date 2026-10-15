@@ -844,6 +844,27 @@ export function biggestWin(matches: readonly Match[]): Match | null {
   return best;
 }
 
+/** Ein Hattrick: mindestens drei Tore desselben Pokémon in einem Spiel */
+export interface HatTrick {
+  round: number;
+  team: number;
+  pokemonId: number;
+  goals: number;
+}
+
+/** Alle Hattricks der Saison, nach Spieltag (dann Heim vor Gast) – Grundlage des Saisonrekords „Hattricks“. */
+export function hatTricks(matches: readonly Pick<Match, 'round' | 'home' | 'away' | 'homeScorers' | 'awayScorers'>[]): HatTrick[] {
+  const out: HatTrick[] = [];
+  for (const m of [...matches].sort((a, b) => a.round - b.round)) {
+    for (const [team, scorers] of [[m.home, m.homeScorers], [m.away, m.awayScorers]] as const) {
+      const count = new Map<number, number>();
+      for (const g of scorers ?? []) count.set(g.pokemonId, (count.get(g.pokemonId) ?? 0) + 1);
+      for (const [pokemonId, goals] of count) if (goals >= 3) out.push({ round: m.round, team, pokemonId, goals });
+    }
+  }
+  return out;
+}
+
 /** Torreichstes Spiel der Saison (meiste Tore, dann früherer Spieltag) – null unter 5 Toren. */
 export function goalFest(matches: readonly Match[]): Match | null {
   let best: Match | null = null;

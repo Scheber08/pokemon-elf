@@ -351,6 +351,9 @@ const draft = {
     recordAttack: 'Bester Angriff',
     recordDefense: 'Beste Abwehr',
     recordWin: 'Höchster Sieg',
+    recordHatTricks: 'Hattricks',
+    recordHatTricksLine: (n: number, pokemon: string, team: string, round: number) =>
+      `${n === 1 ? 'Einer' : n} – ${n === 1 ? '' : 'zuerst '}${pokemon} (${team}) am ${round}. Spieltag`,
     recordFest: 'Torreichstes Spiel',
     recordClean: 'Weiße Weste',
     recordCleanLine: (team: string, n: number) => `${team} – ${n} Spiele ohne Gegentor`,
