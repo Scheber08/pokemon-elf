@@ -1688,6 +1688,26 @@ describe('ManagerSeason', () => {
     const hatEl = r5.container.querySelectorAll('.manager__hat').find((e) => e.textContent!.includes(ALL.find((p) => p.id === ids[0])!.de))!;
     expect(hatEl.textContent).toMatch(/^🎩 Hattrick: .+ \(.+\) trifft 3-mal$/);
     expect(hatEl.className.includes('is-you')).toBe(raw.matches[k2].home === idx);
+    // Gezielt: 6:0 → „💥 Kantersieg“ beim letzten Spieltag (genau eine Zeile, eigenes Spiel fett)
+    const rout = {
+      ...s,
+      league: {
+        ...raw,
+        matches: raw.matches.map((x, i) =>
+          i === k2
+            ? { ...x, hg: 6, ag: 0, homeScorers: [10, 20, 30, 40, 50, 60].map((mi, j) => goal(ids[j % 3], mi)), awayScorers: [] }
+            : x.round === md
+              ? { ...x, hg: Math.min(x.hg, 2), ag: Math.min(x.ag, 2), homeScorers: x.homeScorers.slice(0, 2), awayScorers: x.awayScorers.slice(0, 2) }
+              : x,
+        ),
+      },
+    };
+    const r6 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(rout, 'h')), readOnly: false })));
+    await settle();
+    const routEls = r6.container.querySelectorAll('.manager__rout');
+    expect(routEls).toHaveLength(1);
+    expect(routEls[0].textContent).toMatch(/^💥 Kantersieg: .+ schlägt .+ 6:0$/);
+    expect(routEls[0].className.includes('is-you')).toBe(raw.matches[k2].home === idx || raw.matches[k2].away === idx);
   });
 
   it('Saisonende: Saisonrekorde mit Angriff, Abwehr und ggf. Remis-König', async () => {

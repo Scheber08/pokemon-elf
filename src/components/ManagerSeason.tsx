@@ -3,7 +3,7 @@ import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
-import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset } from '../lib/leagueTimeline';
+import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -695,6 +695,18 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
               <p className={`manager__upset ${upset.winner === you ? 'is-you' : ''}`}>
                 <span aria-hidden="true">⚡ </span>
                 {t.draft.ticker.upset(nameOf(upset.winner), nameOf(upset.loser), score)}
+              </p>
+            );
+          })()}
+          {liveMin == null && (() => {
+            // Kantersieg des Spieltags (wie im Saison-Ticker): mindestens vier Tore Abstand
+            const rout = routOf(last);
+            if (!rout) return null;
+            const score = rout.match.home === rout.winner ? `${rout.match.hg}:${rout.match.ag}` : `${rout.match.ag}:${rout.match.hg}`;
+            return (
+              <p className={`manager__rout ${rout.winner === you || rout.loser === you ? 'is-you' : ''}`}>
+                <span aria-hidden="true">💥 </span>
+                {t.draft.ticker.rout(nameOf(rout.winner), nameOf(rout.loser), score)}
               </p>
             );
           })()}
