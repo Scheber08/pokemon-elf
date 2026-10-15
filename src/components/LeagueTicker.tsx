@@ -359,60 +359,63 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
                 <span>{dayLabel(day.round)}</span>
                 <span>{finale ? tx.finalScores : tx.results}</span>
               </div>
-              {upset && (
-                <p className="league-board__upset">
-                  <span aria-hidden="true">⚡ </span>
-                  {tx.upset(
-                    nameOf(upset.winner),
-                    nameOf(upset.loser),
-                    upset.match.home === upset.winner
-                      ? `${upset.match.hg}:${upset.match.ag}`
-                      : `${upset.match.ag}:${upset.match.hg}`,
-                  )}
-                </p>
-              )}
-              {!cup && day.round > 1 && (() => {
-                // Topspiel des Spieltags: beste Platzsumme nach der Tabelle vor diesem Spieltag
-                const before = days[day.round - 2];
-                if (!before) return null;
-                const top = [...day.matches].sort(
-                  (a, b) => before.places[a.home] + before.places[a.away] - (before.places[b.home] + before.places[b.away]),
-                )[0];
-                if (!top) return null;
-                return (
-                  <p className="league-board__top">
-                    <span aria-hidden="true">🔥 </span>
-                    {tx.topGame(
-                      `${before.places[top.home]}. ${nameOf(top.home)}`,
-                      `${top.hg}:${top.ag}`,
-                      `${before.places[top.away]}. ${nameOf(top.away)}`,
+              {/* Hinweise des Spieltags in einem gemeinsamen Kasten (leer = ausgeblendet) */}
+              <div className="league-board__notes">
+                {upset && (
+                  <p className="league-board__upset">
+                    <span aria-hidden="true">⚡ </span>
+                    {tx.upset(
+                      nameOf(upset.winner),
+                      nameOf(upset.loser),
+                      upset.match.home === upset.winner
+                        ? `${upset.match.hg}:${upset.match.ag}`
+                        : `${upset.match.ag}:${upset.match.hg}`,
                     )}
                   </p>
-                );
-              })()}
-              {(() => {
-                // Last-Minute-Sieg des Spieltags (Siegtor ab der 85. Minute)
-                const late = lateWinner(day.matches);
-                if (!late) return null;
-                const score = late.match.home === late.winner ? `${late.match.hg}:${late.match.ag}` : `${late.match.ag}:${late.match.hg}`;
-                return (
-                  <p className="league-board__late">
-                    <span aria-hidden="true">⏱ </span>
-                    {tx.lateWinner(nameOf(late.winner), nameOf(late.loser), score, formatMinute(late.minute))}
-                  </p>
-                );
-              })()}
-              {(() => {
-                // Spieler des Spieltags (wie in der Manager-Saison): meiste Torbeteiligungen, Tore doppelt
-                const star = playerOfRound(day.matches);
-                if (!star) return null;
-                return (
-                  <p className="league-board__star">
-                    <span aria-hidden="true">⭐</span> <strong>{t.draft.manager.starTitle}</strong> {pokemonName(star.pokemonId)}{' '}
-                    <span className="muted">({nameOf(star.teamIndex)})</span> – {t.draft.manager.starLine(star.goals, star.assists)}
-                  </p>
-                );
-              })()}
+                )}
+                {!cup && day.round > 1 && (() => {
+                  // Topspiel des Spieltags: beste Platzsumme nach der Tabelle vor diesem Spieltag
+                  const before = days[day.round - 2];
+                  if (!before) return null;
+                  const top = [...day.matches].sort(
+                    (a, b) => before.places[a.home] + before.places[a.away] - (before.places[b.home] + before.places[b.away]),
+                  )[0];
+                  if (!top) return null;
+                  return (
+                    <p className="league-board__top">
+                      <span aria-hidden="true">🔥 </span>
+                      {tx.topGame(
+                        `${before.places[top.home]}. ${nameOf(top.home)}`,
+                        `${top.hg}:${top.ag}`,
+                        `${before.places[top.away]}. ${nameOf(top.away)}`,
+                      )}
+                    </p>
+                  );
+                })()}
+                {(() => {
+                  // Last-Minute-Sieg des Spieltags (Siegtor ab der 85. Minute)
+                  const late = lateWinner(day.matches);
+                  if (!late) return null;
+                  const score = late.match.home === late.winner ? `${late.match.hg}:${late.match.ag}` : `${late.match.ag}:${late.match.hg}`;
+                  return (
+                    <p className="league-board__late">
+                      <span aria-hidden="true">⏱ </span>
+                      {tx.lateWinner(nameOf(late.winner), nameOf(late.loser), score, formatMinute(late.minute))}
+                    </p>
+                  );
+                })()}
+                {(() => {
+                  // Spieler des Spieltags (wie in der Manager-Saison): meiste Torbeteiligungen, Tore doppelt
+                  const star = playerOfRound(day.matches);
+                  if (!star) return null;
+                  return (
+                    <p className="league-board__star">
+                      <span aria-hidden="true">⭐</span> <strong>{t.draft.manager.starTitle}</strong> {pokemonName(star.pokemonId)}{' '}
+                      <span className="muted">({nameOf(star.teamIndex)})</span> – {t.draft.manager.starLine(star.goals, star.assists)}
+                    </p>
+                  );
+                })()}
+              </div>
               <FixtureList
                 matches={day.matches}
                 you={you}

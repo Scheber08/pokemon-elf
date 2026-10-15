@@ -974,15 +974,23 @@
 }
 
 /* Ticker: Überraschung des Spieltags */
-.league-board__upset,
-.league-board__late,
-.league-board__top,
-.league-board__star {
+.league-board__notes {
+  display: grid;
+  gap: 4px;
   margin: 0 0 8px;
   padding: 6px 10px;
   border-radius: 8px;
   border: 1px dashed var(--line-strong);
   font-size: 13px;
+}
+.league-board__notes:empty {
+  display: none;
+}
+.league-board__upset,
+.league-board__late,
+.league-board__top,
+.league-board__star {
+  margin: 0;
 }
 
 /* Platzverlauf (Liga-Ergebnis) */
