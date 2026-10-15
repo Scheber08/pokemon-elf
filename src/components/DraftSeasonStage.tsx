@@ -123,6 +123,18 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
               return tm.captain != null ? `${t.captain.windowNote} ${t.captain.effect(`${diff >= 0 ? '+' : '−'}${Math.abs(diff).toFixed(1)}`)}` : t.captain.windowNote;
             })()}
           />
+          {league && ratings.length > 1 && (() => {
+            // Vor dem Anpfiff: Favorit nach Team-Score und der eigene Rang (alle Teams der Liga)
+            const fav = ratings.reduce((a, r, i) => (r > ratings[a] ? i : a), 0);
+            const favName = teamNames[fav] ?? t.game.club(league.teams[fav]?.name ?? '');
+            const mine = ratings[meIndex];
+            const rank = ratings.filter((r) => r > mine).length + 1;
+            return (
+              <p className="small muted draft-captain-window__odds">
+                {t.captain.favorite(favName, Math.round(ratings[fav]))} · {t.captain.yourRank(rank, ratings.length)}
+              </p>
+            );
+          })()}
           {room.isHost && (
             <button type="button" className="btn btn--small draft-captain-window__kickoff" onClick={() => room.kickoff()}>
               {t.captain.kickoffNow}

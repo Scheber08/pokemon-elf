@@ -1194,6 +1194,13 @@ describe('ManagerSeason', () => {
     const card = a.container.querySelector('.draft-captain-window')!;
     expect(card.textContent).toMatch(/Kapitän wählen – noch \d+ s bis zum Anpfiff/);
     expect(card.textContent).toMatch(/Wirkung auf den Team-Score: [+−]\d+\.\d/);
+    // Favorit und eigener Rang nach Team-Score (alle Teams der Liga)
+    const ratings = s.league!.teams.map((x) => x.rating);
+    const me = s.teams.findIndex((x) => x.id === 'h');
+    const rank = ratings.filter((r) => r > ratings[me]).length + 1;
+    expect(card.querySelector('.draft-captain-window__odds')!.textContent).toMatch(
+      new RegExp(`^Favorit: .+ \\(Team-Score ${Math.round(Math.max(...ratings))}\\) · dein Team-Score: Platz ${rank} von ${ratings.length}$`),
+    );
     const go = card.querySelectorAll('button').find((b) => b.textContent === 'Jetzt anpfeifen (alle fertig)') as MiniElement | undefined;
     expect(go).toBeTruthy();
     await act(async () => go!.click());

@@ -12,6 +12,8 @@ const captain: Messages['captain'] = {
   managerNote: 'The captain’s fit counts double – on every matchday they are in your lineup. A change applies from the next kickoff.',
   draftNote: 'The captain’s fit counts double. If you don’t choose one, you get the best-fitting player after the last pick – you can still switch until kickoff.',
   windowTitle: (s) => `Choose your captain – ${s} s to kickoff`,
+  favorite: (team, score) => `Favourite: ${team} (team score ${score})`,
+  yourRank: (rank, of) => `your team score ranks ${rank} of ${of}`,
   windowNote: 'Their fit counts double. Choose now and the server plays the season with your captain.',
   localTitle: 'Choose captains',
   localNote: 'The draft is done. Every team now picks its captain – their fit counts double. Then it’s kickoff.',

@@ -10,6 +10,8 @@ const captain = {
   managerNote: 'Die Passung des Kapitäns zählt doppelt – an jedem Spieltag, an dem er in deiner Aufstellung steht. Ein Wechsel gilt ab dem nächsten Anpfiff.',
   draftNote: 'Die Passung des Kapitäns zählt doppelt. Wählst du keinen, bekommst du nach dem letzten Pick den bestpassenden – bis zum Anpfiff kannst du noch wechseln.',
   windowTitle: (s: number) => `Kapitän wählen – noch ${s} s bis zum Anpfiff`,
+  favorite: (team: string, score: number) => `Favorit: ${team} (Team-Score ${score})`,
+  yourRank: (rank: number, of: number) => `dein Team-Score: Platz ${rank} von ${of}`,
   windowNote: 'Seine Passung zählt doppelt. Wählst du jetzt, rechnet der Server die Saison mit deinem Kapitän.',
   localTitle: 'Kapitäne wählen',
   localNote: 'Der Draft ist durch. Jedes Team wählt jetzt seinen Kapitän – seine Passung zählt doppelt. Dann wird angepfiffen.',
