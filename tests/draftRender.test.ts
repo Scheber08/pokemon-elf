@@ -1190,6 +1190,13 @@ describe('ManagerSeason', () => {
       expect(first.querySelector('strong')!.textContent).toBe(String(away[0].pts));
       expect(first.className).not.toContain('is-zone');
     }
+    // Überraschung des letzten Spieltags (Außenseiter-Sieg mit ≥ 100 Rückstand), falls es eine gab
+    {
+      const up = tl.biggestUpset(lg.matches.filter((m) => m.round === s.manager!.played), lg.teams.map((x) => x.rating));
+      const el = r3.container.querySelector('.manager__upset');
+      if (up) expect(el!.textContent).toMatch(/Überraschung: .+ schlägt .+ \d+:\d+/);
+      else expect(el).toBeNull();
+    }
     // Gezielt: ein Spiel des letzten Spieltags als 2:1 mit Siegtor in der 89. Minute → Zeile erscheint
     const md = s.manager!.played;
     const raw = s.league!;

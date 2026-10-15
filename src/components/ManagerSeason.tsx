@@ -3,7 +3,7 @@ import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
-import { leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner } from '../lib/leagueTimeline';
+import { leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -552,6 +552,18 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
               {pokemonName(star.pokemonId)} <span className="muted">({nameOf(star.teamIndex)})</span> – {tx.starLine(star.goals, star.assists)}
             </p>
           )}
+          {liveMin == null && (() => {
+            // Überraschung des Spieltags (wie im Saison-Ticker): Sieg des Außenseiters mit dem größten Rückstand
+            const upset = biggestUpset(last, shown.teams.map((tm) => tm.rating));
+            if (!upset) return null;
+            const score = upset.match.home === upset.winner ? `${upset.match.hg}:${upset.match.ag}` : `${upset.match.ag}:${upset.match.hg}`;
+            return (
+              <p className={`manager__upset ${upset.winner === you ? 'is-you' : ''}`}>
+                <span aria-hidden="true">⚡ </span>
+                {t.draft.ticker.upset(nameOf(upset.winner), nameOf(upset.loser), score)}
+              </p>
+            );
+          })()}
           {liveMin == null && (() => {
             // Last-Minute-Sieg des Spieltags (wie im Saison-Ticker)
             const late = lateWinner(last);
