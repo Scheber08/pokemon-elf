@@ -12,6 +12,8 @@ const captain = {
   windowTitle: (s: number) => `Kapitän wählen – noch ${s} s bis zum Anpfiff`,
   favorite: (team: string, score: number) => `Favorit: ${team} (Team-Score ${score})`,
   yourRank: (rank: number, of: number) => `dein Team-Score: Platz ${rank} von ${of}`,
+  /** Anstoß-Karte: eigener Draft in Zahlen */
+  myDraft: (avg: number, best: string, fit: number) => `Dein Draft: Ø Fit ${avg} · bester Pick ${best} (Fit ${fit})`,
   windowNote: 'Seine Passung zählt doppelt. Wählst du jetzt, rechnet der Server die Saison mit deinem Kapitän.',
   localTitle: 'Kapitäne wählen',
   localNote: 'Der Draft ist durch. Jedes Team wählt jetzt seinen Kapitän – seine Passung zählt doppelt. Dann wird angepfiffen.',

@@ -1958,6 +1958,21 @@ describe('ManagerSeason', () => {
     expect(card.querySelector('.draft-captain-window__odds')!.textContent).toMatch(
       new RegExp(`^Favorit: .+ \\(Team-Score ${Math.round(Math.max(...ratings))}\\) · dein Team-Score: Platz ${rank} von ${ratings.length}$`),
     );
+    // Dein Draft in Zahlen: Ø Fit der Elf und der beste Pick
+    {
+      const { FORMATIONS } = await import('../src/config/formations');
+      const { positionFit } = await import('../src/lib/fit');
+      const tm = s.teams[me];
+      const fits = FORMATIONS[tm.formation].slots.flatMap((d, j) => {
+        const p = tm.slots[j] != null ? ALL.find((x) => x.id === tm.slots[j]) : undefined;
+        return p ? [{ p, fit: positionFit(p, d.pos, SCALE) }] : [];
+      });
+      const best = fits.reduce((x, y) => (y.fit > x.fit ? y : x));
+      const avg = Math.round(fits.reduce((x, y) => x + y.fit, 0) / fits.length);
+      expect(card.querySelector('.draft-captain-window__mine')!.textContent).toBe(
+        `Dein Draft: Ø Fit ${avg} · bester Pick ${best.p.de} (Fit ${Math.round(best.fit)})`,
+      );
+    }
     const go = card.querySelectorAll('button').find((b) => b.textContent === 'Jetzt anpfeifen (alle fertig)') as MiniElement | undefined;
     expect(go).toBeTruthy();
     await act(async () => go!.click());

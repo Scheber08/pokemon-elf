@@ -14,6 +14,7 @@ const captain: Messages['captain'] = {
   windowTitle: (s) => `Choose your captain – ${s} s to kickoff`,
   favorite: (team, score) => `Favourite: ${team} (team score ${score})`,
   yourRank: (rank, of) => `your team score ranks ${rank} of ${of}`,
+  myDraft: (avg, best, fit) => `Your draft: avg. fit ${avg} · best pick ${best} (fit ${fit})`,
   windowNote: 'Their fit counts double. Choose now and the server plays the season with your captain.',
   localTitle: 'Choose captains',
   localNote: 'The draft is done. Every team now picks its captain – their fit counts double. Then it’s kickoff.',

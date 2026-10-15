@@ -28,6 +28,8 @@ import { ManagerCupView, useServerNow } from './ManagerSeason';
 import { CaptainPicker } from './CaptainPicker';
 import { captainWindowOpen, nextCareer } from '../lib/draftEngine';
 import { evaluateTeam } from '../lib/teamScore';
+import { FORMATIONS } from '../config/formations';
+import { positionFit } from '../lib/fit';
 import { SHINY_FIT_BONUS } from '../lib/shiny';
 
 /**
@@ -132,6 +134,23 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
             return (
               <p className="small muted draft-captain-window__odds">
                 {t.captain.favorite(favName, Math.round(ratings[fav]))} · {t.captain.yourRank(rank, ratings.length)}
+              </p>
+            );
+          })()}
+          {(() => {
+            // Dein Draft in Zahlen: Ø Positions-Fit der Elf und der beste Pick (wie das Board)
+            const tm = s.teams[meIndex];
+            const sc = scale('all');
+            const fits = FORMATIONS[tm.formation].slots.flatMap((d, j) => {
+              const p = tm.slots[j] != null ? byId.get(tm.slots[j]!) : undefined;
+              return p ? [{ p, fit: positionFit(p, d.pos, sc) }] : [];
+            });
+            if (!fits.length) return null;
+            const best = fits.reduce((a, b) => (b.fit > a.fit ? b : a));
+            const avg = Math.round(fits.reduce((a, b) => a + b.fit, 0) / fits.length);
+            return (
+              <p className="small draft-captain-window__mine">
+                {t.captain.myDraft(avg, t.game.pokemon(best.p), Math.round(best.fit))}
               </p>
             );
           })()}
