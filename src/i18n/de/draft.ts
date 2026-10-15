@@ -101,6 +101,8 @@ const draft = {
     bestFreeTitle: (name: string, pos: string, fit: number) => `${name} auswählen – bester Freier für ${pos} (Fit ${fit})`,
     undo: '↶ Rückgängig',
     undoTitle: 'Den letzten Pick eines Menschen zurücknehmen (CPU-Picks danach ebenso) – Taste Z',
+    crossTitle: 'Kreuztabelle',
+    crossNote: 'Zeile = Heimteam, Spalte = Gast – beide nach Tabellenplatz. Farbe aus Sicht des Heimteams.',
     newDraft: 'Neuer Draft',
     round: 'Runde',
     pick: 'Pick',

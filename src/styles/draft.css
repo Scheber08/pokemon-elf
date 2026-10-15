@@ -1556,3 +1556,19 @@ button.draft-bench__slot {
 .draft__needs {
   margin: 4px 0 0;
 }
+
+/* Lokale Liga: Kreuztabelle */
+.draft__cross-table td {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.draft__cross-table td.is-S {
+  color: var(--green);
+}
+.draft__cross-table td.is-N {
+  color: var(--red);
+}
+.draft__cross-self {
+  background: var(--line);
+}

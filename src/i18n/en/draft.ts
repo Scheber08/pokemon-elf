@@ -100,6 +100,8 @@ const draft: Messages['draft'] = {
     bestFreeTitle: (name, pos, fit) => `Select ${name} – best available ${pos} (fit ${fit})`,
     undo: '↶ Undo',
     undoTitle: 'Take back the last human pick (and any CPU picks after it) – key Z',
+    crossTitle: 'Results grid',
+    crossNote: 'Row = home team, column = away team – both in table order. Colour from the home side’s view.',
     newDraft: 'New draft',
     round: 'Round',
     pick: 'Pick',

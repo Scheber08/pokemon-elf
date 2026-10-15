@@ -1021,6 +1021,52 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
             </section>
           );
         })()}
+        {league.table.length >= 2 && (() => {
+          // Kreuztabelle: Zeile = Heimteam, Spalte = Gast, beide nach Abschlusstabelle geordnet
+          const order = league.table.map((r) => r.team);
+          const score = new Map(league.matches.map((m) => [`${m.home}-${m.away}`, m]));
+          return (
+            <details className="card details draft__cross">
+              <summary>{tx.crossTitle}</summary>
+              <p className="muted small">{tx.crossNote}</p>
+              <div className="table-scroll">
+                <table className="league-table draft__cross-table">
+                  <thead>
+                    <tr>
+                      <th scope="col" className="left">
+                        {t.draft.col.team}
+                      </th>
+                      {order.map((team, k) => (
+                        <th key={team} scope="col" title={teamName(state.teams[team].name)}>
+                          {k + 1}.
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {order.map((home, k) => (
+                      <tr key={home} className={state.teams[home].cpu ? '' : 'is-user'}>
+                        <th scope="row" className="left">
+                          {k + 1}. {teamName(state.teams[home].name)}
+                        </th>
+                        {order.map((away) => {
+                          if (home === away) return <td key={away} className="draft__cross-self" aria-hidden="true" />;
+                          const m = score.get(`${home}-${away}`);
+                          const cls = !m ? '' : m.hg > m.ag ? 'is-S' : m.hg < m.ag ? 'is-N' : 'is-U';
+                          return (
+                            <td key={away} className={cls}>
+                              {m ? `${m.hg}:${m.ag}` : '–'}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          );
+        })()}
         {state.log && state.log.length === state.teams.length * ROUNDS && (
           // Alle Picks in Reihenfolge – wie im Online-Ergebnis (nur mit Pick-Verlauf)
           <details className="card details draft-results__picks">

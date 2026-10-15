@@ -68,7 +68,7 @@ Rückrunde, Überraschung/Enttäuschung, torreichstes Spiel, Remis-König), näc
 beste Position der Bankspieler, Punkte-Hochrechnung und Torjäger des Gegners in der Manager-Saison, Elf der Saison (auch als Bild,
 lokal und online), Heim-/Auswärtstabelle, Tabellen-Zonen mit Legende, Spieler des Spieltags und Last-Minute-Sieg
 im Ticker, Führungsserie, Favorit vor dem Anpfiff, Vorschau der nächsten Picks, Taste V/„Vorschlag“ auch lokal,
-ausgeglichenes Heimrecht im Manager-Spielplan, lokale Liga mit Heim/Auswärts, Pick-Verlauf (alle Picks, Rückgängig, Schnäppchen), Saisonrekorden, Zeitreise, Duellen,
+ausgeglichenes Heimrecht im Manager-Spielplan, lokale Liga mit Heim/Auswärts, Pick-Verlauf (alle Picks, Rückgängig, Schnäppchen), Saisonrekorden, Zeitreise, Kreuztabelle, Duellen,
 Revanche und Titelsammlung, „Reihenfolge mischen“ (Lobby und lokal), „Beste Freie“ je offener Position (lokal und online), Restdauer und CPU-Stärke (`cpuLevel`) im Online-Draft, Bedarf des nächsten Teams und gestrichelte Board-Spalte (online und lokal), Restprogramm mit den nächsten drei Gegnern, Abstand zur Abstiegszone, Serie (`currentRun`) und Spielort-Bilanz und Formation des Gegners in der Manager-Saison, Serie und Abstand zur Spitze im Ticker, „Neuer Tabellenführer“ in Ticker und Manager-Saison.
 
 1. Weitere Saisons im Shop (z. B. Nikolaus, Erntedank) – neue Einträge mit `seasonal(...)` in `src/lib/trainer.ts`
