@@ -564,6 +564,34 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(list[1].className).not.toContain('is-you');
   });
 
+  it('CPU am Zug: „Faster until the next turn“ verkürzt die Bedenkzeit bis zum eigenen Zug', async () => {
+    storeLang('en');
+    const f0 = FORMATION_IDS[0];
+    const f1 = FORMATION_IDS[1];
+    // Snake mit 3 Teams: Pick 1 und 2 CPU, Pick 3 ich
+    const teams = [
+      { name: CLUB_NAMES[0], cpu: true, formation: f1, slots: emptySlots(f1) },
+      { name: CLUB_NAMES[1], cpu: true, formation: f1, slots: emptySlots(f1) },
+      { name: 'Mein Team', cpu: false, formation: f0, slots: emptySlots(f0) },
+    ];
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: false, pick: 0, selected: null, seed: null, log: [] }));
+    vi.useFakeTimers();
+    try {
+      const { container } = await render(app(h(Draft)));
+      const btn = container.querySelectorAll('.cpu-thinking button').find((b) => b.textContent === '⏩ Faster until the next turn') as MiniElement;
+      expect(btn).toBeTruthy();
+      await act(async () => btn.click());
+      // Zwei CPU-Picks à 40 ms – weit unter der normalen Bedenkzeit (2 × 550 ms)
+      for (let i = 0; i < 4; i++) await act(async () => void vi.advanceTimersByTime(60));
+      const saved = JSON.parse(localStorage.getItem('pokemon-elf:draft')!);
+      expect(saved.pick).toBe(2);
+      // Jetzt ist der Mensch dran – kein CPU-Hinweis mehr
+      expect(container.querySelector('.cpu-thinking')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('Rückgängig: nimmt den letzten eigenen Pick und die CPU-Picks danach zurück', async () => {
     storeLang('en');
     const pool = ALL.filter((p) => !p.leg && !p.myth);

@@ -103,6 +103,7 @@ const draft = {
     undoTitle: 'Den letzten Pick eines Menschen zurücknehmen (CPU-Picks danach ebenso) – Taste Z',
     crossTitle: 'Kreuztabelle',
     crossNote: 'Zeile = Heimteam, Spalte = Gast – beide nach Tabellenplatz. Farbe aus Sicht des Heimteams.',
+    fastCpu: '⏩ Schneller bis zum nächsten Zug',
     newDraft: 'Neuer Draft',
     round: 'Runde',
     pick: 'Pick',

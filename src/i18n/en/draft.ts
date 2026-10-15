@@ -102,6 +102,7 @@ const draft: Messages['draft'] = {
     undoTitle: 'Take back the last human pick (and any CPU picks after it) – key Z',
     crossTitle: 'Results grid',
     crossNote: 'Row = home team, column = away team – both in table order. Colour from the home side’s view.',
+    fastCpu: '⏩ Faster until the next turn',
     newDraft: 'New draft',
     round: 'Round',
     pick: 'Pick',

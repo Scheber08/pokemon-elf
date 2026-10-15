@@ -321,15 +321,24 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [state.phase]);
 
+  // „Schneller“: CPU-Picks bis zum nächsten menschlichen Zug ohne Bedenkzeit (gilt nur bis dahin)
+  const [fastCpu, setFastCpu] = useState(false);
+  useEffect(() => {
+    if (fastCpu && (!team || !team.cpu || state.phase !== 'drafting')) setFastCpu(false);
+  }, [fastCpu, team, state.phase]);
+
   // CPU-Picks: beste Kombination aus Pokémon und freiem Slot nach Fit – mit etwas Zufall (je nach CPU-Stärke).
   useEffect(() => {
     if (state.phase !== 'drafting' || !team?.cpu) return;
-    const timer = window.setTimeout(() => {
-      const best = cpuPickChoice(team, pool, scale('all'), cpuLevelOf(state.cpuLevel), createRng(randomSeed()));
-      if (best) lock(currentTeam, best.slot, best.id);
-    }, 550);
+    const timer = window.setTimeout(
+      () => {
+        const best = cpuPickChoice(team, pool, scale('all'), cpuLevelOf(state.cpuLevel), createRng(randomSeed()));
+        if (best) lock(currentTeam, best.slot, best.id);
+      },
+      fastCpu ? 40 : 550,
+    );
     return () => window.clearTimeout(timer);
-  }, [state.phase, state.pick]);
+  }, [state.phase, state.pick, fastCpu]);
 
   const start = () => {
     setState((s) => ({
@@ -1316,6 +1325,11 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           {team?.cpu ? (
             <div className="card cpu-thinking" aria-live="polite">
               <span className="boot__ball boot__ball--small" aria-hidden="true" /> {tx.cpuScouting(teamName(team.name))}
+              {!fastCpu && (
+                <button type="button" className="btn btn--small btn--ghost draft__fastcpu" onClick={() => setFastCpu(true)}>
+                  {tx.fastCpu}
+                </button>
+              )}
             </div>
           ) : (
             <section aria-labelledby="draft-pick-title">
