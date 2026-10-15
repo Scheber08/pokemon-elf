@@ -1164,6 +1164,10 @@ describe('ManagerSeason', () => {
     expect(el!.textContent).toContain(`(${best} Tore)`);
     // Gedrafteter Gegner: seine aktuelle Formation steht neben dem Namen
     expect(container.querySelector('.manager__rival-formation')!.textContent).toBe(` · spielt ${s.manager!.lineups[s.teams[rival].id].formation}`);
+    // Kapitän des Gegners
+    const cap = s.teams[rival].captain;
+    expect(cap).not.toBeNull();
+    expect(container.querySelector('.manager__rival-captain')!.textContent).toContain(`Kapitän: ${ALL.find((p) => p.id === cap)!.de}`);
   });
 
   it('Manager: aktuelle Serie des eigenen Teams (ungeschlagen/sieglos ab 3 Spielen)', async () => {

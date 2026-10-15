@@ -438,6 +438,19 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             const r = currentRun(shown.matches, rival);
             return r && <SeriesLine run={r} />;
           })()}
+          {s.teams[rival]?.captain != null && (() => {
+            // Kapitän des Gegners (zählt doppelt) – mit Sprite
+            const cap = s.teams[rival].captain!;
+            const p = byId.get(cap);
+            return (
+              <p className="small manager__rival-captain">
+                <span className="captain-badge" title={t.captain.title}>
+                  C<span className="sr-only"> – {t.captain.title}</span>
+                </span>{' '}
+                {p && <Sprite pokemon={p} style={sprite} className="manager__star-sprite" />} {tx.rivalCaptain(pokemonName(cap))}
+              </p>
+            );
+          })()}
           {(() => {
             // Bester Torschütze des Gegners (ab 2 Toren)
             let top: [number, number] | null = null;
