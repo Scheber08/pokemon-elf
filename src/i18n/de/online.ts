@@ -258,6 +258,7 @@ const online = {
   /** Wunschliste (Auto-Pick nimmt die erste erlaubte) */
   queueTitle: 'Wunschliste',
   queueTaken: '(vergeben)',
+  queueSelect: 'Auswählen – dann den Platz im Team antippen',
   queueKey: 'Taste W',
   queueMark: (n: number) => `★ Wunsch ${n}`,
   queueClearTaken: (n: number) => (n === 1 ? 'Vergebenes entfernen' : `${n} vergebene entfernen`),

@@ -488,7 +488,16 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
           {autoOpensAt != null && current && (
             <AutoPickNotice key={`${s.pickIndex}|${current.id}`} room={room} team={current} opensAt={autoOpensAt} />
           )}
-          {me && !readOnly && <DraftQueue room={room} selected={selected} />}
+          {me && !readOnly && (
+            <DraftQueue
+              room={room}
+              selected={selected}
+              onSelect={(id) => {
+                setSelected(id);
+                setSuggestSlot(null);
+              }}
+            />
+          )}
           {me ? (
             <section aria-labelledby="draft-pool-title">
               <h2 id="draft-pool-title" className="section-title">

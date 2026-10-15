@@ -233,6 +233,7 @@ const online: Messages['online'] = {
   reactSend: (emoji) => `Send ${emoji} to everyone`,
   queueMark: (n) => `★ Wish ${n}`,
   queueKey: 'Key W',
+  queueSelect: 'Select – then tap the spot in your team',
   queueTaken: '(taken)',
   queueClearTaken: (n) => (n === 1 ? 'Remove taken one' : `Remove ${n} taken`),
   queueTitle: 'Wishlist',

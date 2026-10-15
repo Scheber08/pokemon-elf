@@ -833,9 +833,15 @@ describe('ManagerSeason', () => {
     const free = ALL.find((p) => p.gen === 1 && p.id !== taken && !st.picks.some((x) => x.pokemonId === p.id))!.id;
     const snapshot = { ...snap(st, 'h'), queue: [taken, free] };
     const room = fakeRoom(snapshot);
-    const { container } = await render(app(h(DraftQueue, { room, selected: null })));
+    const picked: number[] = [];
+    const { container } = await render(app(h(DraftQueue, { room, selected: null, onSelect: (id: number) => picked.push(id) })));
     await settle();
     expect(container.querySelectorAll('.draft-queue__list li.is-taken')).toHaveLength(1);
+    // Freien Eintrag antippen wählt ihn aus (vergebene sind keine Buttons)
+    const picks = container.querySelectorAll('.draft-queue__pick');
+    expect(picks).toHaveLength(1);
+    await act(async () => (picks[0] as MiniElement).click());
+    expect(picked).toEqual([free]);
     const clear = container.querySelectorAll('button').find((b) => b.textContent === 'Vergebenes entfernen') as MiniElement;
     await act(async () => clear.click());
     expect(room.setQueue).toHaveBeenCalledWith([free]);

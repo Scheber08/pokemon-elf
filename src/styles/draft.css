@@ -1403,3 +1403,22 @@ button.draft-bench__slot {
   text-decoration: line-through;
   opacity: 0.6;
 }
+
+/* Wunschliste: Eintrag auswählen */
+.draft-queue__pick {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.draft-queue__pick:hover,
+.draft-queue__pick:focus-visible {
+  text-decoration: underline;
+}
+.draft-queue__pick.is-selected {
+  font-weight: 700;
+  text-decoration: underline;
+}

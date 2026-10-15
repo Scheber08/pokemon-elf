@@ -12,7 +12,16 @@ import { Sprite } from './Sprite';
  * Wunschliste des eigenen Teams im Live-Draft: Das gerade gewählte Pokémon drauf bzw. runter,
  * Reihenfolge ändern, entfernen. Der Server nimmt beim Auto-Pick das erste erlaubte davon.
  */
-export function DraftQueue({ room, selected }: { room: DraftRoom; selected: number | null }) {
+export function DraftQueue({
+  room,
+  selected,
+  onSelect,
+}: {
+  room: DraftRoom;
+  selected: number | null;
+  /** Eintrag antippen: dieses Pokémon auswählen (dann nur noch den Platz wählen) */
+  onSelect?: (id: number) => void;
+}) {
   const t = useT();
   const { byId } = usePokemonData();
   const { sprite } = useSettings();
@@ -71,7 +80,19 @@ export function DraftQueue({ room, selected }: { room: DraftRoom; selected: numb
                 <span className="draft-queue__no">{i + 1}.</span>
                 {p && <Sprite pokemon={p} style={sprite} className="draft-queue__sprite" />}
                 <span className="draft-queue__name">
-                  {name(id)}
+                  {onSelect && !taken.has(id) ? (
+                    <button
+                      type="button"
+                      className={`draft-queue__pick ${selected === id ? 'is-selected' : ''}`}
+                      aria-pressed={selected === id}
+                      title={t.online.queueSelect}
+                      onClick={() => onSelect(id)}
+                    >
+                      {name(id)}
+                    </button>
+                  ) : (
+                    name(id)
+                  )}
                   {taken.has(id) && <small className="muted"> {t.online.queueTaken}</small>}
                 </span>
                 <button
