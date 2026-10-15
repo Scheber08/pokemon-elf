@@ -402,6 +402,17 @@ function hat(c: Canvas, id: string, cloth: string) {
       }
       c.dots([[15, 4], [16, 5]], '#7a5236');
       break;
+    case 'wheat':
+      // Erntekranz (Erntedank): goldene Ähren auf einem Strohreif, dazwischen ein roter Apfel
+      c.fill((x, y) => y === 9 && head(x, y), '#b8862c', null);
+      for (const [x, y] of [[9, 7.5], [12, 6.5], [19, 6.5], [22, 7.5]] as const) {
+        c.fill(ellipse(x, y, 1.4, 2.2), '#f2c230', null);
+        c.dots([[Math.round(x - 0.5), Math.round(y)]], '#c99a1c');
+      }
+      c.fill(ellipse(15.5, 6.5, 2.2, 2), '#d8342a', null);
+      c.dots([[14, 6]], '#f08070');
+      c.dots([[16, 4], [17, 4]], '#6b8f2a');
+      break;
     case 'mortarboard':
       // Doktorhut: Kappe, flaches Brett mit hellem Rand und goldene Quaste
       c.fill(and(ellipse(15.5, 9.5, 7.2, 4), above(9)), '#2b2d36', '#15161b');

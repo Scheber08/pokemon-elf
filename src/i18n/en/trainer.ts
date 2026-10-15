@@ -118,6 +118,7 @@ const trainer: Messages['trainer'] = {
       party: 'Party hat',
       mortarboard: 'Graduation cap',
       mitre: 'Mitre',
+      wheat: 'Harvest wreath',
       jester: 'Jester cap',
       tyrolean: 'Tyrolean hat',
       leaves: 'Autumn wreath',

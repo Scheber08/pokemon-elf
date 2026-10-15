@@ -117,6 +117,7 @@ const trainer = {
       party: 'Partyhut',
       mortarboard: 'Doktorhut',
       mitre: 'Bischofsmütze',
+      wheat: 'Erntekranz',
       jester: 'Narrenkappe',
       tyrolean: 'Tirolerhut',
       leaves: 'Herbstkranz',
