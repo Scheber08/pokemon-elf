@@ -187,6 +187,7 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
           picks={s.picks}
           transfers={s.manager?.transfers}
           shinies={s.shinies}
+          settings={s.settings}
         />
       )}
       {s.manager?.cup && league && (

@@ -1636,3 +1636,9 @@ button.draft-bench__slot {
   flex: none;
   font-variant-numeric: tabular-nums;
 }
+.draft-results__stars li.is-you strong {
+  color: var(--yellow);
+}
+:root[data-theme='light'] .draft-results__stars li.is-you strong {
+  color: #b45309;
+}

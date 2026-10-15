@@ -276,6 +276,9 @@ const draft: Messages['draft'] = {
 
   // ---------------------------------------------------------------- Online league result
   results: {
+    starsTitle: 'Where did the stars go?',
+    starsPick: (team, pick) => `${team} · pick ${pick}`,
+    starsFree: 'not drafted',
     allPicks: (n) => `All ${n} picks`,
     onlyMyPicks: 'Only my picks',
     pickRound: (n) => `Round ${n}`,

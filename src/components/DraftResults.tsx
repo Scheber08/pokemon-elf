@@ -2,7 +2,8 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
-import type { DraftPickLog, DraftTeam, ManagerTransfer } from '../lib/api/draftContract';
+import type { DraftPickLog, DraftSettings, DraftTeam, ManagerTransfer } from '../lib/api/draftContract';
+import { poolStars } from './PoolStars';
 import { copyText, downloadBlob } from '../lib/exportImage';
 import { bestTransfer, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
@@ -32,7 +33,7 @@ import { Crest } from './Crest';
 import { shinyTeamBoost } from '../lib/shiny';
 import { FORMATIONS } from '../config/formations';
 import { positionFit } from '../lib/fit';
-import { fastPickCounts, goalReached, limitKindsOf, rosterOf } from '../lib/draftEngine';
+import { fastPickCounts, goalReached, limitKindsOf, poolOf, rosterOf } from '../lib/draftEngine';
 import { KindMarks } from './DraftBoard';
 
 interface Props {
@@ -54,6 +55,8 @@ interface Props {
   picks?: DraftPickLog[];
   /** Manager-Saison: vollzogene Transfers (für den „Transfer der Saison") */
   transfers?: ManagerTransfer[];
+  /** Einstellungen der Liga – für „Wo landeten die Stars?" (die fünf stärksten Pokémon des Pools) */
+  settings?: DraftSettings;
 }
 
 /** Wie viele Torjäger die Liste zeigt */
@@ -66,12 +69,12 @@ const TOP_SCORERS = 10;
  * entschieden wurde. „Ergebnis teilen" (mit Link zur Liga) nutzt das Teilen-Menü oder die
  * Zwischenablage.
  */
-export function DraftResults({ league, teams, ratings, highlight, sprite, code, leagueName, picks = [], transfers = [], shinies, zoneTop = 1 }: Props) {
+export function DraftResults({ league, teams, ratings, highlight, sprite, code, leagueName, picks = [], transfers = [], shinies, zoneTop = 1, settings }: Props) {
   const t = useT();
   const tx = t.draft.results;
   const [onlyMine, setOnlyMine] = useState(false);
   const c = t.draft.col;
-  const { byId, scale } = usePokemonData();
+  const { all, byId, scale } = usePokemonData();
   const toast = useToast();
   const [saving, setSaving] = useState(false);
   const tableRef = useRef<HTMLElement>(null);
@@ -86,6 +89,11 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
     for (const sc of allScorers) if (!m.has(sc.teamIndex)) m.set(sc.teamIndex, sc);
     return m;
   }, [allScorers]);
+  // Die fünf Stars des Pools (wie in der Lobby) und wer sie mit welchem Pick bekam
+  const stars = useMemo(() => {
+    if (!settings || !all.length || !picks.length) return [];
+    return poolStars(poolOf(settings, all), scale('all')).map((x) => ({ ...x, pick: picks.find((pk) => pk.pokemonId === x.pokemon.id) }));
+  }, [settings, all, picks, scale]);
   const steal = useMemo(() => draftSteal(picks, teams, byId, scale('all')), [picks, teams, byId, scale]);
   const signing = useMemo(
     () => bestTransfer(league.matches, transfers, (id) => teams.findIndex((tm) => tm.id === id)),
@@ -835,6 +843,31 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
           })}
         </div>
       </section>
+
+      {stars.length > 0 && (
+        <section className="card draft-results__stars" aria-labelledby="draft-results-stars-title">
+          <h2 id="draft-results-stars-title" className="section-title">
+            ⭐ {tx.starsTitle}
+          </h2>
+          <ol className="pool-stars__list">
+            {stars.map((x) => {
+              const ti = x.pick ? teams.findIndex((tm) => tm.id === x.pick!.teamId) : -1;
+              return (
+                <li key={x.pokemon.id} className={ti >= 0 && ti === you ? 'is-you' : ''}>
+                  <Sprite pokemon={x.pokemon} style={sprite} className="pool-stars__sprite" />
+                  <span className="pool-stars__name">
+                    <strong>{t.game.pokemon(x.pokemon)}</strong>
+                    <KindMarks kinds={limitKindsOf(x.pokemon)} />
+                  </span>
+                  <span className="pool-stars__pos small">
+                    {x.pick && ti >= 0 ? tx.starsPick(nameOf(ti), x.pick.pick + 1) : <span className="muted">{tx.starsFree}</span>}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      )}
 
       {picks.length > 0 && (
         <details className="card details draft-results__picks">

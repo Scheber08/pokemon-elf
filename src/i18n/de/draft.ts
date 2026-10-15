@@ -301,6 +301,9 @@ const draft = {
 
   // ---------------------------------------------------------------- Ergebnis der Online-Liga
   results: {
+    starsTitle: 'Wo landeten die Stars?',
+    starsPick: (team: string, pick: number) => `${team} · Pick ${pick}`,
+    starsFree: 'nicht gedraftet',
     allPicks: (n: number) => `Alle ${n} Picks`,
     onlyMyPicks: 'Nur meine Picks',
     pickRound: (n: number) => `Runde ${n}`,

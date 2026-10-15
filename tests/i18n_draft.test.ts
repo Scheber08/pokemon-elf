@@ -1067,6 +1067,23 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     expect(all).toContain('Online draft K7MPQ2');
     expect(all).toContain('Season goal missed: Win the title');
     expect(container.querySelector('.draft-results__roster-goal')!.textContent).toBe('🎯 Win the title ✗');
+    // ⭐ Wo landeten die Stars? Die fünf stärksten des Pools mit Team und Pick (oder „not drafted“)
+    {
+      const { poolStars } = await import('../src/components/PoolStars');
+      const { poolOf } = await import('../src/lib/draftEngine');
+      const stars = poolStars(poolOf(s.settings, ALL), buildScale(ALL, 'all'));
+      const rows = container.querySelectorAll('.draft-results__stars li');
+      expect(rows).toHaveLength(5);
+      stars.forEach((x, i) => {
+        expect(rows[i].textContent).toContain(x.pokemon.en);
+        const pk = s.picks.find((p) => p.pokemonId === x.pokemon.id);
+        const tm = pk ? s.teams.find((t) => t.id === pk.teamId)! : null;
+        expect(rows[i].textContent).toMatch(pk ? new RegExp(` · pick ${pk.pick + 1}$`) : /not drafted$/);
+        if (tm && !tm.cpu) expect(rows[i].textContent).toContain(tm.name);
+      });
+      // CPU-Teams picken nach Fit – mindestens ein Star ist vergeben
+      expect(stars.some((x) => s.picks.some((p) => p.pokemonId === x.pokemon.id))).toBe(true);
+    }
     expect(all).toContain('Champions: ');
     expect(all).toContain('Final table');
     expect(all).toContain('Top scorers');
