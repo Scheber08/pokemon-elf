@@ -24,7 +24,7 @@ import { draftsSupported } from '../lib/api/draftClient';
 import { positionFit, roundBestPicks, soleTopIndex } from '../lib/fit';
 import { rankingNames } from '../lib/rankingNames';
 import { emptySlots } from '../lib/formation';
-import { biggestWin, draftGrades, hatTricks, mostCleanSheets, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
+import { biggestWin, comebackOf, draftGrades, hatTricks, mostCleanSheets, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
 import { createRng, randomSeed, shuffle } from '../lib/rng';
 import { cpuLevelOf, cpuPickChoice } from '../lib/localCpu';
 import { buildTable, CLASSIC_MODEL, DRAFT_MODEL, formatRecord, sideTable, simulateLeague, type LeagueTeam } from '../lib/season';
@@ -951,6 +951,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           const draws = tb.reduce((a, b) => (b.d > a.d ? b : a));
           const bigWin = biggestWin(league.matches);
           const fest = goalFest(league.matches);
+          const comeback = comebackOf(league.matches);
           const streak = longestWinStreak(league);
           const ratings: number[] = [];
           for (const row of tb) ratings[row.team] = row.rating;
@@ -1041,6 +1042,21 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   <div>
                     <dt>{r.recordFest}</dt>
                     <dd>{line(fest)}</dd>
+                  </div>
+                )}
+                {comeback && (
+                  // 🔄 Größtes Comeback der Saison
+                  <div>
+                    <dt>{r.recordComeback}</dt>
+                    <dd>
+                      {r.recordComebackLine(
+                        nameOf(comeback.winner),
+                        `${comeback.behind[0]}:${comeback.behind[1]}`,
+                        comeback.match.home === comeback.winner ? `${comeback.match.hg}:${comeback.match.ag}` : `${comeback.match.ag}:${comeback.match.hg}`,
+                        nameOf(comeback.loser),
+                        comeback.match.round,
+                      )}
+                    </dd>
                   </div>
                 )}
                 {up && up.delta >= 2 && (

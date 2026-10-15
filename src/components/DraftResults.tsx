@@ -5,7 +5,7 @@ import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftSettings, DraftTeam, ManagerTransfer } from '../lib/api/draftContract';
 import { poolStars, StarsLanded } from './PoolStars';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { bestTransfer, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { bestTransfer, comebackOf, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { buildTable, formatRecord, sideTable, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -127,6 +127,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
   const streak = useMemo(() => (league.cup ? null : longestWinStreak(league)), [league]);
   const bigWin = useMemo(() => (league.cup ? null : biggestWin(league.matches)), [league]);
   const fest = useMemo(() => (league.cup ? null : goalFest(league.matches)), [league]);
+  const comeback = useMemo(() => (league.cup ? null : comebackOf(league.matches)), [league]);
   const fastest = useMemo(() => fastestPicker(picks), [picks]);
   const fastestTeam = fastest ? teams.findIndex((tm) => tm.id === fastest.teamId) : -1;
   // Blitz-König: meiste Blitz-Picks ⚡ (ab 3, bei Gleichstand das Team weiter vorn in der Teamliste)
@@ -696,6 +697,21 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                 <div>
                   <dt>{tx.recordFest}</dt>
                   <dd>{tx.recordWinLine(nameOf(fest.home), `${fest.hg}:${fest.ag}`, nameOf(fest.away), fest.round)}</dd>
+                </div>
+              )}
+              {comeback && (
+                // 🔄 Größtes Comeback der Saison (Sieg nach dem größten Rückstand)
+                <div>
+                  <dt>{tx.recordComeback}</dt>
+                  <dd>
+                    {tx.recordComebackLine(
+                      nameOf(comeback.winner),
+                      `${comeback.behind[0]}:${comeback.behind[1]}`,
+                      comeback.match.home === comeback.winner ? `${comeback.match.hg}:${comeback.match.ag}` : `${comeback.match.ag}:${comeback.match.hg}`,
+                      nameOf(comeback.loser),
+                      comeback.match.round,
+                    )}
+                  </dd>
                 </div>
               )}
               {blitz && (

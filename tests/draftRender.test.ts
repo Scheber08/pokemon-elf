@@ -1843,6 +1843,33 @@ describe('ManagerSeason', () => {
     expect(clean).not.toBeNull();
     const cleanName = clean!.team < s.teams.length ? s.teams[clean!.team].name : s.league!.teams[clean!.team].name;
     expect(rec.textContent).toContain(`Weiße Weste${cleanName} – ${clean!.n} Spiele ohne Gegentor`);
+    // Größtes Comeback der Saison (falls es eins gab)
+    {
+      const { comebackOf } = await import('../src/lib/leagueTimeline');
+      const cb = comebackOf(s.league!.matches);
+      const name = (i: number) => (i < s.teams.length ? s.teams[i].name : s.league!.teams[i].name);
+      if (cb) {
+        const score = cb.match.home === cb.winner ? `${cb.match.hg}:${cb.match.ag}` : `${cb.match.ag}:${cb.match.hg}`;
+        expect(rec.textContent).toContain(`Größtes Comeback${name(cb.winner)} dreht ein ${cb.behind[0]}:${cb.behind[1]} gegen ${name(cb.loser)} zum ${score} (${cb.match.round}. Spieltag)`);
+      } else expect(rec.textContent).not.toContain('Größtes Comeback');
+      // Gezielt: erstes Spiel als 2:3 nach 0:2 → der Rekord erscheint
+      const g = (minute: number) => ({ pokemonId: ALL[0].id, pos: 'ST' as const, minute });
+      const k = s.league!.matches.findIndex((x) => x.round === 1);
+      const patched = {
+        ...done,
+        league: {
+          ...s.league!,
+          matches: s.league!.matches.map((x, i) => (i === k ? { ...x, hg: 2, ag: 3, homeScorers: [g(5), g(20)], awayScorers: [g(50), g(60), g(70)] } : x)),
+        },
+      };
+      const cb2 = comebackOf(patched.league.matches)!;
+      expect(cb2.behind).toEqual([0, 2]);
+      const r3 = await render(app(h(DraftSeasonStage, { room: fakeRoom(snap(patched, 'h')) })));
+      await settle();
+      expect(r3.container.querySelector('.draft-records')!.textContent).toContain(
+        `Größtes Comeback${name(cb2.winner)} dreht ein 0:2 gegen ${name(cb2.loser)} zum 3:2 (${cb2.match.round}. Spieltag)`,
+      );
+    }
     // Hattricks: Anzahl und der erste (falls es welche gab)
     {
       const { hatTricks } = await import('../src/lib/leagueTimeline');

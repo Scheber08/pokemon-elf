@@ -480,6 +480,9 @@ describe('/draft an einem Gerät auf Englisch', () => {
     const clean = rows.find((r) => r[0] === 'Clean-sheet kings')!;
     expect(clean[1]).toMatch(/ – \d+ clean sheets$/);
     expect(Number(clean[1]!.match(/(\d+) clean sheets$/)![1])).toBeGreaterThanOrEqual(3);
+    // Größtes Comeback (nur wenn es eins gab – der positive Fall steht im Online-Test)
+    const back = rows.find((r) => r[0] === 'Biggest comeback');
+    if (back) expect(back[1]).toMatch(/^.+ – from \d+:\d+ down to a \d+:\d+ win against .+ \(matchday \d+\)$/);
     const goals = Math.max(...mainRows(container).map((r) => Number(r.querySelectorAll('td')[8].textContent!.split(':')[0])));
     expect(rows[0][1]).toContain(`${goals} goals`);
     expect(section.textContent).not.toContain('Mein Team');

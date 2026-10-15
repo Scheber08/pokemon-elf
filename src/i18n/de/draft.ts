@@ -365,6 +365,9 @@ const draft = {
     recordHatTricksLine: (n: number, pokemon: string, team: string, round: number) =>
       `${n === 1 ? 'Einer' : n} – ${n === 1 ? '' : 'zuerst '}${pokemon} (${team}) am ${round}. Spieltag`,
     recordFest: 'Torreichstes Spiel',
+    recordComeback: 'Größtes Comeback',
+    recordComebackLine: (winner: string, behind: string, score: string, loser: string, round: number) =>
+      `${winner} dreht ein ${behind} gegen ${loser} zum ${score} (${round}. Spieltag)`,
     recordClean: 'Weiße Weste',
     recordCleanLine: (team: string, n: number) => `${team} – ${n} Spiele ohne Gegentor`,
     recordDraws: 'Remis-König',
