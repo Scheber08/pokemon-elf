@@ -448,6 +448,7 @@ const draft: Messages['draft'] = {
     xgTitle: 'Expected goals (actual goals in brackets)',
     xgaTitle: 'Expected goals against (actual in brackets)',
     possession: 'Possession',
+    cleanSheetsTitle: 'Clean sheets',
     possessionTitle: 'Average possession',
     teamsNote: 'Sorted by xG difference. Only matches with stats (new leagues).',
     split: (goals, assists) => `${goals} goals, ${assists} assists`,

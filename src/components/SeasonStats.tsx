@@ -70,6 +70,10 @@ export function SeasonStats({ league, you, nameOf, tabs = ['goals', 'assists', '
                 <th scope="col" title={tx.xgaTitle}>
                   xGA
                 </th>
+                <th scope="col" title={tx.cleanSheetsTitle}>
+                  <span aria-hidden="true">🧤</span>
+                  <span className="sr-only">{tx.cleanSheetsTitle}</span>
+                </th>
                 <th scope="col" title={tx.possessionTitle}>
                   {tx.possession}
                 </th>
@@ -89,6 +93,7 @@ export function SeasonStats({ league, you, nameOf, tabs = ['goals', 'assists', '
                     <td>
                       {r.xga.toFixed(1)} <small className="muted">({r.against})</small>
                     </td>
+                    <td>{r.cleanSheets}</td>
                     <td>{r.possession} %</td>
                   </tr>
                 ))}

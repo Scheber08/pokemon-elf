@@ -490,6 +490,7 @@ const draft = {
     xgTitle: 'Erwartete Tore (in Klammern: echte Tore)',
     xgaTitle: 'Erwartete Gegentore (in Klammern: echte Gegentore)',
     possession: 'Ballbesitz',
+    cleanSheetsTitle: 'Spiele ohne Gegentor',
     possessionTitle: 'Durchschnittlicher Ballbesitz',
     teamsNote: 'Sortiert nach xG-Differenz. Nur Spiele mit Statistik (neue Ligen).',
     split: (goals: number, assists: number) => `${goals} Tore, ${assists} Vorlagen`,

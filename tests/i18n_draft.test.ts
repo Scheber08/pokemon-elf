@@ -1284,3 +1284,25 @@ describe('Deutsch bleibt unverändert', () => {
     expect(tick).toContain('Alle sehen dieselbe Saison gleichzeitig. Überspringen gilt nur für dich.');
   });
 });
+
+describe('Saison-Statistik: Teamwerte', () => {
+  it('Spalte 🧤 zählt die Spiele ohne Gegentor', async () => {
+    storeLang('de');
+    const { SeasonStats } = await import('../src/components/SeasonStats');
+    const stats = { shots: [10, 6] as [number, number], onTarget: [5, 2] as [number, number], possession: 55, xg: [1.5, 0.6] as [number, number] };
+    const m = (home: number, away: number, hg: number, ag: number) => ({
+      round: 1, home, away, hg, ag, stats,
+      homeScorers: Array.from({ length: hg }, () => ({ pokemonId: 25, pos: 'ST' as const })),
+      awayScorers: Array.from({ length: ag }, () => ({ pokemonId: 4, pos: 'ST' as const })),
+    });
+    // Team 0: 2:0 und 0:0 (zweimal zu null), Team 1: 0:2 und 0:0 (einmal)
+    const league = { matches: [m(0, 1, 2, 0), m(1, 0, 0, 0)] } as unknown as Parameters<typeof SeasonStats>[0]['league'];
+    const { container } = await render(app(h(SeasonStats, { league, you: 0, nameOf: (i: number) => `Team ${i}`, tabs: ['teams'] })));
+    await settle();
+    const head = container.querySelectorAll('.season-stats__teams thead th').map((th) => th.textContent);
+    const col = head.indexOf('🧤Spiele ohne Gegentor');
+    expect(col).toBeGreaterThan(0);
+    const rows = container.querySelectorAll('.season-stats__teams tbody tr').map((tr) => tr.querySelectorAll('td').map((td) => td.textContent));
+    expect(Object.fromEntries(rows.map((r) => [r[0], r[col]]))).toEqual({ 'Team 0': '2', 'Team 1': '1' });
+  });
+});

@@ -222,6 +222,8 @@ export interface TeamTally {
   xga: number;
   goals: number;
   against: number;
+  /** Spiele ohne Gegentor */
+  cleanSheets: number;
   /** Ø Ballbesitz in Prozent */
   possession: number;
 }
@@ -232,7 +234,7 @@ export function teamTallies(league: Pick<LeagueResult, 'matches'>): TeamTally[] 
   const row = (team: number) => {
     let r = rows.get(team);
     if (!r) {
-      r = { team, games: 0, shots: 0, onTarget: 0, xg: 0, xga: 0, goals: 0, against: 0, possession: 0, poss: 0 };
+      r = { team, games: 0, shots: 0, onTarget: 0, xg: 0, xga: 0, goals: 0, against: 0, cleanSheets: 0, possession: 0, poss: 0 };
       rows.set(team, r);
     }
     return r;
@@ -252,6 +254,7 @@ export function teamTallies(league: Pick<LeagueResult, 'matches'>): TeamTally[] 
       r.xga += s.xg[1 - i];
       r.goals += gf;
       r.against += ga;
+      if (ga === 0) r.cleanSheets++;
       r.poss += poss;
     }
   }

@@ -191,7 +191,8 @@ describe('Saison-Statistik', () => {
     // Spiel 2: Team 0 ist Gast, Team 1 trifft nicht – die Gast-Tore (pokemonId 20) zählen für Team 0
     expect(players.find((p) => p.pokemonId === 20 && p.teamIndex === 0)).toMatchObject({ goals: 1 });
     const t0 = teamTallies(league).find((r) => r.team === 0)!;
-    expect(t0).toMatchObject({ games: 2, shots: 22, onTarget: 9, xg: 3.3, xga: 1.6, goals: 3, against: 1, possession: 60 });
+    expect(t0).toMatchObject({ games: 2, shots: 22, onTarget: 9, xg: 3.3, xga: 1.6, goals: 3, against: 1, cleanSheets: 1, possession: 60 });
+    expect(teamTallies(league).find((r) => r.team === 1)!.cleanSheets).toBe(0);
   });
 });
 
