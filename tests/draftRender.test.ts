@@ -736,6 +736,25 @@ describe('DraftLobby', () => {
     expect(container.textContent).toContain(`Pool: ${pool} Pokémon für ${picks} Picks.`);
   });
 
+  it('Host mischt die Draft-Reihenfolge (nur bei Reihenfolge wie in der Liste)', async () => {
+    const st = lobby(2, { order: 'host' });
+    const room = fakeRoom(snap(st, 'h'));
+    const { container } = await render(app(h(DraftLobby, { room })));
+    await settle();
+    const btn = container.querySelectorAll('button').find((b) => b.textContent === '🎲 Reihenfolge mischen') as MiniElement;
+    const rnd = vi.spyOn(Math, 'random').mockReturnValue(0);
+    await act(async () => btn.click());
+    rnd.mockRestore();
+    expect(room.setOrder).toHaveBeenCalledWith([...st.teams.map((t) => t.id)].reverse());
+    // Mitspieler und ausgeloste Reihenfolge: kein Knopf
+    const other = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 't1')) })));
+    await settle();
+    expect(other.container.textContent).not.toContain('Reihenfolge mischen');
+    const random = await render(app(h(DraftLobby, { room: fakeRoom(snap(lobby(2, { order: 'random' }), 'h')) })));
+    await settle();
+    expect(random.container.textContent).not.toContain('Reihenfolge mischen');
+  });
+
   // CLIENT-7 / SEASON-3
   it('Nur-Ansicht: kein Beitreten-Formular, Hinweis statt dessen', async () => {
     const { container } = await render(app(h(DraftLobby, { room: fakeRoom(snap(lobby(2), null), { live: false }), readOnly: true })));

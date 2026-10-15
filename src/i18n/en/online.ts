@@ -143,6 +143,7 @@ const online: Messages['online'] = {
   readyReset: 'The host changed the rules – please mark yourself ready again.',
   readyNotify: (n) => (n === 1 ? 'Your fellow player is ready – start the draft!' : `All ${n} players are ready – start the draft!`),
   readyCount: (ready, total) => (ready === total ? `✓ All players ready (${total})` : `${ready}/${total} players ready`),
+  shuffleOrder: '🎲 Shuffle order',
   addCpu: 'Add CPU team',
   fillCpu: (n) => `Fill with CPU (${n})`,
   readOnlyLobby:

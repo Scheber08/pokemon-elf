@@ -305,6 +305,18 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
     [ids[index], ids[j]] = [ids[j], ids[index]];
     room.setOrder(ids);
   };
+  /** Reihenfolge zufällig mischen (nur UI-Zufall – die Reihenfolge selbst legt der Server fest) */
+  const shuffleOrder = () => {
+    const ids = s.teams.map((x) => x.id);
+    const before = ids.join('|');
+    for (let tries = 0; tries < 5 && ids.join('|') === before; tries++) {
+      for (let k = ids.length - 1; k > 0; k--) {
+        const j = Math.floor(Math.random() * (k + 1));
+        [ids[k], ids[j]] = [ids[j], ids[k]];
+      }
+    }
+    room.setOrder(ids);
+  };
 
   return (
     <div className="draft-lobby">
@@ -397,6 +409,11 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
                 ? t.online.orderHostFixed
                 : t.online.orderHost}
           </p>
+          {isHost && s.settings.order === 'host' && s.teams.length >= 2 && (
+            <button type="button" className="btn btn--small draft-lobby__shuffle" onClick={shuffleOrder}>
+              {t.online.shuffleOrder}
+            </button>
+          )}
           <p className="muted small">{t.online.fillNote(s.settings.format === 'cup' ? CUP_SIZE : DRAFT_LIMITS.leagueSize)}</p>
           {isHost && (
             <button

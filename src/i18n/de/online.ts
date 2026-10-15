@@ -141,6 +141,7 @@ const online = {
   orderRandom: 'Die Draft-Reihenfolge wird beim Start ausgelost.',
   orderHost: 'Draft-Reihenfolge wie in der Liste (Runde 2 rückwärts – Snake-Draft).',
   orderHostFixed: 'Draft-Reihenfolge wie in der Liste – jede Runde gleich.',
+  shuffleOrder: '🎲 Reihenfolge mischen',
   addCpu: 'CPU-Team hinzufügen',
   goalLabel: 'Saisonziel',
   goalNone: 'Kein Ziel',
