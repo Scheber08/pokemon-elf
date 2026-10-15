@@ -370,6 +370,7 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     st = autoPick(engine.startDraft(st, 'dev-h', 0, ALL));
     // Kapitän auf dem Board (© neben dem Namen)
     st = engine.setTeamCaptain(st, 'dev-h', st.teams[0].slots.find((id) => id != null)!);
+    st = { ...st, shinies: [st.teams[0].slots.find((id) => id != null)!] };
     const s = snap(st);
     const cpu = s.teams.find((t) => t.cpu)!;
     const { container } = await render(
@@ -392,6 +393,7 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     expect(all).toContain('You');
     expect(all).toContain('Recent picks');
     expect(container.querySelectorAll('.draft-board__captain')).toHaveLength(1);
+    expect(container.querySelectorAll('.draft-board__shinies')).toHaveLength(1);
     expect(all).toContain(clubEn(cpu.name));
     expect(germanLeft(container)).toEqual([]);
   });

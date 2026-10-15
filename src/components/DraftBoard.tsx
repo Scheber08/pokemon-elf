@@ -66,6 +66,7 @@ export function DraftBoard({ state, byId, currentId }: Props) {
           }).length;
         const ultraBeasts = ofKind('ub');
         const megas = ofKind('mega');
+        const shinyCount = rows.filter((r) => r.id != null && state.shinies?.includes(r.id)).length;
         // Vereinsnamen der CPU-Teams erst bei der Anzeige übersetzen
         const name = teamLabel(team, t);
         return (
@@ -114,6 +115,12 @@ export function DraftBoard({ state, byId, currentId }: Props) {
                     M {megas}/{megaLimit}
                   </span>
                   <span className="sr-only">{t.draft.board.megasTitle(megas, megaLimit)}</span>
+                </span>
+              )}
+              {shinyCount > 0 && (
+                <span className="draft-board__shinies" title={t.shiny.count(shinyCount)}>
+                  <span aria-hidden="true">✨ {shinyCount}</span>
+                  <span className="sr-only">{t.shiny.count(shinyCount)}</span>
                 </span>
               )}
               <DraftTeamTags team={team} host={team.id === state.hostTeamId} you={team.id === state.you} />
