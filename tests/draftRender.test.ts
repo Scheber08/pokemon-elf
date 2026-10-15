@@ -1238,6 +1238,35 @@ describe('ManagerSeason', () => {
     expect(room.setQueue).toHaveBeenLastCalledWith([free, taken]);
   });
 
+  it('🔮 Tipp aufs eigene Spiel: speichern, danach Trefferbilanz', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    const { outcomeFor } = await import('../src/lib/managerTips');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    localStorage.removeItem('pokemon-elf:manager-tips');
+    // Vor Spieltag 1: Tipp „Sieg“ abgeben
+    const r1 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    expect(r1.container.querySelector('.manager__tip-score')).toBeNull();
+    const win = r1.container.querySelectorAll('.manager__tip button').find((b) => b.textContent === 'Sieg') as MiniElement;
+    await act(async () => win.click());
+    expect(win.getAttribute('aria-pressed')).toBe('true');
+    expect(JSON.parse(localStorage.getItem('pokemon-elf:manager-tips')!)[s.code]).toEqual({ 1: 'w' });
+    // Spieltag 1 gespielt: Bilanz mit ✅ oder ❌ je nach Ergebnis
+    s = playMatchday(s, ALL, SCALE);
+    const idx = s.teams.findIndex((t) => t.id === 'h');
+    const m1 = s.league!.matches.find((x) => x.round === 1 && (x.home === idx || x.away === idx))!;
+    const hit = outcomeFor(m1, idx) === 'w';
+    const r2 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    expect(r2.container.querySelector('.manager__tip-score')!.textContent).toBe(`Spieltag 1: ${hit ? '✅' : '❌'} · ${hit ? 1 : 0} von 1 Tipps richtig`);
+    // Für Spieltag 2 noch kein Tipp gewählt
+    expect(r2.container.querySelectorAll('.manager__tip button[aria-pressed="true"]')).toHaveLength(0);
+    localStorage.removeItem('pokemon-elf:manager-tips');
+  });
+
   it('Shiny-Neuzugang: Hinweis im Status nur fürs eigene Team', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');

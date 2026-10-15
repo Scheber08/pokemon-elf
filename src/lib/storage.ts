@@ -24,6 +24,8 @@ export const STORAGE_KEYS = {
   crest: (scope: string) => `crest:${scope}`,
   /** Teamnamen aus den Online-Ranglisten für Ligagegner (src/lib/rankingNames.ts) */
   rankingNames: 'ranking-names',
+  /** Manager-Saison: eigene Tipps je Liga und Spieltag (src/lib/managerTips.ts) */
+  managerTips: 'manager-tips',
 } as const;
 
 export function load<T>(key: string, fallback: T): T {

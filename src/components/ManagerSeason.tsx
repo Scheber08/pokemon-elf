@@ -3,6 +3,7 @@ import { FORMATION_IDS, FORMATIONS } from '../config/formations';
 import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
+import { loadTips, MATCH_TIPS, saveTip, tipScore } from '../lib/managerTips';
 import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
@@ -78,6 +79,8 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
 
   const meIndex = room.me ? s.teams.findIndex((tm) => tm.id === room.me!.id) : -1;
   const you = meIndex >= 0 ? meIndex : null;
+  // Eigene Tipps auf das nächste Spiel (nur auf diesem Gerät)
+  const [tips, setTips] = useState(() => loadTips(s.code));
   const nameOf = useCallback(
     (i: number) => {
       const team = s.teams[i];
@@ -516,6 +519,35 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
                   <span style={{ width: `${share}%` }} />
                 </span>
                 <span className="small">{nameOf(rival)}</span>
+              </div>
+            );
+          })()}
+          {you != null && !readOnly && (() => {
+            // 🔮 Tipp aufs eigene Spiel: Sieg, Remis oder Niederlage – mit Trefferbilanz der gespielten Spieltage
+            const score = tipScore(tips, league?.matches ?? [], you, m.played);
+            const mineNow = tips[m.played + 1];
+            return (
+              <div className="manager__tip">
+                <span className="small">🔮 {tx.tipLabel}</span>
+                <span className="manager__tip-buttons" role="group" aria-label={tx.tipLabel}>
+                  {MATCH_TIPS.map((tip) => (
+                    <button
+                      key={tip}
+                      type="button"
+                      className={`btn btn--small ${mineNow === tip ? 'btn--primary' : ''}`}
+                      aria-pressed={mineNow === tip}
+                      onClick={() => setTips(saveTip(s.code, m.played + 1, tip))}
+                    >
+                      {tx.tipOptions[tip]}
+                    </button>
+                  ))}
+                </span>
+                {score.total > 0 && (
+                  <span className="small muted manager__tip-score">
+                    {score.last && `${tx.tipLast(score.last.round, score.last.hit)} · `}
+                    {tx.tipScore(score.hits, score.total)}
+                  </span>
+                )}
               </div>
             );
           })()}

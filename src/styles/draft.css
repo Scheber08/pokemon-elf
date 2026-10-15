@@ -1672,3 +1672,19 @@ button.draft-bench__slot {
     animation: none;
   }
 }
+
+/* Manager-Saison: eigener Tipp aufs nächste Spiel */
+.manager__tip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin-top: 8px;
+}
+.manager__tip-buttons {
+  display: inline-flex;
+  gap: 4px;
+}
+.manager__tip-score {
+  flex-basis: 100%;
+}
