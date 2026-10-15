@@ -104,6 +104,8 @@ const draft = {
     crossTitle: 'Kreuztabelle',
     crossNote: 'Zeile = Heimteam, Spalte = Gast – beide nach Tabellenplatz. Farbe aus Sicht des Heimteams.',
     fastCpu: '⏩ Schneller bis zum nächsten Zug',
+    oddsTitle: 'Meisterchancen',
+    oddsNote: (n: number) => `So oft würde jedes Team Meister, wenn dieselben Kader die Saison ${n}-mal neu ausspielen (🏆 = tatsächlicher Meister).`,
     newDraft: 'Neuer Draft',
     round: 'Runde',
     pick: 'Pick',

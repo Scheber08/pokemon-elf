@@ -103,6 +103,8 @@ const draft: Messages['draft'] = {
     crossTitle: 'Results grid',
     crossNote: 'Row = home team, column = away team – both in table order. Colour from the home side’s view.',
     fastCpu: '⏩ Faster until the next turn',
+    oddsTitle: 'Title odds',
+    oddsNote: (n) => `How often each team would win the title if the same squads replayed the season ${n} times (🏆 = actual champions).`,
     newDraft: 'New draft',
     round: 'Round',
     pick: 'Pick',

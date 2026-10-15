@@ -1572,3 +1572,6 @@ button.draft-bench__slot {
 .draft__cross-self {
   background: var(--line);
 }
+.draft__titles li.is-user {
+  font-weight: 600;
+}

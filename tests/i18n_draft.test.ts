@@ -665,6 +665,29 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(rows[0].querySelector('th')!.textContent).toContain(first.replace(/\s*CPU$/, '').trim());
   });
 
+  it('Liga: Meisterchancen aus 50 Neuausspielungen (stabil, Summe ≤ 100 %)', async () => {
+    storeLang('en');
+    const pool = ALL.filter((p) => !p.leg && !p.myth);
+    const teams = [0, 1, 2, 3].map((i) => {
+      const formation = FORMATION_IDS[i % FORMATION_IDS.length];
+      return { name: i === 0 ? 'Mein Team' : CLUB_NAMES[i], cpu: i !== 0, formation, slots: emptySlots(formation).map((_, j) => pool[i * 11 + j].id) };
+    });
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'league', teams, region: 0, legends: false, pick: 44, selected: null, seed: 7, model: 'draft' }));
+    const read = async () => {
+      const { container } = await render(app(h(Draft)));
+      await settle();
+      const card = container.querySelectorAll('section').find((x) => x.getAttribute('aria-labelledby') === 'draft-local-odds') as MiniElement;
+      return card.querySelectorAll('li').map((li) => li.textContent);
+    };
+    const first = await read();
+    expect(first.length).toBeGreaterThan(0);
+    const pcts = first.map((x) => Number(x!.match(/(\d+) %$/)![1]));
+    expect(pcts.reduce((a, b) => a + b, 0)).toBeLessThanOrEqual(101);
+    expect([...pcts].sort((a, b) => b - a)).toEqual(pcts);
+    // Gleicher Seed → gleiche Chancen
+    expect(await read()).toEqual(first);
+  });
+
   it('Liga: Deine Duelle – Bilanz gegen jeden Gegner, passend zu den Spielen', async () => {
     storeLang('en');
     const pool = ALL.filter((p) => !p.leg && !p.myth);

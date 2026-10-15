@@ -127,6 +127,9 @@ const INITIAL: DraftState = {
   seed: null,
 };
 
+/** Meisterchancen: so viele Neuausspielungen */
+const TITLE_RUNS = 50;
+
 /** Mega-Limit „unbegrenzt" (wie im Builder) */
 const MEGAS_UNLIMITED = 99;
 const MEGA_OPTIONS = [0, 1, 2, 3, MEGAS_UNLIMITED];
@@ -416,6 +419,15 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     }
     return { ...result, scorers: [...scorers.values()].sort((a, b) => b.goals - a.goals).slice(0, 10) };
   }, [state.phase, state.seed, state.model, state.teams, state.shinies, state.cpuCaptains, byId, scale]);
+
+  // Meisterchancen: dieselben Teams 50-mal neu ausgespielt (Seeds aus dem Liga-Seed abgeleitet → stabil)
+  const titleOdds = useMemo(() => {
+    if (!league || state.seed == null || league.teams.length < 2) return null;
+    const model = state.model === 'draft' ? DRAFT_MODEL : CLASSIC_MODEL;
+    const wins = new Array<number>(league.teams.length).fill(0);
+    for (let k = 1; k <= TITLE_RUNS; k++) wins[simulateLeague(league.teams, createRng(state.seed + k * 7919), model).table[0].team]++;
+    return wins;
+  }, [league, state.seed, state.model]);
 
   // Titelsammlung: Meister jeder ausgespielten lokalen Liga (einmal je Seed, die letzten 50)
   const [champions, setChampions] = useState<LocalChampion[]>(() => load<LocalChampion[]>(STORAGE_KEYS.draftChampions, []));
@@ -974,6 +986,34 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   </div>
                 )}
               </dl>
+            </section>
+          );
+        })()}
+        {titleOdds && (() => {
+          // Meisterchancen: wie oft jedes Team bei 50 Neuausspielungen Meister würde (höchstens 5 Teams)
+          const rows = titleOdds
+            .map((n, team) => ({ team, pct: Math.round((n / TITLE_RUNS) * 100) }))
+            .filter((r) => r.pct > 0)
+            .sort((a, b) => b.pct - a.pct)
+            .slice(0, 5);
+          const champ = league.table[0].team;
+          return (
+            <section className="card" aria-labelledby="draft-local-odds">
+              <h2 id="draft-local-odds" className="section-title">
+                {tx.oddsTitle}
+              </h2>
+              <ol className="draft__titles">
+                {rows.map((r) => (
+                  <li key={r.team} className={state.teams[r.team].cpu ? '' : 'is-user'}>
+                    <span>
+                      {teamName(state.teams[r.team].name)}
+                      {r.team === champ && ' 🏆'}
+                    </span>{' '}
+                    <strong>{r.pct} %</strong>
+                  </li>
+                ))}
+              </ol>
+              <p className="muted small">{tx.oddsNote(TITLE_RUNS)}</p>
             </section>
           );
         })()}
