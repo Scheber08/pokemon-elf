@@ -1,4 +1,4 @@
-/** Seitenwechsel: Fokus an den Hauptbereich (nicht beim ersten Laden). */
+/** Seitenwechsel: Fokus an den Hauptbereich (nicht beim ersten Laden) und Seitentitel je Route (auch 404). */
 import { describe, expect, it, vi } from 'vitest';
 import { installMiniDom } from './miniDom';
 
@@ -38,5 +38,29 @@ describe('Fokus nach Seitenwechsel', () => {
     expect(container.textContent).toContain('Rangliste');
     expect(doc.activeElement).toBe(main);
     await act(async () => root.unmount());
+  });
+});
+
+describe('Seitentitel', () => {
+  it('feste Routen, Manager/Trainer, Liga, Profil und 404', async () => {
+    (window as unknown as { scrollTo: () => void }).scrollTo = vi.fn();
+    const titles: Record<string, string> = {};
+    for (const path of ['/rangliste', '/manager', '/trainer', '/draft/ABC234', '/spieler/xyz', '/gibtsnicht']) {
+      const container = doc.createElement('div');
+      doc.body.appendChild(container);
+      const root = createRoot(container as unknown as Element);
+      await act(async () => root.render(h(MemoryRouter, { initialEntries: [path] }, h(SettingsProvider, null, h(RouteEffects)))));
+      titles[path] = doc.title;
+      await act(async () => root.unmount());
+    }
+    expect(titles).toEqual({
+      '/rangliste': 'Rangliste · Pokémon Elf',
+      '/manager': 'Manager-Saison · Pokémon Elf',
+      '/trainer': 'Trainer & Erfolge · Pokémon Elf',
+      '/draft/ABC234': 'Online-Liga · Pokémon Elf',
+      // Profile setzen ihren Titel nach dem Laden selbst – bis dahin der allgemeine
+      '/spieler/xyz': 'Pokémon Elf – Lineup Builder',
+      '/gibtsnicht': 'Abseits! · Pokémon Elf',
+    });
   });
 });

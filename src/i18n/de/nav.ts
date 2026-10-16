@@ -38,6 +38,8 @@ const nav = {
     '/draft': 'Fantasy-Draft',
     '/rangliste': 'Rangliste',
     '/scouting': 'Scouting-Guide',
+    '/manager': 'Manager-Saison',
+    '/trainer': 'Trainer & Erfolge',
     '/ueber': 'Über & Kontakt',
     '/datenschutz': 'Datenschutz',
   } as Record<string, string>,

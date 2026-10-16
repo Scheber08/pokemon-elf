@@ -44,8 +44,11 @@ export function RouteEffects() {
   const { pathname } = useLocation();
   const t = useT();
   useEffect(() => {
-    // Online-Ligen (/draft/CODE) setzen ihren Titel selbst (Liganame, „Du bist dran")
-    const title = t.nav.titles[pathname] ?? (pathname.startsWith('/draft/') ? t.nav.onlineLeague : undefined);
+    // Online-Ligen (/draft/CODE) setzen ihren Titel selbst (Liganame, „Du bist dran"), Spielerprofile nach dem Laden;
+    // jeder andere unbekannte Pfad ist die 404-Seite
+    const title =
+      t.nav.titles[pathname] ??
+      (pathname.startsWith('/draft/') ? t.nav.onlineLeague : pathname.startsWith('/spieler/') ? undefined : t.info.notFound.title);
     document.title = title ? `${title} · Pokémon Elf` : t.nav.siteTitle;
   }, [pathname, t]);
   const shown = useRef(pathname);

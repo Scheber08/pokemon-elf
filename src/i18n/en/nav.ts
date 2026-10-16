@@ -39,6 +39,8 @@ const nav: Messages['nav'] = {
     '/draft': 'Fantasy Draft',
     '/rangliste': 'Leaderboard',
     '/scouting': 'Scouting guide',
+    '/manager': 'Manager season',
+    '/trainer': 'Trainer & achievements',
     '/ueber': 'About & contact',
     '/datenschutz': 'Privacy',
   },
