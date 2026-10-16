@@ -37,6 +37,9 @@ const scouting = {
   whereTitle: 'Wo spielt …?',
   wherePlaceholder: 'Pokémon suchen, z. B. Glurak',
   whereShow: (name: string) => `Wo spielt ${name} sonst noch?`,
+  /** Rang auf der besten Position unter allen Pokémon */
+  whereRank: (rank: number, total: number, position: string) =>
+    `🏅 Nr. ${rank} von ${total.toLocaleString('de-DE')} als ${position}`,
   whereNone: 'Kein Pokémon gefunden.',
   howTitle: 'Wie ein Team bewertet wird',
   howWeights: (w: ScoutingWeights) =>

@@ -91,6 +91,8 @@ function WherePlays({ query, setQuery }: { query: string; setQuery: (q: string) 
         .sort((a, b) => b.fit - a.fit)
         .slice(0, 5)
     : [];
+  // Rang auf der besten Position unter allen Pokémon (1 = niemand passt besser)
+  const rank = hit && best.length ? data.list.filter((p) => profileFit(p, best[0].key, scale) > best[0].fit).length + 1 : null;
   return (
     <section className="card scouting__where" aria-labelledby="scouting-where">
       <h2 id="scouting-where" className="section-title">
@@ -101,8 +103,9 @@ function WherePlays({ query, setQuery }: { query: string; setQuery: (q: string) 
       {hit && (
         <div className="scouting__where-hit" aria-live="polite">
           <p className="scouting__where-name">
-            <Sprite pokemon={hit} style={sprite} className="scouting__top-sprite" /> <strong>{t.game.pokemon(hit)}</strong>
+            <Sprite pokemon={hit} style={sprite} className="scouting__top-sprite" decorative /> <strong>{t.game.pokemon(hit)}</strong>
           </p>
+          {rank != null && <p className="muted small scouting__where-rank">{s.whereRank(rank, data.list.length, t.game.profileTitle[best[0].key])}</p>}
           <ol className="scouting__top-mons">
             {best.map(({ key, fit }) => (
               <li key={key}>

@@ -78,6 +78,13 @@ describe('Scouting: Top 3 je Position', () => {
     const scale = buildScale(ALL, 'all');
     const keys = PROFILE_GROUPS.flatMap((g) => g.profiles);
     expect(fits[0]).toBe(Math.round(Math.max(...keys.map((k) => profileFit(glurak, k, scale)))));
+    // Rang auf der besten Position unter allen Pokémon
+    const bestKey = [...keys].sort((x, y) => profileFit(glurak, y, scale) - profileFit(glurak, x, scale))[0];
+    const rank = ALL.filter((p) => profileFit(p, bestKey, scale) > profileFit(glurak, bestKey, scale)).length + 1;
+    const { messages } = await import('../src/i18n');
+    expect(container.querySelector('.scouting__where-rank')!.textContent).toBe(`🏅 Nr. ${rank} von ${ALL.length.toLocaleString('de-DE')} als ${messages().game.profileTitle[bestKey]}`);
+    // Name steht daneben: Sprite ohne Alt-Text
+    expect(container.querySelector('.scouting__where-name img')!.getAttribute('alt')).toBe('');
     // Tipp auf ein Pokémon in „Top 3 je Position“ füllt die Suche
     const pick = container.querySelector('.scouting__top-pick')!;
     await act(async () => pick.click());
