@@ -53,7 +53,8 @@ const trainer = {
   filter: 'Anzeigen',
   filterAll: 'Alle',
   filterOwned: 'Freigeschaltet',
-  filterAffordable: 'Leistbar',
+  /** Filter „Leistbar“ mit Anzahl der Artikel, die man sich gerade leisten kann */
+  filterAffordableCount: (n: number) => `Leistbar (${n})`,
   record: {
     title: 'Deine Bilanz',
     runs: 'Gewertete Runs',

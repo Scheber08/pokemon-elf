@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useT, type Messages } from '../i18n';
 import { ApiRequestError, buyTrainerItem, saveTrainer } from '../lib/api/client';
 import type { MeResponse } from '../lib/api/contract';
-import { itemKey, itemOnSale, itemsOf, lockedItem, nextSeason, shopCollection, TRAINER_ITEMS, TRAINER_SLOTS, type TrainerItem, type TrainerLook, type TrainerSlot } from '../lib/trainer';
+import { affordableCount, itemKey, itemOnSale, itemsOf, lockedItem, nextSeason, shopCollection, TRAINER_ITEMS, TRAINER_SLOTS, type TrainerItem, type TrainerLook, type TrainerSlot } from '../lib/trainer';
 import type { Pokemon } from '../types';
 import { usePokemonData } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
@@ -202,7 +202,7 @@ export function TrainerEditor({ me, onMe }: Props) {
             options={[
               { value: 'all', label: tx.filterAll },
               { value: 'owned', label: tx.filterOwned },
-              { value: 'affordable', label: tx.filterAffordable },
+              { value: 'affordable', label: tx.filterAffordableCount(affordableCount(owned, me.coins.balance, Date.now())) },
             ]}
           />
           {TRAINER_SLOTS.map((slot) => (

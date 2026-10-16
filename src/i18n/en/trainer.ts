@@ -53,7 +53,7 @@ const trainer: Messages['trainer'] = {
   filter: 'Show',
   filterAll: 'All',
   filterOwned: 'Unlocked',
-  filterAffordable: 'Affordable',
+  filterAffordableCount: (n) => `Affordable (${n})`,
   record: {
     title: 'Your record',
     runs: 'Ranked runs',

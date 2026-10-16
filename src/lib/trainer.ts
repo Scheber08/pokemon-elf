@@ -379,6 +379,12 @@ export function shopCollection(owned: Iterable<string>, items: readonly TrainerI
   return { have, total: paid.size };
 }
 
+/** Kaufbare Artikel, die man sich gerade leisten kann (nicht gekauft, im Verkauf, Preis ≤ Guthaben) – Zahl am Filter „Leistbar“ */
+export function affordableCount(owned: Iterable<string>, balance: number, now: number, items: readonly TrainerItem[] = TRAINER_ITEMS): number {
+  const have = new Set(owned);
+  return items.filter((i) => i.price > 0 && i.price <= balance && !have.has(itemKey(i.slot, i.id)) && itemOnSale(i, now)).length;
+}
+
 export function trainerItem(slot: TrainerSlot, id: string): TrainerItem | undefined {
   return BY_KEY.get(itemKey(slot, id));
 }

@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ACHIEVEMENTS, achievementStates, earnedCoins, longestDayStreak, type AchievementStats } from '../src/lib/achievements';
 import type { MeResponse } from '../src/lib/api/contract';
-import { DEFAULT_LOOK, itemOnSale, lockedItem, nextSeason, parseLook, shopCollection, TRAINER_ITEMS, TRAINER_SLOTS } from '../src/lib/trainer';
+import { affordableCount, DEFAULT_LOOK, itemOnSale, lockedItem, nextSeason, parseLook, shopCollection, TRAINER_ITEMS, TRAINER_SLOTS } from '../src/lib/trainer';
 import { achievementStats, saveDraftResults } from '../server/achievements';
 import { handleApi } from '../server/handler';
 import { ensureSchema } from '../server/schema';
@@ -404,6 +404,12 @@ describe('Saisonartikel', () => {
     const k = (i: (typeof TRAINER_ITEMS)[number]) => `${i.slot}:${i.id}`;
     expect(shopCollection([])).toEqual({ have: 0, total: paid.length });
     expect(shopCollection([k(paid[0]), k(paid[0]), k(paid[1]), k(free), 'hat:gibtsnicht'])).toEqual({ have: 2, total: paid.length });
+    // Leistbar: kaufbar, nicht gekauft, im Verkauf, Preis ≤ Guthaben (Saisonartikel nur in ihrer Saison)
+    const shop = [it('🎃', '10-01', '11-07'), it('🎄', '12-01', '01-06'), { slot: 'hat' as const, id: 'a', price: 100 }, { slot: 'hat' as const, id: 'b', price: 300 }, { slot: 'hat' as const, id: 'n', price: 0 }];
+    expect(affordableCount([], 400, at('2026-10-16'), shop)).toBe(3); // 🎃 (in Saison), a, b – nicht 🎄, nicht gratis
+    expect(affordableCount(['hat:a'], 400, at('2026-10-16'), shop)).toBe(2);
+    expect(affordableCount([], 150, at('2026-10-16'), shop)).toBe(2); // 🎃 (1 Münze) und a (100)
+    expect(affordableCount([], 0, at('2026-10-16'), shop)).toBe(0);
     expect(nextSeason(items, at('2026-05-01'))).toEqual({ from: '10-01', icon: '🎃' });
     expect(nextSeason([], at('2026-05-01'))).toBeNull();
     // Mit den echten Artikeln gibt es immer eine nächste Saison
