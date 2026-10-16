@@ -2009,6 +2009,31 @@ describe('ManagerSeason', () => {
     expect(el!.textContent).toBe(`🪑 Noch ohne Einsatz von Beginn an: ${unused.map((id) => ALL.find((p) => p.id === id)!.de).join(', ')}`);
   });
 
+  it('Manager: 🔋 Dauerbrenner (jedes Spiel von Beginn an) erst ab dem 5. Spieltag', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    for (let i = 0; i < 4; i++) s = playMatchday(s, ALL, SCALE);
+    const r1 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    expect(r1.container.querySelector('.manager__ironmen')).toBeNull();
+    s = playMatchday(s, ALL, SCALE);
+    const counts = new Map<number, number>();
+    for (const r of Object.values(s.manager!.playedLineups ?? {})) {
+      const l = r.h;
+      if (!l) continue;
+      for (const id of new Set([...l.slots, (l as { ss?: number | null }).ss].filter((id): id is number => id != null))) counts.set(id, (counts.get(id) ?? 0) + 1);
+    }
+    const iron = [...counts].filter(([, n]) => n >= 5).map(([id]) => ALL.find((p) => p.id === id)!.de);
+    const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    const el = container.querySelector('.manager__ironmen');
+    expect(iron.length).toBeGreaterThan(0);
+    expect(el!.textContent).toBe(`🔋 Dauerbrenner (alle 5 Spiele von Beginn an): ${iron.join(', ')}`);
+  });
+
   it('Manager: 🏆 rechnerischer Titelkampf erst ab der Saisonhälfte', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');

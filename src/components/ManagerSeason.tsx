@@ -683,7 +683,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           goals={goalsOf(league, meIndex)}
           assists={assistsOf(league, meIndex)}
           stars={starsOf(league, meIndex)}
-          started={startedOf(m.playedLineups, room.me.id)}
+          starts={startsOf(m.playedLineups, room.me.id)}
           played={m.played}
         />
       ) : (
@@ -976,17 +976,20 @@ const FORMATION_TIP_MIN = 5;
 /** Ab so vielen gespielten Spieltagen nennt die Aufstellung Bankspieler ohne Einsatz */
 const UNUSED_AFTER = 3;
 
-/** Alle Pokémon, die für ein Team schon in einer gespielten Startelf (inkl. Standardschütze) standen */
-function startedOf(played: Record<string, Record<string, { slots: (number | null)[]; ss?: number | null }>> | undefined, teamId: string): Set<number> {
-  const out = new Set<number>();
+/** Startelf-Einsätze je Pokémon eines Teams in den gespielten Aufstellungen (inkl. Standardschütze) */
+function startsOf(played: Record<string, Record<string, { slots: (number | null)[]; ss?: number | null }>> | undefined, teamId: string): Map<number, number> {
+  const out = new Map<number, number>();
   for (const round of Object.values(played ?? {})) {
     const l = round[teamId];
     if (!l) continue;
-    for (const id of l.slots) if (id != null) out.add(id);
-    if (l.ss != null) out.add(l.ss);
+    const ids = new Set([...l.slots, l.ss].filter((id): id is number => id != null));
+    for (const id of ids) out.set(id, (out.get(id) ?? 0) + 1);
   }
   return out;
 }
+
+/** Ab so vielen gespielten Spieltagen nennt die Aufstellung die Dauerbrenner (jedes Spiel von Beginn an) */
+const IRONMEN_AFTER = 5;
 
 function LineupEditor({
   team,
@@ -1000,11 +1003,11 @@ function LineupEditor({
   goals,
   assists,
   stars,
-  started,
+  starts,
   played = 0,
 }: {
-  /** Pokémon des eigenen Teams, die schon mindestens einmal in der Startelf standen */
-  started?: ReadonlySet<number>;
+  /** Startelf-Einsätze je Pokémon des eigenen Teams (gespielte Spieltage) */
+  starts?: ReadonlyMap<number, number>;
   /** Gespielte Spieltage */
   played?: number;
   /** Auszeichnungen „Spieler des Spieltags“ je Pokémon des eigenen Teams */
@@ -1306,9 +1309,16 @@ function LineupEditor({
             );
           }}
         />
-        {started && played >= UNUSED_AFTER && (() => {
+        {starts && played >= IRONMEN_AFTER && (() => {
+          // 🔋 Dauerbrenner: in jedem gespielten Spiel von Beginn an dabei
+          const iron = [...starts].filter(([id, n]) => n >= played && byId.has(id)).map(([id]) => id);
+          return iron.length > 0 && (
+            <p className="small muted manager__ironmen">{tx.ironmen(iron.map((id) => t.game.pokemon(byId.get(id)!)).join(', '), played)}</p>
+          );
+        })()}
+        {starts && played >= UNUSED_AFTER && (() => {
           // 🪑 Bankspieler, die noch kein Spiel von Beginn an gemacht haben
-          const unused = bench.filter((id) => !started.has(id) && byId.has(id));
+          const unused = bench.filter((id) => !starts.has(id) && byId.has(id));
           return unused.length > 0 && (
             <p className="small muted manager__unused">{tx.benchUnused(unused.map((id) => t.game.pokemon(byId.get(id)!)).join(', '))}</p>
           );
