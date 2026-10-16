@@ -38,10 +38,15 @@ export function Modal({ title, onClose, children, footer, className = '', labelI
         if (!focusables.length) return;
         const first = focusables[0];
         const last = focusables[focusables.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
+        const active = document.activeElement;
+        // Fokus auf dem Dialog selbst (direkt nach dem Öffnen) oder außerhalb: in den Dialog holen statt hinaus
+        if (active === ref.current || !ref.current.contains(active)) {
+          e.preventDefault();
+          (e.shiftKey ? last : first).focus();
+        } else if (e.shiftKey && active === first) {
           e.preventDefault();
           last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
+        } else if (!e.shiftKey && active === last) {
           e.preventDefault();
           first.focus();
         }
