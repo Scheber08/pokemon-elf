@@ -1,5 +1,5 @@
 /** Kontrast: Textfarben (gedämpft, Grün, Rot) erreichen auf allen Flächen beider Designs WCAG AA (≥ 4,5:1). */
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 const css = readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8');
@@ -37,5 +37,12 @@ describe('Kontrast der Textfarben', () => {
   }
   it('weiße Schrift auf den Grundfarben (Positions- und Ergebnis-Abzeichen)', () => {
     for (const c of ['green', 'blue', 'red']) expect(ratio('#ffffff', dark[c]), c).toBeGreaterThanOrEqual(4.5);
+  });
+  it('kein hart codiertes Mittelgrün als Textfarbe (dunkel nur 4,3:1) – stattdessen var(--green-text)', () => {
+    const dir = new URL('../src/styles/', import.meta.url);
+    const bad = readdirSync(dir)
+      .filter((f) => f.endsWith('.css'))
+      .flatMap((f) => [...readFileSync(new URL(f, dir), 'utf8').matchAll(/(?<![-\w])color:\s*#2e9a44/gi)].map(() => f));
+    expect(bad).toEqual([]);
   });
 });

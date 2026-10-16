@@ -1535,7 +1535,7 @@ button.draft-bench__slot {
 
 /* Manager-Saison: Zone des eigenen Platzes */
 .manager__zone--top {
-  color: #2e9a44;
+  color: var(--green-text);
 }
 .manager__zone--bottom {
   color: var(--red-text);
@@ -1759,7 +1759,7 @@ button.draft-bench__slot {
 
 /* Manager-Saison: Ø Tagesform der Startelf neben der Stärke */
 .manager__formavg.is-up {
-  color: #2e9a44;
+  color: var(--green-text);
 }
 .manager__formavg.is-down {
   color: var(--red-text);
