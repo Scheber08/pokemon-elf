@@ -307,6 +307,20 @@ describe('Deutsch bleibt unverändert', () => {
     );
   });
 
+  it('Rückgängig/Wiederholen: deaktiviert sich der bediente Knopf, wandert der Fokus zum Gegenstück', async () => {
+    storeLang('de');
+    const { container } = await render(app(h(Builder)));
+    await settle();
+    const btn = (name: string) => container.querySelectorAll('button').find((b) => b.textContent === name)!;
+    await act(async () => btn('Alles leeren').click());
+    await act(async () => btn('Rückgängig').click());
+    await settle();
+    expect(doc.activeElement).toBe(btn('Wiederholen'));
+    await act(async () => btn('Wiederholen').click());
+    await settle();
+    expect(doc.activeElement).toBe(btn('Rückgängig'));
+  });
+
   it('Werte-Tooltip auf Deutsch', async () => {
     storeLang('de');
     await render(h(SettingsProvider, null, h(StatTooltip, { pokemon: ZAPDOS, anchor, pos: 'ST' })));

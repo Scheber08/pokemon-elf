@@ -111,6 +111,8 @@ function megasOnField(s: BuilderState, byId: Map<number, Pokemon>, except?: numb
 
 export function Builder() {
   const { all, byId, scale } = usePokemonData();
+  const undoRef = useRef<HTMLButtonElement>(null);
+  const redoRef = useRef<HTMLButtonElement>(null);
   const { sprite, setSprite } = useSettings();
   const t = useT();
   const toast = useToast();
@@ -347,10 +349,33 @@ export function Builder() {
           <button type="button" className="btn" onClick={autoBest} title={t.builder.bestTitle}>
             {t.builder.best}
           </button>
-          <button type="button" className="btn" onClick={undo} disabled={!history.length} title={t.builder.undoTitle}>
+          <button
+            ref={undoRef}
+            type="button"
+            className="btn"
+            onClick={() => {
+              // Letzter Schritt zurück: Der Knopf wird gleich deaktiviert – Fokus zu „Wiederholen“ statt an den Seitenanfang
+              const last = history.length === 1;
+              undo();
+              if (last) window.setTimeout(() => redoRef.current?.focus(), 0);
+            }}
+            disabled={!history.length}
+            title={t.builder.undoTitle}
+          >
             {t.builder.undo}
           </button>
-          <button type="button" className="btn" onClick={redo} disabled={!future.length} title={t.builder.redoTitle}>
+          <button
+            ref={redoRef}
+            type="button"
+            className="btn"
+            onClick={() => {
+              const last = future.length === 1;
+              redo();
+              if (last) window.setTimeout(() => undoRef.current?.focus(), 0);
+            }}
+            disabled={!future.length}
+            title={t.builder.redoTitle}
+          >
             {t.builder.redo}
           </button>
           <button
