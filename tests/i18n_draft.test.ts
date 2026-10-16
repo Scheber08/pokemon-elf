@@ -273,7 +273,11 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(all).toContain('Start draft');
     expect(all).toContain('Unova');
     // Pool-Größe mit Sonder-Pokémon (ohne Legendäre: nur Ultrabestien)
-    expect(container.querySelector('.draft__pool-line')!.textContent).toMatch(/^Pool: \d+ Pokémon for \d+ picks\. Including \d+ Ultra Beasts\.$/);
+    expect(container.querySelector('.draft__pool-line')!.textContent).toMatch(/^Pool: \d+ Pokémon for \d+ picks\. You make \d+ of them\. Including \d+ Ultra Beasts\.$/);
+    // Eigene Picks: ein menschliches Team (Standard) × 11 Runden
+    expect(container.querySelector('.draft__own-picks')!.textContent).toBe(' You make 11 of them.');
+    const de = (await import('../src/i18n/de/draft')).default;
+    expect([de.local.ownPicks(11, 1), de.local.ownPicks(22, 2)]).toEqual(['Davon machst du 11.', 'Davon macht ihr 22 (2 Teams).']);
     expect(germanLeft(container)).toEqual([]);
     // CPU-Stärke: Standard „Normal“, „Hard“ wird gemerkt
     expect(all).toContain('CPU strength');

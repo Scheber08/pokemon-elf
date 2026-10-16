@@ -74,6 +74,7 @@ const draft: Messages['draft'] = {
       normal: 'CPU teams pick well, with a little randomness',
       hard: 'CPU teams (almost) always take the best-fitting pick',
     },
+    ownPicks: (picks, humans) => (humans === 1 ? `You make ${picks} of them.` : `Your ${humans} teams make ${picks} of them.`),
     poolTooSmall: (size, teams, rounds, need) =>
       `Only ${size} Pokémon in the pool – ${teams} teams × ${rounds} rounds need ${need}. Choose a bigger region, “All” or fewer teams.`,
     start: 'Start draft',

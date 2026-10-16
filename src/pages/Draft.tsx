@@ -939,6 +939,11 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               return (
                 <p className="hint draft__pool-line">
                   {t.online.poolLine(poolSize, n * ROUNDS)}
+                  {(() => {
+                    // Wie viele Picks die menschlichen Teams davon selbst machen
+                    const humans = state.teams.filter((tm) => !tm.cpu).length;
+                    return humans > 0 && <span className="draft__own-picks"> {tx.ownPicks(humans * ROUNDS, humans)}</span>;
+                  })()}
                   {(k.legend > 0 || k.ub > 0 || k.mega > 0) && <span className="draft__pool-kinds"> {t.online.poolKinds(k.legend, k.ub, k.mega)}</span>}
                 </p>
               );
