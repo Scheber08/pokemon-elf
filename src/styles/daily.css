@@ -19,10 +19,10 @@
   margin-bottom: 4px;
 }
 .daily-no {
-  color: var(--yellow);
+  color: var(--yellow-text);
 }
 :root[data-theme='light'] .daily-no {
-  color: #b45309;
+  color: #9a4209;
 }
 
 /* „Neue Elf in 05:12:33" */
@@ -328,11 +328,11 @@
   color: var(--red-text);
 }
 .daily-streak__no {
-  color: var(--yellow);
+  color: var(--yellow-text);
   font-family: var(--font-head);
 }
 :root[data-theme='light'] .daily-streak__no {
-  color: #b45309;
+  color: #9a4209;
 }
 
 /* „Top n %" neben dem Platz: klein und gedämpft, nicht in Zahlen-Größe */

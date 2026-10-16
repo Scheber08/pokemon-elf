@@ -15,10 +15,11 @@
   --text-dim: #9fb3c8;
   --yellow: #ffcb05;
   --yellow-ink: #1a1400;
-  --red: #e3350d;
-  --blue: #2f7de1;
-  --green: #2e9a44;
+  --red: #c92f0b;
+  --blue: #1f6fd1;
+  --green: #24803a;
   /* Text in Grün/Rot (AA-Kontrast ≥ 4,5:1 auf allen Flächen); --green/--red bleiben für Flächen und Rahmen */
+  --yellow-text: #ffcb05;
   --green-text: #4cc96b;
   --red-text: #ff8a6e;
   --grass-1: #2e7d32;
@@ -41,6 +42,7 @@
   --line-strong: rgba(13, 27, 42, 0.25);
   --text: #0d1b2a;
   --text-dim: #4b5f73;
+  --yellow-text: #7d5200;
   --green-text: #18702e;
   --red-text: #b52a0b;
   --focus: #c2410c;
@@ -80,10 +82,10 @@ img {
 }
 
 a {
-  color: var(--yellow);
+  color: var(--yellow-text);
 }
 :root[data-theme='light'] a {
-  color: #b45309;
+  color: #9a4209;
 }
 
 button,
@@ -123,6 +125,9 @@ select {
   border-radius: 8px;
   font-weight: 700;
 }
+:root[data-theme='light'] .skip-link {
+  color: var(--yellow-ink);
+}
 .skip-link:focus {
   top: 8px;
 }
@@ -151,6 +156,7 @@ select {
   color: #eef3f8;
   --text: #eef3f8;
   --text-dim: #9fb3c8;
+  --yellow-text: #ffcb05;
   --line: rgba(255, 255, 255, 0.12);
 }
 
@@ -191,7 +197,7 @@ select {
   line-height: 1;
 }
 .logo__text b {
-  color: var(--yellow);
+  color: var(--yellow-text);
   font-weight: 700;
 }
 .logo__sub {
@@ -270,7 +276,7 @@ select {
   font-family: var(--font-head);
   font-size: 14px;
   letter-spacing: 0.04em;
-  color: var(--yellow) !important;
+  color: var(--yellow-text) !important;
   text-decoration: none;
 }
 .subnav__link:hover .subnav__hint {
@@ -352,10 +358,10 @@ select {
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  color: var(--yellow);
+  color: var(--yellow-text);
 }
 :root[data-theme='light'] .kicker {
-  color: #b45309;
+  color: #9a4209;
 }
 
 .btn {
@@ -1597,10 +1603,10 @@ button.sheet__row:hover {
   border-radius: 8px;
 }
 .statusline__item strong {
-  color: var(--yellow);
+  color: var(--yellow-text);
 }
 :root[data-theme='light'] .statusline__item strong {
-  color: #b45309;
+  color: #9a4209;
 }
 
 .rollcards {
@@ -1779,7 +1785,7 @@ button.sheet__row:hover {
   font-size: clamp(64px, 11vw, 120px);
   line-height: 0.95;
   letter-spacing: -0.01em;
-  color: var(--yellow);
+  color: var(--yellow-text);
   font-variant-numeric: tabular-nums;
 }
 :root[data-theme='light'] .result-hero__record {
@@ -2342,7 +2348,7 @@ button.sheet__row:hover {
   vertical-align: middle;
 }
 .lvl--3 .level-icon {
-  color: var(--yellow);
+  color: var(--yellow-text);
 }
 .lvl--2 .level-icon {
   color: #8fd18f;
@@ -2355,7 +2361,7 @@ button.sheet__row:hover {
   opacity: 0.55;
 }
 :root[data-theme='light'] .lvl--3 .level-icon {
-  color: #b45309;
+  color: #9a4209;
 }
 :root[data-theme='light'] .lvl--2 .level-icon {
   color: #2e7d32;

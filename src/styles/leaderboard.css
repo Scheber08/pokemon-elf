@@ -41,14 +41,14 @@
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: var(--yellow);
+  color: var(--yellow-text);
   font-size: 13px;
   font-weight: 500;
   text-align: left;
   cursor: pointer;
 }
 :root[data-theme='light'] .lb-team {
-  color: #b45309;
+  color: #9a4209;
 }
 .lb-team__name {
   min-width: 0;

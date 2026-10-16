@@ -27,12 +27,15 @@ describe('Kontrast der Textfarben', () => {
     ['dunkel', dark],
     ['hell', light],
   ] as const) {
-    it(`${name}: --text-dim, --green-text, --red-text auf bg/surface/surface-2/surface-3`, () => {
-      for (const fg of ['text', 'text-dim', 'green-text', 'red-text'])
+    it(`${name}: --text-dim, --yellow-text, --green-text, --red-text auf bg/surface/surface-2/surface-3`, () => {
+      for (const fg of ['text', 'text-dim', 'yellow-text', 'green-text', 'red-text'])
         for (const bg of ['bg', 'surface', 'surface-2', 'surface-3']) {
           expect(theme[fg], `${fg} fehlt`).toBeDefined();
           expect(ratio(theme[fg], theme[bg]), `${fg} auf ${bg}`).toBeGreaterThanOrEqual(4.5);
         }
     });
   }
+  it('weiße Schrift auf den Grundfarben (Positions- und Ergebnis-Abzeichen)', () => {
+    for (const c of ['green', 'blue', 'red']) expect(ratio('#ffffff', dark[c]), c).toBeGreaterThanOrEqual(4.5);
+  });
 });

@@ -368,10 +368,10 @@
   font-weight: 700;
   letter-spacing: 0.18em;
   line-height: 1;
-  color: var(--yellow);
+  color: var(--yellow-text);
 }
 :root[data-theme='light'] .draft-code__value {
-  color: #b45309;
+  color: #9a4209;
 }
 .draft-code__actions {
   display: flex;
@@ -821,10 +821,10 @@
   background: rgba(255, 203, 5, 0.12);
 }
 .draft-feed li.is-mine strong {
-  color: var(--yellow);
+  color: var(--yellow-text);
 }
 :root[data-theme='light'] .draft-feed li.is-mine strong {
-  color: #b45309;
+  color: #9a4209;
 }
 .draft-feed__no {
   font-family: var(--font-head);
@@ -842,12 +842,12 @@
 }
 /* Legendär ★, Ultrabestie UB, Mega M im Pick-Verlauf */
 .draft-feed__kind {
-  color: var(--yellow);
+  color: var(--yellow-text);
   font-size: 12px;
   font-weight: 700;
 }
 :root[data-theme='light'] .draft-feed__kind {
-  color: #b45309;
+  color: #9a4209;
 }
 /* Wurf, unter dem gewählt wurde */
 .draft-feed__roll {
@@ -1112,7 +1112,7 @@
   font-size: 1.05rem;
 }
 .draft__champion span {
-  color: var(--yellow);
+  color: var(--yellow-text);
 }
 .draft__you {
   margin: 4px 0 0;
@@ -1226,10 +1226,10 @@ button.draft-bench__slot {
   white-space: nowrap;
 }
 .manager-form--up {
-  color: #3ec46d;
+  color: var(--green-text);
 }
 .manager-form--down {
-  color: #ef5350;
+  color: var(--red-text);
 }
 .manager-form--flat {
   color: var(--text-dim);
@@ -1319,7 +1319,7 @@ button.draft-bench__slot {
   font-size: 14px;
 }
 .manager__star.is-you strong {
-  color: var(--yellow);
+  color: var(--yellow-text);
 }
 .manager__star-sprite {
   width: 32px;
@@ -1527,10 +1527,10 @@ button.draft-bench__slot {
 /* Letzte Picks: Hinweis auf einen Positions-Run */
 .draft-feed__run {
   margin: 0 0 6px;
-  color: var(--yellow);
+  color: var(--yellow-text);
 }
 :root[data-theme='light'] .draft-feed__run {
-  color: #b45309;
+  color: #9a4209;
 }
 
 /* Manager-Saison: Zone des eigenen Platzes */
@@ -1689,10 +1689,10 @@ button.draft-bench__slot {
   font-weight: 600;
 }
 .draft-results__stars li.is-you strong {
-  color: var(--yellow);
+  color: var(--yellow-text);
 }
 :root[data-theme='light'] .draft-results__stars li.is-you strong {
-  color: #b45309;
+  color: #9a4209;
 }
 
 /* Lokales Setup: Pick-Nummern der menschlichen Teams */
@@ -1855,7 +1855,7 @@ button.draft-bench__slot {
   }
 }
 :root[data-theme='light'] .draft-progress__mark {
-  background: #b45309;
+  background: #9a4209;
 }
 
 /* Online-Draft: bester freier Fit auf leeren Slots der eigenen Elf */
@@ -2052,5 +2052,5 @@ button.draft-pool__kind {
 button.draft-pool__legends.is-on,
 button.draft-pool__kind.is-on {
   border-color: var(--yellow);
-  color: var(--yellow);
+  color: var(--yellow-text);
 }

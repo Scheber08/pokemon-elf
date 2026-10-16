@@ -211,7 +211,7 @@
   font-size: clamp(48px, 10vw, 76px);
   font-weight: 700;
   line-height: 1;
-  color: var(--yellow);
+  color: var(--yellow-text);
   font-variant-numeric: tabular-nums;
   animation: league-pop 0.4s ease-out;
 }
@@ -222,7 +222,7 @@
   --fx-dim: var(--text-dim);
   --fx-line: var(--line);
   --fx-score-bg: var(--surface-3);
-  --fx-you: var(--yellow);
+  --fx-you: var(--yellow-text);
   --fx-own-bg: rgba(255, 203, 5, 0.14);
   list-style: none;
   margin: 0;
@@ -239,7 +239,7 @@
   --fx-own-bg: rgba(255, 203, 5, 0.12);
 }
 :root[data-theme='light'] .league-fixtures--plain {
-  --fx-you: #b45309;
+  --fx-you: #9a4209;
   --fx-own-bg: rgba(255, 203, 5, 0.22);
 }
 .league-fixture {
@@ -363,7 +363,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  color: var(--yellow);
+  color: var(--yellow-text);
   line-height: 1.1;
 }
 .league-finale__line {
@@ -386,7 +386,7 @@
   font-family: var(--font-head);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--yellow);
+  color: var(--yellow-text);
 }
 .league-finale__timer {
   position: absolute;
@@ -485,11 +485,8 @@
 }
 .draft-results__trophy {
   margin-right: 0.3em;
-  color: var(--yellow);
+  color: var(--yellow-text);
   font-size: 0.85em;
-}
-:root[data-theme='light'] .draft-results__trophy {
-  color: #d39e00;
 }
 .draft-results__line {
   margin: 0;
@@ -940,10 +937,10 @@
   border-bottom: 1px solid var(--line);
 }
 .league-ticker__scorer-list li.is-you {
-  color: var(--yellow);
+  color: var(--yellow-text);
 }
 :root[data-theme='light'] .league-ticker__scorer-list li.is-you {
-  color: #b45309;
+  color: #9a4209;
 }
 .league-ticker__scorer-name {
   flex: 1;
@@ -1023,13 +1020,13 @@
   vector-effect: non-scaling-stroke;
 }
 :root[data-theme='light'] .place-chart__line {
-  stroke: #b45309;
+  stroke: #9a4209;
 }
 .place-chart__dot {
   fill: var(--yellow);
 }
 :root[data-theme='light'] .place-chart__dot {
-  fill: #b45309;
+  fill: #9a4209;
 }
 .place-chart__peak {
   fill: none;
@@ -1120,10 +1117,10 @@
   gap: 4px 12px;
 }
 .draft-results__eleven-list li.is-mine {
-  color: var(--yellow);
+  color: var(--yellow-text);
 }
 :root[data-theme='light'] .draft-results__eleven-list li.is-mine {
-  color: #b45309;
+  color: #9a4209;
 }
 
 /* Tabellen-Zonen: oben Meister bzw. Aufstiegsplätze, unten die letzten drei (Rand an der Platz-Spalte) */
@@ -1175,7 +1172,7 @@
 /* Wechsel an der Tabellenspitze */
 .league-ticker__leader.is-new,
 .manager__leader.is-new {
-  color: var(--yellow);
+  color: var(--yellow-text);
 }
 
 /* Saison-Ticker: Abstand zur Spitze unter den Punkten */
