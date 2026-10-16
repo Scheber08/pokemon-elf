@@ -7,7 +7,7 @@ import { poolStars, StarsLanded } from './PoolStars';
 import { LeagueNumbers } from './LeagueNumbers';
 import { TypeGoals } from './TypeGoals';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { bestTransfer, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, formatDuration, goalFest, dreamDuo, attackDefenseRanks, weightExtremes, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { bestTransfer, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, formatDuration, goalFest, dreamDuo, attackDefenseRanks, weightExtremes, playerTallies, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { buildTable, formatRecord, sideTable, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -346,6 +346,15 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
             {tx.joker(t.game.pokemon(byId.get(joker.pokemonId)!), joker.pick + 1, nameOf(joker.team), joker.goals)}
           </p>
         )}
+        {(() => {
+          // 1️⃣ Erster Pick des Drafts: seine Saisonbilanz (Tore, Vorlagen) für das Team, das ihn zog
+          const first = picks.find((pk) => pk.pick === 0);
+          const team = first ? teams.findIndex((tm) => tm.id === first.teamId) : -1;
+          const mon = first ? byId.get(first.pokemonId) : undefined;
+          if (!first || team < 0 || !mon || cup) return null;
+          const tally = playerTallies(league).find((x) => x.teamIndex === team && x.pokemonId === first.pokemonId);
+          return <p className="draft-results__steal draft-results__first">{tx.firstPick(t.game.pokemon(mon), nameOf(team), tally?.goals ?? 0, tally?.assists ?? 0)}</p>;
+        })()}
         {topCaptain && topCaptainMon && (
           <p className="draft-results__steal">
             {tx.topCaptain(t.game.pokemon(topCaptainMon), nameOf(topCaptain.teamIndex), topCaptain.goals)}

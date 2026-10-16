@@ -2798,6 +2798,18 @@ describe('ManagerSeason', () => {
       if (joker) expect(el!.textContent).toContain(`${ALL.find((p) => p.id === joker.pokemonId)!.de} (erst Pick ${joker.pick + 1}) traf ${joker.goals}-mal`);
       else expect(el).toBeNull();
     }
+    // 1️⃣ Erster Pick mit Saisonbilanz
+    {
+      const { playerTallies } = await import('../src/lib/leagueTimeline');
+      const first = s.picks.find((pk) => pk.pick === 0)!;
+      const team = s.teams.findIndex((t) => t.id === first.teamId);
+      const tl = playerTallies(s.league!).find((x) => x.teamIndex === team && x.pokemonId === first.pokemonId);
+      const g = tl?.goals ?? 0;
+      const a = tl?.assists ?? 0;
+      expect(container.querySelector('.draft-results__first')!.textContent).toBe(
+        `1️⃣ Erster Pick: ${ALL.find((p) => p.id === first.pokemonId)!.de} (${s.teams[team].name}) – ${g} ${g === 1 ? 'Tor' : 'Tore'}, ${a} ${a === 1 ? 'Vorlage' : 'Vorlagen'}`,
+      );
+    }
     // Treffsicherste Typen unter der Torjägerliste (wie goalsByType)
     {
       const { goalsByType } = await import('../src/lib/leagueTimeline');
