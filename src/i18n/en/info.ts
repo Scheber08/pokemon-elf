@@ -14,6 +14,8 @@ const info: Messages['info'] = {
     guidePost: '.',
     newsTitle: 'What’s new?',
     news: [
+      'New: scouting guide with “Top 3 per position” and “Where does … play?”, fit per player on the team sheet (builder and “View team”) and in the challenge round log, filter the leaderboard by formation',
+      'New: 🏁 “title sewn up on matchday n” (challenges and draft), friendlies with a forecast and scorers on both sides, manager cup run, average and trend on profiles, best weekday and new personal best in the Daily XI',
       'New: half-time score in the match report and the 2D replay, “Most clinical side” season record, 🆕 on the leaderboard and your points gap to the top list',
       'Challenges: “Last run” before you start, favourite opponent and bogey team, streaks and home/away record in the season summary',
       'Daily XI: “top n%” next to your position and an archive with 🏅 and ▲/▼; shop with your collection count and new seasons; profile marks personal-best runs with 🏅',

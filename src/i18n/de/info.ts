@@ -16,6 +16,8 @@ const info = {
     /** „Was ist neu?" – die wichtigsten Neuerungen, neueste zuerst */
     newsTitle: 'Was ist neu?',
     news: [
+      'Neu: Scouting-Guide mit „Top 3 je Position“ und „Wo spielt …?“, Fit je Spieler im Teamblatt (Builder und „Team ansehen“) und im Rundenverlauf der Challenges, Rangliste nach Formation filtern',
+      'Neu: 🏁 „rechnerisch Meister seit dem n. Spieltag“ (Challenges und Draft), Testspiel mit Prognose und Torschützen beider Seiten, Manager-Pokalweg, Ø und Trend im Profil, bester Wochentag und neuer Bestwert in der Tageself',
       'Neu: Halbzeitstand im Spielbericht und in der 2D-Wiedergabe, Saisonrekord „Kaltschnäuzigste Mannschaft“, 🆕 in der Rangliste und dein Punkte-Abstand zur Top-Liste',
       'Challenges: „Letzter Run“ vor dem Start, Lieblings- und Angstgegner, Serien sowie Heim-/Auswärtsbilanz in der Saisonbilanz',
       'Tägliche Elf: „Top n %“ beim Platz und Archiv mit 🏅 und ▲/▼; Shop mit Sammelstand und neuen Saisons; Profil mit 🏅 an Bestwert-Runs',
