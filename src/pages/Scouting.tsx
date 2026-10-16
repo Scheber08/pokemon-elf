@@ -98,7 +98,12 @@ function WherePlays({ query, setQuery }: { query: string; setQuery: (q: string) 
       <h2 id="scouting-where" className="section-title">
         🔍 {s.whereTitle}
       </h2>
-      <input id="scouting-where-input" className="input scouting__where-input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={s.wherePlaceholder} aria-label={s.whereTitle} />
+      <div className="scouting__where-row">
+        <input id="scouting-where-input" className="input scouting__where-input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={s.wherePlaceholder} aria-label={s.whereTitle} />
+        <button type="button" className="btn btn--small scouting__where-random" title={s.whereRandomTitle} onClick={() => setQuery(t.game.pokemon(data.list[Math.floor(Math.random() * data.list.length)]))}>
+          🎲 {s.whereRandom}
+        </button>
+      </div>
       {query.trim().length >= 2 && !hit && <p className="muted small">{s.whereNone}</p>}
       {hit && (
         <div className="scouting__where-hit" aria-live="polite">

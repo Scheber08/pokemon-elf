@@ -40,6 +40,8 @@ const scouting = {
   /** Rang auf der besten Position unter allen Pokémon */
   whereRank: (rank: number, total: number, position: string) =>
     `🏅 Nr. ${rank} von ${total.toLocaleString('de-DE')} als ${position}`,
+  whereRandom: 'Zufällig',
+  whereRandomTitle: 'Ein zufälliges Pokémon nachschlagen',
   whereNone: 'Kein Pokémon gefunden.',
   howTitle: 'Wie ein Team bewertet wird',
   howWeights: (w: ScoutingWeights) =>

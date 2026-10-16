@@ -92,6 +92,12 @@ describe('Scouting: Top 3 je Position', () => {
     await act(async () => pick.click());
     expect(container.querySelector('.scouting__where-name strong')!.textContent).toBe(pick.textContent);
     expect(pick.getAttribute('title')).toBe(`Wo spielt ${pick.textContent} sonst noch?`);
+    // 🎲 Zufällig trägt ein Pokémon ein (hier das letzte der Liste)
+    vi.spyOn(Math, 'random').mockReturnValue(0.9999999);
+    await act(async () => container.querySelector('.scouting__where-random')!.click());
+    vi.restoreAllMocks();
+    expect(container.querySelector('.scouting__where-name strong')!.textContent).toBe(messages().game.pokemon(ALL[ALL.length - 1]));
+    expect(input.value).toBe(messages().game.pokemon(ALL[ALL.length - 1]));
     await type('xyzxyz');
     expect(container.querySelector('.scouting__where-hit')).toBeNull();
     expect(container.querySelector('.scouting__where')!.textContent).toContain('Kein Pokémon gefunden.');

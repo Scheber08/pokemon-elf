@@ -24,6 +24,8 @@ const scouting: Messages['scouting'] = {
   wherePlaceholder: 'Search a Pokémon, e.g. Charizard',
   whereShow: (name) => `Where else does ${name} play?`,
   whereRank: (rank, total, position) => `🏅 No. ${rank} of ${total.toLocaleString('en-GB')} as ${position}`,
+  whereRandom: 'Random',
+  whereRandomTitle: 'Look up a random Pokémon',
   whereNone: 'No Pokémon found.',
   howTitle: 'How a team is rated',
   howWeights: (w) =>
