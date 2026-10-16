@@ -5,7 +5,7 @@ import { installMiniDom } from './miniDom';
 const doc = installMiniDom();
 const React = await import('react');
 const { createRoot } = await import('react-dom/client');
-const { loadStats, recordRun } = await import('../src/lib/challengeStats');
+const { averageScore, loadStats, recordRun } = await import('../src/lib/challengeStats');
 const { StatCards } = await import('../src/components/ChallengeParts');
 const { act, createElement: h } = React;
 
@@ -20,6 +20,22 @@ describe('Challenge-Statistik', () => {
     expect(s.bestScore).toBe(731);
     expect(s.last).toEqual({ score: 700, record: { w: 25, d: 4, l: 5 } });
     expect(loadStats('c340').last?.score).toBe(700);
+    // Ø Score ab zwei gezählten Runs
+    expect(averageScore(s)).toBe(716);
+    expect(averageScore({ ...s, scored: 1 })).toBeNull();
+    // Alte Daten ohne Summe: kein Ø, ab dann wird gezählt
+    expect(averageScore({ bestScore: 1, bestRecord: null, runs: 5 })).toBeNull();
+  });
+
+  it('Ø Score als Zusatz in der Karte „Runs“', async () => {
+    const container = doc.createElement('div');
+    doc.body.appendChild(container);
+    const root = createRoot(container as unknown as Element);
+    await act(async () => root.render(h(StatCards, { stats: { bestScore: 731, bestRecord: null, runs: 3, scoreSum: 2100, scored: 3 } })));
+    expect(container.querySelector('.statcard__avg')!.textContent).toBe('Ø Score 700');
+    await act(async () => root.render(h(StatCards, { stats: { bestScore: 731, bestRecord: null, runs: 3 } })));
+    expect(container.querySelector('.statcard__avg')).toBeNull();
+    await act(async () => root.unmount());
   });
 
   it('„Letzter Run“ als vierte Karte nur mit showLast und vorhandenem Run', async () => {

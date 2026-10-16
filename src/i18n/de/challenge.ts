@@ -15,6 +15,7 @@ const challenge = {
   bestScore: 'Bester Score',
   bestRecord: 'Beste Bilanz',
   runs: 'Runs',
+  avgScore: (n: number) => `Ø Score ${n}`,
   lastRun: 'Letzter Run',
   howItWorks: "So funktioniert's",
   setupAria: 'Run vorbereiten',

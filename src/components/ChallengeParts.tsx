@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'rea
 import { FORMATION_IDS } from '../config/formations';
 import { useT } from '../i18n';
 import { LIMITS } from '../lib/api/contract';
-import type { ChallengeStats } from '../lib/challengeStats';
+import { averageScore, type ChallengeStats } from '../lib/challengeStats';
 import type { NameField, NameIssues } from '../lib/runFinish';
 import { formatRecord } from '../lib/season';
 import type { FormationId } from '../types';
@@ -29,6 +29,7 @@ export function StatCards({ stats, showLast = false }: { stats: ChallengeStats; 
       <div className="statcard">
         <span className="statcard__label">{t.challenge.runs}</span>
         <span className="statcard__value">{stats.runs}</span>
+        {averageScore(stats) != null && <span className="statcard__sub statcard__avg">{t.challenge.avgScore(averageScore(stats)!)}</span>}
       </div>
       {last && (
         <div className="statcard statcard--last">
