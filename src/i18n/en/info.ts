@@ -14,6 +14,8 @@ const info: Messages['info'] = {
     guidePost: '.',
     newsTitle: 'What’s new?',
     news: [
+      'New: match report with the running score, 🏆 winner, 🟰 equaliser, brace and hat-trick; 2D replay with ←/→ (±5 minutes); gap to the next place on the leaderboard',
+      'New: Daily XI with ▲/▼ against yesterday, “Last run” with “… ago”, 🛡️ for unbeaten runs on profiles, rank at the best position in “Where does … play?”, “World Penguin Day” season in the shop; plus many keyboard and screen-reader improvements',
       'New: scouting guide with “Top 3 per position” and “Where does … play?”, fit per player on the team sheet (builder and “View team”) and in the challenge round log, filter the leaderboard by formation',
       'New: 🏁 “title sewn up on matchday n” (challenges and draft), friendlies with a forecast and scorers on both sides, manager cup run, average and trend on profiles, best weekday and new personal best in the Daily XI',
       'New: half-time score in the match report and the 2D replay, “Most clinical side” season record, 🆕 on the leaderboard and your points gap to the top list',
