@@ -552,6 +552,27 @@ export function bestGoalPhase(matches: LeagueResult['matches'], team: number, mi
   return { from: at * 15 + 1, to: at * 15 + 15, goals: top };
 }
 
+/**
+ * Halbzeitführungen eines Teams: Spiele, in denen es zur Pause (Tore bis einschließlich 45. Minute) vorn lag,
+ * und wie viele davon es gewann. Spiele mit Toren ohne Minute zählen nicht. null ohne Pausenführung.
+ */
+export function halfTimeLeads(matches: LeagueResult['matches'], team: number): { led: number; won: number } | null {
+  let led = 0;
+  let won = 0;
+  for (const m of matches) {
+    if (m.home !== team && m.away !== team) continue;
+    const home = m.home === team;
+    const [own, opp] = home ? [m.homeScorers, m.awayScorers] : [m.awayScorers, m.homeScorers];
+    const [gf, ga] = home ? [m.hg, m.ag] : [m.ag, m.hg];
+    if (own.length !== gf || opp.length !== ga || [...own, ...opp].some((g) => g.minute == null)) continue;
+    const first = (goals: typeof own) => goals.filter((g) => g.minute! <= 45).length;
+    if (first(own) <= first(opp)) continue;
+    led++;
+    if (gf > ga) won++;
+  }
+  return led ? { led, won } : null;
+}
+
 /** Ab so vielen Spielen in Folge mit Tor gilt eine Torserie */
 export const SCORING_RUN_MIN = 3;
 

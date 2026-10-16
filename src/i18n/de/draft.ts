@@ -737,6 +737,7 @@ const draft = {
     linesTitle: 'Tore nach Mannschaftsteil',
     distinctScorers: (n: number) => `👥 ${n} verschiedene Torschützen`,
     distinctScorersBest: ' – Ligabestwert',
+    halfTimeLeads: (led: number, won: number) => `🕐 ${led}× zur Pause geführt, ${won === led && led > 1 ? 'alle' : won} gewonnen`,
     goalPhase: (from: number, to: number, goals: number) => `⏱️ Stärkste Phase: ${from}.–${to}. Minute (${goals} ${goals === 1 ? 'Tor' : 'Tore'})`,
     lineNames: { att: 'Angriff', mid: 'Mittelfeld', def: 'Abwehr', gk: 'Tor' },
     rivalMark: 'Dein nächster Gegner',

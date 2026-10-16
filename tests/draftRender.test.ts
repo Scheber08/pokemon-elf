@@ -2298,6 +2298,12 @@ describe('ManagerSeason', () => {
     const phaseEl = el!.querySelector('.manager__phase');
     if (!phase) expect(phaseEl).toBeNull();
     else expect(phaseEl!.textContent).toBe(`⏱️ Stärkste Phase: ${phase.from}.–${phase.to}. Minute (${phase.goals} ${phase.goals === 1 ? 'Tor' : 'Tore'})`);
+    // 🕐 Pausenführungen
+    const { halfTimeLeads } = await import('../src/lib/leagueTimeline');
+    const ht = halfTimeLeads(storedLeague(s.league, s.teams.length)!.matches, me);
+    const htEl = el!.querySelector('.manager__halftime');
+    if (!ht) expect(htEl).toBeNull();
+    else expect(htEl!.textContent).toBe(`🕐 ${ht.led}× zur Pause geführt, ${ht.won === ht.led && ht.led > 1 ? 'alle' : ht.won} gewonnen`);
   });
 
   it('Manager: 🪑 Bankspieler ohne Einsatz erst ab dem 3. Spieltag', async () => {

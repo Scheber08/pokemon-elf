@@ -576,6 +576,25 @@ describe('Stärkste Torphase', () => {
   });
 });
 
+describe('Halbzeitführungen', () => {
+  it('Pausenführung (bis 45.) und Siege daraus; Tore ohne Minute → Spiel zählt nicht', async () => {
+    const { halfTimeLeads } = await import('../src/lib/leagueTimeline');
+    const g = (minute?: number) => ({ pokemonId: 1, pos: 'ST' as const, minute });
+    const matches = [
+      // Team 0 führt 1:0 zur Pause, gewinnt 2:1
+      { round: 1, home: 0, away: 1, hg: 2, ag: 1, homeScorers: [g(10), g(70)], awayScorers: [g(60)] },
+      // Team 0 (auswärts) führt 1:0 zur Pause, verliert 1:2
+      { round: 2, home: 1, away: 0, hg: 2, ag: 1, homeScorers: [g(50), g(88)], awayScorers: [g(45)] },
+      // Pause 0:0 – zählt nicht
+      { round: 3, home: 0, away: 1, hg: 1, ag: 0, homeScorers: [g(91)], awayScorers: [] },
+      // Tor ohne Minute – zählt nicht
+      { round: 4, home: 0, away: 1, hg: 1, ag: 0, homeScorers: [g()], awayScorers: [] },
+    ];
+    expect(halfTimeLeads(matches, 0)).toEqual({ led: 2, won: 1 });
+    expect(halfTimeLeads(matches, 1)).toBeNull();
+  });
+});
+
 describe('Angriff und Abwehr mit Rang', () => {
   it('geteilte Ränge bei Gleichstand', async () => {
     const { attackDefenseRanks } = await import('../src/lib/leagueTimeline');

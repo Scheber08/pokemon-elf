@@ -671,6 +671,7 @@ const draft: Messages['draft'] = {
     linesTitle: 'Goals by unit',
     distinctScorers: (n) => `👥 ${n} different scorers`,
     distinctScorersBest: ' – league best',
+    halfTimeLeads: (led, won) => `🕐 Led at half-time ${led}×, won ${won === led && led > 1 ? 'all' : won}`,
     goalPhase: (from, to, goals) => `⏱️ Strongest spell: minutes ${from}–${to} (${goals} ${goals === 1 ? 'goal' : 'goals'})`,
     lineNames: { att: 'Attack', mid: 'Midfield', def: 'Defence', gk: 'Keeper' },
     rivalMark: 'Your next opponent',
