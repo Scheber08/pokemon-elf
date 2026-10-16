@@ -1,9 +1,11 @@
 /** Scouting-Guide: „🏅 Top 3 je Position“ aus den echten Pokémon-Daten. */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ALL } from './helpers';
-import { installMiniDom } from './miniDom';
+import { installMiniDom, MiniEvent } from './miniDom';
 
 const doc = installMiniDom();
+// Texteingaben: React nimmt das input-Ereignis nur, wenn das DOM es kennt („oninput" in document)
+(doc as unknown as Record<string, unknown>).oninput = null;
 const React = await import('react');
 const { createRoot } = await import('react-dom/client');
 const { Scouting } = await import('../src/pages/Scouting');
@@ -50,6 +52,35 @@ describe('Scouting: Top 3 je Position', () => {
     });
     const withLeg = rank(ALL)[0];
     expect(container.querySelector('.scouting__top-name')!.textContent).toBe(withLeg.de);
+    await act(async () => root.unmount());
+  });
+
+  it('🔍 Wo spielt …?: Suche nach Name (deutsch/englisch), fünf beste Positionen absteigend', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => new Response(JSON.stringify(url.endsWith('pokemon.json') ? ALL : []), { status: 200 })));
+    const container = doc.createElement('div');
+    doc.body.appendChild(container);
+    const root = createRoot(container as unknown as Element);
+    await act(async () => root.render(h(SettingsProvider, null, h(ToastProvider, null, h(PokemonDataProvider, null, h(Scouting))))));
+    for (let i = 0; i < 5; i++) await act(async () => new Promise((r) => setTimeout(r, 0)));
+    const input = container.querySelector('.scouting__where-input') as unknown as { type: string; value: string; dispatchEvent: (e: unknown) => void };
+    const type = async (v: string) =>
+      act(async () => {
+        input.type = 'text';
+        input.value = v;
+        input.dispatchEvent(new MiniEvent('input', { bubbles: true }));
+      });
+    await type('charizard');
+    expect(container.querySelector('.scouting__where-name strong')!.textContent).toBe('Glurak');
+    const fits = container.querySelectorAll('.scouting__where .scouting__top-fit').map((f) => Number(f.textContent));
+    expect(fits).toHaveLength(5);
+    expect([...fits].sort((a, b) => b - a)).toEqual(fits);
+    const glurak = ALL.find((p) => p.id === 6)!;
+    const scale = buildScale(ALL, 'all');
+    const keys = PROFILE_GROUPS.flatMap((g) => g.profiles);
+    expect(fits[0]).toBe(Math.round(Math.max(...keys.map((k) => profileFit(glurak, k, scale)))));
+    await type('xyzxyz');
+    expect(container.querySelector('.scouting__where-hit')).toBeNull();
+    expect(container.querySelector('.scouting__where')!.textContent).toContain('Kein Pokémon gefunden.');
     await act(async () => root.unmount());
   });
 });

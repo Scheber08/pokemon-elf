@@ -2447,6 +2447,22 @@ button.sheet__row:hover {
   font-weight: 700;
   color: var(--green-text);
 }
+.scouting__where {
+  margin-top: 1rem;
+}
+.scouting__where-input {
+  width: 100%;
+  max-width: 360px;
+}
+.scouting__where .scouting__top-mons li {
+  grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+}
+.scouting__where-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 6px;
+}
 .scouting__mark {
   margin: 14px 0 0;
   font-family: var(--font-head);

@@ -68,6 +68,54 @@ function TopCandidates() {
   );
 }
 
+/** 🔍 Wo spielt …? – ein Pokémon suchen, seine fünf besten Positionen mit Fit (Skala „alle“) */
+function WherePlays() {
+  const t = useT();
+  const s = t.scouting;
+  const data = useOptionalPokemonData();
+  const { sprite } = useSettings();
+  const [query, setQuery] = useState('');
+  const hit = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!data || q.length < 2) return null;
+    // Genauer Name zuerst, sonst der erste Treffer nach Pokédex-Nummer
+    return data.list.find((p) => p.de.toLowerCase() === q || p.en.toLowerCase() === q) ?? data.list.find((p) => p.de.toLowerCase().includes(q) || p.en.toLowerCase().includes(q)) ?? null;
+  }, [data, query]);
+  if (!data) return null;
+  const scale = data.scale('all');
+  const best = hit
+    ? PROFILE_GROUPS.flatMap((g) => g.profiles)
+        .map((key) => ({ key, fit: profileFit(hit, key, scale) }))
+        .sort((a, b) => b.fit - a.fit)
+        .slice(0, 5)
+    : [];
+  return (
+    <section className="card scouting__where" aria-labelledby="scouting-where">
+      <h2 id="scouting-where" className="section-title">
+        🔍 {s.whereTitle}
+      </h2>
+      <input className="input scouting__where-input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={s.wherePlaceholder} aria-label={s.whereTitle} />
+      {query.trim().length >= 2 && !hit && <p className="muted small">{s.whereNone}</p>}
+      {hit && (
+        <div className="scouting__where-hit" aria-live="polite">
+          <p className="scouting__where-name">
+            <Sprite pokemon={hit} style={sprite} className="scouting__top-sprite" /> <strong>{t.game.pokemon(hit)}</strong>
+          </p>
+          <ol className="scouting__top-mons">
+            {best.map(({ key, fit }) => (
+              <li key={key}>
+                <span className="scout-table__codes">{t.game.profileCodes[key]}</span>
+                <span className="scouting__top-name">{t.game.profileTitle[key]}</span>
+                <span className="scouting__top-fit">{Math.round(fit)}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+    </section>
+  );
+}
+
 export function Scouting() {
   const t = useT();
   const lang = useLang();
@@ -168,6 +216,7 @@ export function Scouting() {
       </div>
 
       <TopCandidates />
+      <WherePlays />
 
       <div className="prose-grid">
         <section className="card prose">
