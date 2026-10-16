@@ -87,6 +87,22 @@ export function NotFound() {
         <Link className="btn btn--primary" to="/">
           {n.back}
         </Link>
+        {/* Oder gleich in einen anderen Modus */}
+        <p className="muted small not-found__or">{n.or}</p>
+        <p className="not-found__links">
+          {(
+            [
+              ['/taeglich', t.nav.tabs.daily],
+              ['/challenge', t.nav.tabs.c340],
+              ['/draft', t.nav.tabs.draft],
+              ['/rangliste', t.nav.tabs.leaderboard],
+            ] as const
+          ).map(([to, label]) => (
+            <Link key={to} className="btn btn--small" to={to}>
+              {label}
+            </Link>
+          ))}
+        </p>
       </section>
     </div>
   );

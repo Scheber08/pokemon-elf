@@ -2805,3 +2805,15 @@ button.sheet__row:hover {
   line-height: 1.4;
   vertical-align: 1px;
 }
+
+/* 404: Direktlinks in die Hauptmodi */
+.not-found__or {
+  margin: 16px 0 6px;
+}
+.not-found__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+}

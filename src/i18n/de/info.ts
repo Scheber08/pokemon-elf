@@ -87,6 +87,7 @@ const info = {
     title: 'Abseits!',
     text: 'Diese Seite gibt es nicht.',
     back: 'Zurück zum Builder',
+    or: 'Oder direkt weiter zu:',
   },
 };
 

@@ -84,6 +84,7 @@ const info: Messages['info'] = {
     title: 'Offside!',
     text: 'This page doesn’t exist.',
     back: 'Back to the Builder',
+    or: 'Or jump straight to:',
   },
 };
 
