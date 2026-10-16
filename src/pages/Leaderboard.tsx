@@ -295,6 +295,14 @@ function OnlineBoard({ challenge, period, reload, onRetry, panelRef }: OnlineBoa
   };
   const meta = [periodText(t, period, day)];
   if (players) meta.push(t.leaderboard.players(players));
+  // Beliebteste Formation unter den gezeigten Einträgen (ab 3, nur bei eindeutigem Spitzenreiter)
+  const shownRows = current?.data?.rows ?? [];
+  if (shownRows.length >= 3) {
+    const count = new Map<string, number>();
+    for (const r of shownRows) count.set(r.formation, (count.get(r.formation) ?? 0) + 1);
+    const top = [...count].sort((a, b) => b[1] - a[1]);
+    if (top[0][1] >= 2 && (!top[1] || top[1][1] < top[0][1])) meta.push(t.leaderboard.topFormation(top[0][0], top[0][1], shownRows.length));
+  }
 
   const toRow = (r: LeaderboardResponse['rows'][number]): BoardRow => {
     const summary: EntrySummary = {

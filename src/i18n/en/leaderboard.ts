@@ -33,6 +33,7 @@ const leaderboard: Messages['leaderboard'] = {
   week: 'This week',
   weekOf: (n) => `This week · Week ${n}`,
   todayOn: (date) => `Today · ${date}`,
+  topFormation: (formation, n, total) => `Favourite formation of the top ${total}: ${formation} (${n}×)`,
   players: (n) => `${fmtNumber(n, 0, 'en')} ${n === 1 ? 'player' : 'players'}`,
   loading: 'Loading …',
   loadError: (message) => `Leaderboard unavailable: ${message}`,

@@ -18,6 +18,7 @@ const leaderboard = {
   weekOf: (n: number) => `Diese Woche · KW ${n}`,
   /** „Heute · 12.10.2026" */
   todayOn: (date: string) => `Heute · ${date}`,
+  topFormation: (formation: string, n: number, total: number) => `Lieblingsformation der Top ${total}: ${formation} (${n}×)`,
   players: (n: number) => `${fmtNumber(n, 0, 'de')} Spieler`,
   loading: 'Lade …',
   loadError: (message: string) => `Rangliste nicht erreichbar: ${message}`,

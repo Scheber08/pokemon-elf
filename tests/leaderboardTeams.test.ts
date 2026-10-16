@@ -634,6 +634,15 @@ describe('Rangliste: Team ansehen (online)', () => {
     expect(JSON.parse(localStorage.getItem('pokemon-elf:lineup')!).teamName).toBe(name);
   });
 
+  it('Lieblingsformation der gezeigten Einträge in der Kopfzeile (ab 3, eindeutig)', async () => {
+    storeSettings('de');
+    const board = { ...BOARD, rows: [row(), BOARD.rows[1], row({ rank: 3, entryId: ID3, player: 'Misty', formation: '4-3-3' })] };
+    await stubServer(undefined, () => json(200, board));
+    const c = await render(app());
+    await settle();
+    expect(c.querySelector('.lb-meta')!.textContent).toContain('Lieblingsformation der Top 3: 4-3-3 (2×)');
+  });
+
   it('Sprites folgen der Einstellung des Nutzers – im Dialog und im Builder-Link', async () => {
     storeSettings('de', 'artwork');
     await stubServer();
