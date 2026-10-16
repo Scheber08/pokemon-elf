@@ -179,6 +179,16 @@ describe('Builder auf Englisch', () => {
     expect(all).toMatch(/\d+ results/);
     expect(germanLeft(dialog)).toEqual([]);
     expect(germanLeft()).toEqual([]);
+    // Sortierung „Best for the position“: Fit-Notiz auf den Karten, absteigend
+    const fitRadio = dialog.querySelectorAll('[role="radio"]').find((b) => b.textContent === 'Best for the position')!;
+    await act(async () => fitRadio.click());
+    const fits = dialog
+      .querySelectorAll('.pcard__note')
+      .map((n) => /^Fit (\d+)$/.exec(n.textContent)?.[1])
+      .filter((x): x is string => x != null)
+      .map(Number);
+    expect(fits.length).toBeGreaterThan(5);
+    expect(fits).toEqual([...fits].sort((a, b) => b - a));
   });
 
   it('Umschalten DE → EN im Kopf übersetzt die Seite sofort (und zurück)', async () => {

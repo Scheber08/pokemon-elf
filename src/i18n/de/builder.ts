@@ -91,6 +91,7 @@ const builder = {
     sort: 'Sortierung',
     sortDex: 'Nummer',
     sortFit: 'Beste für die Position',
+    fitNote: (fit: number) => `Fit ${fit}`,
   },
   filter: {
     searchLabel: 'Pokémon suchen',

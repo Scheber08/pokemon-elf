@@ -48,7 +48,7 @@ Deploy stehen in der README.
 Erledigt (siehe README): Ultrabestien/Megas/Formen, Revanche + ewige Tabelle, Benachrichtigung „Du bist
 dran", Testspiel (mit 📊 Bilanz über „Nochmal spielen“), Spielerprofil, Wochenwertung, Tägliche-Elf-Serie (mit „Bester Tag“, Archiv mit 🏅 und ▲/▼ und „Top n %“ beim Platz), OG-Tags (auch je Liga), Routen
 nachladen, PWA, Wunschliste, Emoji-Reaktionen, Vorlagen und Draft-Noten im Draft, Rückgängig,
-Fit-Sortierung, „Beste Elf" und Typ-Elf-/🌈-Chips im Builder und in den Challenges (im Builder auch 📏 Ø Größe · ⚖️ Gewicht der vollen Elf), Wochenwertung rückwirkend gefüllt, Schnäppchen des Drafts,
+Fit-Sortierung (mit Fit-Wert auf den Karten), „Beste Elf" und Typ-Elf-/🌈-Chips im Builder und in den Challenges (im Builder auch 📏 Ø Größe · ⚖️ Gewicht der vollen Elf), Wochenwertung rückwirkend gefüllt, Schnäppchen des Drafts,
 „Deine Duelle", Allzeit-Platz, ⭐ Lieblings-Challenge und 🏅 Bestwert-Runs unter „Letzte Runs“ im Profil, Lieblingsformation der Top-Einträge und „noch n Pkt bis in die Top N“ und 🆕 (letzte Stunde) in der Rangliste, Taste „/" im Draft, Noten in der lokalen Liga, QR-Code in der Lobby,
 Saison auf 18 Teams mit Ranglisten-Teams aufgefüllt, KO-Turnier mit optionaler Gruppenphase, Draft-Spielmodell
 (Tagesform, Torminuten), Formkurve, Saisonrekorde, Saisonverlauf, „Meine Teams" (mit Speicherdatum und „✓ aktuell“) im Builder, Manager-Saison

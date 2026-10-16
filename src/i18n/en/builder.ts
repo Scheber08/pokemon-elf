@@ -93,6 +93,7 @@ const builder: Messages['builder'] = {
     sort: 'Sort by',
     sortDex: 'Number',
     sortFit: 'Best for the position',
+    fitNote: (fit) => `Fit ${fit}`,
   },
   filter: {
     searchLabel: 'Search Pokémon',

@@ -35,12 +35,13 @@ export function PickerModal({ pos, pool, initialRegion, sprite, currentId, onFie
   const { scale } = usePokemonData();
   // Sortierung merken: nach Nummer oder „Beste für diese Position zuerst"
   const [sort, setSort] = useState<SortMode>(() => (load<string>(SORT_KEY, 'dex') === 'fit' ? 'fit' : 'dex'));
-  const sorted = useMemo(() => {
-    if (sort !== 'fit') return pool;
+  // Fit je Pokémon für diese Position (nur bei Fit-Sortierung: sortiert und als Notiz auf den Karten)
+  const fits = useMemo(() => {
+    if (sort !== 'fit') return null;
     const sc = scale('all');
-    const fit = new Map(pool.map((p) => [p.id, positionFit(p, pos, sc)]));
-    return [...pool].sort((a, b) => fit.get(b.id)! - fit.get(a.id)! || a.id - b.id);
+    return new Map(pool.map((p) => [p.id, positionFit(p, pos, sc)]));
   }, [pool, sort, pos, scale]);
+  const sorted = useMemo(() => (fits ? [...pool].sort((a, b) => fits.get(b.id)! - fits.get(a.id)! || a.id - b.id) : pool), [pool, fits]);
   const items = useFilteredPokemon(sorted, filters);
   const searchRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -103,7 +104,9 @@ export function PickerModal({ pos, pool, initialRegion, sprite, currentId, onFie
           emptyOption={{ label: t.builder.picker.emptySlot, onPick: () => onPick(null) }}
           note={(p) => {
             const at = onField.get(p.id);
-            return at && p.id !== currentId ? t.builder.picker.onField(t.game.posShort[at]) : null;
+            if (at && p.id !== currentId) return t.builder.picker.onField(t.game.posShort[at]);
+            const fit = fits?.get(p.id);
+            return fit != null ? t.builder.picker.fitNote(Math.round(fit)) : null;
           }}
           onPick={(p) => onPick(p.id)}
           disabledReason={disabledReason}
