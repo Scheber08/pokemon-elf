@@ -135,6 +135,7 @@ const trainer: Messages['trainer'] = {
       beret: 'Beret',
       sprout: 'Sprout',
       book: 'Open book',
+      piggy: 'Piggy bank',
       catears: 'Cat ears',
       flowercrown: 'Flower crown',
       antennae: 'Bee antennae',

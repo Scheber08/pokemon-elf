@@ -133,6 +133,7 @@ const trainer = {
       beret: 'Baskenmütze',
       sprout: 'Keimling',
       book: 'Offenes Buch',
+      piggy: 'Sparschwein',
       catears: 'Katzenohren',
       flowercrown: 'Blumenkranz',
       antennae: 'Bienen-Fühler',

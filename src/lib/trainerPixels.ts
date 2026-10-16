@@ -509,6 +509,16 @@ function hat(c: Canvas, id: string, cloth: string) {
       c.dots([[12, 6], [13, 6], [18, 6], [19, 6], [10, 8], [11, 8], [12, 8], [19, 8], [20, 8], [21, 8]], '#9a8f78');
       c.rect(15, 2, 2, 7, '#6e1c16');
       break;
+    case 'piggy':
+      // Sparschwein (Weltspartag): rosa Schwein auf dem Kopf mit Münzschlitz, Ohren, Rüssel und goldener Münze
+      c.fill(ellipse(15.5, 5.5, 6.5, 3.6), '#f4a6c0', '#b0566f');
+      c.dots([[10, 2], [11, 2], [20, 2], [21, 2]], '#e07d9c');
+      c.rect(14, 2, 3, 1, '#6e2b3e');
+      c.fill(ellipse(22.5, 6, 1.6, 1.4), '#e88aa8', '#b0566f');
+      c.dots([[22, 6], [23, 6]], '#6e2b3e');
+      c.dots([[12, 5]], '#26282e');
+      c.fill(ellipse(15.5, 0.8, 1.6, 1.2), '#f2c230', '#9a7410');
+      break;
     case 'catears':
       // Katzenohren (Weltkatzentag): schwarzer Haarreif mit zwei spitzen Ohren, innen rosa
       c.fill((x, y) => y === 9 && head(x, y), '#26282e', null);

@@ -431,6 +431,10 @@ describe('Saisonartikel', () => {
     expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '📚').map((i) => `${i.slot}:${i.id}`)).toEqual(['hat:book', 'companion:201']);
     const book = TRAINER_ITEMS.find((i) => i.id === 'book')!;
     expect([at('2027-04-19'), at('2027-04-20'), at('2027-04-26'), at('2027-04-27')].map((d) => itemOnSale(book, d))).toEqual([false, true, true, false]);
+    // 🐷 Weltspartag: Sparschwein und Gierspenst vom 25. bis 31. Oktober
+    expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '🐷').map((i) => `${i.slot}:${i.id}`)).toEqual(['hat:piggy', 'companion:999']);
+    const piggy = TRAINER_ITEMS.find((i) => i.id === 'piggy')!;
+    expect([at('2026-10-24'), at('2026-10-25'), at('2026-10-31'), at('2026-11-01')].map((d) => itemOnSale(piggy, d))).toEqual([false, true, true, false]);
   });
 
   it('Kauf nur in der Saison (400 not_on_sale), danach bleibt er tragbar', async () => {
