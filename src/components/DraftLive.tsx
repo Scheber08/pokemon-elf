@@ -755,6 +755,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
             <DraftQueue
               room={room}
               selected={selected}
+              suggestions={[...new Set(bestFree.map((b) => b.p.id))]}
               onSelect={(id) => {
                 // Wie ein Tipp im Raster (auf dem Handy springt die Ansicht zum Feld)
                 const p = byId.get(id);

@@ -663,6 +663,21 @@ describe('DraftLive', () => {
     expect(room.setQueue).toHaveBeenCalledWith([id]);
   });
 
+  it('✨ Wunschliste: beste Freie je offener Position übernehmen', async () => {
+    const st = drafting();
+    const room = fakeRoom({ ...snap(st, 'h'), queue: [] });
+    const { container } = await renderLive(room);
+    const chips = container.querySelectorAll('.draft__bestfree button');
+    const btn = container.querySelector('.draft-queue__fill') as MiniElement;
+    const ids = (room.setQueue as ReturnType<typeof vi.fn>);
+    await act(async () => btn.click());
+    const sent = ids.mock.calls.at(-1)![0] as number[];
+    expect(sent.length).toBeGreaterThan(0);
+    expect(new Set(sent).size).toBe(sent.length);
+    expect(sent.length).toBeLessThanOrEqual(chips.length);
+    expect(btn.textContent).toMatch(/^✨ (Besten Freien übernehmen|\d+ beste Freie übernehmen)$/);
+  });
+
   it('Beste Freie: ein Chip je offener Feldposition, Klick wählt aus', async () => {
     const st = drafting();
     const { container } = await renderLive(fakeRoom(snap(st, 'h')));

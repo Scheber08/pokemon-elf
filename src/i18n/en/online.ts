@@ -111,6 +111,8 @@ const online: Messages['online'] = {
   inviteText: (name, code, rules, link) => `⚽ Join my Pokémon Elf draft league${name ? ` “${name}”` : ''}!\n${rules}\nCode: ${code}\n${link}`,
   endsAt: (draft, season) => `If started now: draft done by ~${draft} at the latest, season over ~${season}.`,
   endsAtNoTimer: (season) => `If started now: season over ~${season} at the earliest (depending on draft pace).`,
+  queueFill: (n) => (n === 1 ? 'Add best free pick' : `Add ${n} best free picks`),
+  queueFillTitle: 'Append the best-fitting free Pokémon for each open position to your wishlist',
   linkCopied: 'Link copied',
   copyFailed: 'Couldn’t copy',
   copyLink: 'Copy link',

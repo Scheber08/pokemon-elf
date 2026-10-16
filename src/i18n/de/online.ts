@@ -118,6 +118,8 @@ const online = {
     `⚽ Komm in meine Pokémon-Elf-Draft-Liga${name ? ` „${name}“` : ''}!\n${rules}\nCode: ${code}\n${link}`,
   endsAt: (draft: string, season: string) => `Bei Start jetzt: Draft-Ende spätestens ~${draft} Uhr, Saisonende ~${season} Uhr.`,
   endsAtNoTimer: (season: string) => `Bei Start jetzt: Saisonende frühestens ~${season} Uhr (je nach Draft-Tempo).`,
+  queueFill: (n: number) => (n === 1 ? 'Besten Freien übernehmen' : `${n} beste Freie übernehmen`),
+  queueFillTitle: 'Je offener Position das passendste freie Pokémon hinten an die Wunschliste hängen',
   linkCopied: 'Link kopiert',
   copyFailed: 'Kopieren hat nicht geklappt',
   copyLink: 'Link kopieren',

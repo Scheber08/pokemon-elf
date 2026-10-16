@@ -16,9 +16,12 @@ export function DraftQueue({
   room,
   selected,
   onSelect,
+  suggestions = [],
 }: {
   room: DraftRoom;
   selected: number | null;
+  /** „✨ Beste Freie übernehmen“: je offener Position das passendste freie Pokémon */
+  suggestions?: readonly number[];
   /** Eintrag antippen: dieses Pokémon auswählen (dann nur noch den Platz wählen) */
   onSelect?: (id: number) => void;
 }) {
@@ -71,6 +74,15 @@ export function DraftQueue({
           {inQueue ? t.online.queueRemove : t.online.queueAdd}
         </button>
       )}
+      {(() => {
+        const fresh = suggestions.filter((id) => !queue.includes(id));
+        if (!fresh.length || queue.length >= max) return null;
+        return (
+          <button type="button" className="btn btn--small btn--ghost draft-queue__fill" title={t.online.queueFillTitle} onClick={() => set([...queue, ...fresh].slice(0, max))}>
+            ✨ {t.online.queueFill(Math.min(fresh.length, max - queue.length))}
+          </button>
+        );
+      })()}
       {queue.length ? (
         <ol className="draft-queue__list">
           {queue.map((id, i) => {
