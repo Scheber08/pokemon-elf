@@ -89,7 +89,7 @@ const scouting: Messages['scouting'] = {
     },
     {
       q: 'Are there keyboard shortcuts in the draft?',
-      a: '“/” jumps to the Pokémon search, “W” puts the selected Pokémon on your wishlist (or takes it off), “V” fetches a suggestion, “R” pre-selects a random Pokémon (🎲), and in the one-device draft “Z” takes back the last pick. Arrow keys move through the grid, Enter selects a Pokémon. While typing in a field, the shortcuts are off.',
+      a: '“/” jumps to the Pokémon search, “W” puts the selected Pokémon on your wishlist (or takes it off), “V” fetches a suggestion, “R” pre-selects a random Pokémon (🎲), and in the one-device draft “Z” takes back the last pick; online, “?” lists all shortcuts. Arrow keys move through the grid, Enter selects a Pokémon. While typing in a field, the shortcuts are off.',
     },
     {
       q: 'What does the set-piece taker do?',

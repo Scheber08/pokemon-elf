@@ -247,6 +247,7 @@ const online = {
   /** Ein anderes Team nimmt den bisher besten Freien einer eigenen offenen Position */
   bestGone: (name: string, pos: string, team: string) => `🧲 ${team} schnappt dir ${name} weg (bester Freier für ${pos}).`,
   wishGone: (name: string, n: number, team: string) => `💔 ${name} (Wunsch ${n}) ist weg – ${team} war schneller.`,
+  shortcuts: '⌨️ Tastenkürzel: / Suche · W Wunschliste · V Vorschlag · R 🎲 Zufall · Pfeile + Enter auswählen · ? diese Hilfe',
   noSuggestion: 'Kein Vorschlag möglich',
   chooseFirst: 'Wähle zuerst ein Pokémon aus dem Pool.',
   notYourTurnYet: 'Du bist noch nicht dran – dein Favorit bleibt vorgemerkt.',

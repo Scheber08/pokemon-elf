@@ -543,19 +543,23 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     setSuggestSlot(slot);
   };
 
-  // Taste „V“: Vorschlag, Taste „R“: 🎲 Zufall (wie die Knöpfe; nicht beim Tippen)
+  // Taste „V“: Vorschlag, Taste „R“: 🎲 Zufall (wie die Knöpfe), „?“: Tastenkürzel (nicht beim Tippen)
   const suggestRef = useRef(suggest);
   suggestRef.current = suggest;
   const randomRef = useRef(randomPick);
   randomRef.current = randomPick;
+  const shortcutsRef = useRef(t.online.shortcuts);
+  shortcutsRef.current = t.online.shortcuts;
   useEffect(() => {
     if (readOnly) return;
     const onKey = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
-      if ((key !== 'v' && key !== 'r') || e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
+      if ((key !== 'v' && key !== 'r' && key !== '?') || e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
       if (typingElsewhere(e.target)) return;
       e.preventDefault();
-      if (key === 'r') randomRef.current();
+      // „?“: Übersicht der Tastenkürzel als Hinweis
+      if (key === '?') setInfo(shortcutsRef.current);
+      else if (key === 'r') randomRef.current();
       else suggestRef.current();
     };
     window.addEventListener('keydown', onKey);

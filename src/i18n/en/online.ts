@@ -222,6 +222,7 @@ const online: Messages['online'] = {
   favouriteGone: (name, team) => `${name} is gone – ${team} got there first.`,
   bestGone: (name, pos, team) => `🧲 ${team} snatched ${name} from you (best free ${pos}).`,
   wishGone: (name, n, team) => `💔 ${name} (wish ${n}) is gone – ${team} got there first.`,
+  shortcuts: '⌨️ Shortcuts: / search · W wishlist · V suggestion · R 🎲 random · arrows + Enter select · ? this help',
   noSuggestion: 'No suggestion available',
   chooseFirst: 'Choose a Pokémon from the pool first.',
   notYourTurnYet: 'It’s not your turn yet – your favourite stays shortlisted.',

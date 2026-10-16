@@ -923,6 +923,13 @@ describe('DraftLive', () => {
     expect(btn.getAttribute('aria-keyshortcuts')).toBe('R');
   });
 
+  it('Taste ? zeigt die Tastenkürzel', async () => {
+    const { container } = await renderLive(fakeRoom(snap(drafting(), 'h')));
+    const ev = Object.assign(new MiniEvent('keydown', { bubbles: true, cancelable: true }), { key: '?', ctrlKey: false, metaKey: false, altKey: false });
+    await act(async () => void window.dispatchEvent(ev as unknown as Event));
+    expect(container.textContent).toContain('⌨️ Tastenkürzel: / Suche · W Wunschliste · V Vorschlag · R 🎲 Zufall · Pfeile + Enter auswählen · ? diese Hilfe');
+  });
+
   it('Pool-Kopf: ★ n Legendäre frei (nur mit Legendären im Pool)', async () => {
     const plain = await renderLive(fakeRoom(snap(drafting(), 'h')));
     expect(plain.container.querySelector('.draft-pool__legends')).toBeNull();
