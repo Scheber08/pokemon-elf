@@ -91,6 +91,20 @@ export function FilterBar({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [slashFocus, inputRef]);
+  // ↓ in der Suche springt ins Pokémon-Raster darunter (wie im Auswahl-Dialog) – sofern der Aufrufer nicht selbst reagiert
+  const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    onSearchKeyDown?.(e);
+    if (e.defaultPrevented || e.key !== 'ArrowDown') return;
+    let scope: HTMLElement | null = inputRef.current?.closest<HTMLElement>('.filterbar') ?? null;
+    for (let i = 0; scope && i < 5; i++, scope = scope.parentElement) {
+      const cell = scope.querySelector<HTMLElement>('.pgrid [data-grid-item]');
+      if (cell) {
+        e.preventDefault();
+        cell.focus();
+        return;
+      }
+    }
+  };
   return (
     <div className="filterbar">
       <div className="filterbar__search">
@@ -108,7 +122,7 @@ export function FilterBar({
           value={filters.query}
           autoComplete="off"
           onChange={(e) => onChange({ ...filters, query: e.target.value })}
-          onKeyDown={onSearchKeyDown}
+          onKeyDown={onKeyDown}
         />
         {resultCount != null && (
           <span className="filterbar__count" aria-live="polite">
