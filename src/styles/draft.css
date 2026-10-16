@@ -859,6 +859,10 @@
   display: grid;
   gap: 14px;
 }
+/* Grid-Kinder dürfen schmaler als ihr Inhalt werden – breite Tabellen (ewige Tabelle) scrollen in .table-scroll */
+.draft-season > * {
+  min-width: 0;
+}
 .draft-season .actionbar {
   margin-top: 0;
 }
