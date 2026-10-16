@@ -1,3 +1,4 @@
+import { rescueFocus } from '../lib/focusRescue';
 import { scrollBehavior } from '../lib/motion';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { FORMATIONS } from '../config/formations';
@@ -671,8 +672,13 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   // Abwesendes Team am Zug: jedes Mitglied darf nach der Frist für es wählen (Server prüft dasselbe)
   const autoOpensAt = !readOnly && me && current && !current.cpu && current.id !== me.id ? autoPickOpensAt(snapshotState(s)) : null;
 
+  // Neuer Pick (eigener bestätigt, Pick-Knöpfe weg): einen dabei verlorenen Fokus in den Draft holen statt an den Seitenanfang
+  useEffect(() => {
+    rescueFocus(rootRef.current);
+  }, [s.picks.length]);
+
   return (
-    <div className="draft-live" ref={rootRef}>
+    <div className="draft-live" ref={rootRef} tabIndex={-1}>
       {/* Einzige Live-Region für Picks: eine kurze Ansage pro Pick („Du bist dran!" meldet sich selbst) */}
       <p className="sr-only" aria-live="polite" aria-atomic="true">
         {pickAnnouncement(s, byId, t)}

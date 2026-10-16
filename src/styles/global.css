@@ -2987,6 +2987,7 @@ button.sheet__row:hover {
 .main:focus,
 .challenge__play:focus,
 .setup:focus,
-.page.draft:focus {
+.page.draft:focus,
+.draft-live:focus {
   outline: none;
 }

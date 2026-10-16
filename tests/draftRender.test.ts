@@ -547,6 +547,30 @@ describe('DraftLive', () => {
   // Alle Regionen (großer Pool), Reihenfolge wie gelistet: Host zuerst
   const drafting = () => engine.startDraft(lobby(2, { region: 0, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
 
+  it('Neuer Pick nach eigener Eingabe: verlorener Fokus landet im Draft, nicht am Seitenanfang', async () => {
+    const s0 = drafting();
+    const { container, root } = await renderLive(fakeRoom(snap(s0, 'h')));
+    const live = container.querySelector('.draft-live')!;
+    // Eigener Pick per Tastatur: Der Knopf verschwindet, der Fokus fällt auf die Seite
+    window.dispatchEvent(Object.assign(new MiniEvent('keydown', { bubbles: true }), { key: 'Enter' }) as unknown as Event);
+    doc.activeElement = null;
+    const s1 = autoPick(s0);
+    await act(async () => root.render(app(h(DraftLive, { room: fakeRoom(snap(s1, 'h')) }))));
+    await settle();
+    expect(doc.activeElement).toBe(live);
+    // Ohne eigene Eingabe (Pick eines anderen, lange nach der letzten Taste): Fokus bleibt, wo er ist
+    doc.activeElement = null;
+    const later = Date.now;
+    Date.now = () => later() + 60_000;
+    try {
+      await act(async () => root.render(app(h(DraftLive, { room: fakeRoom(snap(autoPick(s1), 'h')) }))));
+      await settle();
+    } finally {
+      Date.now = later;
+    }
+    expect(doc.activeElement).toBeNull();
+  });
+
   it('⚠️ Wird knapp: offene Plätze aller Teams gegen starke Freie, nur eigene offene Positionen', async () => {
     const { scarceFor } = await import('../src/components/PoolStars');
     const { poolOf } = await import('../src/lib/draftEngine');
