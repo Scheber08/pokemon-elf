@@ -530,6 +530,28 @@ export function distinctScorers(matches: LeagueResult['matches'], teams: number)
   return sets.map((x) => x.size);
 }
 
+/**
+ * Stärkste Torphase eines Teams: Tore mit Minute in Viertelstunden (1.–15. … 76.–90., Nachspielzeit zählt zur
+ * letzten). Nur bei eindeutigem Höchstwert und mindestens `min` Toren mit Minute, sonst null.
+ */
+export function bestGoalPhase(matches: LeagueResult['matches'], team: number, min = 3): { from: number; to: number; goals: number } | null {
+  const buckets = [0, 0, 0, 0, 0, 0];
+  let total = 0;
+  for (const m of matches) {
+    const own = m.home === team ? m.homeScorers : m.away === team ? m.awayScorers : [];
+    for (const g of own) {
+      if (g.minute == null) continue;
+      buckets[Math.min(5, Math.floor((g.minute - 1) / 15))]++;
+      total++;
+    }
+  }
+  if (total < min) return null;
+  const top = Math.max(...buckets);
+  const at = buckets.indexOf(top);
+  if (buckets.lastIndexOf(top) !== at) return null;
+  return { from: at * 15 + 1, to: at * 15 + 15, goals: top };
+}
+
 /** Ab so vielen Spielen in Folge mit Tor gilt eine Torserie */
 export const SCORING_RUN_MIN = 3;
 

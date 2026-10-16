@@ -1940,6 +1940,12 @@ describe('ManagerSeason', () => {
     expect(el!.querySelector('.manager__scorers')!.textContent).toBe(
       `👥 ${all[me]} verschiedene Torschützen${all[me] >= Math.max(...all) ? ' – Ligabestwert' : ''}`,
     );
+    // ⏱️ stärkste Torphase (nur bei eindeutigem Höchstwert)
+    const { bestGoalPhase } = await import('../src/lib/leagueTimeline');
+    const phase = bestGoalPhase(storedLeague(s.league, s.teams.length)!.matches, me);
+    const phaseEl = el!.querySelector('.manager__phase');
+    if (!phase) expect(phaseEl).toBeNull();
+    else expect(phaseEl!.textContent).toBe(`⏱️ Stärkste Phase: ${phase.from}.–${phase.to}. Minute (${phase.goals} ${phase.goals === 1 ? 'Tor' : 'Tore'})`);
   });
 
   it('Manager: 🏆 rechnerischer Titelkampf erst ab der Saisonhälfte', async () => {

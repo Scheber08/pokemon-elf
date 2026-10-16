@@ -621,6 +621,7 @@ const draft: Messages['draft'] = {
     linesTitle: 'Goals by unit',
     distinctScorers: (n) => `👥 ${n} different scorers`,
     distinctScorersBest: ' – league best',
+    goalPhase: (from, to, goals) => `⏱️ Strongest spell: minutes ${from}–${to} (${goals} ${goals === 1 ? 'goal' : 'goals'})`,
     lineNames: { att: 'Attack', mid: 'Midfield', def: 'Defence', gk: 'Keeper' },
     rivalMark: 'Your next opponent',
     weakSpot: (pos, pokemon, fit) => `Weak spot: ${pos} ${pokemon} (fit ${fit})`,

@@ -553,6 +553,20 @@ describe('Verschiedene Torschützen', () => {
   });
 });
 
+describe('Stärkste Torphase', () => {
+  it('Viertelstunde mit den meisten Toren, Nachspielzeit zur letzten, Gleichstand → null', async () => {
+    const { bestGoalPhase } = await import('../src/lib/leagueTimeline');
+    const g = (minute?: number) => ({ pokemonId: 1, pos: 'ST' as const, minute });
+    const matches = [
+      { round: 1, home: 0, away: 1, hg: 3, ag: 1, homeScorers: [g(80), g(93), g(5)], awayScorers: [g(78)] },
+      { round: 2, home: 1, away: 0, hg: 0, ag: 2, homeScorers: [], awayScorers: [g(90), g()] },
+    ];
+    expect(bestGoalPhase(matches, 0)).toEqual({ from: 76, to: 90, goals: 3 });
+    expect(bestGoalPhase(matches, 1)).toBeNull();
+    expect(bestGoalPhase(matches.slice(0, 1).map((m) => ({ ...m, homeScorers: [g(5), g(80), g(20)] })), 0)).toBeNull();
+  });
+});
+
 describe('Tore nach Typ', () => {
   it('Doppeltypen zählen für beide, absteigend, höchstens drei', async () => {
     const { goalsByType } = await import('../src/lib/leagueTimeline');
