@@ -52,3 +52,30 @@ export function friendlyMatch(own: FriendlySide, opp: FriendlySide, byId: Map<nu
 
 /** Volle Elf? (alle 11 Plätze besetzt) */
 export const fullEleven = (slots: readonly (number | null)[]): boolean => slots.length === 11 && slots.every((id) => id != null);
+
+/**
+ * ⭐ Mann des Spiels über Hin- und Rückspiel: meiste Tore (ab 2), bei Gleichstand mehr Vorlagen; sonst
+ * eindeutig niemand (null). team: 0 = eigene Elf, 1 = Gegner.
+ */
+export function friendlyStar(matches: readonly Match[]): { pokemonId: number; team: 0 | 1; goals: number } | null {
+  const tally = new Map<string, { pokemonId: number; team: 0 | 1; goals: number; assists: number }>();
+  const add = (team: 0 | 1, id: number, kind: 'goals' | 'assists') => {
+    const key = `${team}:${id}`;
+    const cur = tally.get(key) ?? { pokemonId: id, team, goals: 0, assists: 0 };
+    cur[kind]++;
+    tally.set(key, cur);
+  };
+  for (const m of matches)
+    for (const [team, goals] of [
+      [m.home as 0 | 1, m.homeScorers],
+      [m.away as 0 | 1, m.awayScorers],
+    ] as const)
+      for (const g of goals) {
+        add(team, g.pokemonId, 'goals');
+        if (g.assist != null) add(team, g.assist, 'assists');
+      }
+  const ranked = [...tally.values()].sort((a, b) => b.goals - a.goals || b.assists - a.assists);
+  const [top, next] = ranked;
+  if (!top || top.goals < 2 || (next && next.goals === top.goals && next.assists === top.assists)) return null;
+  return { pokemonId: top.pokemonId, team: top.team, goals: top.goals };
+}

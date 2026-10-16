@@ -46,7 +46,7 @@ Deploy stehen in der README.
 ## Offene Ideen (Stand 2026-10-15)
 
 Erledigt (siehe README): Ultrabestien/Megas/Formen, Revanche + ewige Tabelle, Benachrichtigung „Du bist
-dran", Testspiel (mit 📊 Bilanz über „Nochmal spielen“), Spielerprofil, Wochenwertung, Tägliche-Elf-Serie (mit „Bester Tag“, Archiv mit 🏅 und ▲/▼ und „Top n %“ beim Platz), OG-Tags (auch je Liga), „↑ Nach oben“ auf langen Seiten, Fokus auf den Hauptbereich nach Seitenwechsel, h1 auf jeder Seite, AA-Kontrast für gelben/grünen/roten Text und Abzeichen (beide Designs), Routen
+dran", Testspiel (mit ⭐ Mann des Spiels und 📊 Bilanz über „Nochmal spielen“), Spielerprofil, Wochenwertung, Tägliche-Elf-Serie (mit „Bester Tag“, Archiv mit 🏅 und ▲/▼ und „Top n %“ beim Platz), OG-Tags (auch je Liga), „↑ Nach oben“ auf langen Seiten, Fokus auf den Hauptbereich nach Seitenwechsel, h1 auf jeder Seite, AA-Kontrast für gelben/grünen/roten Text und Abzeichen (beide Designs), Routen
 nachladen, PWA, Wunschliste, Emoji-Reaktionen, Vorlagen und Draft-Noten im Draft, Rückgängig,
 Fit-Sortierung (mit Fit-Wert auf den Karten), „Beste Elf" und Typ-Elf-/🌈-Chips im Builder und in den Challenges (im Builder auch 📏 Ø Größe · ⚖️ Gewicht der vollen Elf), Wochenwertung rückwirkend gefüllt, Schnäppchen des Drafts,
 „Deine Duelle", Allzeit-Platz, ⭐ Lieblings-Challenge und 🏅 Bestwert-Runs und Wertungsfilter unter „Letzte Runs“ im Profil, Lieblingsformation der Top-Einträge und „noch n Pkt bis in die Top N“ , 🆕 (letzte Stunde) und Resttage der Wochenwertung in der Rangliste, Taste „/" im Draft, Noten in der lokalen Liga, QR-Code in der Lobby,

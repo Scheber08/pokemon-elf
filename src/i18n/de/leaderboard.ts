@@ -110,6 +110,7 @@ const leaderboard = {
     friendlyScore: (own: number, opp: number) => `Team-Score ${own} : ${opp}`,
     friendlyScorers: (list: string) => `Tore: ${list}`,
     friendlyTally: (n: number, w: number, d: number, l: number) => `📊 Bilanz aus ${n} Testspielen: ${w} S · ${d} U · ${l} N`,
+    friendlyStar: (name: string, team: string, goals: number) => `⭐ Mann des Spiels: ${name} (${team}) – ${goals} Tore`,
     friendlyNote: 'Nur zum Spaß – zählt für keine Rangliste. Bewertet über alle 1.025 Pokémon.',
   },
   /** Spielerprofil (/spieler/:id) */

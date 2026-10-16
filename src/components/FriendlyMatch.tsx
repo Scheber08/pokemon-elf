@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useT } from '../i18n';
-import { friendlyMatch, fullEleven, type FriendlySide } from '../lib/friendly';
+import { friendlyMatch, friendlyStar, fullEleven, type FriendlySide } from '../lib/friendly';
 import { formatMinute, type Goal } from '../lib/season';
 import { load, STORAGE_KEYS } from '../lib/storage';
 import { loadSavedTeams } from './SavedTeams';
@@ -144,6 +144,11 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
         </strong>{' '}
         – {verdict}
       </p>
+      {(() => {
+        const star = friendlyStar(result.matches);
+        const p = star ? byId.get(star.pokemonId) : undefined;
+        return star && p && <p className="friendly__star small">{tr.friendlyStar(t.game.pokemon(p), star.team === 0 ? own.name : opponent.name, star.goals)}</p>;
+      })()}
       {outcomes.length > 1 && (
         <p className="friendly__tally small">{tr.friendlyTally(outcomes.length, tally(1), tally(0), tally(-1))}</p>
       )}
