@@ -6,6 +6,8 @@ const kit: Messages['kit'] = {
   titleCheer: 'Kit & goal cheer',
   cheer: 'Goal cheer (below “GOAL!” in the 2D view)',
   cheerPlaceholder: 'e.g. We are the Eleven!',
+  cheerIdeasLabel: 'Goal celebration ideas',
+  cheerIdeas: ['Let’s go!', 'We are the XI!', 'Pika-Pika-Goal!', 'Bullseye!', 'What a strike!'],
   home: 'Home',
   away: 'Away',
   note: 'Your team wears its home colour at home and away – unless the opponent wears the same, then it switches to the away colour. Visible in the 2D view.',

@@ -274,7 +274,7 @@ des Builders trägt eigene Nummern im Parameter `nr`.
 Auswärtsfarbe aus 10 Farben. In der 2D-Ansicht spielt das Heimteam in Heimfarbe, der Gast ebenfalls – außer
 beide gleich, dann in seiner Auswärtsfarbe (notfalls eine Ausweichfarbe). Gespeichert wie die Trikotnummern
 (Builder-Zustand, `DraftTeam.kit` mit Nachricht `kit`, im Browser je Challenge bzw. im lokalen Draft). Dazu ein **Torjubel**
-(`src/lib/cheer.ts`, bis 40 Zeichen, Nachricht `cheer`), der in der 2D-Ansicht unter „TOR!“ erscheint.
+(`src/lib/cheer.ts`, bis 40 Zeichen, Nachricht `cheer`), der in der 2D-Ansicht unter „TOR!“ erscheint – frei getippt oder aus fünf Vorschlägen angetippt.
 
 **Vereinswappen** (alle Modi, `src/lib/crest.ts`, `src/components/Crest.tsx` + `CrestEditor.tsx`): Form, Muster,
 zwei Farben und ein Symbol bzw. ein Pokémon aus dem eigenen Team als Wappentier. Zu sehen neben dem Teamnamen

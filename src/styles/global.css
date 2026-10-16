@@ -2817,3 +2817,11 @@ button.sheet__row:hover {
   gap: 8px;
   margin: 0;
 }
+
+/* Torjubel-Vorschläge unter dem Eingabefeld */
+.kit-picker__ideas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 10px;
+}

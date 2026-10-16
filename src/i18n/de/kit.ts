@@ -4,6 +4,8 @@ const kit = {
   titleCheer: 'Trikot & Torjubel',
   cheer: 'Torjubel (unter „TOR!“ in der 2D-Ansicht)',
   cheerPlaceholder: 'z. B. Wir sind die Elf!',
+  cheerIdeasLabel: 'Vorschläge für den Torjubel',
+  cheerIdeas: ['Auf geht’s!', 'Wir sind die Elf!', 'Pika-Pika-Tor!', 'Volltreffer!', 'Was für ein Ding!'],
   home: 'Heim',
   away: 'Auswärts',
   note: 'Zu Hause spielt dein Team in der Heimfarbe, auswärts auch – außer der Gegner trägt dieselbe, dann in der Auswärtsfarbe. Zu sehen in der 2D-Ansicht.',

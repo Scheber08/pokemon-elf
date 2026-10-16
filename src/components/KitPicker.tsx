@@ -82,6 +82,25 @@ export function KitPicker({ kit, onChange, disabled = false, cheer = '', onCheer
           />
         </label>
       )}
+      {onCheer && !disabled && (
+        // Vorschläge zum Antippen – übernimmt den Spruch sofort
+        <p className="kit-picker__ideas" aria-label={tx.cheerIdeasLabel}>
+          {tx.cheerIdeas.map((idea) => (
+            <button
+              key={idea}
+              type="button"
+              className={`chip kit-picker__idea ${cheer === idea ? 'is-active' : ''}`}
+              aria-pressed={cheer === idea}
+              onClick={() => {
+                setDraft(null);
+                if (cleanCheer(idea) !== cheer) onCheer(cleanCheer(idea));
+              }}
+            >
+              {idea}
+            </button>
+          ))}
+        </p>
+      )}
       {kit && (
         <button type="button" className="btn btn--small btn--ghost" disabled={disabled} onClick={() => onChange(null)}>
           {tx.reset}
