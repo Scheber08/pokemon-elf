@@ -746,6 +746,25 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
             >
               {t.online.shuffleOrder}
             </button>
+            {state.teams.some((tm) => tm.cpu) && (
+              <button
+                type="button"
+                className="btn btn--small draft__cpuformations"
+                // 🎲 Formationen der CPU-Teams neu würfeln (menschliche Teams behalten ihre)
+                onClick={() =>
+                  setState((s) => ({
+                    ...s,
+                    teams: s.teams.map((tm) => {
+                      if (!tm.cpu) return tm;
+                      const formation = FORMATION_IDS[Math.floor(Math.random() * FORMATION_IDS.length)];
+                      return { ...tm, formation, slots: emptySlots(formation) };
+                    }),
+                  }))
+                }
+              >
+                {tx.randomCpuFormations}
+              </button>
+            )}
             {/* Pick-Nummern der menschlichen Teams (Reihenfolge der Liste, Snake) */}
             {state.teams.some((tm) => !tm.cpu) && (
               <ul className="small draft__teampicks">

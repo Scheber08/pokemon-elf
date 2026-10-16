@@ -104,6 +104,7 @@ const draft = {
     marked: 'gemerkt',
     /** Ergebnis: Dauer des lokalen Drafts */
     draftDuration: (time: string, picks: number) => `⏱️ Draft-Dauer: ${time} Min. für ${picks} Picks`,
+    randomCpuFormations: '🎲 CPU-Formationen würfeln',
     roundDone: (round: number, name: string, team: string, fit: number) =>
       `🔔 Runde ${round} vorbei – Top-Pick: ${name} (${team}, Fit ${fit})`,
     bestFreeTitle: (name: string, pos: string, fit: number) => `${name} auswählen – bester Freier für ${pos} (Fit ${fit})`,

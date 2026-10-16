@@ -102,6 +102,7 @@ const draft: Messages['draft'] = {
     mark: 'Shortlist',
     marked: 'shortlisted',
     draftDuration: (time, picks) => `⏱️ Draft time: ${time} min for ${picks} picks`,
+    randomCpuFormations: '🎲 Roll CPU formations',
     roundDone: (round, name, team, fit) => `🔔 Round ${round} done – top pick: ${name} (${team}, fit ${fit})`,
     bestFreeTitle: (name, pos, fit) => `Select ${name} – best available ${pos} (fit ${fit})`,
     undo: '↶ Undo',

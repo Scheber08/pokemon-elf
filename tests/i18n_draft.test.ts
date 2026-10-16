@@ -316,6 +316,24 @@ describe('/draft an einem Gerät auf Englisch', () => {
     localStorage.removeItem('pokemon-elf:ranking-names');
   });
 
+  it('Aufbau: „🎲 Roll CPU formations“ würfelt nur die Formationen der CPU-Teams', async () => {
+    storeLang('en');
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const before = JSON.parse(localStorage.getItem('pokemon-elf:draft')!).teams as { cpu: boolean; formation: string }[];
+    const btn = container.querySelectorAll('button').find((b) => b.textContent === '🎲 Roll CPU formations') as MiniElement;
+    // Math.random knapp unter 1: immer die letzte Formation der Liste
+    const rnd = vi.spyOn(Math, 'random').mockReturnValue(0.9999);
+    await act(async () => btn.click());
+    rnd.mockRestore();
+    const after = JSON.parse(localStorage.getItem('pokemon-elf:draft')!).teams as { cpu: boolean; formation: string; slots: unknown[] }[];
+    const { FORMATION_IDS } = await import('../src/config/formations');
+    after.forEach((tm, i) => {
+      expect(tm.formation).toBe(tm.cpu ? FORMATION_IDS[FORMATION_IDS.length - 1] : before[i].formation);
+      expect(tm.slots).toHaveLength(11);
+    });
+  });
+
   it('Aufbau: „Shuffle order“ mischt die Teamliste (= Draft-Reihenfolge)', async () => {
     storeLang('en');
     const { container } = await render(app(h(Draft)));
