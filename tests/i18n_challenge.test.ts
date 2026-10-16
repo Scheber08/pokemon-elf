@@ -354,6 +354,8 @@ describe('34–0 Challenge auf Englisch', () => {
     }
     expect(text).toMatch(/Positions by weight: GK 1\.6 · ST 1\.4 · CB\/AM 1\.2 · DM 1\.1 · others 1\.0/);
     expect(text).toMatch(/Season details – all 34 matches/);
+    // 😊 / 😖 Lieblings- und Angstgegner der Saison (Englisch)
+    expect(el.querySelector('.result-foes')!.textContent).toMatch(/^😊 Favourite opponent: .+ \(\d+ points?, \d+:\d+\) · 😖 Bogey team: .+ \(\d+ points?, \d+:\d+\)$/);
   });
 });
 

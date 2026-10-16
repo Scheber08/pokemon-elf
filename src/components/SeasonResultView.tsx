@@ -17,6 +17,7 @@ import {
   type RunRanking,
 } from '../lib/runFinish';
 import { formatRecord, type SeasonResult } from '../lib/season';
+import { favouriteFoes } from '../lib/foes';
 import { scorerSummary } from '../lib/seasonTimeline';
 import { usePokemonData, type ScaleKind } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
@@ -476,6 +477,19 @@ export function SeasonResultView({
             )}
           </section>
         </div>
+
+        {(() => {
+          // 😊 Lieblingsgegner und 😖 Angstgegner der Saison (wie im Draft-Ergebnis; eigenes Team = Index 0)
+          const foes = favouriteFoes(season.league.matches, 0);
+          if (!foes) return null;
+          const line = (r: NonNullable<typeof foes>['best']) =>
+            t.draft.results.foeLine(t.game.club(season.league.teams[r.opp]?.name ?? ''), r.pts, `${r.gf}:${r.ga}`);
+          return (
+            <p className="card small muted result-foes">
+              {t.draft.results.foeBest(line(foes.best))} · {t.draft.results.foeWorst(line(foes.worst))}
+            </p>
+          );
+        })()}
 
         <details className="card details">
           <summary>{tr.details(season.userMatches.length)}</summary>
