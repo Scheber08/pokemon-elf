@@ -541,6 +541,18 @@ describe('Tore nach Mannschaftsteil', () => {
   });
 });
 
+describe('Verschiedene Torschützen', () => {
+  it('zählt jeden Torschützen je Team einmal', async () => {
+    const { distinctScorers } = await import('../src/lib/leagueTimeline');
+    const g = (pokemonId: number) => ({ pokemonId, pos: 'ST' as const });
+    const matches = [
+      { round: 1, home: 0, away: 1, hg: 3, ag: 1, homeScorers: [g(1), g(1), g(2)], awayScorers: [g(5)] },
+      { round: 2, home: 1, away: 0, hg: 0, ag: 2, homeScorers: [], awayScorers: [g(2), g(3)] },
+    ];
+    expect(distinctScorers(matches, 3)).toEqual([3, 1, 0]);
+  });
+});
+
 describe('Tore nach Typ', () => {
   it('Doppeltypen zählen für beide, absteigend, höchstens drei', async () => {
     const { goalsByType } = await import('../src/lib/leagueTimeline');

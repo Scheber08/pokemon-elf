@@ -4,7 +4,7 @@ import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
 import { loadTips, MATCH_TIPS, saveTip, tipScore } from '../lib/managerTips';
-import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance, goalMilestones, scoringRuns, goalsByLine, GOAL_LINES } from '../lib/leagueTimeline';
+import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance, goalMilestones, scoringRuns, goalsByLine, GOAL_LINES, distinctScorers } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -351,6 +351,17 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
               <span className="small" aria-hidden="true">
                 {text}
               </span>
+              {(() => {
+                // 👥 Verschiedene Torschützen, mit Hinweis auf den Liga-Bestwert (auch geteilt)
+                const all = distinctScorers(shown.matches, shown.teams.length);
+                const n = all[you] ?? 0;
+                return (
+                  <span className="small manager__scorers">
+                    {tx.distinctScorers(n)}
+                    {n > 0 && n >= Math.max(...all) && <strong>{tx.distinctScorersBest}</strong>}
+                  </span>
+                );
+              })()}
             </div>
           );
         })()}

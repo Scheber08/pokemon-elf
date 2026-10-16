@@ -683,6 +683,8 @@ const draft = {
     goalMilestone: (pokemon: string, mark: number) => `${pokemon} knackt die ${mark}-Tore-Marke!`,
     scoringRun: (pokemon: string, games: number) => `${pokemon} trifft im ${games}. Spiel in Folge!`,
     linesTitle: 'Tore nach Mannschaftsteil',
+    distinctScorers: (n: number) => `👥 ${n} verschiedene Torschützen`,
+    distinctScorersBest: ' – Ligabestwert',
     lineNames: { att: 'Angriff', mid: 'Mittelfeld', def: 'Abwehr', gk: 'Tor' },
     rivalMark: 'Dein nächster Gegner',
     weakSpot: (pos: string, pokemon: string, fit: number) => `Schwachstelle: ${pos} ${pokemon} (Fit ${fit})`,

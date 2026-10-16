@@ -619,6 +619,8 @@ const draft: Messages['draft'] = {
     goalMilestone: (pokemon, mark) => `${pokemon} reaches ${mark} goals this season!`,
     scoringRun: (pokemon, games) => `${pokemon} has scored in ${games} straight games!`,
     linesTitle: 'Goals by unit',
+    distinctScorers: (n) => `👥 ${n} different scorers`,
+    distinctScorersBest: ' – league best',
     lineNames: { att: 'Attack', mid: 'Midfield', def: 'Defence', gk: 'Keeper' },
     rivalMark: 'Your next opponent',
     weakSpot: (pos, pokemon, fit) => `Weak spot: ${pos} ${pokemon} (fit ${fit})`,

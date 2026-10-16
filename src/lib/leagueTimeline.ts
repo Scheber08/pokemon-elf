@@ -520,6 +520,16 @@ export function goalsByLine(matches: LeagueResult['matches'], team: number): Rec
   return out;
 }
 
+/** Zahl verschiedener Torschützen je Team (Index = Team) */
+export function distinctScorers(matches: LeagueResult['matches'], teams: number): number[] {
+  const sets = Array.from({ length: teams }, () => new Set<number>());
+  for (const m of matches) {
+    for (const g of m.homeScorers) sets[m.home]?.add(g.pokemonId);
+    for (const g of m.awayScorers) sets[m.away]?.add(g.pokemonId);
+  }
+  return sets.map((x) => x.size);
+}
+
 /** Ab so vielen Spielen in Folge mit Tor gilt eine Torserie */
 export const SCORING_RUN_MIN = 3;
 

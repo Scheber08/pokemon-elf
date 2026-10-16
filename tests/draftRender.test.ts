@@ -1934,6 +1934,12 @@ describe('ManagerSeason', () => {
     const parts = GOAL_LINES.filter((k) => lines[k] > 0);
     expect(el!.querySelector('.manager__lines-bar')!.querySelectorAll('span')).toHaveLength(parts.length);
     expect(el!.querySelector('.manager__lines-bar')!.getAttribute('aria-label')).toBe(`Tore nach Mannschaftsteil: ${parts.map((k) => `${names[k]} ${lines[k]}`).join(' · ')}`);
+    // 👥 verschiedene Torschützen, „Ligabestwert“ nur beim (geteilten) Höchstwert
+    const { distinctScorers } = await import('../src/lib/leagueTimeline');
+    const all = distinctScorers(storedLeague(s.league, s.teams.length)!.matches, s.teams.length);
+    expect(el!.querySelector('.manager__scorers')!.textContent).toBe(
+      `👥 ${all[me]} verschiedene Torschützen${all[me] >= Math.max(...all) ? ' – Ligabestwert' : ''}`,
+    );
   });
 
   it('Manager: 🏆 rechnerischer Titelkampf erst ab der Saisonhälfte', async () => {
