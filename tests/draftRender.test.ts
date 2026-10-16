@@ -2194,6 +2194,38 @@ describe('ManagerSeason', () => {
     for (const [shown, expected] of cells) expect(shown).toBe(expected);
   });
 
+  it('Manager: 💥 höchster Sieg auf dem Weg zum Erfolg „Schützenfest“', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    const { storedLeague } = await import('../src/lib/leagueTimeline');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    const me = s.teams.findIndex((t) => t.id === 'h');
+    const best = () => {
+      let b: { gf: number; ga: number; opp: number } | null = null;
+      for (const x of storedLeague(s.league, s.teams.length)?.matches ?? []) {
+        if (x.home !== me && x.away !== me) continue;
+        const home = x.home === me;
+        const v = { gf: home ? x.hg : x.ag, ga: home ? x.ag : x.hg, opp: home ? x.away : x.home };
+        if (!b || v.gf - v.ga > b.gf - b.ga) b = v;
+      }
+      return b as { gf: number; ga: number; opp: number } | null;
+    };
+    const { container: c0 } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    expect(c0.querySelector('.manager__routgoal')).toBeNull();
+    for (let md = 1; md <= 17 && s.phase === 'season' && (best()?.gf ?? 0) - (best()?.ga ?? 0) < 3; md++) s = playMatchday(s, ALL, SCALE);
+    const b = best()!;
+    const diff = b.gf - b.ga;
+    expect(diff).toBeGreaterThanOrEqual(3);
+    const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    const text = container.querySelector('.manager__routgoal')!.textContent!;
+    if (diff >= 5) expect(text).toMatch(new RegExp(`^💥 Schützenfest: ${b.gf}:${b.ga} gegen .+ – der Erfolg kommt zum Saisonende$`));
+    else expect(text).toBe(`💥 Höchster Sieg: ${b.gf}:${b.ga} – noch ${5 - diff} ${5 - diff === 1 ? 'Tor' : 'Tore'} mehr Abstand bis zum Erfolg „Schützenfest“`);
+  });
+
   it('Manager: 🏅 Siege in Folge auf dem Weg zum Erfolg „Siegesserie“ (3 bis 6)', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');

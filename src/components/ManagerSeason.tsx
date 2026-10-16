@@ -402,6 +402,24 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           const n = winRun(shown.matches, you);
           return n >= 3 && n < WIN_STREAK_GOAL && <p className="small manager__winrun">{tx.winRun(n, WIN_STREAK_GOAL - n)}</p>;
         })()}
+        {you != null && (() => {
+          // 💥 Unterwegs zum Erfolg „Schützenfest“ (Sieg mit ROUT_GOAL Toren Abstand): höchster eigener Sieg ab 3 Toren Abstand
+          let best: { gf: number; ga: number; opp: number } | null = null;
+          for (const x of shown.matches) {
+            if (x.home !== you && x.away !== you) continue;
+            const home = x.home === you;
+            const v = { gf: home ? x.hg : x.ag, ga: home ? x.ag : x.hg, opp: home ? x.away : x.home };
+            if (!best || v.gf - v.ga > best.gf - best.ga) best = v;
+          }
+          const b = best as { gf: number; ga: number; opp: number } | null;
+          if (!b || b.gf - b.ga < 3) return null;
+          const score = `${b.gf}:${b.ga}`;
+          return (
+            <p className="small manager__routgoal">
+              {b.gf - b.ga >= ROUT_GOAL ? tx.routDone(score, nameOf(b.opp)) : tx.routNear(score, ROUT_GOAL - (b.gf - b.ga))}
+            </p>
+          );
+        })()}
         {you != null && m.played >= 1 && (() => {
           // Tabellenausschnitt: zwei Plätze über und unter dem eigenen Team, mit Punkteabstand
           const at = shown.table.findIndex((r) => r.team === you);
@@ -1018,6 +1036,8 @@ const FORMATION_TIP_MIN = 5;
 
 /** Ziel des Erfolgs „Siegesserie“ (streak_7) */
 const WIN_STREAK_GOAL = 7;
+/** Tordifferenz für den Erfolg „Schützenfest“ (rout_5) */
+const ROUT_GOAL = 5;
 
 /** Ab so vielen gespielten Spieltagen nennt die Aufstellung Bankspieler ohne Einsatz */
 const UNUSED_AFTER = 3;

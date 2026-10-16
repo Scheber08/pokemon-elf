@@ -712,6 +712,8 @@ const draft = {
     scoringRun: (pokemon: string, games: number) => `${pokemon} trifft im ${games}. Spiel in Folge!`,
     /** Fan-Stimmung (letzte fünf Spiele) */
     fanMood: { euphoria: '😍 Die Fans sind in Euphorie', happy: '🙂 Die Fans sind zufrieden', calm: '😐 Die Fans warten ab', angry: '😠 Unruhe auf den Rängen' },
+    routNear: (score: string, left: number) => `💥 Höchster Sieg: ${score} – noch ${left} ${left === 1 ? 'Tor' : 'Tore'} mehr Abstand bis zum Erfolg „Schützenfest“`,
+    routDone: (score: string, opp: string) => `💥 Schützenfest: ${score} gegen ${opp} – der Erfolg kommt zum Saisonende`,
     winRun: (n: number, left: number) => `🏅 ${n} Siege in Folge – noch ${left} bis zum Erfolg „Siegesserie“`,
     linesTitle: 'Tore nach Mannschaftsteil',
     distinctScorers: (n: number) => `👥 ${n} verschiedene Torschützen`,
