@@ -270,6 +270,21 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     toast(tm.name === OWN_TEAM ? t.online.elevenDone(avg) : tx.elevenDone(teamName(tm.name), avg));
   }, [state.pick]);
 
+  // 💯 Volltreffer: menschlicher Pick mit Positions-Fit ≥ 95 (wie online; nur beim Vorwärtsdraften)
+  const bullseyePickRef = useRef(state.pick);
+  useEffect(() => {
+    const before = bullseyePickRef.current;
+    bullseyePickRef.current = state.pick;
+    const last = state.log?.at(-1);
+    if (state.pick !== before + 1 || !last || state.log!.length !== state.pick) return;
+    const tm = state.teams[last.team];
+    const pos = tm ? FORMATIONS[tm.formation].slots[last.slot]?.pos : undefined;
+    const mon = byId.get(last.id);
+    if (!tm || tm.cpu || !pos || !mon) return;
+    const fit = Math.round(positionFit(mon, pos, scale('all')));
+    if (fit >= 95) toast(t.online.bullseyePick(t.game.pokemon(mon), fit, t.game.posName[pos]));
+  }, [state.pick]);
+
   // ★ Erstes legendäres Pokémon des Drafts und das letzte freie (wie online; nur beim Vorwärtsdraften)
   const legendPickRef = useRef(state.pick);
   useEffect(() => {

@@ -1112,6 +1112,7 @@ describe('/draft an einem Gerät auf Englisch', () => {
       expect(toasts().filter((x) => x.startsWith('🔔'))).toEqual([]);
       // Uhr läuft ab → Auto-Pick, danach die CPU: Runde 1 (2 Picks) ist vorbei
       await act(async () => void (await vi.advanceTimersByTimeAsync(31_000)));
+      const afterAuto = toasts().filter((x) => x.startsWith('💯'));
       await act(async () => void (await vi.advanceTimersByTimeAsync(3_000)));
       const saved = JSON.parse(localStorage.getItem('pokemon-elf:draft')!);
       expect(saved.pick).toBeGreaterThanOrEqual(2);
@@ -1120,6 +1121,16 @@ describe('/draft an einem Gerät auf Englisch', () => {
       expect(round[0]).toMatch(/^🔔 Runde 1 vorbei – Top-Pick: .+ \((Mein Team|.+), Fit \d+\)$/);
       const ids = saved.log.slice(0, 2).map((x: { id: number }) => x.id);
       expect(ids.some((id: number) => round[0].includes(ALL.find((p) => p.id === id)!.de))).toBe(true);
+      // 💯 Volltreffer für den (automatischen) Pick des menschlichen Teams ab Fit 95
+      {
+        const { FORMATIONS } = await import('../src/config/formations');
+        const { positionFit, buildScale } = await import('../src/lib/fit');
+        const first = saved.log[0] as { team: number; slot: number; id: number };
+        const mon = ALL.find((p) => p.id === first.id)!;
+        const fit = Math.round(positionFit(mon, FORMATIONS[f].slots[first.slot].pos, buildScale(ALL, 'all')));
+        expect(fit).toBeGreaterThanOrEqual(95);
+        expect(afterAuto).toEqual([expect.stringMatching(new RegExp(`^💯 Volltreffer: ${mon.de} passt mit ${fit} als .+!$`))]);
+      }
     } finally {
       vi.useRealTimers();
       localStorage.removeItem('pokemon-elf:draft');
