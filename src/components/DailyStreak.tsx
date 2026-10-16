@@ -38,6 +38,20 @@ export function DailyStreak() {
           <span className="statcard__label">{td.played}</span>
           <span className="statcard__value">{history.length}</span>
         </div>
+        {(() => {
+          // Bester Tag (meiste Punkte; bei Gleichstand der frühere) mit Ø Punkten aller gespielten Tage
+          const best = history.reduce((a, b) => (b.points > a.points || (b.points === a.points && b.day < a.day) ? b : a));
+          const avg = Math.round(history.reduce((sum, d) => sum + d.points, 0) / history.length);
+          return (
+            <div className="statcard daily-streak__best" title={td.bestDayTitle(dailyNumber(best.day), avg)}>
+              <span className="statcard__label">{td.bestDay}</span>
+              <span className="statcard__value">
+                {best.points} {t.draft.col.pts}
+              </span>
+              <span className="statcard__sub muted small">{td.bestDayAvg(avg)}</span>
+            </div>
+          );
+        })()}
       </div>
       {!playedToday && streak.current > 0 && <p className="hint daily-streak__hint">{td.streakHint}</p>}
       <details className="daily-streak__archive">

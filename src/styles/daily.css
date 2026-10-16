@@ -248,6 +248,18 @@
   display: grid;
   gap: 10px;
 }
+/* Vier Kennzahlen: in einer Reihe, schmal 2 × 2 */
+.daily-streak .statcards {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (max-width: 560px) {
+  .daily-streak .statcards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.daily-streak__best .statcard__value {
+  font-size: 24px;
+}
 .daily-streak__hint {
   margin: 0;
 }

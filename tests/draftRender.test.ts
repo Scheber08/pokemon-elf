@@ -971,6 +971,23 @@ describe('DraftLive', () => {
     expect(container.querySelectorAll('.achievement.is-done')).toHaveLength(0);
   });
 
+  it('Tägliche Elf: „Bester Tag“ mit Punkten und Ø', async () => {
+    const { DailyStreak } = await import('../src/components/DailyStreak');
+    const { recordDailyDay } = await import('../src/lib/dailyHistory');
+    const { dailyNumber } = await import('../src/lib/daily');
+    const d = (day: string, points: number) => ({ day, record: { w: 20, d: 2, l: 2 }, points, score: 700, position: 3 });
+    recordDailyDay(d('2026-10-10', 70));
+    recordDailyDay(d('2026-10-11', 92));
+    recordDailyDay(d('2026-10-12', 80));
+    const { container } = await render(app(h(DailyStreak)));
+    await settle();
+    const card = container.querySelector('.daily-streak__best')!;
+    expect(card.querySelector('.statcard__value')!.textContent).toBe('92 Pkt');
+    expect(card.querySelector('.statcard__sub')!.textContent).toBe('Ø 81');
+    expect(card.getAttribute('title')).toBe(`Meiste Punkte an einem Tag (Tägliche Elf #${dailyNumber('2026-10-11')}) – im Schnitt 81 Punkte`);
+    localStorage.clear();
+  });
+
   it('Taste ? zeigt die Tastenkürzel', async () => {
     const { container } = await renderLive(fakeRoom(snap(drafting(), 'h')));
     const ev = Object.assign(new MiniEvent('keydown', { bubbles: true, cancelable: true }), { key: '?', ctrlKey: false, metaKey: false, altKey: false });

@@ -120,7 +120,7 @@ Alle Zahlen sind in `src/config/` änderbar – die Tests prüfen Eigenschaften,
 - **34–0 Challenge** – pro Runde werden Region + Typ gewürfelt (je ein Reroll pro Run), max. 2 Legendäre.
 - **Tägliche Elf** – jeden Tag (Europe/Berlin) dieselben Würfe für alle, Regeln wie 34–0, ein Versuch pro
   Tag und Gerät. Die Saison ist für alle identisch (gleiche Elf → gleiches Ergebnis). Ergebnis als
-  Emoji-Raster teilen (34 Spieltage in zwei Reihen). Serie (Tage am Stück) und Archiv auf dem Gerät.
+  Emoji-Raster teilen (34 Spieltage in zwei Reihen). Serie (Tage am Stück), „Bester Tag“ (meiste Punkte, mit Ø) und Archiv auf dem Gerät.
 - **151 Challenge** – pro Runde ein zufälliges Pokémon aus den Original-151, 5 Rerolls.
 - **Retro 34–0** – Modus der 151-Seite: Typ-Würfel wie bei 34–0, aber nur Kanto, Retro-Sprites,
   Gen-1-Skalierung, eigene Rangliste.

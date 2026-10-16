@@ -46,7 +46,7 @@ Deploy stehen in der README.
 ## Offene Ideen (Stand 2026-10-15)
 
 Erledigt (siehe README): Ultrabestien/Megas/Formen, Revanche + ewige Tabelle, Benachrichtigung „Du bist
-dran", Testspiel, Spielerprofil, Wochenwertung, Tägliche-Elf-Serie, OG-Tags (auch je Liga), Routen
+dran", Testspiel, Spielerprofil, Wochenwertung, Tägliche-Elf-Serie (mit „Bester Tag“), OG-Tags (auch je Liga), Routen
 nachladen, PWA, Wunschliste, Emoji-Reaktionen, Vorlagen und Draft-Noten im Draft, Rückgängig,
 Fit-Sortierung und „Beste Elf" im Builder, Wochenwertung rückwirkend gefüllt, Schnäppchen des Drafts,
 „Deine Duelle", Allzeit-Platz und ⭐ Lieblings-Challenge im Profil, Taste „/" im Draft, Noten in der lokalen Liga, QR-Code in der Lobby,
