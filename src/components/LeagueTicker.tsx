@@ -5,6 +5,7 @@ import {
   leagueTimeline,
   matchFor,
   recentForm,
+  fanMood,
   seasonFinishAt,
   secondsToKickoff,
   tableRowClass,
@@ -350,6 +351,11 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
         ) : (
           <p className="league-ticker__series small is-down">🥶 {t.draft.manager.seriesWinless(run.length)}</p>
         );
+      })()}
+      {!cup && day && !finale && you != null && (() => {
+        // 📣 Fan-Stimmung aus den letzten fünf Spielen – wie in der Manager-Saison
+        const mood = fanMood(recentForm(league.matches, you, md));
+        return mood && <p className={`league-ticker__mood small manager__mood--${mood}`}>{t.draft.manager.fanMood[mood]}</p>;
       })()}
 
       <div className="league-ticker__grid">

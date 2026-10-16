@@ -1592,6 +1592,11 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
     expect(el!.textContent).toBe(run.kind === 'unbeaten' ? `🔥 Unbeaten in ${run.length} games` : `🥶 Winless in ${run.length} games`);
     // Spieltag 2: zu früh für eine Serie
     expect((await renderAt(2)).querySelector('.league-ticker__series')).toBeNull();
+    // 📣 Fan-Stimmung (ab drei Spielen), Spieltag 2 noch ohne
+    const moodAt = timeline.fanMood(timeline.recentForm(league.matches, 0, md));
+    const moods = { euphoria: '😍 The fans are euphoric', happy: '🙂 The fans are happy', calm: '😐 The fans are waiting to see', angry: '😠 Unrest in the stands' } as const;
+    expect((await renderAt(md)).querySelector('.league-ticker__mood')!.textContent).toBe(moods[moodAt!]);
+    expect((await renderAt(2)).querySelector('.league-ticker__mood')).toBeNull();
   });
 
   it('Ticker: 🎩 Hattrick auf der Ergebnistafel des Spieltags', async () => {
