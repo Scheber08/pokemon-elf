@@ -514,6 +514,13 @@ describe('Rangliste: Team ansehen (online)', () => {
     expect(d.querySelector('.sheet .section-title')?.textContent).toBe('Aufstellung');
     expect(sheetNames(d)).toEqual([...ELF, SS].map((id) => mon(id).de));
     expect(d.querySelectorAll('.sheet button')).toHaveLength(0);
+    // Fit je Spieler mit der Skala der Wertung (34–0: alle Pokémon), Torwart Relaxo zuerst
+    {
+      const { buildScale, positionFit } = await import('../src/lib/fit');
+      const fits = d.querySelectorAll('.sheet__fit').map((f) => f.textContent);
+      expect(fits).toHaveLength(12);
+      expect(fits[0]).toBe(` · Fit ${Math.round(positionFit(mon(143), 'TW', buildScale(ALL, 'all')))}`);
+    }
 
     // Typ-Chips wie im Builder (diese Elf hat 11 verschiedene Typen → 🌈)
     expect(d.querySelector('.builder__types')?.textContent).toContain('🌈 11');

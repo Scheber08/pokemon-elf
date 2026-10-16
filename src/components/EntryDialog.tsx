@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useT } from '../i18n';
 import { ApiRequestError, fetchEntry } from '../lib/api/client';
 import type { EntryDetail } from '../lib/api/contract';
+import { MODE_RULES } from '../lib/challengeEngine';
 import { isDayKey } from '../lib/daily';
 import { builderSearch } from '../lib/leaderboard/entryDetail';
 import { formatRecord } from '../lib/season';
@@ -71,7 +72,7 @@ export function EntryDialog({ source, onClose, onReloadBoard }: Props) {
   const t = useT();
   const tr = t.leaderboard.entry;
   const { sprite } = useSettings();
-  const { byId } = usePokemonData();
+  const { byId, scale } = usePokemonData();
   const bodyRef = useRef<HTMLDivElement>(null);
   const [attempt, setAttempt] = useState(0);
   const [friendly, setFriendly] = useState(false);
@@ -133,7 +134,8 @@ export function EntryDialog({ source, onClose, onReloadBoard }: Props) {
             <TypeChips pokemon={d.slots.flatMap((id) => (id != null && byId.has(id) ? [byId.get(id)!] : []))} />
             <Pitch formation={d.formation} slots={d.slots} ss={ss} sprite={sprite} captain={d.captain ?? null} ariaLabel={tr.pitchAria(info.teamName || player, d.formation)} />
           </div>
-          <TeamSheet formation={d.formation} slots={d.slots} ss={ss} sprite={sprite} title={tr.sheetTitle} />
+          {/* Fit je Spieler mit der Skala der Wertung (151/Retro: nur Gen 1) */}
+          <TeamSheet formation={d.formation} slots={d.slots} ss={ss} sprite={sprite} title={tr.sheetTitle} fitScale={scale(MODE_RULES[info.challenge]?.scale ?? 'all')} />
         </div>
       );
       break;
