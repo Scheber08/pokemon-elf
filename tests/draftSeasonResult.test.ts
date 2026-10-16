@@ -491,3 +491,22 @@ describe('Joker des Drafts', () => {
     expect(draftJoker([], matches)).toBeNull();
   });
 });
+
+describe('Erwartung gegen Ergebnis', () => {
+  it('erwarteter Platz nach Team-Score (Bereich bei Gleichstand) und Abstand zum Endplatz', async () => {
+    const { expectationGap } = await import('../src/lib/leagueTimeline');
+    // Tabelle (Endstand) mit Team-Scores: Team 2 (schwächster) wird Erster
+    const table = [
+      { team: 2, rating: 700 },
+      { team: 0, rating: 900 },
+      { team: 1, rating: 800 },
+      { team: 3, rating: 800 },
+    ];
+    expect(expectationGap(table, 2)).toEqual({ from: 4, to: 4, place: 1, delta: 3 });
+    expect(expectationGap(table, 0)).toEqual({ from: 1, to: 1, place: 2, delta: -1 });
+    // Gleich stark (Platz 2–3 erwartet): Platz 3 ist im Bereich
+    expect(expectationGap(table, 1)).toEqual({ from: 2, to: 3, place: 3, delta: 0 });
+    expect(expectationGap(table, 3)).toEqual({ from: 2, to: 3, place: 4, delta: -1 });
+    expect(expectationGap(table, 9)).toBeNull();
+  });
+});

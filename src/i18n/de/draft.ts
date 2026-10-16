@@ -421,6 +421,10 @@ const draft = {
     missedTaken: (team: string, pick: number) => `– ging mit Pick ${pick} an ${team}.`,
     missedFree: '– blieb sogar bis zum Schluss frei.',
     joker: (pokemon: string, pick: number, team: string, goals: number) => `🃏 Joker des Drafts: ${pokemon} (erst Pick ${pick}) traf ${goals}-mal für ${team}`,
+    expectation: (expected: string, place: number, delta: number) =>
+      delta === 0
+        ? `Wie nach Team-Score erwartet: Platz ${place}${expected !== String(place) ? ` (erwartet ${expected})` : ''}`
+        : `Nach Team-Score Platz ${expected} erwartet, geworden Platz ${place} – ${Math.abs(delta)} ${Math.abs(delta) === 1 ? 'Platz' : 'Plätze'} ${delta > 0 ? 'besser' : 'schlechter'}`,
     steal: (pokemon: string, pick: number, team: string, pos: string) => `Schnäppchen des Drafts: ${pokemon} (Pick ${pick}) für ${team} als ${pos}`,
     signing: (pokemon: string, team: string, matchday: number, line: string) =>
       `Transfer der Saison: ${pokemon} zu ${team} (vor Spieltag ${matchday}) – danach ${line}`,

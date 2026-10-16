@@ -6,7 +6,7 @@ import type { DraftPickLog, DraftSettings, DraftTeam, ManagerTransfer } from '..
 import { poolStars, StarsLanded } from './PoolStars';
 import { TypeGoals } from './TypeGoals';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { bestTransfer, comebackOf, missedChance, draftJoker, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { bestTransfer, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { buildTable, formatRecord, sideTable, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -358,6 +358,18 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                 : tx.yourPlace(nameOf(ownRow.team), ownIndex + 1, ownRow.pts)}
           </p>
         )}
+        {ownRow && !cup && you != null && (() => {
+          // Erwartet (Rang nach Team-Score) gegen Ergebnis
+          const gap = expectationGap(table, you);
+          if (!gap) return null;
+          const expected = gap.from === gap.to ? String(gap.from) : `${gap.from}–${gap.to}`;
+          return (
+            <p className="draft-results__expect small">
+              {gap.delta > 0 ? '📈 ' : gap.delta < 0 ? '📉 ' : '🎯 '}
+              {tx.expectation(expected, gap.place, gap.delta)}
+            </p>
+          );
+        })()}
         {ownRow && !cup && you != null && (() => {
           // Eigener höchster Sieg und höchste Niederlage (aus eigener Sicht, Ergebnis eigene Tore zuerst)
           const own = league.matches.filter((m) => m.home === you || m.away === you);

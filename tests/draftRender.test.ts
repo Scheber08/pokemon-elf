@@ -2376,6 +2376,14 @@ describe('ManagerSeason', () => {
         expect(el!.textContent).toContain(`war noch ${name(missed.altId)} frei (Fit ${missed.altFit})`);
       } else expect(el).toBeNull();
     }
+    // Erwartung gegen Ergebnis (Rang nach Team-Score)
+    {
+      const { expectationGap } = await import('../src/lib/leagueTimeline');
+      const gap = expectationGap(s.league!.table, s.teams.findIndex((t) => t.id === 'h'))!;
+      const line = container.querySelector('.draft-results__expect')!.textContent!;
+      if (gap.delta === 0) expect(line).toContain(`Wie nach Team-Score erwartet: Platz ${gap.place}`);
+      else expect(line).toContain(`geworden Platz ${gap.place} – ${Math.abs(gap.delta)}`);
+    }
     // Eigene Extreme: höchster Sieg / höchste Niederlage aus eigener Sicht
     const me = s.teams.findIndex((t) => t.id === 'h');
     const own = s.league!.matches.filter((m) => m.home === me || m.away === me).map((m) => (m.home === me ? [m.hg, m.ag] : [m.ag, m.hg]));

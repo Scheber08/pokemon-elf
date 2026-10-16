@@ -688,6 +688,20 @@ export function seasonSwings(order: readonly number[], ratings: readonly number[
   return { up, down };
 }
 
+/**
+ * Erwartung gegen Ergebnis eines Teams: erwarteter Platz nach Team-Score (bei Gleichstand ein Bereich, 1-basiert)
+ * und tatsächlicher Platz in der (sortierten) Tabelle; delta > 0 = besser als erwartet. null für ein unbekanntes Team.
+ */
+export function expectationGap(table: readonly Pick<TableRow, 'team' | 'rating'>[], team: number): { from: number; to: number; place: number; delta: number } | null {
+  const at = table.findIndex((r) => r.team === team);
+  if (at < 0) return null;
+  const mine = table[at].rating;
+  const best = table.filter((r) => r.rating > mine).length;
+  const worst = best + table.filter((r) => r.rating === mine).length - 1;
+  const delta = at < best ? best - at : at > worst ? worst - at : 0;
+  return { from: best + 1, to: worst + 1, place: at + 1, delta };
+}
+
 /** Schnäppchen des Drafts: ein später Pick, der besonders gut auf seine Position passt. */
 export interface DraftSteal {
   pick: number;

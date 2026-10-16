@@ -380,6 +380,10 @@ const draft: Messages['draft'] = {
     missedTaken: (team, pick) => `– went to ${team} with pick ${pick}.`,
     missedFree: '– stayed free until the end.',
     joker: (pokemon, pick, team, goals) => `🃏 Joker of the draft: ${pokemon} (only pick ${pick}) scored ${goals} for ${team}`,
+    expectation: (expected, place, delta) =>
+      delta === 0
+        ? `As the team score suggested: place ${place}${expected !== String(place) ? ` (expected ${expected})` : ''}`
+        : `Team score rank ${expected}, finished in place ${place} – ${Math.abs(delta)} ${Math.abs(delta) === 1 ? 'place' : 'places'} ${delta > 0 ? 'better' : 'worse'}`,
     steal: (pokemon, pick, team, pos) => `Steal of the draft: ${pokemon} (pick ${pick}) for ${team} as ${pos}`,
     signing: (pokemon, team, matchday, line) => `Signing of the season: ${pokemon} to ${team} (before matchday ${matchday}) – then ${line}`,
     gradeTitle: 'Draft grade by team score – relative to the other teams in this league (A+ to D)',
