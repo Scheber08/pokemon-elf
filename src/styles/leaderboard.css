@@ -221,3 +221,9 @@
 .profile__trend.is-down {
   color: var(--red-text);
 }
+
+.lb-me__gap {
+  display: block;
+  color: var(--text-dim);
+  font-size: 12px;
+}

@@ -28,6 +28,7 @@ const leaderboard: Messages['leaderboard'] = {
   colScore: 'Score',
   freshTitle: 'Entered in the last hour',
   yourRank: 'Your position',
+  gapToFirst: (pts) => `${pts} pts behind 1st place`,
   yourRankGap: (pts, top) => `${pts} pts short of the top ${top}`,
   playNow: 'Play now',
   today: 'Today',

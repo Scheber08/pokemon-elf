@@ -165,6 +165,13 @@ function BoardTable({ rows, mine, onReload, focusPlayer = null }: BoardTableProp
             🆕
           </span>
         )}
+        {(() => {
+          // Eigene Zeile in der Liste: Punkte-Abstand zu Platz 1 (nur, wenn Platz 1 mit angezeigt wird)
+          const top = rows[0];
+          if (!r.me || !top || top === r || top.rank !== 1 || !rows.includes(r)) return null;
+          const gap = top.points - r.points;
+          return gap > 0 ? <small className="lb-me__gap">{t.leaderboard.gapToFirst(gap)}</small> : null;
+        })()}
       </td>
       <td className="mono">{formatRecord(r.record)}</td>
       <td>{r.points}</td>

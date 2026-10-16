@@ -446,6 +446,21 @@ describe('Rangliste: Team ansehen (online)', () => {
     }
   });
 
+  it('eigene Zeile in der Top-Liste: Abstand zu Platz 1', async () => {
+    storeSettings('de');
+    const saved = BOARD.rows;
+    BOARD.rows = [saved[0], { ...saved[1], me: true, points: 85 }];
+    try {
+      await stubServer();
+      const c = await render(app());
+      await settle();
+      const gaps = c.querySelectorAll('.lb-me__gap');
+      expect(gaps.map((g) => g.textContent)).toEqual(['noch 7 Pkt bis Platz 1']);
+    } finally {
+      BOARD.rows = saved;
+    }
+  });
+
   it('Formations-Filter: Chips ab zwei Formationen unter drei Einträgen, Plätze bleiben', async () => {
     storeSettings('de');
     const saved = BOARD.rows;
