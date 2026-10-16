@@ -1070,6 +1070,31 @@ describe('DraftLive', () => {
     localStorage.clear();
   });
 
+  it('Tägliche Elf: Serie mit „🔥 Rekordserie“ bzw. „noch n Tage bis zum Rekord“', async () => {
+    const { DailyStreak } = await import('../src/components/DailyStreak');
+    const { recordDailyDay } = await import('../src/lib/dailyHistory');
+    const { dayKey } = await import('../src/lib/daily');
+    const d = (ago: number) => ({ day: dayKey(new Date(Date.now() - ago * 86_400_000)), record: { w: 20, d: 2, l: 2 }, points: 70, score: 700, position: 3 });
+    // Früher drei Tage am Stück, jetzt gestern und heute → 2 von 3, für eine neue Bestmarke fehlen 2
+    for (const ago of [10, 9, 8, 1, 0]) recordDailyDay(d(ago));
+    const a = await render(app(h(DailyStreak)));
+    await settle();
+    expect(a.container.querySelector('.daily-streak__goal')!.textContent).toBe('noch 2 Tage bis zum Rekord');
+    // Laufende Serie ist die beste
+    localStorage.clear();
+    for (const ago of [2, 1, 0]) recordDailyDay(d(ago));
+    const b = await render(app(h(DailyStreak)));
+    await settle();
+    expect(b.container.querySelector('.daily-streak__goal')!.textContent).toBe('🔥 Rekordserie');
+    // Ein einzelner Tag ist noch keine Rekordserie
+    localStorage.clear();
+    recordDailyDay(d(0));
+    const c = await render(app(h(DailyStreak)));
+    await settle();
+    expect(c.container.querySelector('.daily-streak__goal')).toBeNull();
+    localStorage.clear();
+  });
+
   it('Taste ? zeigt die Tastenkürzel', async () => {
     const { container } = await renderLive(fakeRoom(snap(drafting(), 'h')));
     const ev = Object.assign(new MiniEvent('keydown', { bubbles: true, cancelable: true }), { key: '?', ctrlKey: false, metaKey: false, altKey: false });

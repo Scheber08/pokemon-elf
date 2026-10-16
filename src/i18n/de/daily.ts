@@ -27,6 +27,9 @@ const daily = {
   /** Serie und Archiv (nur dieses Gerät) */
   streak: 'Serie',
   streakDays: (n: number) => (n === 1 ? '1 Tag' : `${n} Tage`),
+  /** Unter der Serie: laufende ist die beste bzw. Tage bis zu einer neuen Bestmarke */
+  streakIsBest: '🔥 Rekordserie',
+  streakToBest: (n: number) => `noch ${n === 1 ? '1 Tag' : `${n} Tage`} bis zum Rekord`,
   bestStreak: 'Beste Serie',
   bestDay: 'Bester Tag',
   bestDayAvg: (avg: number) => `Ø ${avg}`,

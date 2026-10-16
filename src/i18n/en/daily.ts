@@ -1,6 +1,6 @@
 /** Texts: daily (English). Must have exactly the keys of ../de/daily.ts (checked by TypeScript). */
 import type { Messages } from '../de';
-import { fmtNumber, ordinal } from '../lang';
+import { fmtNumber, ordinal, plural } from '../lang';
 
 const daily: Messages['daily'] = {
   weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
@@ -25,6 +25,8 @@ const daily: Messages['daily'] = {
     `You’ve used your ranked attempt for Daily XI #${n}. Tomorrow brings new rolls – the same for everyone again.`,
   streak: 'Streak',
   streakDays: (n) => (n === 1 ? '1 day' : `${n} days`),
+  streakIsBest: '🔥 Record streak',
+  streakToBest: (n) => `${plural(n, 'day', 'days')} to a new record`,
   bestStreak: 'Best streak',
   bestDay: 'Best day',
   bestDayAvg: (avg) => `avg ${avg}`,

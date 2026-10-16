@@ -29,6 +29,13 @@ export function DailyStreak() {
         <div className="statcard">
           <span className="statcard__label">{td.streak}</span>
           <span className="statcard__value">{td.streakDays(streak.current)}</span>
+          {/* Laufende Serie gegen die beste: Rekordserie oder Tage bis zu einer neuen Bestmarke */}
+          {streak.current >= 2 && streak.current === streak.best ? (
+            <span className="statcard__sub small daily-streak__goal">{td.streakIsBest}</span>
+          ) : (
+            streak.current > 0 &&
+            streak.current < streak.best && <span className="statcard__sub muted small daily-streak__goal">{td.streakToBest(streak.best - streak.current + 1)}</span>
+          )}
         </div>
         <div className="statcard">
           <span className="statcard__label">{td.bestStreak}</span>
