@@ -391,6 +391,8 @@ const draft = {
       `📊 Liga in Zahlen: ${games} Spiele · ${goals} Tore (Ø ${avg.toLocaleString('de-DE', { maximumFractionDigits: 1, minimumFractionDigits: 1 })}) · ${draws} Remis · ${clean}× zu null`,
     recordLeaky: '🥅 Schießbude',
     recordBlunt: '🪫 Harmloseste Offensive',
+    recordSharp: '🎯 Kaltschnäuzigste Mannschaft',
+    recordSharpLine: (team: string, pct: number, goals: number, onTarget: number) => `${team} – ${pct} % verwandelt (${goals} Tore aus ${onTarget} Schüssen aufs Tor)`,
     recordAttack: 'Bester Angriff',
     recordDefense: 'Beste Abwehr',
     recordWin: 'Höchster Sieg',

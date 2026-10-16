@@ -352,6 +352,8 @@ const draft: Messages['draft'] = {
       `📊 League in numbers: ${games} matches · ${goals} goals (avg ${avg.toLocaleString('en-GB', { maximumFractionDigits: 1, minimumFractionDigits: 1 })}) · ${draws} draws · ${clean} clean sheets`,
     recordLeaky: '🥅 Leakiest defence',
     recordBlunt: '🪫 Bluntest attack',
+    recordSharp: '🎯 Most clinical side',
+    recordSharpLine: (team, pct, goals, onTarget) => `${team} – ${pct}% converted (${goals} goals from ${onTarget} shots on target)`,
     recordAttack: 'Best attack',
     recordDefense: 'Best defence',
     recordWin: 'Biggest win',

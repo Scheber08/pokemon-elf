@@ -595,6 +595,18 @@ describe('Halbzeitführungen', () => {
   });
 });
 
+describe('Kaltschnäuzigste Mannschaft', () => {
+  it('Tore je Schuss aufs Tor, ab 15 Schüssen aufs Tor, ohne Statistik nicht gezählt', async () => {
+    const { sharpestTeam } = await import('../src/lib/leagueTimeline');
+    const st = (a: number, b: number) => ({ shots: [a + 3, b + 3], onTarget: [a, b], possession: 50, xg: [1, 1] });
+    const m = (home: number, away: number, hg: number, ag: number, stats?: ReturnType<typeof st>) => ({ round: 1, home, away, hg, ag, homeScorers: [], awayScorers: [], stats });
+    const matches = [m(0, 1, 3, 1, st(8, 9)), m(1, 0, 2, 2, st(8, 8)), m(0, 2, 9, 0)];
+    // Team 0: 5 aus 16 = 31 %; Team 1: 3 aus 17 = 18 %; Team 2 ohne Statistik/zu wenig
+    expect(sharpestTeam(matches, [0, 1, 2])).toEqual({ team: 0, goals: 5, onTarget: 16, pct: 31 });
+    expect(sharpestTeam(matches.slice(0, 1), [0, 1])).toBeNull();
+  });
+});
+
 describe('Angriff und Abwehr mit Rang', () => {
   it('geteilte Ränge bei Gleichstand', async () => {
     const { attackDefenseRanks } = await import('../src/lib/leagueTimeline');

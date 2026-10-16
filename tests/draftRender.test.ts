@@ -2977,6 +2977,17 @@ describe('ManagerSeason', () => {
       const nm = blunt.team < s.teams.length ? s.teams[blunt.team].name : s.league!.teams[blunt.team].name;
       expect(rec.querySelector('.draft-records__blunt')!.textContent).toBe(`🪫 Harmloseste Offensive${nm} – ${blunt.gf} Tore`);
     }
+    // 🎯 Kaltschnäuzigste Mannschaft: Tore je Schuss aufs Tor
+    {
+      const { sharpestTeam } = await import('../src/lib/leagueTimeline');
+      const sharp = sharpestTeam(s.league!.matches, s.league!.table.map((r) => r.team));
+      const el = rec.querySelector('.draft-records__sharp');
+      if (!sharp) expect(el).toBeNull();
+      else {
+        const nm = sharp.team < s.teams.length ? s.teams[sharp.team].name : s.league!.teams[sharp.team].name;
+        expect(el!.textContent).toBe(`🎯 Kaltschnäuzigste Mannschaft${nm} – ${sharp.pct} % verwandelt (${sharp.goals} Tore aus ${sharp.onTarget} Schüssen aufs Tor)`);
+      }
+    }
     // ⚖️ Schwergewicht / 🪶 Federgewicht: Gesamtgewicht der gedrafteten Kader
     {
       const kg = s.teams.map((tm) => Math.round(tm.slots.reduce<number>((sum, id) => sum + (ALL.find((p) => p.id === id)?.w ?? 0), 0) * 10) / 10);

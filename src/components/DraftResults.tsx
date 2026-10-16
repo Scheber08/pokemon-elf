@@ -7,7 +7,7 @@ import { poolStars, StarsLanded } from './PoolStars';
 import { LeagueNumbers } from './LeagueNumbers';
 import { TypeGoals } from './TypeGoals';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { bestTransfer, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, formatDuration, goalFest, dreamDuo, attackDefenseRanks, weightExtremes, playerTallies, favouriteFoes, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { bestTransfer, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, formatDuration, goalFest, dreamDuo, attackDefenseRanks, weightExtremes, sharpestTeam, playerTallies, favouriteFoes, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { buildTable, formatRecord, sideTable, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -748,6 +748,16 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                         <div className="draft-records__blunt">
                           <dt>{tx.recordBlunt}</dt>
                           <dd>{tx.recordGoals(nameOf(blunt.team), blunt.gf)}</dd>
+                        </div>
+                      ) : null;
+                    })()}
+                    {(() => {
+                      // 🎯 Kaltschnäuzigste Mannschaft: Tore je Schuss aufs Tor
+                      const sharp = sharpestTeam(league.matches, table.map((r) => r.team));
+                      return sharp ? (
+                        <div className="draft-records__sharp">
+                          <dt>{tx.recordSharp}</dt>
+                          <dd>{tx.recordSharpLine(nameOf(sharp.team), sharp.pct, sharp.goals, sharp.onTarget)}</dd>
                         </div>
                       ) : null;
                     })()}

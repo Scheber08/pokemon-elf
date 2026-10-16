@@ -1383,6 +1383,40 @@ export function fastestPicker(
   return best;
 }
 
+/** Ab so vielen Schüssen aufs Tor zählt die Chancenverwertung */
+export const SHARPEST_MIN_ON_TARGET = 15;
+
+/**
+ * 🎯 Kaltschnäuzigste Mannschaft: höchster Anteil Tore an Schüssen aufs Tor (nur Spiele mit Statistik, ab
+ * SHARPEST_MIN_ON_TARGET Schüssen aufs Tor; Gleichstand: mehr Tore, dann die zuerst gelistete). null ohne Kandidaten.
+ */
+export function sharpestTeam(
+  matches: LeagueResult['matches'],
+  teams: readonly number[],
+): { team: number; goals: number; onTarget: number; pct: number } | null {
+  const goals = new Map<number, number>();
+  const shots = new Map<number, number>();
+  for (const m of matches) {
+    if (!m.stats) continue;
+    for (const [team, g, s] of [
+      [m.home, m.hg, m.stats.onTarget[0]],
+      [m.away, m.ag, m.stats.onTarget[1]],
+    ] as const) {
+      goals.set(team, (goals.get(team) ?? 0) + g);
+      shots.set(team, (shots.get(team) ?? 0) + s);
+    }
+  }
+  let best: { team: number; goals: number; onTarget: number; pct: number } | null = null;
+  for (const team of teams) {
+    const onTarget = shots.get(team) ?? 0;
+    if (onTarget < SHARPEST_MIN_ON_TARGET) continue;
+    const g = Math.min(goals.get(team) ?? 0, onTarget);
+    const pct = Math.round((g / onTarget) * 100);
+    if (!best || pct > best.pct || (pct === best.pct && g > best.goals)) best = { team, goals: g, onTarget, pct };
+  }
+  return best;
+}
+
 /** ⚖️ Schwerstes und 🪶 leichtestes Team nach Gesamtgewicht des Kaders (kg, auf 0,1 gerundet; ab zwei Kadern; bei Gleichstand das erste) */
 export function weightExtremes(
   rosters: readonly (readonly number[])[],
