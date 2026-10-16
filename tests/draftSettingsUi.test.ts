@@ -531,6 +531,9 @@ describe('/draft (Online-Modus)', () => {
     // ✨ Shiny-Party-Badge nur an der Party-Lobby
     expect(container.querySelectorAll('.draft-lobbies__party').map((e) => e.textContent)).toEqual(['✨ Shiny-Party']);
     expect(container.querySelectorAll('.draft-lobbies__format').map((e) => e.textContent)).toEqual(['🏆 KO-Turnier']);
+    // 🔥 an Lobbys mit genau einem freien Platz (Mix 1/2, Myth 1/2) – nicht an der vollen
+    expect(container.querySelectorAll('.draft-lobbies__item').map((li) => !!li.querySelector('.draft-lobbies__last'))).toEqual([true, true, false]);
+    expect(container.querySelector('.draft-lobbies__last')!.textContent).toBe('🔥 nur noch 1 Platz frei');
     // Umschalter „Nur mit freien Plätzen“ (2 freie von 3)
     expect(container.querySelectorAll('.draft-lobbies__item')).toHaveLength(3);
     const open = container.querySelector('.draft-lobbies__openonly') as MiniElement;

@@ -2054,3 +2054,9 @@ button.draft-pool__kind.is-on {
   border-color: var(--yellow);
   color: var(--yellow-text);
 }
+
+/* Öffentliche Lobbys: nur noch ein freier Platz */
+.draft-lobbies__last {
+  color: var(--yellow-text);
+  font-weight: 600;
+}

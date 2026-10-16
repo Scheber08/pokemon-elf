@@ -56,6 +56,8 @@ const online = {
   openOnly: (n: number) => `Nur mit freien Plätzen (${n})`,
   noPublic: 'Gerade wartet keine öffentliche Liga. Erstelle selbst eine – Lobby „Öffentlich".',
   byHost: (host: string, ago: string) => `von ${host} · ${ago}`,
+  /** Öffentliche Lobbys: nur noch ein freier Platz */
+  lastSpot: '🔥 nur noch 1 Platz frei',
   teamsOf: (n: number, max: number) => `${n}/${max} Teams`,
   /** Lobby-Liste: Legendäre und/oder Mysteriöse im Pool (die D1-Spalte unterscheidet sie nicht) */
   plusLegends: ' + Legendäre/Mysteriöse',

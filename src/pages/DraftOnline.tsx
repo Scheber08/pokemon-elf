@@ -281,6 +281,8 @@ function PublicLobbies() {
                     </span>
                     <span>{timerLabel(l.pickSeconds, t)}</span>
                   </span>
+                  {/* Fast voll: nur noch ein Platz frei (eigene Zeile – kein verwaister Trenner beim Umbruch) */}
+                  {l.maxTeams - l.teams === 1 && <strong className="draft-lobbies__last small">{t.online.lastSpot}</strong>}
                   {(l.format || l.shinyParty) && (
                     // Modus und Shiny-Party in eigener Zeile (kein verwaister Trenner beim Umbruch)
                     <span className="draft-lobbies__facts">

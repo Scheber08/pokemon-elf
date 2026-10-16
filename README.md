@@ -207,7 +207,7 @@ Formkurve und Stärkevergleich der besten Elfen; bei jedem Tausch bzw. freien Po
 Elf (`squadStrength`, gewichtete Fit-Punkte ohne Tagesform) und ein Tipp für den besten Transfer. Die Manager-Saison hat
 einen eigenen Menüpunkt (`/manager`, `src/pages/Manager.tsx`: Liga anlegen, beitreten, eigene Manager-Ligen);
 mit Hinweisen meldet der Browser jeden gespielten Spieltag und erinnert 5 Minuten vor dem Anpfiff.
-Öffentliche Lobbys: `GET /api/drafts/public` (volle ausblendbar per „Nur mit freien Plätzen“; mit „🏆 KO-Turnier“/„🏟️ Manager-Saison“ und „✨ Shiny-Party“; beides steckt als Bits in der Spalte `legends` der Lobby-Zeile: 2 = Shiny-Party, 4 = KO-Turnier, 8 = Manager-Saison). Ligen werden nach 14 Tagen gelöscht. Vertrag und Limits:
+Öffentliche Lobbys: `GET /api/drafts/public` (volle ausblendbar per „Nur mit freien Plätzen“, „🔥 nur noch 1 Platz frei“ bei fast vollen; mit „🏆 KO-Turnier“/„🏟️ Manager-Saison“ und „✨ Shiny-Party“; beides steckt als Bits in der Spalte `legends` der Lobby-Zeile: 2 = Shiny-Party, 4 = KO-Turnier, 8 = Manager-Saison). Ligen werden nach 14 Tagen gelöscht. Vertrag und Limits:
 `src/lib/api/draftContract.ts`.
 
 Weitere Liga-Funktionen: Pool mit Legendären/Mysteriösen, Ultrabestien, Formen und Megas – je mit Limit
