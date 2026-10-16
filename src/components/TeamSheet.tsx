@@ -67,6 +67,16 @@ export function TeamSheet({ formation, slots, ss, sprite, onRowClick, title, fit
   }));
   if (ss !== undefined) rows.push({ index: SS_INDEX, pos: 'SS', id: ss });
   const filled = rows.filter((r) => r.id != null && r.index !== SS_INDEX).length;
+  // Schwächster Fit der vollen Elf (eindeutig) – dort lohnt ein Tausch am meisten
+  const weakest = (() => {
+    if (!fitScale || filled < 11) return null;
+    const fits = rows
+      .filter((r) => r.id != null && r.index !== SS_INDEX && byId.get(r.id))
+      .map((r) => ({ index: r.index, fit: Math.round(positionFit(byId.get(r.id!)!, r.pos, fitScale)) }));
+    const min = Math.min(...fits.map((f) => f.fit));
+    const at = fits.filter((f) => f.fit === min);
+    return at.length === 1 ? at[0].index : null;
+  })();
 
   return (
     <section className="sheet card" aria-labelledby="sheet-title">
@@ -107,6 +117,13 @@ export function TeamSheet({ formation, slots, ss, sprite, onRowClick, title, fit
                             <span className={`sheet__fit ${fit >= BULLSEYE_FIT ? 'is-bullseye' : ''}`}>
                               <span className="sheet__fit-sep"> · </span>
                               {t.builder.sheet.fit(fit)}
+                              {/* Im Fit-Span, damit es auf dem Handy in derselben Zeile bleibt */}
+                              {r.index === weakest && (
+                                <span className="sheet__weakest" role="img" title={t.builder.sheet.weakest} aria-label={t.builder.sheet.weakest}>
+                                  {' '}
+                                  🔻
+                                </span>
+                              )}
                             </span>
                           );
                         })()}

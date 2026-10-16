@@ -89,6 +89,7 @@ const builder: Messages['builder'] = {
     title: 'Team sheet',
     avgFit: (n) => `avg fit ${n}`,
     fit: (n) => `Fit ${n}`,
+    weakest: 'Weakest fit in the XI – the best place for a swap',
   },
   picker: {
     title: 'Pick a Pokémon',

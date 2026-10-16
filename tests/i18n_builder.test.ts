@@ -135,7 +135,7 @@ describe('Builder auf Englisch', () => {
       const { buildScale, positionFit } = await import('../src/lib/fit');
       const fits = container.querySelectorAll('.sheet__fit').map((f) => f.textContent);
       expect(fits.length).toBeGreaterThanOrEqual(11);
-      for (const f of fits) expect(f).toMatch(/^ · Fit \d+$/);
+      for (const f of fits) expect(f).toMatch(/^ · Fit \d+( 🔻)?$/);
       expect(fits[0]).toBe(` · Fit ${Math.round(positionFit(ALL.find((p) => p.id === 143)!, 'TW', buildScale(ALL, 'all')))}`);
       // Ø Fit der Feldspieler im Kopf (ohne Standardschützen)
       const { FORMATIONS } = await import('../src/config/formations');
@@ -143,6 +143,15 @@ describe('Builder auf Englisch', () => {
       const ids = [143, 9, 68, 76, 130, 65, 112, 3, 25, 6, 135];
       const avg = Math.round(ids.reduce((s, id, i) => s + positionFit(ALL.find((p) => p.id === id)!, FORMATIONS['4-3-3'].slots[i].pos, sc), 0) / 11);
       expect(container.querySelector('.sheet__count')!.textContent).toBe(`avg fit ${avg} · 11/11`);
+      // 🔻 am eindeutig schwächsten Fit der vollen Elf
+      const fitsAll = ids.map((id, i) => Math.round(positionFit(ALL.find((p) => p.id === id)!, FORMATIONS['4-3-3'].slots[i].pos, sc)));
+      const min = Math.min(...fitsAll);
+      const weak = container.querySelectorAll('.sheet__weakest');
+      expect(weak).toHaveLength(fitsAll.filter((f) => f === min).length === 1 ? 1 : 0);
+      if (weak.length) {
+        expect(weak[0].getAttribute('aria-label')).toBe('Weakest fit in the XI – the best place for a swap');
+        expect(weak[0].parentNode!.textContent).toContain(`Fit ${min}`);
+      }
     }
     // Typ-Chips wie auf dem Draft-Board (Standard-Elf)
     {

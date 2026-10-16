@@ -92,6 +92,8 @@ const builder = {
     title: 'Teamblatt',
     avgFit: (n: number) => `Ø Fit ${n}`,
     fit: (n: number) => `Fit ${n}`,
+    /** Eindeutig schwächster Fit der vollen Elf */
+    weakest: 'Schwächster Fit der Elf – hier lohnt ein Tausch',
   },
   picker: {
     title: 'Wähle ein Pokémon',
