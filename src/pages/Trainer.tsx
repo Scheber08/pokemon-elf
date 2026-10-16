@@ -176,6 +176,12 @@ export function Achievements({ me, seen }: { me: MeResponse; seen: Set<string> }
             <h2 id={`ach-${cat}`} className="section-title">
               {tx.category[cat]}{' '}
               <small className="muted">{tx.progressValue(all.filter((a) => a.done).length, all.length)}</small>
+              {all.length > 0 && all.every((a) => a.done) && (
+                <span className="achievements__complete" role="img" title={tx.categoryComplete} aria-label={tx.categoryComplete}>
+                  {' '}
+                  ✅
+                </span>
+              )}
             </h2>
             <ul className="achievements">
               {items.map((a) => (

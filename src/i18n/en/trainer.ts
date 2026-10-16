@@ -26,6 +26,7 @@ const trainer: Messages['trainer'] = {
   reward: (n) => `+${n}`,
   rewardTitle: (n) => `${n} coins`,
   progressAria: (name) => `Progress “${name}”`,
+  categoryComplete: 'Every achievement in this category done',
   progressValue: (v, goal) => `${v}/${goal}`,
   unlocked: (name) => `Achievement unlocked: ${name}`,
   editorTitle: 'Your trainer',

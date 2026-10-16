@@ -997,6 +997,19 @@ describe('DraftLive', () => {
     expect(container.querySelectorAll('.achievement.is-done')).toHaveLength(0);
   });
 
+  it('Erfolge: ✅ an einer Kategorie, deren Erfolge alle geschafft sind', async () => {
+    const { Achievements } = await import('../src/pages/Trainer');
+    const { ACHIEVEMENTS } = await import('../src/lib/achievements');
+    // Alle Challenge-Erfolge geschafft, alle anderen offen
+    const list = ACHIEVEMENTS.map((d) => ({ id: d.id, done: d.category === 'challenge', value: d.category === 'challenge' ? d.goal : 0, goal: d.goal, coins: d.coins }));
+    const { container } = await render(app(h(Achievements, { me: { achievements: list } as never, seen: new Set<string>() })));
+    await settle();
+    const complete = container.querySelectorAll('.achievements__complete');
+    expect(complete).toHaveLength(1);
+    expect(complete[0].getAttribute('aria-label')).toBe('Alle Erfolge dieser Kategorie geschafft');
+    expect((complete[0].parentNode as MiniElement).getAttribute('id')).toBe('ach-challenge');
+  });
+
   it('Tägliche Elf: „Bester Tag“ mit Punkten und Ø, 📅 bester Wochentag', async () => {
     const { DailyStreak } = await import('../src/components/DailyStreak');
     const { recordDailyDay } = await import('../src/lib/dailyHistory');

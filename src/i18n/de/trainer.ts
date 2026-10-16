@@ -25,6 +25,8 @@ const trainer = {
   rewardTitle: (n: number) => `${n} Münzen`,
   /** Name des Fortschrittsbalkens eines Erfolgs (Screenreader) */
   progressAria: (name: string) => `Fortschritt „${name}“`,
+  /** Alle Erfolge einer Kategorie geschafft */
+  categoryComplete: 'Alle Erfolge dieser Kategorie geschafft',
   progressValue: (v: number, goal: number) => `${v}/${goal}`,
   unlocked: (name: string) => `Erfolg freigeschaltet: ${name}`,
   editorTitle: 'Dein Trainer',
