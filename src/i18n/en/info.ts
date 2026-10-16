@@ -50,6 +50,11 @@ const info: Messages['info'] = {
       'Builder: Megas and forms, “Best XI”, sorting by positional fit, undo and redo',
       'Installable as an app (PWA) and link previews for leagues and profiles',
     ],
+    keysTitle: '⌨️ Keyboard shortcuts',
+    keysBuilder: 'Builder',
+    keysDraft: 'Online draft',
+    keysLocal: 'Single-device draft',
+    keysReplay: 'Match replay',
     contactTitle: 'Contact',
     contact:
       'Feedback, bugs or ideas? Ideally as an issue in the project’s repository, or by email to the address given in the operator’s legal notice (Impressum).',

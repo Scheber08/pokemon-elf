@@ -52,6 +52,12 @@ const info = {
       'Builder: Megas und Formen, „Beste Elf“, Sortierung nach Positions-Fit, Rückgängig und Wiederholen',
       'Installierbar als App (PWA) und Link-Vorschauen für Ligen und Profile',
     ],
+    /** Tastenkürzel aller Modi */
+    keysTitle: '⌨️ Tastenkürzel',
+    keysBuilder: 'Builder',
+    keysDraft: 'Online-Draft',
+    keysLocal: 'Draft an einem Gerät',
+    keysReplay: 'Spielwiedergabe',
     contactTitle: 'Kontakt',
     contact:
       'Feedback, Fehler oder Ideen? Am besten als Issue im Repository des Projekts oder per E-Mail an die im Impressum des Betreibers genannte Adresse.',

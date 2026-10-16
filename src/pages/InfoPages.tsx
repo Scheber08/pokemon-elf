@@ -2,6 +2,11 @@ import { Link } from 'react-router-dom';
 import { useT } from '../i18n';
 import { storageUsage } from '../lib/storage';
 
+/** Kürzel-Text ohne Vorspann („⌨️ Tastenkürzel: …“ → „…“) */
+export function keysText(s: string): string {
+  return s.replace(/^⌨️\s*(Tastenkürzel:|Shortcuts:)?\s*/u, '');
+}
+
 export function About() {
   const t = useT();
   const a = t.info.about;
@@ -31,6 +36,22 @@ export function About() {
         <ul>
           {a.news.map((item) => (
             <li key={item}>{item}</li>
+          ))}
+        </ul>
+        <h2 className="section-title">{a.keysTitle}</h2>
+        {/* Alle Tastenkürzel an einer Stelle – dieselben Texte wie in den Modi (ohne „⌨️ Tastenkürzel:“) */}
+        <ul className="about__keys">
+          {(
+            [
+              [a.keysBuilder, t.builder.keysHint],
+              [a.keysDraft, t.online.shortcuts],
+              [a.keysLocal, t.draft.local.shortcuts],
+              [a.keysReplay, t.draft.replay.keysHint],
+            ] as const
+          ).map(([label, keys]) => (
+            <li key={label}>
+              <strong>{label}:</strong> {keysText(keys)}
+            </li>
           ))}
         </ul>
         <h2 className="section-title">{a.contactTitle}</h2>
