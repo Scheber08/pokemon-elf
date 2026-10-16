@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useT } from '../i18n';
 import { dailyNumber, dayKey } from '../lib/daily';
-import { dailyStreak, loadDailyHistory } from '../lib/dailyHistory';
+import { bestWeekday, dailyStreak, loadDailyHistory } from '../lib/dailyHistory';
 import { formatRecord } from '../lib/season';
 
 /** Wie viele Tage das Archiv zeigt */
@@ -92,6 +92,10 @@ export function DailyStreak() {
             });
           })()}
         </ol>
+        {(() => {
+          const wd = bestWeekday(history);
+          return wd && <p className="small daily-streak__weekday">📅 {td.bestWeekday(td.weekdays[wd.weekday], wd.avg, wd.count)}</p>;
+        })()}
         <p className="muted small">{td.archiveNote}</p>
       </details>
     </section>

@@ -40,6 +40,7 @@ const daily: Messages['daily'] = {
   streakHint: 'Play today or your streak ends.',
   archive: 'Your recent days',
   archiveNote: 'Saved on this device.',
+  bestWeekday: (day: string, avg: number, n: number) => `Your best weekday: ${day} (avg ${avg} pts from ${n} games)`,
   archiveRow: (n) => `#${n}`,
   archiveTrend: (diff) => `${diff > 0 ? '+' : '−'}${Math.abs(diff)} points vs. the previous day`,
   archivePlace: (n) => `${ordinal(n)} place`,

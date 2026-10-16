@@ -75,3 +75,32 @@ export function dailyStreak(days: readonly string[], today: string): DailyStreak
   }
   return { current, best };
 }
+
+export interface BestWeekday {
+  /** 0 = Sonntag … 6 = Samstag */
+  weekday: number;
+  avg: number;
+  count: number;
+}
+
+/**
+ * Wochentag mit dem höchsten Punkteschnitt – nur Wochentage mit mindestens zwei Spielen zählen,
+ * und erst wenn es mindestens zwei solche gibt (sonst gibt es nichts zu vergleichen).
+ * Gleichstand: der früher in der Woche (Montag zuerst).
+ */
+export function bestWeekday(history: readonly DailyDay[]): BestWeekday | null {
+  const sums = new Map<number, { pts: number; n: number }>();
+  for (const d of history) {
+    const [y, m, dd] = d.day.split('-').map(Number);
+    const wd = new Date(Date.UTC(y, m - 1, dd)).getUTCDay();
+    const s = sums.get(wd) ?? { pts: 0, n: 0 };
+    s.pts += d.points;
+    s.n++;
+    sums.set(wd, s);
+  }
+  const rows = [...sums].filter(([, s]) => s.n >= 2).map(([weekday, s]) => ({ weekday, avg: s.pts / s.n, count: s.n }));
+  if (rows.length < 2) return null;
+  const order = (w: number) => (w + 6) % 7;
+  rows.sort((a, b) => b.avg - a.avg || order(a.weekday) - order(b.weekday));
+  return { ...rows[0], avg: Math.round(rows[0].avg) };
+}

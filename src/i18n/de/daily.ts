@@ -35,6 +35,7 @@ const daily = {
   streakHint: 'Spiel heute, sonst reißt deine Serie.',
   archive: 'Deine letzten Tage',
   archiveNote: 'Gespeichert auf diesem Gerät.',
+  bestWeekday: (day: string, avg: number, n: number) => `Dein bester Wochentag: ${day} (Ø ${avg} Pkt. aus ${n} Spielen)`,
   archiveRow: (n: number) => `#${n}`,
   archiveTrend: (diff: number) => `${diff > 0 ? '+' : '−'}${Math.abs(diff)} Punkte gegenüber dem vorherigen Tag`,
   archivePlace: (n: number) => `Platz ${n}`,

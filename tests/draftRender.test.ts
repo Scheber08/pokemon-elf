@@ -971,7 +971,7 @@ describe('DraftLive', () => {
     expect(container.querySelectorAll('.achievement.is-done')).toHaveLength(0);
   });
 
-  it('Tägliche Elf: „Bester Tag“ mit Punkten und Ø', async () => {
+  it('Tägliche Elf: „Bester Tag“ mit Punkten und Ø, 📅 bester Wochentag', async () => {
     const { DailyStreak } = await import('../src/components/DailyStreak');
     const { recordDailyDay } = await import('../src/lib/dailyHistory');
     const { dailyNumber } = await import('../src/lib/daily');
@@ -990,6 +990,13 @@ describe('DraftLive', () => {
     expect(rows.map((r) => r.querySelector('.daily-streak__trend')?.textContent ?? null)).toEqual([' ▼12', ' ▲22', null]);
     expect(rows.map((r) => !!r.querySelector('.daily-streak__top'))).toEqual([false, true, false]);
     expect(rows[0].querySelector('.daily-streak__trend')!.getAttribute('title')).toBe('−12 Punkte gegenüber dem vorherigen Tag');
+    // 📅 Bester Wochentag erst ab zwei Wochentagen mit je zwei Spielen (10.10. Sa, 11.10. So)
+    expect(container.querySelector('.daily-streak__weekday')).toBeNull();
+    recordDailyDay(d('2026-10-17', 60));
+    recordDailyDay(d('2026-10-18', 100));
+    const again = await render(app(h(DailyStreak)));
+    await settle();
+    expect(again.container.querySelector('.daily-streak__weekday')!.textContent).toBe('📅 Dein bester Wochentag: Sonntag (Ø 96 Pkt. aus 2 Spielen)');
     localStorage.clear();
   });
 

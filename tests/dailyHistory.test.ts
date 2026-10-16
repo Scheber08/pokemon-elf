@@ -45,3 +45,16 @@ describe('Archiv', () => {
     expect(loadDailyHistory()).toEqual([]);
   });
 });
+
+describe('Bester Wochentag', () => {
+  it('höchster Schnitt unter Wochentagen mit mindestens zwei Spielen', async () => {
+    const { bestWeekday } = await import('../src/lib/dailyHistory');
+    // 2026-10-12 und 2026-10-19 sind Montage, 2026-10-13 und 2026-10-20 Dienstage, 2026-10-14 ein Mittwoch
+    const h = [day('2026-10-12', 20), day('2026-10-19', 22), day('2026-10-13', 30), day('2026-10-20', 31), day('2026-10-14', 34)];
+    expect(bestWeekday(h)).toEqual({ weekday: 2, avg: Math.round((92 + 95) / 2), count: 2 });
+    // Nur ein Wochentag mit zwei Spielen: nichts zu vergleichen
+    expect(bestWeekday(h.slice(0, 3))).toBeNull();
+    // Gleichstand: Montag vor Dienstag
+    expect(bestWeekday([day('2026-10-12'), day('2026-10-19'), day('2026-10-13'), day('2026-10-20')])!.weekday).toBe(1);
+  });
+});
