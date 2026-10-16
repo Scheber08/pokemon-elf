@@ -714,6 +714,8 @@ const draft = {
     fanMood: { euphoria: '😍 Die Fans sind in Euphorie', happy: '🙂 Die Fans sind zufrieden', calm: '😐 Die Fans warten ab', angry: '😠 Unruhe auf den Rängen' },
     routNear: (score: string, left: number) => `💥 Höchster Sieg: ${score} – noch ${left} ${left === 1 ? 'Tor' : 'Tore'} mehr Abstand bis zum Erfolg „Schützenfest“`,
     routDone: (score: string, opp: string) => `💥 Schützenfest: ${score} gegen ${opp} – der Erfolg kommt zum Saisonende`,
+    cleanNear: (n: number, left: number) => `🧱 ${n} Spiele ohne Gegentor – noch ${left} bis „Bollwerk“`,
+    goalsNear: (n: number, left: number) => `🏭 ${n} Tore – noch ${left} bis „Torfabrik“`,
     winRun: (n: number, left: number) => `🏅 ${n} Siege in Folge – noch ${left} bis zum Erfolg „Siegesserie“`,
     linesTitle: 'Tore nach Mannschaftsteil',
     distinctScorers: (n: number) => `👥 ${n} verschiedene Torschützen`,

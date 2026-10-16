@@ -2226,6 +2226,41 @@ describe('ManagerSeason', () => {
     else expect(text).toBe(`💥 Höchster Sieg: ${b.gf}:${b.ga} – noch ${5 - diff} ${5 - diff === 1 ? 'Tor' : 'Tore'} mehr Abstand bis zum Erfolg „Schützenfest“`);
   });
 
+  it('Manager: 🧱 Bollwerk und 🏭 Torfabrik – Fortschritt ab 3 Zu-null-Spielen bzw. 30 Toren', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    const { storedLeague } = await import('../src/lib/leagueTimeline');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    const me = s.teams.findIndex((t) => t.id === 'h');
+    let seen = 0;
+    for (let md = 1; md <= 16 && s.phase === 'season'; md++) {
+      s = playMatchday(s, ALL, SCALE);
+      let clean = 0;
+      let goals = 0;
+      for (const x of storedLeague(s.league, s.teams.length)!.matches) {
+        if (x.home !== me && x.away !== me) continue;
+        if ((x.home === me ? x.ag : x.hg) === 0) clean++;
+        goals += x.home === me ? x.hg : x.ag;
+      }
+      const want = [
+        clean >= 3 && clean < 10 && 10 - clean <= s.manager!.total - s.manager!.played ? `🧱 ${clean} Spiele ohne Gegentor – noch ${10 - clean} bis „Bollwerk“` : null,
+        goals >= 30 && goals < 80 ? `🏭 ${goals} Tore – noch ${80 - goals} bis „Torfabrik“` : null,
+      ].filter(Boolean);
+      if (md % 4 && !want.length) continue;
+      const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+      await settle();
+      const el = container.querySelector('.manager__achnear');
+      if (!want.length) expect(el).toBeNull();
+      else {
+        expect(el!.textContent).toBe(want.join(' · '));
+        seen++;
+      }
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+
   it('Manager: 🏅 Siege in Folge auf dem Weg zum Erfolg „Siegesserie“ (3 bis 6)', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');

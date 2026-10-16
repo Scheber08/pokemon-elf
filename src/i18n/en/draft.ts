@@ -648,6 +648,8 @@ const draft: Messages['draft'] = {
     fanMood: { euphoria: '😍 The fans are euphoric', happy: '🙂 The fans are happy', calm: '😐 The fans are waiting to see', angry: '😠 Unrest in the stands' },
     routNear: (score, left) => `💥 Biggest win: ${score} – ${left} more ${left === 1 ? 'goal' : 'goals'} of margin for the “Goal fest” achievement`,
     routDone: (score, opp) => `💥 Goal fest: ${score} against ${opp} – the achievement arrives at season end`,
+    cleanNear: (n, left) => `🧱 ${n} clean sheets – ${left} more for “Fortress”`,
+    goalsNear: (n, left) => `🏭 ${n} goals – ${left} more for “Goal factory”`,
     winRun: (n, left) => `🏅 ${n} wins in a row – ${left} more for the “Winning run” achievement`,
     linesTitle: 'Goals by unit',
     distinctScorers: (n) => `👥 ${n} different scorers`,

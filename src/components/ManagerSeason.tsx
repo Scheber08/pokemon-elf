@@ -403,6 +403,22 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           return n >= 3 && n < WIN_STREAK_GOAL && <p className="small manager__winrun">{tx.winRun(n, WIN_STREAK_GOAL - n)}</p>;
         })()}
         {you != null && (() => {
+          // 🧱/🏭 Unterwegs zu den Erfolgen „Bollwerk“ (CLEAN_GOAL Spiele ohne Gegentor) und „Torfabrik“ (GOALS_GOAL Tore) – ab 3 Spielen ohne Gegentor (nur solange noch erreichbar) bzw. 30 Toren
+          let clean = 0;
+          let goals = 0;
+          for (const x of shown.matches) {
+            if (x.home !== you && x.away !== you) continue;
+            const home = x.home === you;
+            if ((home ? x.ag : x.hg) === 0) clean++;
+            goals += home ? x.hg : x.ag;
+          }
+          const parts = [
+            clean >= 3 && clean < CLEAN_GOAL && CLEAN_GOAL - clean <= m.total - m.played ? tx.cleanNear(clean, CLEAN_GOAL - clean) : null,
+            goals >= 30 && goals < GOALS_GOAL ? tx.goalsNear(goals, GOALS_GOAL - goals) : null,
+          ].filter(Boolean);
+          return parts.length > 0 && <p className="small manager__achnear">{parts.join(' · ')}</p>;
+        })()}
+        {you != null && (() => {
           // 💥 Unterwegs zum Erfolg „Schützenfest“ (Sieg mit ROUT_GOAL Toren Abstand): höchster eigener Sieg ab 3 Toren Abstand
           let best: { gf: number; ga: number; opp: number } | null = null;
           for (const x of shown.matches) {
@@ -1038,6 +1054,9 @@ const FORMATION_TIP_MIN = 5;
 const WIN_STREAK_GOAL = 7;
 /** Tordifferenz für den Erfolg „Schützenfest“ (rout_5) */
 const ROUT_GOAL = 5;
+/** Ziele der Erfolge „Bollwerk“ (clean_10) und „Torfabrik“ (goals_80) */
+const CLEAN_GOAL = 10;
+const GOALS_GOAL = 80;
 
 /** Ab so vielen gespielten Spieltagen nennt die Aufstellung Bankspieler ohne Einsatz */
 const UNUSED_AFTER = 3;
