@@ -36,7 +36,16 @@ export function StatCards({ stats, showLast = false }: { stats: ChallengeStats; 
       {last && (
         <div className="statcard statcard--last">
           <span className="statcard__label">{t.challenge.lastRun}</span>
-          <span className="statcard__value">{last.score}</span>
+          <span className="statcard__value">
+            {last.score}
+            {/* Dieser Run setzte einen neuen Bestwert */}
+            {last.prevBest != null && last.score > last.prevBest && (
+              <span className="statcard__best" role="img" title={t.challenge.lastRunBest} aria-label={t.challenge.lastRunBest}>
+                {' '}
+                🏅
+              </span>
+            )}
+          </span>
           <span className="statcard__sub">
             {formatRecord(last.record)}
             {last.at != null && <span className="statcard__ago"> · {ago(last.at, t)}</span>}

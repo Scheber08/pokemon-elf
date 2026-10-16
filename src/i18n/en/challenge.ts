@@ -20,6 +20,7 @@ const challenge: Messages['challenge'] = {
   bestRecord: 'Best record',
   runs: 'Runs',
   avgScore: (n) => `avg score ${n}`,
+  lastRunBest: 'New personal best',
   lastRun: 'Last run',
   howItWorks: 'How it works',
   setupAria: 'Set up a run',

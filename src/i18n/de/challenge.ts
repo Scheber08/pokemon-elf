@@ -16,6 +16,8 @@ const challenge = {
   bestRecord: 'Beste Bilanz',
   runs: 'Runs',
   avgScore: (n: number) => `Ø Score ${n}`,
+  /** Karte „Letzter Run“: dieser Run war ein neuer Bestwert */
+  lastRunBest: 'Neuer Bestwert',
   lastRun: 'Letzter Run',
   howItWorks: "So funktioniert's",
   setupAria: 'Run vorbereiten',

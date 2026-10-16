@@ -54,6 +54,12 @@ describe('Challenge-Statistik', () => {
     // Mit Zeitpunkt: „vor …“ hinter der Bilanz (ältere Daten ohne at bleiben wie oben)
     await act(async () => root.render(h(StatCards, { stats: { ...stats, last: { ...stats.last, at: Date.now() - 3 * 3_600_000 } }, showLast: true })));
     expect(container.querySelector('.statcard__ago')!.textContent).toBe(' · vor 3 Std.');
+    expect(container.querySelector('.statcard__best')).toBeNull();
+    // 🏅, wenn dieser Run den bisherigen Bestwert schlug (nicht beim ersten Run)
+    await act(async () => root.render(h(StatCards, { stats: { ...stats, last: { ...stats.last, prevBest: 650 } }, showLast: true })));
+    expect(container.querySelector('.statcard__best')!.getAttribute('aria-label')).toBe('Neuer Bestwert');
+    await act(async () => root.render(h(StatCards, { stats: { ...stats, last: { ...stats.last, prevBest: null } }, showLast: true })));
+    expect(container.querySelector('.statcard__best')).toBeNull();
     // Alte Daten ohne letzten Run: weiter drei Karten
     await act(async () => root.render(h(StatCards, { stats: { ...stats, last: undefined }, showLast: true })));
     expect(container.querySelectorAll('.statcard')).toHaveLength(3);
