@@ -127,3 +127,20 @@
   margin: 0 0 8px;
   font-size: 14px;
 }
+
+/* 📜 Verlauf der Runden im Challenge-Run */
+.run-log {
+  margin: 10px 0;
+  font-size: 14px;
+}
+.run-log summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.run-log ol {
+  margin: 6px 0 0;
+  padding-left: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+}

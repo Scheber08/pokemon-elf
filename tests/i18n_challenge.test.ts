@@ -336,6 +336,14 @@ describe('34–0 Challenge auf Englisch', () => {
         if (v >= RAINBOW_TYPES) expect(chips!.textContent).toContain(`🌈 ${v}`);
       }
     }
+    // 📜 Verlauf der Runden: 12 Runden (11 + Standardschütze), Format „R1 Name → POS“
+    {
+      const log = el.querySelector('.run-log')!;
+      expect(log.querySelector('summary')!.textContent).toBe(`📜 Your rounds (${engineState.picks.length})`);
+      const items = log.querySelectorAll('li').map((li) => li.textContent);
+      expect(items).toHaveLength(engineState.picks.length);
+      expect(items[0]).toMatch(/^R1 .+ → [A-Z]{2,3}( · 🎲 .+)?$/);
+    }
 
     await click(button(el, 'See result'));
     await settle();

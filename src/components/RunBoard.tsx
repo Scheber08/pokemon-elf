@@ -373,6 +373,25 @@ export function RunBoard({
           captain={captain}
         />
       </div>
+      {state.picks.length > 0 && (
+        // 📜 Verlauf: je Runde Pokémon, Position und benutzte Rerolls
+        <details className="run-log">
+          <summary>{tc.logTitle(state.picks.length)}</summary>
+          <ol>
+            {state.picks.map((pk, i) => {
+              const p = data.byId.get(pk.pokemonId);
+              const pos = pk.slot < 11 ? FORMATIONS[formation].slots[pk.slot]?.pos : 'SS';
+              return (
+                <li key={i}>
+                  <span className="muted">{tc.logRound(i + 1)}</span> {p ? t.game.pokemon(p) : `#${pk.pokemonId}`}
+                  {pos && <span className="muted"> → {t.game.posShort[pos]}</span>}
+                  {pk.rerolls.length > 0 && <span className="muted"> · 🎲 {pk.rerolls.map((k) => tc.logReroll[k]).join(', ')}</span>}
+                </li>
+              );
+            })}
+          </ol>
+        </details>
+      )}
       <KitPicker kit={kit} onChange={setKit} cheer={cheer} onCheer={setCheer} />
       <CrestEditor crest={crest} onChange={setCrest} pokemon={[...state.slots, ssEnabled ? state.ss : null].filter((x): x is number => x != null)} />
       <JerseyEditor formation={formation} slots={state.slots} ss={ssEnabled ? state.ss : null} jerseys={jerseys} onChange={setJerseys} />
