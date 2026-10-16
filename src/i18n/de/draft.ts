@@ -639,6 +639,8 @@ const draft = {
     assist: (name: string) => `Vorlage ${name}`,
     /** Laufender Spielstand nach einem Tor */
     running: (home: number, away: number) => `Spielstand ${home}:${away}`,
+    /** Markierung am entscheidenden Tor des Siegers */
+    winner: '🏆 Siegtor',
     setPiece: 'Standard',
     stats: 'Statistik',
     halfTime: (home: number, away: number) => `Halbzeit ${home}:${away}`,

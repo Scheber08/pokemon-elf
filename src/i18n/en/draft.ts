@@ -581,6 +581,7 @@ const draft: Messages['draft'] = {
     assist: (name) => `assist ${name}`,
     /** Running score after a goal */
     running: (home, away) => `Score ${home}:${away}`,
+    winner: '🏆 winner',
     setPiece: 'set piece',
     stats: 'Stats',
     halfTime: (home, away) => `Half-time ${home}:${away}`,

@@ -1,4 +1,4 @@
-/** Spielbericht: laufender Spielstand nach jedem Tor (nur, wenn alle Tore eine Minute haben). */
+/** Spielbericht: laufender Spielstand nach jedem Tor (nur, wenn alle Tore eine Minute haben) und 🏆 Siegtor. */
 import { afterEach, describe, expect, it } from 'vitest';
 import { installMiniDom } from './miniDom';
 
@@ -37,6 +37,26 @@ describe('Spielbericht: laufender Spielstand', () => {
     });
     const stands = body.querySelectorAll('.match-report__running').map((el) => el.textContent);
     expect(stands).toEqual(['1:0Spielstand 1:0', '1:1Spielstand 1:1', '2:1Spielstand 2:1']);
+    // Siegtor: das 2:1 in der 70. Minute
+    const winners = body.querySelectorAll('.match-report__winner');
+    expect(winners.length).toBe(1);
+    expect(winners[0].parentNode!.parentNode!.textContent).toContain('70');
+  });
+
+  it('Siegtor beim Auswärtssieg zu null: das erste Tor; bei Remis keins', () => {
+    let body = render({
+      round: 1, home: 0, away: 1, hg: 0, ag: 2,
+      homeScorers: [],
+      awayScorers: [{ pokemonId: 7, minute: 80 }, { pokemonId: 9, minute: 20 }],
+    });
+    let winners = body.querySelectorAll('.match-report__winner');
+    expect(winners.length).toBe(1);
+    expect(winners[0].parentNode!.parentNode!.textContent).toContain('20');
+    act(() => root?.unmount());
+    body.childNodes.slice().forEach((n) => body.removeChild(n));
+    body = render({ round: 1, home: 0, away: 1, hg: 1, ag: 1, homeScorers: [{ pokemonId: 1, minute: 5 }], awayScorers: [{ pokemonId: 7, minute: 9 }] });
+    winners = body.querySelectorAll('.match-report__winner');
+    expect(winners.length).toBe(0);
   });
 
   it('ohne Minuten (Vereinstore) kein laufender Stand', () => {

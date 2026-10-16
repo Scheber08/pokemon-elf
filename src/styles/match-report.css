@@ -63,6 +63,10 @@
 .match-report__event.is-away .match-report__minute {
   text-align: right;
 }
+.match-report__winner {
+  font-weight: 700;
+  white-space: nowrap;
+}
 .match-report__running {
   font-weight: 700;
   font-variant-numeric: tabular-nums;

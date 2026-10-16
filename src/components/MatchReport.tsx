@@ -147,6 +147,13 @@ function ReportBody({
         return acc;
       }, [])
     : null;
+  // Siegtor: das Tor des Siegers, nach dem der Verlierer nie mehr gleichzieht (Tor Nr. Verlierertore + 1)
+  const winnerIdx = (() => {
+    if (!running || match.hg === match.ag) return -1;
+    const homeWon = match.hg > match.ag;
+    const need = (homeWon ? match.ag : match.hg) + 1;
+    return running.findIndex((r, i) => events[i].home === homeWon && r[homeWon ? 0 : 1] === need);
+  })();
   const st = match.stats;
   const rows: { label: string; home: number; away: number; text?: (v: number) => string }[] = st
     ? [
@@ -179,6 +186,7 @@ function ReportBody({
                     <strong>{who(goal.pokemonId, home)}</strong>
                     {goal.pos === 'SS' && <small className="muted"> ({tx.setPiece})</small>}
                     {goal.assist != null && <small className="muted"> · {tx.assist(who(goal.assist, home))}</small>}
+                    {i === winnerIdx && <small className="match-report__winner"> · {tx.winner}</small>}
                   </>
                 ) : (
                   <strong>{tx.goalOf(nameOf(home ? match.home : match.away))}</strong>
