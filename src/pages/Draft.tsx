@@ -123,6 +123,9 @@ interface DraftState {
 }
 
 
+/** 🧲-Hinweis nur, wenn der nächstbeste Freie der Position mindestens so viel Fit schwächer ist (wie online) */
+const SNATCH_GAP = 5;
+
 /**
  * Namen für CPU-Teams: zuerst Teams aus den Online-Ranglisten (sofern geladen), dann Vereinsnamen –
  * ohne schon vergebene Namen (Groß/klein egal).
@@ -346,6 +349,27 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     });
     return out;
   }, [team, pool, state.phase, scale]);
+  // 🧲 Wie online: Hat ein anderes Team seit dem letzten Zug eines menschlichen Teams dessen besten Freien einer
+  // offenen Position genommen (und der nächstbeste ist mindestens SNATCH_GAP schwächer), kurz melden
+  const bestSeen = useRef<Record<number, { pick: number; best: { id: number; pos: string; fit: number }[] }>>({});
+  useEffect(() => {
+    if (!team || team.cpu || state.phase !== 'drafting') return;
+    const prev = bestSeen.current[currentTeam];
+    bestSeen.current[currentTeam] = { pick: state.pick, best: bestFree.map((b) => ({ id: b.p.id, pos: b.pos, fit: b.fit })) };
+    const log = state.log;
+    if (!prev || prev.pick >= state.pick || !log || log.length !== state.pick) return;
+    for (const e of log.slice(prev.pick)) {
+      if (e.team === currentTeam) continue;
+      const b = prev.best.find((x) => x.id === e.id);
+      if (!b) continue;
+      const next = bestFree.find((x) => x.pos === b.pos);
+      const mon = byId.get(e.id);
+      if (mon && (!next || b.fit - next.fit >= SNATCH_GAP)) {
+        toast(t.online.bestGone(t.game.pokemon(mon), t.game.posShort[b.pos as PosCode], teamName(state.teams[e.team].name)));
+        return;
+      }
+    }
+  }, [currentTeam, state.pick, state.phase, bestFree]);
   // ⏳ Wohl weg, bevor das Team am Zug wieder dran ist (wie online): die k stärksten Freien, k = fremde Picks dazwischen
   const goneSoon = useMemo(() => {
     if (!team || team.cpu || state.phase !== 'drafting') return new Set<number>();
