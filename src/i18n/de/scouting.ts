@@ -31,6 +31,9 @@ const scouting = {
   saving: 'Speichere …',
   saveFailed: 'Tabelle konnte nicht gespeichert werden',
 
+  topTitle: 'Top 3 je Position',
+  topNote: 'Die bestpassenden Pokémon jeder Position aus allen 1.025 – Zahl = Fit (0–100), bei Gleichstand entscheidet der ungedeckelte Profilwert.',
+  topLegends: 'Legendäre und Mysteriöse mitzählen',
   howTitle: 'Wie ein Team bewertet wird',
   howWeights: (w: ScoutingWeights) =>
     `Jedes Pokémon bekommt pro Position einen Fit von 0 bis 100. Der Team-Score (0–1.000) ist der gewichtete Durchschnitt der elf Fits mal zehn. Die Gewichte: Torwart ${w.gk}, jeder Innenverteidiger ${w.cb}, Außenverteidiger und Schienenspieler ${w.fb}, Sechser ${w.dm}, Zentrales Mittelfeld ${w.cm}, Zehner ${w.am}, Außenbahn und Flügel ${w.wide}, Stürmer ${w.st}.`,

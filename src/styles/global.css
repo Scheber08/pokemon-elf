@@ -2377,6 +2377,57 @@ button.sheet__row:hover {
   color: var(--text-dim);
   margin-top: 3px;
 }
+.scouting__top {
+  margin-top: 1rem;
+}
+.scouting__top-legends {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 32px;
+  cursor: pointer;
+}
+.scouting__top-list {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 10px;
+}
+.scouting__top-pos {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.scouting__top-mons {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+}
+.scouting__top-mons li {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: center;
+}
+.scouting__top-sprite {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+.scouting__top-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scouting__top-fit {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--green-text);
+}
 .scouting__mark {
   margin: 14px 0 0;
   font-family: var(--font-head);

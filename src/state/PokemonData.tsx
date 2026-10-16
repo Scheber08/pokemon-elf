@@ -93,3 +93,8 @@ export function usePokemonData(): PokemonData {
   if (!v) throw new Error('usePokemonData außerhalb des Providers');
   return v;
 }
+
+/** Wie usePokemonData, aber ohne Provider (z. B. statisches Rendern) einfach null */
+export function useOptionalPokemonData(): PokemonData | null {
+  return useContext(Ctx);
+}

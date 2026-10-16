@@ -1,14 +1,72 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { TypeBadge } from '../components/Badges';
 import { LevelIcon } from '../components/LevelIcon';
+import { Sprite } from '../components/Sprite';
+import { compositeScore, profileFit } from '../lib/fit';
 import { downloadBlob, nodeToPng } from '../lib/exportImage';
 import { FACTORS, POSITIONS, PROFILES, PROFILE_GROUPS, type Level } from '../config/positions';
 import { SCORING } from '../config/scoring';
 import { SEASON } from '../config/season';
 import { localeOf, useLang, useT } from '../i18n';
+import { useOptionalPokemonData } from '../state/PokemonData';
+import { useSettings } from '../state/Settings';
 import { useToast } from '../state/Toast';
+import type { ProfileKey } from '../types';
 
 const LEVELS: Level[] = [3, 2, 1, 0];
+
+/** Die drei bestpassenden Pokémon (aus den 1.025, Skala „alle“) je Profil – zeigt, wonach das Scouting sucht */
+function TopCandidates() {
+  const t = useT();
+  const s = t.scouting;
+  const data = useOptionalPokemonData();
+  const { sprite } = useSettings();
+  const [legends, setLegends] = useState(false);
+  const top = useMemo(() => {
+    if (!data) return null;
+    const scale = data.scale('all');
+    const pool = legends ? data.list : data.list.filter((p) => !p.leg && !p.myth);
+    const out = {} as Record<ProfileKey, { p: (typeof data.list)[number]; fit: number }[]>;
+    for (const g of PROFILE_GROUPS)
+      for (const key of g.profiles)
+        // Fit ist bei 100 gedeckelt – Gleichstand entscheidet der ungedeckelte Profilwert
+        out[key] = pool
+          .map((p) => ({ p, fit: profileFit(p, key, scale), raw: compositeScore(p, key, scale) }))
+          .sort((a, b) => b.fit - a.fit || b.raw - a.raw || a.p.id - b.p.id)
+          .slice(0, 3);
+    return out;
+  }, [data, legends]);
+  if (!top) return null;
+  return (
+    <section className="card scouting__top" aria-labelledby="scouting-top">
+      <h2 id="scouting-top" className="section-title">
+        🏅 {s.topTitle}
+      </h2>
+      <p className="muted small">{s.topNote}</p>
+      <label className="scouting__top-legends">
+        <input type="checkbox" checked={legends} onChange={(e) => setLegends(e.target.checked)} /> ★ {s.topLegends}
+      </label>
+      <ul className="scouting__top-list">
+        {PROFILE_GROUPS.flatMap((g) => g.profiles).map((key) => (
+          <li key={key}>
+            <span className="scouting__top-pos">
+              <span className="scout-table__codes">{t.game.profileCodes[key]}</span> {t.game.profileTitle[key]}
+            </span>
+            <ol className="scouting__top-mons">
+              {top[key].map(({ p, fit }) => (
+                <li key={p.id}>
+                  <Sprite pokemon={p} style={sprite} className="scouting__top-sprite" />
+                  <span className="scouting__top-name">{t.game.pokemon(p)}</span>
+                  <span className="scouting__top-fit">{Math.round(fit)}</span>
+                </li>
+              ))}
+            </ol>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
 
 export function Scouting() {
   const t = useT();
@@ -108,6 +166,8 @@ export function Scouting() {
           {busy ? s.saving : s.saveTable}
         </button>
       </div>
+
+      <TopCandidates />
 
       <div className="prose-grid">
         <section className="card prose">

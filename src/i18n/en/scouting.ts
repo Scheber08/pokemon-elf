@@ -17,6 +17,9 @@ const scouting: Messages['scouting'] = {
   saving: 'Saving …',
   saveFailed: 'Couldn’t save the table',
 
+  topTitle: 'Top 3 per position',
+  topNote: 'The best-fitting Pokémon for each position out of all 1,025 – number = fit (0–100), ties broken by the uncapped profile score.',
+  topLegends: 'Include legendary and mythical Pokémon',
   howTitle: 'How a team is rated',
   howWeights: (w) =>
     `Every Pokémon gets a fit from 0 to 100 for each position. The team score (0–1,000) is the weighted average of the eleven fits times ten. The weights: goalkeeper ${w.gk}, each centre-back ${w.cb}, full-backs and wing-backs ${w.fb}, holding midfielder ${w.dm}, central midfielder ${w.cm}, playmaker ${w.am}, wide midfielders and wingers ${w.wide}, striker ${w.st}.`,
