@@ -63,6 +63,11 @@
 .match-report__event.is-away .match-report__minute {
   text-align: right;
 }
+.match-report__running {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
 .match-report__stats {
   display: grid;
   gap: 10px;

@@ -637,6 +637,8 @@ const draft = {
     /** Tor eines Teams ohne Kader (Verein) */
     goalOf: (team: string) => `Tor ${team}`,
     assist: (name: string) => `Vorlage ${name}`,
+    /** Laufender Spielstand nach einem Tor */
+    running: (home: number, away: number) => `Spielstand ${home}:${away}`,
     setPiece: 'Standard',
     stats: 'Statistik',
     halfTime: (home: number, away: number) => `Halbzeit ${home}:${away}`,

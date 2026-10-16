@@ -139,6 +139,14 @@ function ReportBody({
   const events: Event[] = [...eventsOf(match.homeScorers, match.hg, true), ...eventsOf(match.awayScorers, match.ag, false)].sort(
     (a, b) => (a.goal?.minute ?? 999) - (b.goal?.minute ?? 999),
   );
+  // Laufender Spielstand nach jedem Tor – nur, wenn jedes Tor eine Minute hat (sonst stimmt die Reihenfolge nicht)
+  const running = events.every((e) => e.goal?.minute != null)
+    ? events.reduce<[number, number][]>((acc, e) => {
+        const [h, a] = acc.length ? acc[acc.length - 1] : [0, 0];
+        acc.push(e.home ? [h + 1, a] : [h, a + 1]);
+        return acc;
+      }, [])
+    : null;
   const st = match.stats;
   const rows: { label: string; home: number; away: number; text?: (v: number) => string }[] = st
     ? [
@@ -156,6 +164,14 @@ function ReportBody({
           {events.map(({ goal, home }, i) => (
             <li key={i} className={`match-report__event ${home ? 'is-home' : 'is-away'}`}>
               <span className="match-report__minute">{goal?.minute != null ? formatMinute(goal.minute) : ''}</span>
+              {running && (
+                <span className="match-report__running">
+                  <span aria-hidden="true">
+                    {running[i][0]}:{running[i][1]}
+                  </span>
+                  <span className="sr-only">{tx.running(running[i][0], running[i][1])}</span>
+                </span>
+              )}
               <span className="match-report__who">
                 <span aria-hidden="true">⚽ </span>
                 {goal ? (
