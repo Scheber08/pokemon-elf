@@ -378,6 +378,8 @@ const draft: Messages['draft'] = {
     regionsTitle: 'Which regions the eleven comes from',
     bullseyes: (n, fit) => `💯 ${n} ${n === 1 ? 'bullseye' : 'bullseyes'} (fit ≥ ${fit})`,
     typeGoals: 'Top-scoring types:',
+    draftType: 'Type of the draft:',
+    draftTypeCount: (n) => `${n} Pokémon`,
     missed: (pick, name, fit, pos, alt, altFit) => `Missed chance: pick ${pick} ${name} (fit ${fit}) – ${alt} (fit ${altFit}) was still free at ${pos}`,
     missedTaken: (team, pick) => `– went to ${team} with pick ${pick}.`,
     missedFree: '– stayed free until the end.',

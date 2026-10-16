@@ -1783,6 +1783,7 @@ button.draft-bench__slot {
 
 /* Ergebnis: Typen mit den meisten Toren unter der Torjägerliste */
 .type-goals,
+.draft-type,
 .pool-stars__types {
   display: flex;
   flex-wrap: wrap;
@@ -1790,7 +1791,8 @@ button.draft-bench__slot {
   gap: 6px 12px;
   margin: 10px 0 0;
 }
-.type-goals__item {
+.type-goals__item,
+.draft-type__item {
   display: inline-flex;
   align-items: center;
   gap: 4px;

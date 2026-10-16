@@ -627,7 +627,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
               })}
             </ol>
           )}
-          <TypeGoals matches={league.matches} byId={byId} />
+          <TypeGoals matches={league.matches} byId={byId} picked={teams.flatMap((tm) => rosterOf(tm))} />
         </section>
 
         <SeasonStats league={league} you={you} nameOf={nameOf} tabs={['assists', 'points', 'teams']} captains={teams.map((tm) => tm?.captain)} />

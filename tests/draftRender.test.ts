@@ -2480,6 +2480,13 @@ describe('ManagerSeason', () => {
       const row = container.querySelector('.type-goals')!;
       expect(row.textContent!.startsWith('Treffsicherste Typen:')).toBe(true);
       expect(row.querySelectorAll('.type-goals__item').map((e) => e.querySelector('strong')!.textContent)).toEqual(top.map((x) => String(x.goals)));
+      // Typ des Drafts: meistgedrafteter Typ (nur bei eindeutigem Höchstwert)
+      const { draftTypeOf } = await import('../src/components/TypeGoals');
+      const byIdAll = new Map(ALL.map((p) => [p.id, p]));
+      const dt = draftTypeOf(s.teams.flatMap((tm) => engine.rosterOf(tm)), byIdAll);
+      const dtEl = container.querySelector('.draft-type');
+      if (!dt) expect(dtEl).toBeNull();
+      else expect(dtEl!.textContent).toMatch(new RegExp(`^Typ des Drafts:.*${dt.n} Pokémon$`));
     }
     // 😬 Verpasste Chance: wie missedChance (ohne Legendäre & Co. als Alternative)
     {

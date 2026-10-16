@@ -1060,7 +1060,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 );
               })}
             </ol>
-            <TypeGoals matches={league.matches} byId={byId} />
+            <TypeGoals matches={league.matches} byId={byId} picked={state.teams.flatMap((tm) => tm.slots.filter((id): id is number => id != null))} />
           </section>
         </div>
         {/* Vorlagen, Scorerpunkte und Teamwerte wie im Online-Draft (Torjäger stehen schon oben) */}
