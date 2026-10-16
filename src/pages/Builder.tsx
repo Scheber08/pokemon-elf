@@ -24,7 +24,7 @@ import { SPRITE_STYLE_LABEL } from '../lib/sprites';
 import { load, save, STORAGE_KEYS } from '../lib/storage';
 import { CAPTAIN_PARAM, decodeCaptain, decodeJerseys, decodeLineup, JERSEY_PARAM, shareUrl, URL_PARAM } from '../lib/urlState';
 import { usePokemonData } from '../state/PokemonData';
-import { RAINBOW_TYPES, TYPES, dominantType, typeVariety } from '../config/pokemonTypes';
+import { TypeChips } from '../components/TypeChips';
 import { useSettings } from '../state/Settings';
 import { useToast } from '../state/Toast';
 import type { FormationId, PosCode, Pokemon, RegionFilter, Slots, SpriteStyle } from '../types';
@@ -320,33 +320,7 @@ export function Builder() {
             {state.teamName}
           </h1>
         )}
-        {(() => {
-          // Typ-Elf (ab 4 desselben Typs) und 🌈 Typen-Regenbogen – wie auf dem Draft-Board
-          const mons = state.slots.flatMap((id) => (id != null && byId.has(id) ? [byId.get(id)!] : []));
-          // (eigene Chips statt DraftTypeChip: der Builder soll die Draft-Engine nicht ins Start-Paket ziehen)
-          const dom = dominantType(mons);
-          const variety = typeVariety(mons);
-          if (!dom && variety < RAINBOW_TYPES) return null;
-          const domLabel = dom ? t.draft.board.typeTitle(t.game.type[dom.type], dom.n) : '';
-          return (
-            <p className="builder__types">
-              {dom && (
-                <span className="builder__type" title={domLabel} style={{ background: TYPES[dom.type].color, color: TYPES[dom.type].text }}>
-                  <span aria-hidden="true">
-                    {t.game.type[dom.type]} ×{dom.n}
-                  </span>
-                  <span className="sr-only">{domLabel}</span>
-                </span>
-              )}
-              {variety >= RAINBOW_TYPES && (
-                <span className="builder__type builder__rainbow" title={t.draft.board.rainbowTitle(variety)}>
-                  <span aria-hidden="true">🌈 {variety}</span>
-                  <span className="sr-only">{t.draft.board.rainbowTitle(variety)}</span>
-                </span>
-              )}
-            </p>
-          );
-        })()}
+        <TypeChips pokemon={state.slots.flatMap((id) => (id != null && byId.has(id) ? [byId.get(id)!] : []))} />
         <Pitch
           formation={state.formation}
           slots={state.slots}

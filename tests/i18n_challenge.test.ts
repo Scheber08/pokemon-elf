@@ -322,6 +322,20 @@ describe('34–0 Challenge auf Englisch', () => {
     expectEnglish(text);
     expect(text).toContain('All spots filled');
     expect(text).toContain('Your XI is ready. Time for the season!');
+    // Typ-Chips über dem Feld (wie im Builder)
+    {
+      const { dominantType, typeVariety, RAINBOW_TYPES } = await import('../src/config/pokemonTypes');
+      const mons = (engineState.slots as (number | null)[]).flatMap((id) => (id != null ? [ALL.find((p) => p.id === id)!] : []));
+      const dom = dominantType(mons);
+      const v = typeVariety(mons);
+      const chips = el.querySelector('.challenge__pitch .builder__types');
+      expect(!!dom || v >= RAINBOW_TYPES).toBe(true);
+      if (!dom && v < RAINBOW_TYPES) expect(chips).toBeNull();
+      else {
+        if (dom) expect(chips!.textContent).toContain(`×${dom.n}`);
+        if (v >= RAINBOW_TYPES) expect(chips!.textContent).toContain(`🌈 ${v}`);
+      }
+    }
 
     await click(button(el, 'See result'));
     await settle();

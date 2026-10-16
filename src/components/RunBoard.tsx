@@ -34,6 +34,7 @@ import { Sprite } from './Sprite';
 import '../styles/run.css';
 import { useCrest } from '../state/useCrest';
 import { usePokemonData } from '../state/PokemonData';
+import { TypeChips } from './TypeChips';
 import { CrestEditor } from './CrestEditor';
 
 /** So lange nach einem Reroll werden weitere Reroll-Klicks ignoriert (Doppelklick-Schutz). */
@@ -359,6 +360,7 @@ export function RunBoard({
       </div>
 
       <div className="challenge__pitch" ref={pitchRef}>
+        <TypeChips pokemon={state.slots.flatMap((id) => (id != null && data.byId.has(id) ? [data.byId.get(id)!] : []))} />
         <Pitch
           formation={formation}
           slots={state.slots}
