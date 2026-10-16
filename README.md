@@ -296,7 +296,7 @@ Dafür gibt es Cosmetics für den selbst gestalteten **Trainer** (`src/lib/train
 Begleiter-Pokémon und Titel. `POST /api/me/buy` kauft atomar (nur wenn die Münzen nach allen Käufen reichen,
 `trainer_items`), `POST /api/me/trainer` speichert den Look (`trainers`, nur Freies und Gekauftes).
 **Saisonartikel** (`season` im Katalog, `itemOnSale`): nur in ihrem Zeitraum kaufbar (Halloween 1.10.–7.11.,
-Weihnachten 1.12.–6.1., Frühling/Ostern 20.3.–30.4., Sommer 21.6.–31.8., Neujahr 27.12.–10.1., Valentinstag 7.–14.2., Herbst 1.–30.9., Fußball-Sommer 1.6.–20.7., Oktoberfest 16.9.–6.10., Karneval 1.2.–10.3., Muttertag 1.–14.5., Schulanfang 1.8.–15.9., Sankt Martin 1.–11.11., Nikolaus 1.–6.12., Erntedank 25.9.–10.10., Winterzauber 11.–31.1., Advent 20.–30.11., Weltkindertag 16.–22.9., Tag der Erde 18.–24.4., Pokémon Day 20.–27.2., Tag der Ozeane 5.–11.6.), sonst `400 not_on_sale`; Gekauftes bleibt tragbar.
+Weihnachten 1.12.–6.1., Frühling/Ostern 20.3.–30.4., Sommer 21.6.–31.8., Neujahr 27.12.–10.1., Valentinstag 7.–14.2., Herbst 1.–30.9., Fußball-Sommer 1.6.–20.7., Oktoberfest 16.9.–6.10., Karneval 1.2.–10.3., Muttertag 1.–14.5., Schulanfang 1.8.–15.9., Sankt Martin 1.–11.11., Nikolaus 1.–6.12., Erntedank 25.9.–10.10., Winterzauber 11.–31.1., Advent 20.–30.11., Weltkindertag 16.–22.9., Tag der Erde 18.–24.4., Pokémon Day 20.–27.2., Tag der Ozeane 5.–11.6., Weltbienentag 17.–23.5.), sonst `400 not_on_sale`; Gekauftes bleibt tragbar.
 
 ## Deploy auf Cloudflare
 

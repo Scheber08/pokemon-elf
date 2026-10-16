@@ -464,6 +464,15 @@ function hat(c: Canvas, id: string, cloth: string) {
         c.fill((x, y) => ear(x, y) && y <= 2, '#26282e', null);
       }
       break;
+    case 'antennae':
+      // Bienen-Fühler (Weltbienentag): schwarzer Haarreif mit zwei gebogenen Fühlern und gelb-schwarzen Kugeln
+      c.fill((x, y) => y === 9 && head(x, y), '#26282e', null);
+      c.dots([[11, 8], [10, 7], [10, 6], [9, 6], [20, 8], [21, 7], [21, 6], [22, 6]], '#26282e');
+      for (const cx of [8, 23]) {
+        c.fill(ellipse(cx, 4, 2.4, 2.1), '#f2c230', null);
+        c.fill((x, y) => ellipse(cx, 4, 2.4, 2.1)(x, y) && y === 5, '#26282e', null);
+      }
+      break;
     case 'wizard':
       c.fill((x, y) => y <= 9 && y >= 0 && Math.abs(x - 15.5) <= 1 + y * 0.9, '#5b3fb0');
       c.rect(6, 9, 20, 2, '#4a3191');

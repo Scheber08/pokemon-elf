@@ -122,6 +122,7 @@ const trainer = {
       advent: 'Adventskranz',
       propeller: 'Propellermütze',
       pikaears: 'Pikachu-Ohren',
+      antennae: 'Bienen-Fühler',
       jester: 'Narrenkappe',
       tyrolean: 'Tirolerhut',
       leaves: 'Herbstkranz',
