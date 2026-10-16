@@ -391,3 +391,14 @@
 .match-pitch__player.is-away .match-pitch__number.is-inside {
   fill: var(--away-text, #0d1b2a);
 }
+.match-pitch__keys {
+  margin: 4px 0 0;
+  text-align: center;
+  text-wrap: balance;
+}
+/* Touch-Geräte ohne Tastatur: Tastenkürzel ausblenden */
+@media (hover: none) {
+  .match-pitch__keys {
+    display: none;
+  }
+}

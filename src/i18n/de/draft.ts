@@ -610,6 +610,7 @@ const draft = {
     pause: 'Pause',
     again: 'Nochmal',
     seek: 'Spielminute',
+    keysHint: '⌨️ Leertaste ⏯ · N nächstes Tor · ← / → ±5 Min.',
     seekKeys: 'Spielminute – ← / → springen 5 Minuten zurück bzw. vor',
     nextGoal: 'Zum nächsten Tor springen (Taste N)',
     playKey: 'Abspielen/Pause (Leertaste)',

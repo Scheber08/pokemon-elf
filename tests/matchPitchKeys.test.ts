@@ -1,4 +1,4 @@
-/** 2D-Wiedergabe: ←/→ springen 5 Spielminuten (Schieberegler folgt, Grenzen 0 und Spielende). */
+/** 2D-Wiedergabe: ←/→ springen 5 Spielminuten (Schieberegler folgt, Grenzen 0 und Spielende), Kürzel-Zeile. */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { installMiniDom, MiniEvent } from './miniDom';
 
@@ -38,6 +38,8 @@ describe('MatchPitch Pfeiltasten', () => {
     const slider = () => host.querySelector('.match-pitch__slider')!;
     expect(Number(slider().value)).toBe(0);
     expect(slider().getAttribute('title')).toContain('5 Minuten');
+    // Kürzel-Zeile unter den Knöpfen
+    expect(host.querySelector('.match-pitch__keys')!.textContent).toBe('⌨️ Leertaste ⏯ · N nächstes Tor · ← / → ±5 Min.');
     key('ArrowRight');
     key('ArrowRight');
     expect(Number(slider().value)).toBe(10);

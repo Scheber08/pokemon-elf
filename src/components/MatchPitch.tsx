@@ -312,6 +312,10 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
           {rate}×
         </button>
       </div>
+      {/* Tastenkürzel – nur mit Maus/Tastatur sichtbar (CSS: hover: none blendet aus) */}
+      <p className="match-pitch__keys small muted">
+        {tx.keysHint}
+      </p>
     </div>
   );
 }
