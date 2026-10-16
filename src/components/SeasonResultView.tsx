@@ -1,3 +1,4 @@
+import { BULLSEYE_FIT } from '../lib/fit';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { FORMATIONS } from '../config/formations';
@@ -484,6 +485,16 @@ export function SeasonResultView({
         </div>
 
         <section className="card result-facts">
+        {(() => {
+          // 🎯 Ø Fit der Elf, 💯 Volltreffer (Fit ≥ 95) und der bestpassende Spieler
+          const fits = run.evaluation.fits.slice(0, input.slots.length);
+          const filled = fits.map((f, i) => ({ f, id: input.slots[i] })).filter((x): x is { f: number; id: number } => x.id != null);
+          if (!filled.length) return null;
+          const avg = Math.round(filled.reduce((a, x) => a + x.f, 0) / filled.length);
+          const bulls = filled.filter((x) => x.f >= BULLSEYE_FIT).length;
+          const top = filled.reduce((a, x) => (x.f > a.f ? x : a));
+          return <p className="small muted result-fit">{tr.fitFacts(avg, bulls, nameOf(top.id), Math.round(top.f))}</p>;
+        })()}
         {(() => {
           // 🏁 Meister rechnerisch fest – nur, wenn das vor dem letzten Spieltag war
           const c = titleClinched(season.league.matches, season.league.teams.length);

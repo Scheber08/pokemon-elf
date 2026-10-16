@@ -382,6 +382,8 @@ describe('34–0 Challenge auf Englisch', () => {
     // 💥 Höchster Sieg / höchste Niederlage (Englisch)
     expect(el.querySelector('.result-extremes')!.textContent).toMatch(/^(Your biggest win: \d+:\d+ against .+?)?( · )?(Your heaviest defeat: \d+:\d+ against .+)?$/);
     // 😊 / 😖 Lieblings- und Angstgegner der Saison (Englisch)
+    // 🎯 Ø Fit, 💯 Volltreffer und bester Spieler der Elf (Englisch)
+    expect(el.querySelector('.result-fit')!.textContent).toMatch(/^🎯 Avg fit \d+( · 💯 \d+ bullseyes? \(fit ≥ 95\))? · best fit: .+ \(\d+\)$/);
     // 🏁 Meister rechnerisch fest (nur, wenn vor dem letzten Spieltag; Englisch)
     {
       const c = el.querySelector('.result-clinched');

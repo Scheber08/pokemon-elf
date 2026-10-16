@@ -41,6 +41,8 @@ const result = {
   ordinal: (n: number) => `${n}.`,
   weakSpots: 'Schwachstellen laut Scouting: ',
   venueRecords: (home: string, away: string) => `🏠 Zu Hause ${home} · ✈️ Auswärts ${away} (S–U–N)`,
+  fitFacts: (avg: number, bulls: number, best: string, fit: number) =>
+    `🎯 Ø Fit ${avg}${bulls ? ` · 💯 ${bulls} Volltreffer (Fit ≥ 95)` : ''} · am besten passte ${best} (${fit})`,
   clinched: (team: string, round: number, left: number, you: boolean) =>
     `🏁 ${you ? 'Du warst' : `${team} war`} schon am ${round}. Spieltag rechnerisch Meister – ${left === 1 ? '1 Spieltag' : `${left} Spieltage`} vor Schluss`,
   runWins: (n: number) => `🔥 Längste Siegesserie: ${n} Spiele`,
