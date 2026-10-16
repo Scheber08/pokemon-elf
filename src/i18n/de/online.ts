@@ -52,6 +52,7 @@ const online = {
   publicTitle: 'Öffentliche Lobbys',
   loading: 'Lädt …',
   refresh: 'Aktualisieren',
+  openOnly: (n: number) => `Nur mit freien Plätzen (${n})`,
   noPublic: 'Gerade wartet keine öffentliche Liga. Erstelle selbst eine – Lobby „Öffentlich".',
   byHost: (host: string, ago: string) => `von ${host} · ${ago}`,
   teamsOf: (n: number, max: number) => `${n}/${max} Teams`,

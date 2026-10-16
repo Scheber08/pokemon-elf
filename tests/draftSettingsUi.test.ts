@@ -517,6 +517,8 @@ describe('/draft (Online-Modus)', () => {
               { code: 'QWE789', name: 'Mix', hostName: 'Mix FC', teams: 1, maxTeams: 2, region: 10, legends: false, pickSeconds: 0, createdAt: Date.now() - 60_000 },
               // Nur Mysteriöse im Pool: Die Spalte legends ist an – das Etikett darf nicht „Legendäre" allein sagen
               { code: 'MYT234', name: 'Myth', hostName: 'Myth FC', teams: 1, maxTeams: 2, region: 1, legends: true, pickSeconds: 30, createdAt: Date.now() - 60_000, shinyParty: true, format: 'cup' },
+              // Volle Lobby: verschwindet mit „Nur mit freien Plätzen“
+              { code: 'FUL234', name: 'Voll', hostName: 'Voll FC', teams: 2, maxTeams: 2, region: 1, legends: false, pickSeconds: 30, createdAt: Date.now() - 30_000 },
             ],
           });
         }
@@ -529,6 +531,13 @@ describe('/draft (Online-Modus)', () => {
     // ✨ Shiny-Party-Badge nur an der Party-Lobby
     expect(container.querySelectorAll('.draft-lobbies__party').map((e) => e.textContent)).toEqual(['✨ Shiny-Party']);
     expect(container.querySelectorAll('.draft-lobbies__format').map((e) => e.textContent)).toEqual(['🏆 KO-Turnier']);
+    // Umschalter „Nur mit freien Plätzen“ (2 freie von 3)
+    expect(container.querySelectorAll('.draft-lobbies__item')).toHaveLength(3);
+    const open = container.querySelector('.draft-lobbies__openonly') as MiniElement;
+    expect(open.textContent).toBe('Nur mit freien Plätzen (2)');
+    await act(async () => open.click());
+    expect(open.getAttribute('aria-pressed')).toBe('true');
+    expect(container.querySelectorAll('.draft-lobbies__name').map((e) => e.textContent)).toEqual(['Mix', 'Myth']);
     const gens = field(container, 'Generationen');
     expect(button(gens, 'Hoenn').getAttribute('aria-pressed')).toBe('true');
     expect(button(gens, 'Kanto').getAttribute('aria-pressed')).toBe('false');

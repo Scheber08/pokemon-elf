@@ -224,6 +224,8 @@ function PublicLobbies() {
   const t = useT();
   const [lobbies, setLobbies] = useState<PublicLobby[] | null>(null);
   const [loading, setLoading] = useState(false);
+  // Nur Lobbys mit freien Plätzen zeigen (Umschalter erscheint nur, wenn es volle gibt)
+  const [openOnly, setOpenOnly] = useState(false);
   /** Fehler der letzten Abfrage – Text erst beim Rendern (folgt der Sprache) */
   const [failure, setFailure] = useState<{ err: unknown } | null>(null);
   const error = failure ? errorText(failure.err, t) : null;
@@ -259,10 +261,16 @@ function PublicLobbies() {
       {lobbies && !lobbies.length && !error && (
         <p className="muted small">{t.online.noPublic}</p>
       )}
+      {lobbies && lobbies.some((l) => l.teams >= l.maxTeams) && (
+        <button type="button" className="btn btn--small btn--ghost draft-lobbies__openonly" aria-pressed={openOnly} onClick={() => setOpenOnly((v) => !v)}>
+          {openOnly ? '✓ ' : ''}
+          {t.online.openOnly(lobbies.filter((l) => l.teams < l.maxTeams).length)}
+        </button>
+      )}
       {lobbies && lobbies.length > 0 && (
         <ul className="draft-lobbies__list">
           {/* Freie Lobbys zuerst (stabil: innerhalb der Gruppen bleibt „neueste zuerst“ vom Server) */}
-          {[...lobbies].sort((a, b) => Number(a.teams >= a.maxTeams) - Number(b.teams >= b.maxTeams)).map((l) => {
+          {[...lobbies].filter((l) => !openOnly || l.teams < l.maxTeams).sort((a, b) => Number(a.teams >= a.maxTeams) - Number(b.teams >= b.maxTeams)).map((l) => {
             const full = l.teams >= l.maxTeams;
             return (
               <li key={l.code} className="draft-lobbies__item">

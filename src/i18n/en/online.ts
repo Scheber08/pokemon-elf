@@ -50,6 +50,7 @@ const online: Messages['online'] = {
   publicTitle: 'Public lobbies',
   loading: 'Loading …',
   refresh: 'Refresh',
+  openOnly: (n) => `Only with open spots (${n})`,
   noPublic: 'No public league is waiting right now. Create one yourself – with the lobby set to “Public”.',
   byHost: (host, ago) => `by ${host} · ${ago}`,
   teamsOf: (n, max) => `${n}/${max} teams`,
