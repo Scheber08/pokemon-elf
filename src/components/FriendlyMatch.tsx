@@ -54,6 +54,8 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
     return [current, ...saved].filter((x): x is Side => !!x);
   }, [byId, tr.friendlyYou]);
   const [choice, setChoice] = useState(0);
+  /** Bisherige Testspiele dieser Paarung (vor dem aktuellen): 1 Sieg, 0 Remis, -1 Niederlage */
+  const [history, setHistory] = useState<number[]>([]);
   const own = sides[Math.min(choice, sides.length - 1)] ?? null;
   const result = useMemo(() => (own ? friendlyMatch(own, opponent, byId, scale('all'), seed) : null), [own, opponent, byId, scale, seed]);
   // Spielwiedergabe (2D/Bericht) – beide Elfen mit ihren Pokémon
@@ -92,6 +94,9 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
       .join(', ');
   const [gf, ga] = result.aggregate;
   const verdict = gf > ga ? tr.friendlyWin : gf < ga ? tr.friendlyLoss : tr.friendlyDraw;
+  // Bilanz aller Testspiele dieser Paarung samt dem aktuellen (erst ab dem zweiten)
+  const outcomes = [...history, Math.sign(gf - ga)];
+  const tally = (v: number) => outcomes.filter((o) => o === v).length;
   return (
     <section className="card friendly" aria-labelledby="friendly-title" aria-live="polite">
       <h3 id="friendly-title" className="section-title">
@@ -100,7 +105,10 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
       {sides.length > 1 && (
         <label className="friendly__pick">
           {tr.friendlyPick}{' '}
-          <select className="input" value={Math.min(choice, sides.length - 1)} onChange={(e) => setChoice(Number(e.target.value))}>
+          <select className="input" value={Math.min(choice, sides.length - 1)} onChange={(e) => {
+              setChoice(Number(e.target.value));
+              setHistory([]);
+            }}>
             {sides.map((x, i) => (
               <option key={i} value={i}>
                 {i === 0 ? tr.friendlyCurrent(x.name) : x.name}
@@ -136,10 +144,20 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
         </strong>{' '}
         – {verdict}
       </p>
+      {outcomes.length > 1 && (
+        <p className="friendly__tally small">{tr.friendlyTally(outcomes.length, tally(1), tally(0), tally(-1))}</p>
+      )}
       <p className="muted small">{tr.friendlyNote}</p>
       <ReplayToggle />
       {report.element}
-      <button type="button" className="btn btn--small" onClick={() => setSeed(newSeed())}>
+      <button
+        type="button"
+        className="btn btn--small"
+        onClick={() => {
+          setHistory((h) => [...h, Math.sign(gf - ga)]);
+          setSeed(newSeed());
+        }}
+      >
         {tr.friendlyAgain}
       </button>
     </section>

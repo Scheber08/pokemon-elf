@@ -58,11 +58,22 @@ describe('Testspiel mit gespeicherter Elf', () => {
     // Die unvollständige Elf fehlt
     expect(options).toEqual(['Builder-Elf (aktuelle Elf)', 'Gespeichert']);
     expect(container.querySelector('h3')!.textContent).toContain('Builder-Elf – Gegner');
+    // Bilanz erst ab dem zweiten Testspiel; „Nochmal spielen" zählt weiter
+    const tally = () => container.querySelector('.friendly__tally')?.textContent ?? null;
+    expect(tally()).toBeNull();
+    const again = () => container.querySelectorAll('button').find((b) => b.textContent === 'Nochmal spielen')!;
+    await act(async () => again().dispatchEvent(new MiniEvent('click', { bubbles: true })));
+    await act(async () => again().dispatchEvent(new MiniEvent('click', { bubbles: true })));
+    const m = tally()!.match(/Bilanz aus 3 Testspielen: (\d+) S · (\d+) U · (\d+) N/)!;
+    expect(m).not.toBeNull();
+    expect(Number(m[1]) + Number(m[2]) + Number(m[3])).toBe(3);
     await act(async () => {
       select.value = '1';
       select.dispatchEvent(new MiniEvent('change', { bubbles: true }));
     });
     expect(container.querySelector('h3')!.textContent).toContain('Gespeichert – Gegner');
+    // Andere Elf: Bilanz beginnt neu
+    expect(tally()).toBeNull();
     await act(async () => root.unmount());
   });
 });

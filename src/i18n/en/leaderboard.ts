@@ -103,6 +103,7 @@ const leaderboard: Messages['leaderboard'] = {
     friendlyLoss: 'The tie goes to your opponent.',
     friendlyScore: (own, opp) => `Team score ${own} : ${opp}`,
     friendlyScorers: (list) => `Goals: ${list}`,
+    friendlyTally: (n, w, d, l) => `📊 Record over ${n} friendlies: ${w} W · ${d} D · ${l} L`,
     friendlyNote: 'Just for fun – doesn’t count for any leaderboard. Rated across all 1,025 Pokémon.',
   },
   profile: {
