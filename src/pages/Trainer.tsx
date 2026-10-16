@@ -162,7 +162,7 @@ export function Achievements({ me, seen }: { me: MeResponse; seen: Set<string> }
           </h2>
           <ul className="achievements">
             {near.map((a) => (
-              <AchievementItem key={a.id} a={a} fresh={false} />
+              <AchievementItem key={a.id} a={a} fresh={false} left />
             ))}
           </ul>
         </section>
@@ -195,8 +195,8 @@ export function Achievements({ me, seen }: { me: MeResponse; seen: Set<string> }
   );
 }
 
-/** Ein Erfolg: Name, Beschreibung, Fortschritt und Belohnung */
-export function AchievementItem({ a, fresh }: { a: MeResponse['achievements'][number]; fresh: boolean }) {
+/** Ein Erfolg: Name, Beschreibung, Fortschritt und Belohnung (mit `left` auch „noch n“ unter dem Balken) */
+export function AchievementItem({ a, fresh, left = false }: { a: MeResponse['achievements'][number]; fresh: boolean; left?: boolean }) {
   const tx = useT().trainer;
   const text = tx.list[a.id] ?? { name: a.id, desc: '' };
   return (
@@ -222,6 +222,7 @@ export function AchievementItem({ a, fresh }: { a: MeResponse['achievements'][nu
             <span style={{ width: `${(a.value / a.goal) * 100}%` }} />
           </span>
         )}
+        {left && !a.done && a.goal > a.value && <span className="achievement__left">{tx.left(a.goal - a.value)}</span>}
       </div>
       <span className="achievement__reward" title={tx.rewardTitle(a.coins)}>
         {a.done ? tx.done : a.goal > 1 ? tx.progressValue(a.value, a.goal) : ''}

@@ -43,6 +43,10 @@ describe('Erfolge', () => {
     expect(bar.getAttribute('role')).toBe('progressbar');
     expect(bar.getAttribute('aria-label')).toBe('Fortschritt „x-unbekannt“');
     expect(bar.getAttribute('aria-valuenow')).toBe('4');
+    // „noch n“ nur mit `left` (Fast geschafft)
+    expect(container.querySelector('.achievement__left')).toBeNull();
+    await act(async () => root.render(h('ul', null, h(AchievementItem, { a, fresh: false, left: true } as never))));
+    expect(container.querySelector('.achievement__left')!.textContent).toBe('noch 6');
     await act(async () => root.unmount());
   });
 });
