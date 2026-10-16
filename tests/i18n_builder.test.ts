@@ -137,6 +137,12 @@ describe('Builder auf Englisch', () => {
       expect(fits.length).toBeGreaterThanOrEqual(11);
       for (const f of fits) expect(f).toMatch(/^ · Fit \d+$/);
       expect(fits[0]).toBe(` · Fit ${Math.round(positionFit(ALL.find((p) => p.id === 143)!, 'TW', buildScale(ALL, 'all')))}`);
+      // Ø Fit der Feldspieler im Kopf (ohne Standardschützen)
+      const { FORMATIONS } = await import('../src/config/formations');
+      const sc = buildScale(ALL, 'all');
+      const ids = [143, 9, 68, 76, 130, 65, 112, 3, 25, 6, 135];
+      const avg = Math.round(ids.reduce((s, id, i) => s + positionFit(ALL.find((p) => p.id === id)!, FORMATIONS['4-3-3'].slots[i].pos, sc), 0) / 11);
+      expect(container.querySelector('.sheet__count')!.textContent).toBe(`avg fit ${avg} · 11/11`);
     }
     // Typ-Chips wie auf dem Draft-Board (Standard-Elf)
     {

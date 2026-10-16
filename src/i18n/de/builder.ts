@@ -86,6 +86,7 @@ const builder = {
   },
   sheet: {
     title: 'Teamblatt',
+    avgFit: (n: number) => `Ø Fit ${n}`,
     fit: (n: number) => `Fit ${n}`,
   },
   picker: {

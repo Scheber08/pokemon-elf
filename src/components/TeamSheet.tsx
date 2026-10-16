@@ -74,7 +74,18 @@ export function TeamSheet({ formation, slots, ss, sprite, onRowClick, title, fit
         <h2 id="sheet-title" className="section-title">
           {title ?? t.builder.sheet.title}
         </h2>
-        <span className="sheet__count">{filled}/11</span>
+        <span className="sheet__count">
+          {(() => {
+            // Ø Fit der aufgestellten Feldspieler (ohne Standardschützen) – nur mit Skala
+            if (!fitScale) return null;
+            const fits = rows.flatMap((r) => {
+              const p = r.id != null && r.index !== SS_INDEX ? byId.get(r.id) : undefined;
+              return p ? [positionFit(p, r.pos, fitScale)] : [];
+            });
+            return fits.length > 0 && <span className="sheet__avg">{t.builder.sheet.avgFit(Math.round(fits.reduce((a, b) => a + b, 0) / fits.length))} · </span>;
+          })()}
+          {filled}/11
+        </span>
       </header>
       <ol className="sheet__list">
         {rows.map((r) => {

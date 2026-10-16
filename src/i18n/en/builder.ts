@@ -88,6 +88,7 @@ const builder: Messages['builder'] = {
   },
   sheet: {
     title: 'Team sheet',
+    avgFit: (n) => `avg fit ${n}`,
     fit: (n) => `Fit ${n}`,
   },
   picker: {
