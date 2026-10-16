@@ -126,11 +126,13 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
           const ownGoals = ownHome ? m.hg : m.ag;
           const oppGoals = ownHome ? m.ag : m.hg;
           const ownScorers = scorers(ownHome ? m.homeScorers : m.awayScorers);
+          const oppScorers = scorers(ownHome ? m.awayScorers : m.homeScorers);
           return (
             <li key={i}>
               <strong>{i === 0 ? tr.friendlyFirst : tr.friendlySecond}:</strong>{' '}
               {ownHome ? `${own.name} ${ownGoals}:${oppGoals} ${opponent.name}` : `${opponent.name} ${oppGoals}:${ownGoals} ${own.name}`}
               {ownScorers && <small className="muted friendly__scorers"> · {tr.friendlyScorers(ownScorers)}</small>}
+              {oppScorers && <small className="muted friendly__scorers friendly__scorers--opp"> · {tr.friendlyOppScorers(opponent.name, oppScorers)}</small>}
               {report.open && (
                 <button type="button" className="btn btn--small btn--ghost friendly__report" onClick={() => report.open?.(m)}>
                   {t.draft.report.title}

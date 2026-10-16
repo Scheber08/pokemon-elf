@@ -110,6 +110,7 @@ const leaderboard = {
     friendlyDraw: 'Unentschieden über beide Spiele.',
     friendlyLoss: 'Das Duell geht an den Gegner.',
     friendlyScore: (own: number, opp: number) => `Team-Score ${own} : ${opp}`,
+    friendlyOppScorers: (team: string, names: string) => `${team}: ${names}`,
     friendlyScorers: (list: string) => `Tore: ${list}`,
     friendlyOdds: (w: number, d: number, l: number) => `📈 Prognose aus 100 Testspielen: ${w} % Sieg · ${d} % Remis · ${l} % Niederlage`,
     friendlyTally: (n: number, w: number, d: number, l: number) => `📊 Bilanz aus ${n} Testspielen: ${w} S · ${d} U · ${l} N`,

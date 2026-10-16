@@ -62,6 +62,14 @@ describe('Testspiel mit gespeicherter Elf', () => {
     const odds = () => container.querySelector('.friendly__odds')!.textContent!;
     expect(odds()).toMatch(/^📈 Prognose aus 100 Testspielen: \d+ % Sieg · \d+ % Remis · \d+ % Niederlage$/);
     const before = odds();
+    // Torschützen beider Seiten: Gegner-Zeile genau dann, wenn der Gegner im Spiel getroffen hat
+    for (const li of container.querySelectorAll('.friendly__legs li')) {
+      const m = li.textContent!.match(/(?:Builder-Elf (\d+):(\d+) Gegner|Gegner (\d+):(\d+) Builder-Elf)/)!;
+      const oppGoals = Number(m[2] ?? m[3]);
+      const opp = li.querySelector('.friendly__scorers--opp');
+      expect(!!opp).toBe(oppGoals > 0);
+      if (opp) expect(opp.textContent).toMatch(/^ · Gegner: .+/);
+    }
     // Bilanz erst ab dem zweiten Testspiel; „Nochmal spielen" zählt weiter
     const tally = () => container.querySelector('.friendly__tally')?.textContent ?? null;
     expect(tally()).toBeNull();
