@@ -13,6 +13,7 @@ import { FriendlyMatch } from './FriendlyMatch';
 import { Modal } from './Modal';
 import { Pitch } from './Pitch';
 import { TeamSheet } from './TeamSheet';
+import { TypeChips } from './TypeChips';
 import '../styles/leaderboard.css';
 
 /** Was die Tabellenzeile schon weiß – sofort sichtbar, auch während das Team noch lädt. */
@@ -128,6 +129,8 @@ export function EntryDialog({ source, onClose, onReloadBoard }: Props) {
       content = (
         <div className="entry__team">
           <div className="entry__pitch">
+            {/* Typ-Elf und 🌈 Regenbogen wie im Builder */}
+            <TypeChips pokemon={d.slots.flatMap((id) => (id != null && byId.has(id) ? [byId.get(id)!] : []))} />
             <Pitch formation={d.formation} slots={d.slots} ss={ss} sprite={sprite} captain={d.captain ?? null} ariaLabel={tr.pitchAria(info.teamName || player, d.formation)} />
           </div>
           <TeamSheet formation={d.formation} slots={d.slots} ss={ss} sprite={sprite} title={tr.sheetTitle} />

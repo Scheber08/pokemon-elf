@@ -514,6 +514,9 @@ describe('Rangliste: Team ansehen (online)', () => {
     expect(d.querySelector('.sheet .section-title')?.textContent).toBe('Aufstellung');
     expect(sheetNames(d)).toEqual([...ELF, SS].map((id) => mon(id).de));
     expect(d.querySelectorAll('.sheet button')).toHaveLength(0);
+
+    // Typ-Chips wie im Builder (diese Elf hat 11 verschiedene Typen → 🌈)
+    expect(d.querySelector('.builder__types')?.textContent).toContain('🌈 11');
   });
 
   it('Schließen (Knopf, ✕, Esc) gibt den Fokus an den Team-Knopf der Zeile zurück', async () => {
