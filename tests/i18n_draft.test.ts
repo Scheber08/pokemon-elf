@@ -760,6 +760,8 @@ describe('/draft an einem Gerät auf Englisch', () => {
       if (el) expect(el.textContent).toMatch(/^🃏 Joker of the draft: .+ \(only pick \d+\) scored \d+ for .+$/);
       if (joker) expect(el).not.toBeNull();
     }
+    // ⚽ own picks that scored (English)
+    expect(r.container.querySelector('.draft__you .draft__ownscorers')!.textContent).toMatch(/^⚽ \d+ of your 11 picks found the net$/);
     // 1️⃣ First pick with its season record (English): pick #1 went to My Team
     expect(r.container.querySelector('.draft-results__first')!.textContent).toMatch(/^1️⃣ First pick: .+ \(My Team\) – \d+ goals?, \d+ assists?$/);
     // Expectation vs. result under the human team's place (English)

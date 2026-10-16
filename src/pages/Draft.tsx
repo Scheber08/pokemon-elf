@@ -1023,6 +1023,13 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   const ranks = attackDefenseRanks(league.table, r.team);
                   return ranks && <small className="draft__ranks">{t.draft.results.attackDefense(ranks.gf, ranks.gfRank, ranks.ga, ranks.gaRank)}</small>;
                 })()}
+                {(() => {
+                  // ⚽ Picks dieses Teams mit Saisontor (wie online)
+                  const roster = state.teams[r.team].slots.filter((id): id is number => id != null);
+                  if (!roster.length) return null;
+                  const scored = new Set(playerTallies(league).filter((x) => x.teamIndex === r.team && x.goals > 0).map((x) => x.pokemonId));
+                  return <small className="draft__ownscorers">{t.draft.results.ownScorers(roster.filter((id) => scored.has(id)).length, roster.length)}</small>;
+                })()}
               </p>
             ) : null,
           )}
