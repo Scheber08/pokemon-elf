@@ -98,6 +98,7 @@ const draft: Messages['draft'] = {
     titlesCount: (n) => (n === 1 ? '🏆 1 title' : `🏆 ${n} titles`),
     titlesNote: (n) => `Champions of ${n} local leagues on this device (same team name = same club).`,
     bestFree: 'Best available:',
+    shortcuts: '⌨️ Shortcuts: / search · V suggestion · R 🎲 random · Z undo · arrows + Enter select · ? this help',
     elevenDone: (team, avg) => `✅ ${team}’s eleven is complete – avg fit ${avg}`,
     mark: 'Shortlist',
     marked: 'shortlisted',

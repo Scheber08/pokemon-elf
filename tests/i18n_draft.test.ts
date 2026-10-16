@@ -887,6 +887,10 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(container.querySelector('.draft__last')!.textContent).toBe(`Last pick: ${pool[2].en} → ${clubEn(CLUB_NAMES[0])}`);
     // Taste Z wirkt wie der Knopf
     const { MiniEvent } = await import('./miniDom');
+    // Taste ? zeigt die Tastenkürzel (mit Z)
+    const help = Object.assign(new MiniEvent('keydown', { bubbles: true, cancelable: true }), { key: '?', ctrlKey: false, metaKey: false, altKey: false });
+    await act(async () => void window.dispatchEvent(help as unknown as Event));
+    expect(container.querySelectorAll('.toast').map((e) => e.textContent)).toContain('⌨️ Shortcuts: / search · V suggestion · R 🎲 random · Z undo · arrows + Enter select · ? this help');
     const ev = Object.assign(new MiniEvent('keydown', { bubbles: true, cancelable: true }), { key: 'z', ctrlKey: false, metaKey: false, altKey: false });
     await act(async () => void window.dispatchEvent(ev as unknown as Event));
     const saved = JSON.parse(localStorage.getItem('pokemon-elf:draft')!);

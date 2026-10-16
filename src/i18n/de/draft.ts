@@ -99,6 +99,7 @@ const draft = {
     titlesCount: (n: number) => (n === 1 ? '🏆 1 Titel' : `🏆 ${n} Titel`),
     titlesNote: (n: number) => `Meister aus ${n} lokalen Ligen auf diesem Gerät (gleicher Teamname = gleicher Verein).`,
     bestFree: 'Beste Freie:',
+    shortcuts: '⌨️ Tastenkürzel: / Suche · V Vorschlag · R 🎲 Zufall · Z Rückgängig · Pfeile + Enter auswählen · ? diese Hilfe',
     elevenDone: (team: string, avg: number) => `✅ Die Elf von ${team} steht – Ø Fit ${avg}`,
     mark: 'Merken',
     marked: 'gemerkt',

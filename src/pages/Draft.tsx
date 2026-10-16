@@ -482,6 +482,8 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   suggestRef.current = suggest;
   const randomRef = useRef(randomPick);
   randomRef.current = randomPick;
+  const helpRef = useRef(() => {});
+  helpRef.current = () => toast(tx.shortcuts);
   // Taste Z: Rückgängig (nur wenn der Knopf da ist)
   const undoRef = useRef<(() => void) | null>(null);
   undoRef.current = canUndo ? undo : null;
@@ -490,8 +492,14 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
       const key = e.key.toLowerCase();
-      if (key !== 'v' && key !== 'z' && key !== 'r') return;
+      if (key !== 'v' && key !== 'z' && key !== 'r' && key !== '?') return;
       if (typingElsewhere(e.target)) return;
+      if (key === '?') {
+        // Übersicht der Tastenkürzel (wie online, dazu Z)
+        e.preventDefault();
+        helpRef.current();
+        return;
+      }
       if (key === 'z') {
         if (!undoRef.current) return;
         e.preventDefault();
