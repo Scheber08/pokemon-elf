@@ -21,6 +21,7 @@ import { biggestUpset, currentRun, biggestWin, goalFest, fastestPicker, longestW
   seasonFinishAt,
   secondsToKickoff,
   topScorers,
+  weightExtremes,
 } from '../src/lib/leagueTimeline';
 import { createRng } from '../src/lib/rng';
 import { buildTable, simulateLeague, type LeagueResult, type LeagueTeam } from '../src/lib/season';
@@ -645,5 +646,20 @@ describe('Tore nach Typ', () => {
     const tied = (['flying', 'water'] as const).slice().sort((a, b) => TYPE_KEYS.indexOf(a) - TYPE_KEYS.indexOf(b));
     expect(goalsByType(matches, byId)).toEqual([{ type: 'fire', goals: 4 }, ...tied.map((type) => ({ type, goals: 2 }))]);
     expect(goalsByType([], byId)).toEqual([]);
+  });
+});
+
+describe('weightExtremes', () => {
+  const kg: Record<number, number> = { 1: 6.9, 2: 100, 3: 0.1, 4: 50.05 };
+  const w = (id: number) => kg[id];
+  it('findet schwerstes und leichtestes Team (Summe, auf 0,1 gerundet)', () => {
+    expect(weightExtremes([[1, 3], [2, 4], [1]], w)).toEqual({ heavy: { team: 1, kg: 150.1 }, light: { team: 2, kg: 6.9 } });
+  });
+  it('überspringt leere Kader und braucht mindestens zwei', () => {
+    expect(weightExtremes([[], [2]], w)).toBeNull();
+    expect(weightExtremes([[], [2], [3]], w)).toEqual({ heavy: { team: 1, kg: 100 }, light: { team: 2, kg: 0.1 } });
+  });
+  it('bei Gleichstand das erste Team, unbekannte IDs zählen 0', () => {
+    expect(weightExtremes([[2], [2], [99]], w)).toEqual({ heavy: { team: 0, kg: 100 }, light: { team: 2, kg: 0 } });
   });
 });

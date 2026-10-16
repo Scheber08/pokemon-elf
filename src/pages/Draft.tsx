@@ -9,7 +9,7 @@ import { DraftPickFeed, DraftTypeChip, KindMarks, RoundBest } from '../component
 import type { FeedItem } from '../state/useDraftRoom';
 import { PoolStars, poolStars, scarceFor, StarsLanded } from '../components/PoolStars';
 import { LeagueNumbers } from '../components/LeagueNumbers';
-import { attackDefenseRanks, dreamDuo, formatDuration } from '../lib/leagueTimeline';
+import { attackDefenseRanks, dreamDuo, formatDuration, weightExtremes } from '../lib/leagueTimeline';
 import { TypeGoals } from '../components/TypeGoals';
 import { DraftProgress } from '../components/DraftProgress';
 import { Confetti } from '../components/Confetti';
@@ -1305,6 +1305,22 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     <dd>{r.recordDrawsLine(nameOf(draws.team), draws.d)}</dd>
                   </div>
                 )}
+                {(() => {
+                  // ⚖️ Schwergewicht und 🪶 Federgewicht (wie online)
+                  const wx = weightExtremes(state.teams.map((tm) => tm.slots.filter((id): id is number => id != null)), (id) => byId.get(id)?.w);
+                  return wx ? (
+                    <>
+                      <div className="draft-records__heavy">
+                        <dt>{r.recordHeavy}</dt>
+                        <dd>{r.recordWeightLine(nameOf(wx.heavy.team), wx.heavy.kg)}</dd>
+                      </div>
+                      <div className="draft-records__light">
+                        <dt>{r.recordLight}</dt>
+                        <dd>{r.recordWeightLine(nameOf(wx.light.team), wx.light.kg)}</dd>
+                      </div>
+                    </>
+                  ) : null;
+                })()}
                 {(() => {
                   const clean = mostCleanSheets(league.matches, tb.map((x) => x.team));
                   return clean ? (
