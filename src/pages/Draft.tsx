@@ -9,7 +9,7 @@ import { DraftPickFeed, DraftTypeChip, KindMarks, RoundBest } from '../component
 import type { FeedItem } from '../state/useDraftRoom';
 import { PoolStars, poolStars, scarceFor, StarsLanded } from '../components/PoolStars';
 import { LeagueNumbers } from '../components/LeagueNumbers';
-import { attackDefenseRanks, dreamDuo, formatDuration, weightExtremes } from '../lib/leagueTimeline';
+import { attackDefenseRanks, dreamDuo, formatDuration, playerTallies, weightExtremes } from '../lib/leagueTimeline';
 import { TypeGoals } from '../components/TypeGoals';
 import { DraftProgress } from '../components/DraftProgress';
 import { Confetti } from '../components/Confetti';
@@ -1287,6 +1287,14 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 const mon = joker ? byId.get(joker.pokemonId) : undefined;
                 if (!joker || !mon) return null;
                 return <p className="draft-results__steal draft-results__joker">{r.joker(t.game.pokemon(mon), joker.pick + 1, nameOf(joker.team), joker.goals)}</p>;
+              })()}
+              {(() => {
+                // 1️⃣ Erster Pick mit Saisonbilanz (wie online)
+                const first = state.log?.[0];
+                const mon = first ? byId.get(first.id) : undefined;
+                if (!first || !mon) return null;
+                const tally = playerTallies(league).find((x) => x.teamIndex === first.team && x.pokemonId === first.id);
+                return <p className="draft-results__steal draft-results__first">{r.firstPick(t.game.pokemon(mon), nameOf(first.team), tally?.goals ?? 0, tally?.assists ?? 0)}</p>;
               })()}
               <LeagueNumbers matches={league.matches} />
               <dl className="draft-records">
