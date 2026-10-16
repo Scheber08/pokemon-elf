@@ -654,6 +654,7 @@ const draft: Messages['draft'] = {
     cleanNear: (n, left) => `🧱 ${n} clean sheets – ${left} more for “Fortress”`,
     goalsNear: (n, left) => `🏭 ${n} goals – ${left} more for “Goal factory”`,
     goalGap: (pts) => (pts === 0 ? ' (level on points)' : ` (${pts} ${pts === 1 ? 'point' : 'points'} behind)`),
+    vsTop: (record, games) => `🔝 Against the top 4: ${record} (W–D–L, ${games === 1 ? '1 game' : `${games} games`})`,
     winRun: (n, left) => `🏅 ${n} wins in a row – ${left} more for the “Winning run” achievement`,
     linesTitle: 'Goals by unit',
     distinctScorers: (n) => `👥 ${n} different scorers`,

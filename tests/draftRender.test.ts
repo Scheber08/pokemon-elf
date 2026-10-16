@@ -2087,6 +2087,24 @@ describe('ManagerSeason', () => {
     const f = container.querySelector('.manager__rival-formation');
     if (lineup) expect(f!.textContent!.trimEnd()).toBe(` · spielt ${lineup.formation}`);
     else expect(f).toBeNull();
+    // 🔝 Eigene Bilanz gegen die aktuellen Top 4 (ohne sich selbst)
+    {
+      const top = new Set(league.table.filter((r) => r.team !== me).slice(0, 4).map((r) => r.team));
+      const rec = { w: 0, d: 0, l: 0 };
+      for (const x of league.matches) {
+        const opp = x.home === me ? x.away : x.away === me ? x.home : null;
+        if (opp == null || !top.has(opp)) continue;
+        const gf = x.home === me ? x.hg : x.ag;
+        const ga = x.home === me ? x.ag : x.hg;
+        if (gf > ga) rec.w++;
+        else if (gf === ga) rec.d++;
+        else rec.l++;
+      }
+      const games = rec.w + rec.d + rec.l;
+      const el = container.querySelector('.manager__vstop');
+      if (!games) expect(el).toBeNull();
+      else expect(el!.textContent).toBe(`🔝 Gegen die Top 4: ${formatRecord(rec)} (S–U–N, ${games === 1 ? '1 Spiel' : `${games} Spiele`})`);
+    }
     // ⏮️ Letztes Spiel des Gegners
     const lastM = league.matches.filter((x) => x.home === rival || x.away === rival).sort((a, b) => b.round - a.round)[0];
     const lgf = lastM.home === rival ? lastM.hg : lastM.ag;

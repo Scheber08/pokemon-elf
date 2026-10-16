@@ -342,6 +342,23 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             </p>
           );
         })()}
+        {you != null && m.played >= 3 && (() => {
+          // 🔝 Bilanz gegen die aktuellen Top 4 (ohne dich selbst)
+          const top = new Set(shown.table.filter((r) => r.team !== you).slice(0, 4).map((r) => r.team));
+          let w = 0;
+          let d = 0;
+          let l = 0;
+          for (const x of shown.matches) {
+            const opp = x.home === you ? x.away : x.away === you ? x.home : null;
+            if (opp == null || !top.has(opp)) continue;
+            const gf = x.home === you ? x.hg : x.ag;
+            const ga = x.home === you ? x.ag : x.hg;
+            if (gf > ga) w++;
+            else if (gf === ga) d++;
+            else l++;
+          }
+          return w + d + l > 0 && <p className="small muted manager__vstop">{tx.vsTop(formatRecord({ w, d, l }), w + d + l)}</p>;
+        })()}
         {you != null && (() => {
           // 📣 Fan-Stimmung aus den letzten fünf Spielen
           const mood = fanMood(recentForm(shown.matches, you, m.played));
