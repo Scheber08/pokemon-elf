@@ -791,6 +791,14 @@ describe('Rangliste: Team ansehen (online)', () => {
       [' Mo', 'Montag'],
       [' Mo', 'Montag'],
     ]);
+    // Heute: Uhrzeit des Eintrags statt Wochentag
+    expect(c.querySelectorAll('.lb-time')).toHaveLength(0);
+    const today = c.querySelectorAll('[role="radio"]').find((b) => b.textContent === 'Heute')!;
+    await click(today);
+    await settle();
+    const time = new Date('2026-10-12T08:00:00.000Z').toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+    expect(c.querySelectorAll('.lb-time').map((x) => x.textContent)).toEqual([` ${time}`, ` ${time}`, ` ${time}`]);
+    expect(c.querySelectorAll('abbr.lb-day')).toHaveLength(0);
   });
 
   it('Sprites folgen der Einstellung des Nutzers – im Dialog und im Builder-Link', async () => {

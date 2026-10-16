@@ -12,6 +12,8 @@ const leaderboard = {
   freshTitle: 'In der letzten Stunde eingetragen',
   yourRank: 'Deine Platzierung',
   /** Eigene Zeile: Abstand zum nächstbesseren Platz */
+  /** Heute: Uhrzeit eines Eintrags (Ortszeit, 24 h) */
+  entryTime: (d: Date) => d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
   gapToNext: (pts: number, rank: number) => `noch ${pts} Pkt bis Platz ${rank}`,
   gapToFirst: (pts: number) => `noch ${pts} Pkt bis Platz 1`,
   yourRankGap: (pts: number, top: number) => `noch ${pts} Pkt bis in die Top ${top}`,

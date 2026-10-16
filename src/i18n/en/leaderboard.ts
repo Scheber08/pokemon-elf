@@ -28,6 +28,7 @@ const leaderboard: Messages['leaderboard'] = {
   colScore: 'Score',
   freshTitle: 'Entered in the last hour',
   yourRank: 'Your position',
+  entryTime: (d) => d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
   gapToNext: (pts, rank) => `${pts} pts behind ${ordinal(rank)} place`,
   gapToFirst: (pts) => `${pts} pts behind 1st place`,
   yourRankGap: (pts, top) => `${pts} pts short of the top ${top}`,
