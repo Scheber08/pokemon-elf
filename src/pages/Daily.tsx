@@ -407,7 +407,7 @@ export function Daily() {
         <div className="challenge__setup">
           <div>
             <HowItWorks>{t.daily.howTo}</HowItWorks>
-            <StatCards stats={run.stats} />
+            <StatCards stats={run.stats} showLast />
             <DailyStreak />
           </div>
           {entry ? (

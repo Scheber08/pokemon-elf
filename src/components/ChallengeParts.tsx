@@ -13,10 +13,11 @@ import '../styles/run.css';
 /** Beispielverein im Platzhalter des Teamnamens (intern deutscher Name, übersetzt per game.club) */
 const EXAMPLE_CLUB = 'Dynamo Mahagonia';
 
-export function StatCards({ stats }: { stats: ChallengeStats }) {
+export function StatCards({ stats, showLast = false }: { stats: ChallengeStats; /** „Letzter Run“ dazu (Setup – im Ergebnis ist das der gerade gezeigte) */ showLast?: boolean }) {
   const t = useT();
+  const last = showLast ? stats.last : undefined;
   return (
-    <div className="statcards">
+    <div className={`statcards ${last ? 'statcards--4' : ''}`}>
       <div className="statcard">
         <span className="statcard__label">{t.challenge.bestScore}</span>
         <span className="statcard__value">{stats.bestScore ?? '–'}</span>
@@ -29,6 +30,13 @@ export function StatCards({ stats }: { stats: ChallengeStats }) {
         <span className="statcard__label">{t.challenge.runs}</span>
         <span className="statcard__value">{stats.runs}</span>
       </div>
+      {last && (
+        <div className="statcard statcard--last">
+          <span className="statcard__label">{t.challenge.lastRun}</span>
+          <span className="statcard__value">{last.score}</span>
+          <span className="statcard__sub">{formatRecord(last.record)}</span>
+        </div>
+      )}
     </div>
   );
 }

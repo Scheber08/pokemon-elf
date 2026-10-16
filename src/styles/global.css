@@ -1541,6 +1541,19 @@ button.sheet__row:hover {
   font-weight: 700;
   line-height: 1.1;
 }
+/* „Letzter Run“: vier Karten (auf dem Handy 2×2), Bilanz klein unter dem Score */
+.statcards--4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (max-width: 560px) {
+  .statcards--4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.statcard__sub {
+  font-size: 13px;
+  color: var(--text-dim);
+}
 
 .challenge__play {
   display: grid;

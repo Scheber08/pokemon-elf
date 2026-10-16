@@ -86,7 +86,7 @@ export function Challenge340() {
         <div className="challenge__setup">
           <div>
             <HowItWorks>{t.challenge.c340HowTo}</HowItWorks>
-            <StatCards stats={run.stats} />
+            <StatCards stats={run.stats} showLast />
           </div>
           <RunSetup
             formation={run.setup.formation}

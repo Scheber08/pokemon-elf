@@ -117,7 +117,7 @@ Alle Zahlen sind in `src/config/` änderbar – die Tests prüfen Eigenschaften,
 
 - **Builder** – frei aufstellen, Drag & Drop, Bild speichern (1200×1500 PNG), Link teilen, Rückgängig; über dem Feld Typ-Elf- und 🌈 Regenbogen-Chip wie im Draft (auch in den Challenges, `TypeChips`), bei voller Elf dazu 📏 Ø Größe · ⚖️ Gesamtgewicht; „Meine Teams“ (bis 5 Elfen auf dem Gerät) mit Formation und Speicherdatum.
   Optional Formen und Megas (mit Mega-Limit); der Auswahl-Dialog sortiert auf Wunsch nach Positions-Fit.
-- **34–0 Challenge** – pro Runde werden Region + Typ gewürfelt (je ein Reroll pro Run), max. 2 Legendäre.
+- **34–0 Challenge** – pro Runde werden Region + Typ gewürfelt (je ein Reroll pro Run), max. 2 Legendäre. Im Setup aller Challenges Statistik-Karten (Bester Score, Beste Bilanz, Runs, „Letzter Run“ mit Bilanz).
 - **Tägliche Elf** – jeden Tag (Europe/Berlin) dieselben Würfe für alle, Regeln wie 34–0, ein Versuch pro
   Tag und Gerät. Die Saison ist für alle identisch (gleiche Elf → gleiches Ergebnis). Ergebnis als
   Emoji-Raster teilen (34 Spieltage in zwei Reihen). Serie (Tage am Stück), „Bester Tag“ (meiste Punkte, mit Ø) und Archiv auf dem Gerät. Schon gespielt: Platz mit „Top n %“ (ab 10 Spielern).

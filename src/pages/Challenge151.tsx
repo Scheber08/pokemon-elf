@@ -94,7 +94,7 @@ export function Challenge151() {
         <div className="challenge__setup">
           <div>
             <HowItWorks>{howTo[mode]}</HowItWorks>
-            <StatCards stats={run.stats} />
+            <StatCards stats={run.stats} showLast />
           </div>
           <RunSetup
             formation={run.setup.formation}

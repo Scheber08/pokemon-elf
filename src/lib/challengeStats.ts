@@ -6,6 +6,8 @@ export interface ChallengeStats {
   bestScore: number | null;
   bestRecord: Record3 | null;
   runs: number;
+  /** Zuletzt abgeschlossener Run (fehlt bei Daten von vor dieser Angabe) */
+  last?: { score: number; record: Record3 };
 }
 
 const EMPTY: ChallengeStats = { bestScore: null, bestRecord: null, runs: 0 };
@@ -21,6 +23,7 @@ export function recordRun(challenge: ChallengeKey, score: number, record: Record
     runs: prev.runs + 1,
     bestScore: prev.bestScore == null ? score : Math.max(prev.bestScore, score),
     bestRecord: !prev.bestRecord || compareRecords(record, prev.bestRecord) < 0 ? record : prev.bestRecord,
+    last: { score, record },
   };
   save(STORAGE_KEYS.stats(challenge), next);
   return next;
