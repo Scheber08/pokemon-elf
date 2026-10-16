@@ -987,6 +987,18 @@ export function headToHead(league: Pick<LeagueResult, 'matches' | 'table'>, team
   return league.table.flatMap((r) => byOpp.get(r.team) ?? []);
 }
 
+/** Angriff und Abwehr eines Teams mit Rang in der Liga (geteilte Ränge bei Gleichstand: 1, 1, 3 …) */
+export function attackDefenseRanks(table: readonly Pick<TableRow, 'team' | 'gf' | 'ga'>[], team: number): { gf: number; gfRank: number; ga: number; gaRank: number } | null {
+  const row = table.find((r) => r.team === team);
+  if (!row) return null;
+  return {
+    gf: row.gf,
+    gfRank: 1 + table.filter((r) => r.gf > row.gf).length,
+    ga: row.ga,
+    gaRank: 1 + table.filter((r) => r.ga < row.ga).length,
+  };
+}
+
 /** Traumduo: Vorlage → Tor-Paar eines Teams mit den meisten gemeinsamen Toren (ab `min`; bei Gleichstand das Paar, das zuerst zusammen traf) */
 export function dreamDuo(
   matches: readonly Pick<Match, 'home' | 'away' | 'homeScorers' | 'awayScorers'>[],

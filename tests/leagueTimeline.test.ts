@@ -571,6 +571,16 @@ describe('Stärkste Torphase', () => {
   });
 });
 
+describe('Angriff und Abwehr mit Rang', () => {
+  it('geteilte Ränge bei Gleichstand', async () => {
+    const { attackDefenseRanks } = await import('../src/lib/leagueTimeline');
+    const table = [{ team: 0, gf: 30, ga: 10 }, { team: 1, gf: 30, ga: 12 }, { team: 2, gf: 20, ga: 10 }];
+    expect(attackDefenseRanks(table, 1)).toEqual({ gf: 30, gfRank: 1, ga: 12, gaRank: 3 });
+    expect(attackDefenseRanks(table, 2)).toEqual({ gf: 20, gfRank: 3, ga: 10, gaRank: 1 });
+    expect(attackDefenseRanks(table, 9)).toBeNull();
+  });
+});
+
 describe('Traumduo', () => {
   it('häufigstes Vorlage → Tor-Paar eines Teams, ab 2, bei Gleichstand das zuerst erfolgreiche', async () => {
     const { dreamDuo } = await import('../src/lib/leagueTimeline');

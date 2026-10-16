@@ -7,7 +7,7 @@ import { poolStars, StarsLanded } from './PoolStars';
 import { LeagueNumbers } from './LeagueNumbers';
 import { TypeGoals } from './TypeGoals';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { bestTransfer, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, formatDuration, goalFest, dreamDuo, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { bestTransfer, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, formatDuration, goalFest, dreamDuo, attackDefenseRanks, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { buildTable, formatRecord, sideTable, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -383,6 +383,11 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
               {tx.expectation(expected, gap.place, gap.delta)}
             </p>
           );
+        })()}
+        {ownRow && !cup && you != null && (() => {
+          // ⚽/🧱 Angriff und Abwehr des eigenen Teams mit Rang in der Liga
+          const r = attackDefenseRanks(table, you);
+          return r && <p className="draft-results__ranks small">{tx.attackDefense(r.gf, r.gfRank, r.ga, r.gaRank)}</p>;
         })()}
         {ownRow && !cup && you != null && (() => {
           // Eigener höchster Sieg und höchste Niederlage (aus eigener Sicht, Ergebnis eigene Tore zuerst)

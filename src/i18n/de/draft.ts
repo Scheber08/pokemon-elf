@@ -416,6 +416,7 @@ const draft = {
     recordFastestLine: (team: string, sec: number) => `${team} – Ø ${sec} s pro Pick`,
     recordDuration: 'Draft-Dauer',
     recordDuo: 'Traumduo',
+    attackDefense: (gf: number, gfRank: number, ga: number, gaRank: number) => `⚽ Angriff: ${gf} Tore (Platz ${gfRank}) · 🧱 Abwehr: ${ga} Gegentore (Platz ${gaRank})`,
     recordDuoLine: (assist: string, scorer: string, team: string, goals: number) => `🤝 ${assist} → ${scorer} (${team}) – ${goals} Tore zusammen`,
     recordDurationLine: (time: string, picks: number) => `${time} Min. für ${picks} Picks`,
     recordGoals: (team: string, n: number) => `${team} – ${n} Tore`,

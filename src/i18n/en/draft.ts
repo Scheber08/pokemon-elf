@@ -375,6 +375,7 @@ const draft: Messages['draft'] = {
     recordFastestLine: (team, sec) => `${team} – avg ${sec} s per pick`,
     recordDuration: 'Draft time',
     recordDuo: 'Dream duo',
+    attackDefense: (gf, gfRank, ga, gaRank) => `⚽ Attack: ${gf} goals (place ${gfRank}) · 🧱 Defence: ${ga} conceded (place ${gaRank})`,
     recordDuoLine: (assist, scorer, team, goals) => `🤝 ${assist} → ${scorer} (${team}) – ${goals} goals together`,
     recordDurationLine: (time, picks) => `${time} min for ${picks} picks`,
     recordGoals: (team, n) => `${team} – ${n} goals`,
