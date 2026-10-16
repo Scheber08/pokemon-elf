@@ -634,6 +634,7 @@ const draft: Messages['draft'] = {
     goalMilestone: (pokemon, mark) => `${pokemon} reaches ${mark} goals this season!`,
     scoringRun: (pokemon, games) => `${pokemon} has scored in ${games} straight games!`,
     fanMood: { euphoria: '😍 The fans are euphoric', happy: '🙂 The fans are happy', calm: '😐 The fans are waiting to see', angry: '😠 Unrest in the stands' },
+    winRun: (n, left) => `🏅 ${n} wins in a row – ${left} more for the “Winning run” achievement`,
     linesTitle: 'Goals by unit',
     distinctScorers: (n) => `👥 ${n} different scorers`,
     distinctScorersBest: ' – league best',

@@ -1042,6 +1042,17 @@ export function fanMood(form: readonly ('S' | 'U' | 'N')[]): FanMood | null {
   return ppg >= 2.4 ? 'euphoria' : ppg >= 1.6 ? 'happy' : ppg >= 0.9 ? 'calm' : 'angry';
 }
 
+/** Siege in Folge eines Teams bis zum letzten gespielten Spiel (0, wenn das letzte kein Sieg war) */
+export function winRun(matches: readonly Pick<Match, 'round' | 'home' | 'away' | 'hg' | 'ag'>[], team: number): number {
+  const res = matches
+    .filter((m) => m.home === team || m.away === team)
+    .sort((a, b) => b.round - a.round)
+    .map((m) => (m.home === team ? m.hg > m.ag : m.ag > m.hg));
+  let n = 0;
+  while (n < res.length && res[n]) n++;
+  return n;
+}
+
 /**
  * Aktuelle Serie eines Teams (vom letzten Spiel rückwärts): Spiele ohne Niederlage bzw. ohne Sieg.
  * Liefert die Serie ab `min` Spielen – ungeschlagen hat Vorrang – sonst null.

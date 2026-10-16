@@ -2081,6 +2081,28 @@ describe('ManagerSeason', () => {
     expect(el!.textContent).toBe(`🔋 Dauerbrenner (alle 5 Spiele von Beginn an): ${iron.join(', ')}`);
   });
 
+  it('Manager: 🏅 Siege in Folge auf dem Weg zum Erfolg „Siegesserie“ (3 bis 6)', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    const { storedLeague, winRun } = await import('../src/lib/leagueTimeline');
+    for (const seed of [42, 7, 99, 123, 5]) {
+      let s = engine.startDraft({ ...lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), seed }, 'dev-h', 0, ALL);
+      while (s.phase === 'drafting') s = autoPick(s);
+      s = startManagerSeason(s, ALL, SCALE);
+      const me = s.teams.findIndex((t) => t.id === 'h');
+      for (let md = 1; md <= 17 && s.phase === 'season'; md++) {
+        s = playMatchday(s, ALL, SCALE);
+        const n = winRun(storedLeague(s.league, s.teams.length)!.matches, me);
+        if (n < 3 || n > 6) continue;
+        const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+        await settle();
+        expect(container.querySelector('.manager__winrun')!.textContent).toBe(`🏅 ${n} Siege in Folge – noch ${7 - n} bis zum Erfolg „Siegesserie“`);
+        return;
+      }
+    }
+    throw new Error('keine Serie von 3 bis 6 Siegen gefunden');
+  });
+
   it('Manager: 🏆 rechnerischer Titelkampf erst ab der Saisonhälfte', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');

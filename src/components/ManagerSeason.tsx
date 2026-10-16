@@ -4,7 +4,7 @@ import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
 import { loadTips, MATCH_TIPS, saveTip, tipScore } from '../lib/managerTips';
-import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance, goalMilestones, scoringRuns, goalsByLine, GOAL_LINES, distinctScorers, bestGoalPhase, fanMood } from '../lib/leagueTimeline';
+import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance, goalMilestones, scoringRuns, goalsByLine, GOAL_LINES, distinctScorers, bestGoalPhase, fanMood, winRun } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -396,6 +396,11 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
           // Aktuelle Serie des eigenen Teams: ungeschlagen bzw. sieglos (ab 3 Spielen)
           const r = currentRun(shown.matches, you);
           return r && <SeriesLine run={r} />;
+        })()}
+        {you != null && (() => {
+          // 🏅 Unterwegs zum Erfolg „Siegesserie“ (7 Siege in Folge): ab 3 Siegen in Folge
+          const n = winRun(shown.matches, you);
+          return n >= 3 && n < WIN_STREAK_GOAL && <p className="small manager__winrun">{tx.winRun(n, WIN_STREAK_GOAL - n)}</p>;
         })()}
         {you != null && m.played >= 1 && (() => {
           // Tabellenausschnitt: zwei Plätze über und unter dem eigenen Team, mit Punkteabstand
@@ -977,6 +982,9 @@ function goalsOf(league: LeagueResult | null | undefined, team: number): Map<num
 
 /** So viel stärker muss eine andere Formation sein, damit der Formations-Tipp erscheint (kleinere Gewinne sind Rauschen) */
 const FORMATION_TIP_MIN = 5;
+
+/** Ziel des Erfolgs „Siegesserie“ (streak_7) */
+const WIN_STREAK_GOAL = 7;
 
 /** Ab so vielen gespielten Spieltagen nennt die Aufstellung Bankspieler ohne Einsatz */
 const UNUSED_AFTER = 3;

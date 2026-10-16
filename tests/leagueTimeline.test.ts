@@ -606,6 +606,16 @@ describe('Liga in Zahlen', () => {
   });
 });
 
+describe('Siege in Folge', () => {
+  it('zählt vom letzten Spiel rückwärts', async () => {
+    const { winRun } = await import('../src/lib/leagueTimeline');
+    const m = (round: number, hg: number, ag: number) => ({ round, home: 0, away: 1, hg, ag });
+    expect(winRun([m(1, 0, 1), m(2, 2, 0), m(3, 1, 0), m(4, 3, 1)], 0)).toBe(3);
+    expect(winRun([m(1, 2, 0), m(2, 1, 1)], 0)).toBe(0);
+    expect(winRun([m(1, 0, 2), m(2, 0, 1)], 1)).toBe(2);
+  });
+});
+
 describe('Fan-Stimmung', () => {
   it('Punkte je Spiel der letzten Spiele, erst ab drei Spielen', async () => {
     const { fanMood } = await import('../src/lib/leagueTimeline');

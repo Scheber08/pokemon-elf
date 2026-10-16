@@ -700,6 +700,7 @@ const draft = {
     scoringRun: (pokemon: string, games: number) => `${pokemon} trifft im ${games}. Spiel in Folge!`,
     /** Fan-Stimmung (letzte fünf Spiele) */
     fanMood: { euphoria: '😍 Die Fans sind in Euphorie', happy: '🙂 Die Fans sind zufrieden', calm: '😐 Die Fans warten ab', angry: '😠 Unruhe auf den Rängen' },
+    winRun: (n: number, left: number) => `🏅 ${n} Siege in Folge – noch ${left} bis zum Erfolg „Siegesserie“`,
     linesTitle: 'Tore nach Mannschaftsteil',
     distinctScorers: (n: number) => `👥 ${n} verschiedene Torschützen`,
     distinctScorersBest: ' – Ligabestwert',
