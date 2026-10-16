@@ -481,6 +481,39 @@ describe('Saisonbilanz und Ticker', () => {
     );
   };
 
+  it('🏅 Neuer Bestwert nur, wenn der Score den bisherigen übertrifft (nicht beim ersten Run)', async () => {
+    storeLang('de');
+    stubFetch();
+    const view = (last?: { score: number; prevBest?: number | null }) =>
+      render(
+        app(
+          h(SeasonResultView, {
+            challenge: 'c340',
+            input,
+            scaleKind: 'all',
+            sprite: 'pixel',
+            entryId: null,
+            onNewRun: () => {},
+            stats: { bestScore: 900, bestRecord: null, runs: 2, last: last && { ...last, record: { w: 1, d: 0, l: 0 } } },
+          }),
+        ),
+      );
+    // Team-Score dieser Elf (zweite Fakten-Kachel)
+    const plain = await view();
+    await settle();
+    expect(plain.querySelector('.result-hero__best')).toBeNull();
+    const score = Number(plain.querySelectorAll('.facts dd')[1].textContent);
+    const low = await view({ score, prevBest: score - 25 });
+    await settle();
+    expect(low.querySelector('.result-hero__best')!.textContent).toBe(`🏅 Neuer Bestwert – 25 mehr als dein bisher bester Score (${score - 25})`);
+    // Kein Rekord: bisheriger Bestwert höher, erster Run (null), ältere Daten (fehlt) oder letzter Run ist ein anderer
+    for (const last of [{ score, prevBest: score + 1 }, { score, prevBest: null }, { score }, { score: score + 7, prevBest: 1 }]) {
+      const v = await view(last);
+      await settle();
+      expect(v.querySelector('.result-hero__best')).toBeNull();
+    }
+  });
+
   it('Kapitän: Tore der Saison im Ergebnis', async () => {
     storeLang('de');
     stubFetch();

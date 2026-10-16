@@ -42,6 +42,7 @@ const result: Messages['result'] = {
   ordinal,
   perGame: (ppg) => `avg ${ppg.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} per game`,
   goalDiff: (diff) => `difference ${diff > 0 ? '+' : diff < 0 ? '−' : '±'}${Math.abs(diff)}`,
+  newBest: (plus, before) => `🏅 New personal best – ${plus} more than your previous best score (${before})`,
   weakSpots: 'Weak spots according to scouting: ',
   venueRecords: (home, away) => `🏠 Home ${home} · ✈️ Away ${away} (W–D–L)`,
   fitFacts: (avg, bulls, best, fit) =>

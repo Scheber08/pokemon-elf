@@ -3043,3 +3043,10 @@ button.sheet__row:hover {
   font-size: 13px;
   text-align: center;
 }
+
+/* Challenge-Ergebnis: neuer persönlicher Bestwert */
+.result-hero__best {
+  margin: 0;
+  font-weight: 600;
+  color: var(--green-text);
+}

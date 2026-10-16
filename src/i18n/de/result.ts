@@ -43,6 +43,8 @@ const result = {
   perGame: (ppg: number) => `Ø ${ppg.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} pro Spiel`,
   /** Unter den Toren: Tordifferenz mit Vorzeichen */
   goalDiff: (diff: number) => `Differenz ${diff > 0 ? '+' : diff < 0 ? '−' : '±'}${Math.abs(diff)}`,
+  /** Neuer persönlicher Bestwert (Score) dieser Challenge */
+  newBest: (plus: number, before: number) => `🏅 Neuer Bestwert – ${plus} mehr als dein bisher bester Score (${before})`,
   weakSpots: 'Schwachstellen laut Scouting: ',
   venueRecords: (home: string, away: string) => `🏠 Zu Hause ${home} · ✈️ Auswärts ${away} (S–U–N)`,
   fitFacts: (avg: number, bulls: number, best: string, fit: number) =>

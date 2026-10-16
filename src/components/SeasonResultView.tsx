@@ -337,6 +337,13 @@ export function SeasonResultView({
               </div>
             </dl>
             <p className="result-hero__verdict">{verdict(season, tr.verdict)}</p>
+            {/* 🏅 Neuer persönlicher Bestwert (Score) – nicht beim ersten Run */}
+            {(() => {
+              // Gehört der letzte gespeicherte Run zu diesem Ergebnis und schlug er den bisherigen Bestwert?
+              const last = stats?.last;
+              if (!last || last.prevBest == null || last.score !== evaluation.score || last.score <= last.prevBest) return null;
+              return <p className="result-hero__best">{tr.newBest(last.score - last.prevBest, last.prevBest)}</p>;
+            })()}
             {(() => {
               // Tore des Kapitäns (alle Positionen, an denen er getroffen hat)
               const c = input.captain;

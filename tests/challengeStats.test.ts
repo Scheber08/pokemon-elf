@@ -18,7 +18,9 @@ describe('Challenge-Statistik', () => {
     const s = recordRun('c340', 700, { w: 25, d: 4, l: 5 }, 2_000);
     expect(s.runs).toBe(2);
     expect(s.bestScore).toBe(731);
-    expect(s.last).toEqual({ score: 700, record: { w: 25, d: 4, l: 5 }, at: 2_000 });
+    // Mit Bestwert vor diesem Run (für „🏅 Neuer Bestwert“ im Ergebnis)
+    expect(s.last).toEqual({ score: 700, record: { w: 25, d: 4, l: 5 }, at: 2_000, prevBest: 731 });
+    expect(loadStats('c340').last?.prevBest).toBe(731);
     expect(loadStats('c340').last?.score).toBe(700);
     // Ø Score ab zwei gezählten Runs
     expect(averageScore(s)).toBe(716);
