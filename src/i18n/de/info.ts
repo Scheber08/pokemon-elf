@@ -16,6 +16,7 @@ const info = {
     /** „Was ist neu?" – die wichtigsten Neuerungen, neueste zuerst */
     newsTitle: 'Was ist neu?',
     news: [
+      'Neu: ▲/▼ gegen deinen Schnitt im Challenge-Ergebnis und in der Täglichen Elf, Siegquote gegen die Prognose im Testspiel, 💯 Volltreffer-Kandidaten je Position im Scouting-Guide, Erfolg „Zwei-Wochen-Ticket“ und Saison „Weltgesundheitstag“ im Shop',
       'Neu: 🏆 an perfekten Saisons in Profil und Rangliste, 🔝 stärkster Fit im Teamblatt, ⚽ Tore je Spieltag im Saison-Ticker, 🏅 „bester Tag“ im Teilen-Text der Täglichen Elf, alle Tastenkürzel auf der Über-Seite; die Datenschutzseite nennt jetzt auch Trainer und Shop-Käufe',
       'Neu: „Als Text kopieren“ in der Manager-Aufstellung, 🎯 nächstes Ziel im Shop, 🔔 Rundenende jetzt auch im Online-Draft, 🤖 CPU-Prognose und Kapitän-Wirkung auch im Draft an einem Gerät, „Wird gewürfelt …“ beim Online-Reroll, 🏅 Neuer Bestwert im Teilen-Text, Challenge-Symbole in der FAQ; Kommazahlen auf Deutsch jetzt mit Komma',
       'Neu: „Aktuell hier“ und ±Fit im Auswahl-Dialog, 🏅 neuer Bestwert im Challenge-Ergebnis, 🏁 letzte Runde im Run, 🔥 Rekordserie in der Täglichen Elf, 🏆 perfekte Saisons in der Rangliste, 💥 höchster Sieg im Testspiel, 🎲 Zufällig in „Wo spielt …?“, „noch n“ bei fast geschafften Erfolgen, Hinweis bei voller „Meine Teams“-Liste, Saison „Tag des Mondes“',
