@@ -10,6 +10,7 @@ const trainer = {
   coins: 'Münzen',
   coinsValue: (n: number) => `${n.toLocaleString('de-DE')} Münzen`,
   earned: (n: number) => `${n.toLocaleString('de-DE')} verdient`,
+  withCompanion: (name: string) => `mit ${name}`,
   progress: (done: number, total: number) => `${done} von ${total} Erfolgen`,
   noName: 'Tipp: Mit eigenem Spielernamen (Rangliste) erscheinst du auch in den Listen anderer.',
   category: {

@@ -12,6 +12,7 @@ const trainer: Messages['trainer'] = {
   coins: 'Coins',
   coinsValue: (n) => `${n.toLocaleString('en-GB')} coins`,
   earned: (n) => `${n.toLocaleString('en-GB')} earned`,
+  withCompanion: (name) => `with ${name}`,
   progress: (done, total) => `${done} of ${total} achievements`,
   noName: 'Tip: with your own player name (leaderboard) you also show up in other players’ lists.',
   category: {

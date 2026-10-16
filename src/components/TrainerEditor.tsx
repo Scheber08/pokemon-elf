@@ -116,6 +116,11 @@ export function TrainerEditor({ me, onMe }: Props) {
             <TrainerAvatar look={look} size={180} label={tx.editorTitle} />
             {me.player && <strong className="trainer-editor__name">{me.player}</strong>}
             {look.title !== 'none' && <span className="trainer-editor__title">{tx.titles[look.title]}</span>}
+            {(() => {
+              // Begleiter mit Namen (auch auf dem gespeicherten Bild)
+              const pet = look.companion !== 'none' ? byId.get(Number(look.companion)) : undefined;
+              return pet && <span className="muted small trainer-card__pet">{tx.withCompanion(t.game.pokemon(pet))}</span>;
+            })()}
             <span className="muted small">
               {tx.progress(me.achievements.filter((a) => a.done).length, me.achievements.length)}
             </span>

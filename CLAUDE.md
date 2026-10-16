@@ -52,7 +52,7 @@ Fit-Sortierung (mit Fit-Wert auf den Karten), „Beste Elf" und Typ-Elf-/🌈-Ch
 „Deine Duelle", Allzeit-Platz, ⭐ Lieblings-Challenge und 🏅 Bestwert-Runs unter „Letzte Runs“ im Profil, Lieblingsformation der Top-Einträge und „noch n Pkt bis in die Top N“ und 🆕 (letzte Stunde) in der Rangliste, Taste „/" im Draft, Noten in der lokalen Liga, QR-Code in der Lobby,
 Saison auf 18 Teams mit Ranglisten-Teams aufgefüllt, KO-Turnier mit optionaler Gruppenphase, Draft-Spielmodell
 (Tagesform, Torminuten), Formkurve, Saisonrekorde, Saisonverlauf, „Meine Teams" (mit Speicherdatum und „✓ aktuell“) im Builder, Manager-Saison
-(Bank, Spieltage im Takt, Aufstellung, Tagesform je Pokémon), Erfolge mit Münzen (Filter „Nur offene“, Bilanz mit Podestplätzen und perfekten Saisons), eigener Trainer mit
+(Bank, Spieltage im Takt, Aufstellung, Tagesform je Pokémon), Erfolge mit Münzen (Filter „Nur offene“, Bilanz mit Podestplätzen und perfekten Saisons), eigener Trainer (Karte mit Begleiter-Namen) mit
 Cosmetics-Shop (auch in Rangliste, Profil und Draft), Transfermarkt (mit Sprites, Positionsfilter und 📥 eigenen Neuzugängen samt Toren) und Erinnerung vor dem Anpfiff in der
 Manager-Saison, eigener Menüpunkt „Manager", Spielbericht (mit Halbzeitstand) + 2D-Wiedergabe (mit Halbzeit-Strich) in allen Modi (einstellbar),
 Erfolge für die Manager-Saison, Hinweis „Erfolg freigeschaltet" nach Runs und Ligen, Saisonartikel im Shop
