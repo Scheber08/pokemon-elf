@@ -742,6 +742,7 @@ const draft: Messages['draft'] = {
     jumpTrade: 'Trades',
     jumpResults: 'Results',
     jumpTable: 'Table',
+    benchHot: (names) => `Top form on the bench: ${names.join(', ')} – bring ${names.length === 1 ? 'it' : 'them'} on?`,
     formWarning: (names) =>
       `${names.length === 1 ? `${names[0]} is` : `${names.length} players in your eleven are`} in poor form today${names.length > 1 ? ` (${names.join(', ')})` : ''} – rotate?`,
     outInjury: (until) => `injured until matchday ${until}`,

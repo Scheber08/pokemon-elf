@@ -2132,6 +2132,36 @@ describe('ManagerSeason', () => {
     expect(el!.textContent).toBe(`🪑 Noch ohne Einsatz von Beginn an: ${unused.map((id) => ALL.find((p) => p.id === id)!.de).join(', ')}`);
   });
 
+  it('Manager: 🔥 Topform auf der Bank (nur bei eigener Aufstellung)', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    const team = s.teams.find((t) => t.id === 'h')!;
+    // Feste eigene Elf: Bankspieler in Topform werden nicht automatisch eingewechselt
+    s = { ...s, manager: { ...s.manager!, lineups: { ...s.manager!.lineups, h: { ...s.manager!.lineups.h, auto: false } } } };
+    const hotOf = () => {
+      const l = s.manager!.lineups.h;
+      const inL = new Set([...l.slots, l.ss].filter((id) => id != null));
+      return engine.rosterOf(team).filter((id) => !inL.has(id) && (s.manager!.form[id] ?? 0) >= 2 && !s.manager!.out?.[id]);
+    };
+    for (let i = 0; i < 12 && !hotOf().length; i++) s = playMatchday(s, ALL, SCALE);
+    const hot = hotOf();
+    expect(hot.length).toBeGreaterThan(0);
+    // Automatische Aufstellung: kein Hinweis (rotiert ohnehin)
+    const auto = { ...s, manager: { ...s.manager!, lineups: { ...s.manager!.lineups, h: { ...s.manager!.lineups.h, auto: true } } } };
+    const r1 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(auto, 'h')), readOnly: false })));
+    await settle();
+    expect(r1.container.querySelector('.manager__benchhot')).toBeNull();
+    const own = { ...s, manager: { ...s.manager!, lineups: { ...s.manager!.lineups, h: { ...s.manager!.lineups.h, auto: false } } } };
+    const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(own, 'h')), readOnly: false })));
+    await settle();
+    expect(container.querySelector('.manager__benchhot')!.textContent).toBe(
+      `🔥 Topform auf der Bank: ${hot.map((id) => ALL.find((p) => p.id === id)!.de).join(', ')} – einwechseln?`,
+    );
+  });
+
   it('Manager: 🔋 Dauerbrenner (jedes Spiel von Beginn an) erst ab dem 5. Spieltag', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');

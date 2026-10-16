@@ -812,6 +812,7 @@ const draft = {
     jumpTrade: 'Tausch',
     jumpResults: 'Ergebnisse',
     jumpTable: 'Tabelle',
+    benchHot: (names: string[]) => `Topform auf der Bank: ${names.join(', ')} – einwechseln?`,
     formWarning: (names: string[]) =>
       `${names.length === 1 ? `${names[0]} ist` : `${names.length} Spieler deiner Elf sind`} heute schlecht in Form${names.length > 1 ? ` (${names.join(', ')})` : ''} – vielleicht rotieren?`,
     outInjury: (until: number) => `verletzt bis Spieltag ${until}`,

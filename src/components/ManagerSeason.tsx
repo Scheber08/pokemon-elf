@@ -1281,6 +1281,12 @@ function LineupEditor({
         return <p className="hint manager__formwarn">⚠️ {tx.formWarning(names)}</p>;
       })()}
       {(() => {
+        // 🔥 Bankspieler in Topform (+2) – Gegenstück zur Formwarnung, ebenfalls nur bei eigener Aufstellung
+        const hot = lineup.auto ? [] : bench.filter((id) => formOf(id) >= 2 && !absent.has(id) && byId.has(id));
+        if (!hot.length) return null;
+        return <p className="hint manager__benchhot">🔥 {tx.benchHot(hot.map((id) => t.game.pokemon(byId.get(id)!)))}</p>;
+      })()}
+      {(() => {
         // Ausfälle in der eigenen Elf: werden zum Anpfiff ersetzt
         const missing = [...lineup.slots, ...(lineup.ss != null ? [lineup.ss] : [])].filter((id) => absent.has(id));
         if (!missing.length) return null;
