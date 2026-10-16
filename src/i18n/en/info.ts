@@ -14,6 +14,9 @@ const info: Messages['info'] = {
     guidePost: '.',
     newsTitle: 'What’s new?',
     news: [
+      'New: half-time score in the match report and the 2D replay, “Most clinical side” season record, 🆕 on the leaderboard and your points gap to the top list',
+      'Challenges: “Last run” before you start, favourite opponent and bogey team, streaks and home/away record in the season summary',
+      'Daily XI: “top n%” next to your position and an archive with 🏅 and ▲/▼; shop with your collection count and new seasons; profile marks personal-best runs with 🏅',
       'New: team of the season (also as an image), home and away tables, player of the matchday and late winners in the ticker, coloured table zones',
       'Manager season: home games now evenly distributed in the fixture list (new seasons), stars for player of the matchday in the squad',
       'Online draft: average fit per team on the board, position and fit in the pick feed with a “run” alert, open positions in the waiting hint',

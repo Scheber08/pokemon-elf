@@ -16,6 +16,9 @@ const info = {
     /** „Was ist neu?" – die wichtigsten Neuerungen, neueste zuerst */
     newsTitle: 'Was ist neu?',
     news: [
+      'Neu: Halbzeitstand im Spielbericht und in der 2D-Wiedergabe, Saisonrekord „Kaltschnäuzigste Mannschaft“, 🆕 in der Rangliste und dein Punkte-Abstand zur Top-Liste',
+      'Challenges: „Letzter Run“ vor dem Start, Lieblings- und Angstgegner, Serien sowie Heim-/Auswärtsbilanz in der Saisonbilanz',
+      'Tägliche Elf: „Top n %“ beim Platz und Archiv mit 🏅 und ▲/▼; Shop mit Sammelstand und neuen Saisons; Profil mit 🏅 an Bestwert-Runs',
       'Neu: Elf der Saison (auch als Bild), Heim- und Auswärtstabelle, Spieler des Spieltags und Last-Minute-Sieg im Ticker, farbige Tabellen-Zonen',
       'Manager-Saison: Heimrecht im Spielplan jetzt ausgeglichen (neue Saisons), Sterne für Spieler des Spieltags im Kader',
       'Online-Draft: Ø Fit je Team auf dem Board, Position und Fit im Verlauf samt „Run“-Hinweis, offene Positionen im Wartehinweis',
