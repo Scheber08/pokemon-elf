@@ -125,6 +125,7 @@ const trainer = {
       propeller: 'Propellermütze',
       pikaears: 'Pikachu-Ohren',
       birdnest: 'Vogelnest',
+      dogears: 'Hundeohren',
       catears: 'Katzenohren',
       flowercrown: 'Blumenkranz',
       antennae: 'Bienen-Fühler',

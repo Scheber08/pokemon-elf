@@ -481,6 +481,14 @@ function hat(c: Canvas, id: string, cloth: string) {
         c.dots([[Math.round(cx), 6]], '#ffffff');
       }
       break;
+    case 'dogears':
+      // Hundeohren (Welthundetag): brauner Haarreif mit zwei Schlappohren, die seitlich am Kopf herunterhängen
+      c.fill((x, y) => y === 9 && head(x, y), '#7a4f2a', null);
+      for (const cx of [6.5, 24.5]) {
+        c.fill(ellipse(cx, 13, 2.4, 6), '#c8955a', '#4a2f14');
+        c.fill(ellipse(cx, 14, 1, 3.6), '#8f5e30', null);
+      }
+      break;
     case 'catears':
       // Katzenohren (Weltkatzentag): schwarzer Haarreif mit zwei spitzen Ohren, innen rosa
       c.fill((x, y) => y === 9 && head(x, y), '#26282e', null);
