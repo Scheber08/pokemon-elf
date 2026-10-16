@@ -58,6 +58,7 @@ const info = {
     localTitle: 'Lokale Speicherung',
     local:
       'Deine Aufstellung, Einstellungen, Bestwerte, laufende Runs, die lokale Rangliste, die Online-Ligen, in denen du mitspielst (Code, Liga- und Teamname), und die zufällige Geräte-Kennung für die Online-Rangliste und Online-Ligen werden im localStorage deines Browsers gespeichert. Du kannst sie jederzeit über die Browser-Einstellungen löschen – dann gilt dein Browser als neues Gerät.',
+    usage: (entries: number, kb: number) => `Auf diesem Gerät gerade: ${entries} ${entries === 1 ? 'Eintrag' : 'Einträge'}, etwa ${kb} KB.`,
     leaderboardTitle: 'Online-Rangliste',
     leaderboardIntro:
       'Spielst du eine Challenge online, schickt die App deinen Run an unseren Server, damit er geprüft und gewertet werden kann. Gespeichert werden:',

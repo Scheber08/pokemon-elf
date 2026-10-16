@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useT } from '../i18n';
+import { storageUsage } from '../lib/storage';
 
 export function About() {
   const t = useT();
@@ -52,6 +53,10 @@ export function Privacy() {
         <p>{p.intro}</p>
         <h2 className="section-title">{p.localTitle}</h2>
         <p>{p.local}</p>
+        {(() => {
+          const u = storageUsage();
+          return u.entries > 0 && <p className="muted small privacy__usage">{p.usage(u.entries, Math.max(1, Math.round(u.bytes / 1024)))}</p>;
+        })()}
         <h2 className="section-title">{p.leaderboardTitle}</h2>
         <p>{p.leaderboardIntro}</p>
         <ul>

@@ -52,3 +52,20 @@ export function remove(key: string): void {
     /* ignorieren */
   }
 }
+
+/** Was die App auf diesem Gerät gespeichert hat: Anzahl Einträge und Größe (Zeichen ≈ Bytes, UTF-16 nicht gerechnet) */
+export function storageUsage(): { entries: number; bytes: number } {
+  let entries = 0;
+  let bytes = 0;
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key?.startsWith(PREFIX)) continue;
+      entries++;
+      bytes += key.length + (localStorage.getItem(key)?.length ?? 0);
+    }
+  } catch {
+    // privater Modus o. ä.: nichts lesbar
+  }
+  return { entries, bytes };
+}

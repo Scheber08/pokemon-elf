@@ -56,6 +56,7 @@ const info: Messages['info'] = {
     localTitle: 'Local storage',
     local:
       'Your lineup, settings, best scores, runs in progress, the local leaderboard, the online leagues you take part in (code, league and team name) and the random device identifier for the online leaderboard and online leagues are stored in your browser’s localStorage. You can delete them at any time via your browser settings – your browser then counts as a new device.',
+    usage: (entries, kb) => `On this device right now: ${entries} ${entries === 1 ? 'entry' : 'entries'}, about ${kb} KB.`,
     leaderboardTitle: 'Online leaderboard',
     leaderboardIntro:
       'If you play a challenge online, the app sends your run to our server so that it can be checked and scored. The following is stored:',
