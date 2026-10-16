@@ -183,6 +183,12 @@ function BoardTable({ rows, mine, onReload, focusPlayer = null }: BoardTableProp
             <tr className="lb-mine__label">
               <th scope="rowgroup" colSpan={5} className="left">
                 {t.leaderboard.yourRank}
+                {(() => {
+                  // Abstand zur letzten angezeigten Zeile (nur, wenn wirklich Punkte fehlen)
+                  const last = rows[rows.length - 1];
+                  const gap = last ? last.points - mine.points : 0;
+                  return gap > 0 ? <span className="lb-mine__gap"> · {t.leaderboard.yourRankGap(gap, rows.length)}</span> : null;
+                })()}
               </th>
             </tr>
             {line(mine)}

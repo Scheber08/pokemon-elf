@@ -10,6 +10,7 @@ const leaderboard = {
   colPoints: 'Pkt',
   colScore: 'Score',
   yourRank: 'Deine Platzierung',
+  yourRankGap: (pts: number, top: number) => `noch ${pts} Pkt bis in die Top ${top}`,
   playNow: 'Jetzt spielen',
   today: 'Heute',
   allTime: 'Allzeit',

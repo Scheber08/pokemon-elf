@@ -428,6 +428,22 @@ describe('Rangliste: Team ansehen (online)', () => {
     }
     // eigene Zeile außerhalb der Top-Liste ebenfalls
     expect(c.querySelector('tbody.lb-mine button.lb-team')?.textContent).toBe('Cerulean');
+    // punktgleich mit der letzten Zeile: kein Abstand
+    expect(c.querySelector('.lb-mine__gap')).toBeNull();
+  });
+
+  it('eigene Zeile außerhalb der Top-Liste: Punkte-Abstand zur letzten angezeigten Zeile', async () => {
+    storeSettings('de');
+    const saved = BOARD.mine;
+    BOARD.mine = { ...saved!, points: 80 };
+    try {
+      await stubServer();
+      const c = await render(app());
+      await settle();
+      expect(c.querySelector('.lb-mine__gap')?.textContent).toBe(' · noch 12 Pkt bis in die Top 2');
+    } finally {
+      BOARD.mine = saved;
+    }
   });
 
   it('Klick öffnet den Dialog: erst Laden mit den Daten der Zeile, dann Spielfeld, Teamblatt und Kopfdaten', async () => {

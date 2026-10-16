@@ -27,6 +27,7 @@ const leaderboard: Messages['leaderboard'] = {
   colPoints: 'Pts',
   colScore: 'Score',
   yourRank: 'Your position',
+  yourRankGap: (pts, top) => `${pts} pts short of the top ${top}`,
   playNow: 'Play now',
   today: 'Today',
   allTime: 'All time',
