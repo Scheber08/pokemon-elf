@@ -478,6 +478,7 @@ export function SeasonResultView({
           </section>
         </div>
 
+        <section className="card result-facts">
         {(() => {
           // 😊 Lieblingsgegner und 😖 Angstgegner der Saison (wie im Draft-Ergebnis; eigenes Team = Index 0)
           const foes = favouriteFoes(season.league.matches, 0);
@@ -485,7 +486,7 @@ export function SeasonResultView({
           const line = (r: NonNullable<typeof foes>['best']) =>
             t.draft.results.foeLine(t.game.club(season.league.teams[r.opp]?.name ?? ''), r.pts, `${r.gf}:${r.ga}`);
           return (
-            <p className="card small muted result-foes">
+            <p className="small muted result-foes">
               {t.draft.results.foeBest(line(foes.best))} · {t.draft.results.foeWorst(line(foes.worst))}
             </p>
           );
@@ -493,13 +494,13 @@ export function SeasonResultView({
         {(() => {
           // 🏠/✈️ Bilanz zu Hause und auswärts
           const v = venueRecords(season.userMatches);
-          return <p className="card small muted result-venues">{tr.venueRecords(formatRecord(v.home), formatRecord(v.away))}</p>;
+          return <p className="small muted result-venues">{tr.venueRecords(formatRecord(v.home), formatRecord(v.away))}</p>;
         })()}
         {(() => {
           // 🔥 Längste Siegesserie und 🛡️ längste Serie ohne Niederlage der Saison (ab 3 Spielen)
           const { wins: bestWin, unbeaten: bestUnbeaten } = longestRuns(season.userMatches.map((m) => m.outcome));
           const parts = [bestWin >= 3 ? tr.runWins(bestWin) : null, bestUnbeaten >= 3 && bestUnbeaten > bestWin ? tr.runUnbeaten(bestUnbeaten) : null].filter(Boolean);
-          return parts.length > 0 && <p className="card small muted result-runs">{parts.join(' · ')}</p>;
+          return parts.length > 0 && <p className="small muted result-runs">{parts.join(' · ')}</p>;
         })()}
         {(() => {
           // 💥 Höchster Sieg und höchste Niederlage der Saison (größte Tordifferenz, bei Gleichstand der frühere)
@@ -511,13 +512,14 @@ export function SeasonResultView({
           const worst = pick(false);
           if (!best && !worst) return null;
           return (
-            <p className="card small muted result-extremes">
+            <p className="small muted result-extremes">
               {best && t.draft.results.ownBest(`${best.gf}:${best.ga}`, t.game.club(best.opponent))}
               {best && worst && ' · '}
               {worst && t.draft.results.ownWorst(`${worst.gf}:${worst.ga}`, t.game.club(worst.opponent))}
             </p>
           );
         })()}
+        </section>
 
         <details className="card details">
           <summary>{tr.details(season.userMatches.length)}</summary>

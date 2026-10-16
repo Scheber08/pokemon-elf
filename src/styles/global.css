@@ -1719,6 +1719,17 @@ button.sheet__row:hover {
   gap: 18px;
   margin-bottom: 16px;
 }
+/* Saisonbilanz: kleine Kennzahlen (Gegner, Heim/Auswärts, Serien, Extreme) in einer Karte */
+.result-facts {
+  display: grid;
+  gap: 6px;
+}
+.result-facts > p {
+  margin: 0;
+}
+.result-facts:empty {
+  display: none;
+}
 .result-hero {
   display: grid;
   grid-template-columns: minmax(0, 480px) minmax(0, 1fr);
