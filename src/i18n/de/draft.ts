@@ -428,6 +428,8 @@ const draft = {
       `Verpasste Chance: Pick ${pick} ${name} (Fit ${fit}) – als ${pos} war noch ${alt} frei (Fit ${altFit})`,
     missedTaken: (team: string, pick: number) => `– ging mit Pick ${pick} an ${team}.`,
     missedFree: '– blieb sogar bis zum Schluss frei.',
+    titleDefended: (team: string) => `🏆 Titel verteidigt – ${team} ist erneut Meister!`,
+    titleLost: (team: string, place: number) => `🔄 Neuer Meister – Titelverteidiger ${team} wird Platz ${place}`,
     joker: (pokemon: string, pick: number, team: string, goals: number) => `🃏 Joker des Drafts: ${pokemon} (erst Pick ${pick}) traf ${goals}-mal für ${team}`,
     expectation: (expected: string, place: number, delta: number) =>
       delta === 0

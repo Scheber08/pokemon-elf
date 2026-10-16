@@ -218,7 +218,7 @@ Lobby; der Host sieht neben der Dauer die Uhrzeit für Draft- und Saisonende bei
 und die Formkurve; der Rekord „Blitz-König“ nennt das Team mit den meisten Blitz-Picks ⚡ (ab 3). Der Ticker zeigt Torjäger live, die Überraschung des Spieltags, 💥 den Kantersieg (ab 4 Toren Abstand), 🔄 das Comeback (Sieg nach mindestens 2 Toren Rückstand), 🎩 Hattricks und bei den eigenen Toren 🧤 die Spiele ohne Gegentor; mit Hinweisen meldet der
 Browser auch das Saisonende. Nach der Saison legt
 `POST /api/drafts/:code/rematch` eine **Revanche** an (gleiche Teams und Einstellungen); jede Revanche
-trägt die Ergebnisse ihrer Vorgänger mit – daraus die **ewige Tabelle**. In der Lobby einer Revanche steht der Meister der letzten Liga als „🏆 Titelverteidiger“ (Zeile über den Teams und Pokal am Team). Für `/draft/:code` liefert der
+trägt die Ergebnisse ihrer Vorgänger mit – daraus die **ewige Tabelle**. In der Lobby einer Revanche steht der Meister der letzten Liga als „🏆 Titelverteidiger“ (Zeile über den Teams und Pokal am Team); im Ergebnis heißt es dann „🏆 Titel verteidigt“ oder „🔄 Neuer Meister – Titelverteidiger … wird Platz n“. Für `/draft/:code` liefert der
 Worker eigene Open-Graph-Tags (Link-Vorschau mit Liganame, Host und Teams, `server/preview.ts`) – ebenso für
 Spielerprofile `/spieler/:id` (Name, gewertete Runs, bester Allzeit-Platz).
 

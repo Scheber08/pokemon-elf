@@ -384,6 +384,8 @@ const draft: Messages['draft'] = {
     missed: (pick, name, fit, pos, alt, altFit) => `Missed chance: pick ${pick} ${name} (fit ${fit}) – ${alt} (fit ${altFit}) was still free at ${pos}`,
     missedTaken: (team, pick) => `– went to ${team} with pick ${pick}.`,
     missedFree: '– stayed free until the end.',
+    titleDefended: (team) => `🏆 Title defended – ${team} are champions again!`,
+    titleLost: (team, place) => `🔄 New champions – defending champions ${team} finish in place ${place}`,
     joker: (pokemon, pick, team, goals) => `🃏 Joker of the draft: ${pokemon} (only pick ${pick}) scored ${goals} for ${team}`,
     expectation: (expected, place, delta) =>
       delta === 0

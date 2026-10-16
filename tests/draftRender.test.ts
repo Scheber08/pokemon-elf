@@ -2397,6 +2397,28 @@ describe('ManagerSeason', () => {
     expect(cbEl.className.includes('is-you')).toBe(cb.winner === idx || cb.loser === idx);
   });
 
+  it('Saisonende einer Revanche: 🏆 Titel verteidigt bzw. Platz des Titelverteidigers', async () => {
+    const { DraftSeasonStage } = await import('../src/components/DraftSeasonStage');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = engine.withLeague(s, ALL, SCALE);
+    const table = s.league!.table;
+    // Die Liga ist mit Ranglisten-Teams aufgefüllt: der Meister ist nicht unbedingt ein Draft-Team
+    const champDraft = table[0].team < s.teams.length ? s.teams[table[0].team] : null;
+    const other = s.teams.find((tm) => tm.id !== champDraft?.id)!;
+    const row = (teamId: string, rank: number) => ({ teamId, name: 'X', cpu: false, rank, played: 6, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 });
+    const withHistory = (id: string) => ({ ...s, history: [{ code: 'OLD234', name: 'Alt', finishedAt: 0, rows: [row(id, 1)] }], season: { ...s.season!, startsAt: Date.now() - 30 * 86_400_000 } });
+    if (champDraft) {
+      const r1 = await render(app(h(DraftSeasonStage, { room: fakeRoom(snap(withHistory(champDraft.id), 'h')) })));
+      await settle();
+      expect(r1.container.querySelector('.draft-results__defended')!.textContent).toMatch(/^🏆 Titel verteidigt – .+ ist erneut Meister!$/);
+    }
+    const r2 = await render(app(h(DraftSeasonStage, { room: fakeRoom(snap(withHistory(other.id), 'h')) })));
+    await settle();
+    const place = table.findIndex((r) => r.team === s.teams.indexOf(other)) + 1;
+    expect(r2.container.querySelector('.draft-results__defended')!.textContent).toMatch(new RegExp(`^🔄 Neuer Meister – Titelverteidiger .+ wird Platz ${place}$`));
+  });
+
   it('Saisonende: 🗺️ Regionen-Mix in den Kader-Karten (nur bei mehreren Regionen)', async () => {
     const { DraftSeasonStage } = await import('../src/components/DraftSeasonStage');
     let s = engine.startDraft(lobby(2, { gens: [1, 2], maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);

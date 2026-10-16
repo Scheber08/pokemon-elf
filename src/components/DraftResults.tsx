@@ -61,6 +61,8 @@ interface Props {
   transfers?: ManagerTransfer[];
   /** Einstellungen der Liga – für „Wo landeten die Stars?" (die fünf stärksten Pokémon des Pools) */
   settings?: DraftSettings;
+  /** Revanche: Team-ID des Meisters der letzten Liga (Titelverteidiger) */
+  defendingId?: string | null;
 }
 
 /** Wie viele Torjäger die Liste zeigt */
@@ -73,7 +75,7 @@ const TOP_SCORERS = 10;
  * entschieden wurde. „Ergebnis teilen" (mit Link zur Liga) nutzt das Teilen-Menü oder die
  * Zwischenablage.
  */
-export function DraftResults({ league, teams, ratings, highlight, sprite, code, leagueName, picks = [], transfers = [], shinies, zoneTop = 1, settings }: Props) {
+export function DraftResults({ league, teams, ratings, highlight, sprite, code, leagueName, picks = [], transfers = [], shinies, zoneTop = 1, settings, defendingId }: Props) {
   const t = useT();
   const tx = t.draft.results;
   const [onlyMine, setOnlyMine] = useState(false);
@@ -325,6 +327,14 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
           </p>
         )}
         {tieNote && <p className="draft-results__tie">{tieNote}</p>}
+        {!cup && defendingId && (() => {
+          // 🏆 Revanche: Titel verteidigt – oder wo der Titelverteidiger landete
+          const at = teams.findIndex((tm) => tm.id === defendingId);
+          if (at < 0) return null;
+          if (at === champion.team) return <p className="draft-results__defended">{tx.titleDefended(nameOf(at))}</p>;
+          const place = table.findIndex((r) => r.team === at) + 1;
+          return place > 0 ? <p className="draft-results__defended muted">{tx.titleLost(nameOf(at), place)}</p> : null;
+        })()}
         {steal && stealMon && stealTeam >= 0 && (
           <p className="draft-results__steal">
             {tx.steal(t.game.pokemon(stealMon), steal.pick + 1, nameOf(stealTeam), t.game.posName[steal.pos])}
