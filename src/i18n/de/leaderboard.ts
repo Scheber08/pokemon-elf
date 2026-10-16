@@ -148,6 +148,8 @@ const leaderboard = {
     recentFilter: 'Letzte Runs nach Wertung filtern',
     recentAll: 'Alle',
     recentAvg: (avg: number, n: number) => `Ø ${avg} Pkt aus ${n} Runs`,
+    /** Bester der gezeigten Runs */
+    recentBest: (points: number) => `🔝 Bester: ${points} Pkt`,
     recentTrend: (diff: number) => `${diff > 0 ? '▲ +' : '▼ −'}${Math.abs(diff)} Pkt in den letzten 3 Runs gegenüber davor`,
     recent: 'Letzte Runs',
     loading: 'Profil wird geladen …',

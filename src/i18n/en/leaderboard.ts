@@ -139,6 +139,7 @@ const leaderboard: Messages['leaderboard'] = {
     recentFilter: 'Filter recent runs by mode',
     recentAll: 'All',
     recentAvg: (avg, n) => `Avg ${avg} pts over ${n} runs`,
+    recentBest: (points) => `🔝 Best: ${points} pts`,
     recentTrend: (diff) => `${diff > 0 ? '▲ +' : '▼ −'}${Math.abs(diff)} pts in the last 3 runs vs. before`,
     recent: 'Recent runs',
     loading: 'Loading profile …',

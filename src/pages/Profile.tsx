@@ -202,7 +202,7 @@ export function Profile() {
           );
         })()}
         {(() => {
-          // Ø Punkte der gezeigten Runs (ab zwei), dazu der Trend: die neuesten drei gegen die älteren (ab sechs)
+          // Ø Punkte der gezeigten Runs (ab zwei) mit dem besten, dazu der Trend: die neuesten drei gegen die älteren (ab sechs)
           const rows = p.recent.filter((r) => !only || r.challenge === only);
           if (rows.length < 2) return null;
           const avg = (xs: typeof rows) => xs.reduce((n, r) => n + r.points, 0) / xs.length;
@@ -210,6 +210,7 @@ export function Profile() {
           return (
             <p className="small profile__avg">
               {tp.recentAvg(Math.round(avg(rows)), rows.length)}
+              <span className="profile__top"> · {tp.recentBest(Math.max(...rows.map((r) => r.points)))}</span>
               {trend !== 0 && (
                 <span className={`profile__trend ${trend > 0 ? 'is-up' : 'is-down'}`}> · {tp.recentTrend(trend)}</span>
               )}

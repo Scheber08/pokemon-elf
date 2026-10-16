@@ -79,10 +79,10 @@ describe('Spielerprofil', () => {
     expect(chips.map((b) => b.textContent)).toEqual(['Alle', '151 Challenge', '34–0 Challenge']);
     const recentRows = () => container.querySelectorAll('section')[1].querySelectorAll('tr').length;
     expect(recentRows()).toBe(3);
-    // Ø Punkte der gezeigten Runs (ab zwei; Trend erst ab sechs)
-    expect(container.querySelector('.profile__avg')!.textContent).toBe('Ø 71 Pkt aus 3 Runs');
+    // Ø Punkte der gezeigten Runs mit dem besten (ab zwei; Trend erst ab sechs)
+    expect(container.querySelector('.profile__avg')!.textContent).toBe('Ø 71 Pkt aus 3 Runs · 🔝 Bester: 92 Pkt');
     await act(async () => chips[1].click());
-    expect(container.querySelector('.profile__avg')!.textContent).toBe('Ø 77 Pkt aus 2 Runs');
+    expect(container.querySelector('.profile__avg')!.textContent).toBe('Ø 77 Pkt aus 2 Runs · 🔝 Bester: 92 Pkt');
     await act(async () => container.querySelectorAll('.profile__filter button')[2].click());
     expect(recentRows()).toBe(1);
     expect(container.querySelector('.profile__avg')).toBeNull();
@@ -107,7 +107,7 @@ describe('Spielerprofil', () => {
       root.render(h(ToastProvider, null, h(MemoryRouter, { initialEntries: ['/spieler/abc'] }, h(Routes, null, h(Route, { path: '/spieler/:entryId', element: h(Profile) }))))),
     );
     for (let i = 0; i < 5; i++) await act(async () => new Promise((r) => setTimeout(r, 0)));
-    expect(container.querySelector('.profile__avg')!.textContent).toBe('Ø 65 Pkt aus 6 Runs · ▲ +30 Pkt in den letzten 3 Runs gegenüber davor');
+    expect(container.querySelector('.profile__avg')!.textContent).toBe('Ø 65 Pkt aus 6 Runs · 🔝 Bester: 90 Pkt · ▲ +30 Pkt in den letzten 3 Runs gegenüber davor');
     expect(container.querySelector('.profile__trend')!.className).toContain('is-up');
     await act(async () => root.unmount());
   });
