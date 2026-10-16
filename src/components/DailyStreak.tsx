@@ -99,6 +99,11 @@ export function DailyStreak() {
           })()}
         </ol>
         {(() => {
+          // 🏆 Wie oft die Saison des Tages als Meister endete (Platz 1 der Saisontabelle)
+          const titles = history.filter((d) => d.position === 1).length;
+          return titles > 0 && <p className="small daily-streak__titles">{td.titles(titles, history.length)}</p>;
+        })()}
+        {(() => {
           const wd = bestWeekday(history);
           return wd && <p className="small daily-streak__weekday">📅 {td.bestWeekday(td.weekdays[wd.weekday], wd.avg, wd.count)}</p>;
         })()}

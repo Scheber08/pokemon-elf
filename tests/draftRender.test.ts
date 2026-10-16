@@ -990,6 +990,8 @@ describe('DraftLive', () => {
     expect(rows.map((r) => r.querySelector('.daily-streak__trend')?.textContent ?? null)).toEqual([' ▼12', ' ▲22', null]);
     expect(rows.map((r) => !!r.querySelector('.daily-streak__top'))).toEqual([false, true, false]);
     expect(rows[0].querySelector('.daily-streak__trend')!.getAttribute('title')).toBe('−12 Punkte gegenüber dem vorherigen Tag');
+    // 🏆 Meistertitel: kein Tag auf Platz 1 → keine Zeile
+    expect(container.querySelector('.daily-streak__titles')).toBeNull();
     // 📅 Bester Wochentag erst ab zwei Wochentagen mit je zwei Spielen (10.10. Sa, 11.10. So)
     expect(container.querySelector('.daily-streak__weekday')).toBeNull();
     recordDailyDay(d('2026-10-17', 60));
@@ -997,6 +999,10 @@ describe('DraftLive', () => {
     const again = await render(app(h(DailyStreak)));
     await settle();
     expect(again.container.querySelector('.daily-streak__weekday')!.textContent).toBe('📅 Dein bester Wochentag: Sonntag (Ø 96 Pkt. aus 2 Spielen)');
+    recordDailyDay({ ...d('2026-10-19', 90), position: 1 });
+    const third = await render(app(h(DailyStreak)));
+    await settle();
+    expect(third.container.querySelector('.daily-streak__titles')!.textContent).toBe('🏆 1× Meister in 6 gespielten Tagen');
     localStorage.clear();
   });
 
