@@ -168,6 +168,9 @@ const online = {
   readyOff: 'Ich bin bereit',
   readyOn: '✓ Bereit – zurücknehmen',
   readyMark: 'bereit',
+  /** Formations-Mix aller Teams in der Lobby */
+  lobbyFormations: (list: string) => `🧩 Formationen: ${list}`,
+  lobbyFormationSolo: ' – deine spielt sonst keiner',
   readyReset: 'Der Host hat die Regeln geändert – melde dich bitte erneut bereit.',
   readyNotify: (n: number) => (n === 1 ? 'Dein Mitspieler ist bereit – starte den Draft!' : `Alle ${n} Mitspieler sind bereit – starte den Draft!`),
   readyCount: (ready: number, total: number) => (ready === total ? `✓ Alle Mitspieler bereit (${total})` : `${ready}/${total} Mitspieler bereit`),

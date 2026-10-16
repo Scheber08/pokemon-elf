@@ -1066,6 +1066,21 @@ describe('DraftLobby', () => {
     }
   });
 
+  it('🧩 Lobby: Formations-Mix aller Teams, Hinweis bei eigener Einzel-Formation', async () => {
+    const st = lobby(3, { region: 1, maxTeams: 4 });
+    const { container } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) })));
+    await settle();
+    expect(container.querySelector('.draft-lobby__formations')!.textContent).toBe(
+      '🧩 Formationen: 4-4-2 ×2 · 4-3-3 – deine spielt sonst keiner',
+    );
+    const r2 = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 't1')) })));
+    await settle();
+    expect(r2.container.querySelector('.draft-lobby__formations')!.textContent).toBe('🧩 Formationen: 4-4-2 ×2 · 4-3-3');
+    const r3 = await render(app(h(DraftLobby, { room: fakeRoom(snap(lobby(1), 'h')) })));
+    await settle();
+    expect(r3.container.querySelector('.draft-lobby__formations')).toBeNull();
+  });
+
   it('🔍 Lobby: ganzen Pool ansehen, Antippen nennt die beste Position', async () => {
     const st = lobby(2, { region: 1, maxTeams: 4 });
     const { container } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) })));

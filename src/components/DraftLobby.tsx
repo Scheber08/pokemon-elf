@@ -490,6 +490,19 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
               );
             })}
           </ol>
+          {s.teams.length >= 2 && (() => {
+            // Formations-Mix der Lobby: häufigste zuerst, bei Gleichstand in Reihenfolge der Teams
+            const count = new Map<string, number>();
+            for (const tm of s.teams) count.set(tm.formation, (count.get(tm.formation) ?? 0) + 1);
+            const list = [...count].sort((a, b) => b[1] - a[1]).map(([f, n]) => (n > 1 ? `${f} ×${n}` : f));
+            const solo = me != null && count.get(me.formation) === 1;
+            return (
+              <p className="small draft-lobby__formations">
+                {t.online.lobbyFormations(list.join(' · '))}
+                {solo && <span className="muted">{t.online.lobbyFormationSolo}</span>}
+              </p>
+            );
+          })()}
           <p className="muted small">
             {s.settings.order === 'random'
               ? t.online.orderRandom

@@ -154,6 +154,8 @@ const online: Messages['online'] = {
   readyOff: 'I’m ready',
   readyOn: '✓ Ready – undo',
   readyMark: 'ready',
+  lobbyFormations: (list) => `🧩 Formations: ${list}`,
+  lobbyFormationSolo: ' – nobody else plays yours',
   readyReset: 'The host changed the rules – please mark yourself ready again.',
   readyNotify: (n) => (n === 1 ? 'Your fellow player is ready – start the draft!' : `All ${n} players are ready – start the draft!`),
   readyCount: (ready, total) => (ready === total ? `✓ All players ready (${total})` : `${ready}/${total} players ready`),
