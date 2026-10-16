@@ -127,6 +127,7 @@ const leaderboard = {
     perfectTitle: (n: number) => (n === 1 ? 'Eine perfekte Saison (nur Siege)' : `${n} perfekte Saisons (nur Siege)`),
     best: 'Bester Run',
     showTeam: 'Team ansehen',
+    bestRunTitle: 'Bestwert dieser Wertung',
     recent: 'Letzte Runs',
     loading: 'Profil wird geladen …',
     gone: 'Dieses Profil ist nicht (mehr) erreichbar – der Eintrag steht nicht mehr in der Rangliste.',

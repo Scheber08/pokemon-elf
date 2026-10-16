@@ -189,7 +189,20 @@ export function Profile() {
                 <tr key={`${r.createdAt}-${i}`}>
                   <td className="left muted">{date(r.createdAt)}</td>
                   <td className="left">{t.game.challenge[r.challenge]}</td>
-                  <td className="left">{r.teamName}</td>
+                  <td className="left">
+                    {r.teamName}
+                    {(() => {
+                      // 🏅 Dieser Run ist der Bestwert seiner Wertung
+                      const b = p.challenges.find((c) => c.challenge === r.challenge)?.best;
+                      const isBest = b && b.day === r.day && b.teamName === r.teamName && b.points === r.points && b.score === r.score;
+                      return isBest ? (
+                        <span className="profile__best" title={tp.bestRunTitle}>
+                          {' '}
+                          🏅
+                        </span>
+                      ) : null;
+                    })()}
+                  </td>
                   <td>
                     <strong>{formatRecord(r.record)}</strong>
                   </td>

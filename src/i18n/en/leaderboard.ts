@@ -122,6 +122,7 @@ const leaderboard: Messages['leaderboard'] = {
     perfectTitle: (n) => (n === 1 ? 'One perfect season (wins only)' : `${n} perfect seasons (wins only)`),
     best: 'Best run',
     showTeam: 'View team',
+    bestRunTitle: 'Personal best in this mode',
     recent: 'Recent runs',
     loading: 'Loading profile …',
     gone: 'This profile isn’t available (any more) – the entry is no longer on the leaderboard.',

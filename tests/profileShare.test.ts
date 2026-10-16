@@ -17,9 +17,17 @@ const PROFILE: PlayerProfile = {
   runs: 4,
   challenges: [
     { challenge: 'c340', runs: 3, perfect: 0, place: 4, players: 57, best: null },
-    { challenge: 'c151', runs: 1, perfect: 0, best: null },
+    {
+      challenge: 'c151',
+      runs: 1,
+      perfect: 0,
+      best: { entryId: 'e1', teamName: 'Kanto', formation: '4-3-3', day: '2026-10-02', record: { w: 30, d: 2, l: 2 }, points: 92, score: 800 },
+    },
   ],
-  recent: [],
+  recent: [
+    { challenge: 'c151', day: '2026-10-02', teamName: 'Kanto', record: { w: 30, d: 2, l: 2 }, points: 92, score: 800, createdAt: '2026-10-02T10:00:00.000Z' },
+    { challenge: 'c151', day: '2026-10-01', teamName: 'Kanto', record: { w: 20, d: 2, l: 12 }, points: 62, score: 780, createdAt: '2026-10-01T10:00:00.000Z' },
+  ],
 };
 
 const text = (n: MiniNode): string => n.textContent;
@@ -53,6 +61,8 @@ describe('Spielerprofil', () => {
     expect(text(container)).toContain('Platz 4 von 57');
     // ⭐ Lieblings-Challenge (meiste Runs, eindeutig)
     expect(container.querySelector('.profile__fav')!.textContent).toBe('⭐ Lieblings-Challenge: 34–0 Challenge (3 Runs)');
+    // 🏅 nur am Run, der der Bestwert seiner Wertung ist
+    expect(container.querySelectorAll('.profile__best').length).toBe(1);
     const btn = container.querySelectorAll('button').find((b) => b.textContent === 'Profil teilen')!;
     await act(async () => btn.click());
     for (let i = 0; i < 3; i++) await act(async () => new Promise((r) => setTimeout(r, 0)));
