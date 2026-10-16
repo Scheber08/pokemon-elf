@@ -1000,6 +1000,28 @@ describe('DraftLive', () => {
     localStorage.clear();
   });
 
+  it('Tägliche Elf: 🏅 Neuer Bestwert, wenn heute mehr Punkte als an jedem früheren Tag', async () => {
+    const { DailyStreak } = await import('../src/components/DailyStreak');
+    const { recordDailyDay } = await import('../src/lib/dailyHistory');
+    const { dayKey } = await import('../src/lib/daily');
+    const d = (day: string, points: number) => ({ day, record: { w: 20, d: 2, l: 2 }, points, score: 700, position: 3 });
+    // Früherer Tag relativ zur (in dieser Datei festen) Uhr
+    const earlier = dayKey(new Date(Date.now() - 3 * 86_400_000));
+    recordDailyDay(d(earlier, 80));
+    recordDailyDay(d(dayKey(), 85));
+    const a = await render(app(h(DailyStreak)));
+    await settle();
+    expect(a.container.querySelector('.daily-streak__record')!.textContent).toBe('🏅 Neuer Bestwert: heute dein bester Tag – 5 Punkte mehr als dein bisher bester');
+    // Gleichstand ist kein neuer Bestwert
+    localStorage.clear();
+    recordDailyDay(d(earlier, 85));
+    recordDailyDay(d(dayKey(), 85));
+    const b = await render(app(h(DailyStreak)));
+    await settle();
+    expect(b.container.querySelector('.daily-streak__record')).toBeNull();
+    localStorage.clear();
+  });
+
   it('Taste ? zeigt die Tastenkürzel', async () => {
     const { container } = await renderLive(fakeRoom(snap(drafting(), 'h')));
     const ev = Object.assign(new MiniEvent('keydown', { bubbles: true, cancelable: true }), { key: '?', ctrlKey: false, metaKey: false, altKey: false });

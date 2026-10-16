@@ -36,6 +36,7 @@ const daily: Messages['daily'] = {
   bestDay: 'Best day',
   bestDayAvg: (avg) => `avg ${avg}`,
   bestDayTitle: (n, avg) => `Most points on one day (Daily XI #${n}) – ${avg} points on average`,
+  newBest: (plus) => `🏅 New personal best: today is your best day – ${plus} ${plus === 1 ? 'point' : 'points'} more than your previous best`,
   played: 'Played',
   streakHint: 'Play today or your streak ends.',
   archive: 'Your recent days',

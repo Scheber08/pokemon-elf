@@ -54,6 +54,12 @@ export function DailyStreak() {
         })()}
       </div>
       {!playedToday && streak.current > 0 && <p className="hint daily-streak__hint">{td.streakHint}</p>}
+      {playedToday &&
+        history.length > 1 &&
+        history[0].points > Math.max(...history.slice(1).map((d) => d.points)) && (
+          // 🏅 Heute mehr Punkte als an jedem früheren Tag
+          <p className="daily-streak__record">{td.newBest(history[0].points - Math.max(...history.slice(1).map((d) => d.points)))}</p>
+        )}
       <details className="daily-streak__archive">
         <summary>{td.archive}</summary>
         <ol>

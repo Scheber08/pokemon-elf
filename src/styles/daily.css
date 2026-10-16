@@ -260,6 +260,11 @@
 .daily-streak__best .statcard__value {
   font-size: 24px;
 }
+.daily-streak__record {
+  margin: 10px 0 0;
+  color: var(--green-text);
+  font-weight: 700;
+}
 .daily-streak__hint {
   margin: 0;
 }

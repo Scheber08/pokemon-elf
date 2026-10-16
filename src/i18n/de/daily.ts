@@ -31,6 +31,7 @@ const daily = {
   bestDay: 'Bester Tag',
   bestDayAvg: (avg: number) => `Ø ${avg}`,
   bestDayTitle: (n: number, avg: number) => `Meiste Punkte an einem Tag (Tägliche Elf #${n}) – im Schnitt ${avg} Punkte`,
+  newBest: (plus: number) => `🏅 Neuer Bestwert: heute dein bester Tag – ${plus} ${plus === 1 ? 'Punkt' : 'Punkte'} mehr als dein bisher bester`,
   played: 'Gespielt',
   streakHint: 'Spiel heute, sonst reißt deine Serie.',
   archive: 'Deine letzten Tage',
