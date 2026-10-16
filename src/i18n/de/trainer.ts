@@ -135,6 +135,7 @@ const trainer = {
       book: 'Offenes Buch',
       piggy: 'Sparschwein',
       chef: 'Kochmütze',
+      penguin: 'Pinguinmütze',
       catears: 'Katzenohren',
       flowercrown: 'Blumenkranz',
       antennae: 'Bienen-Fühler',

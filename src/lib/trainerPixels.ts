@@ -417,6 +417,14 @@ function hat(c: Canvas, id: string, cloth: string) {
       c.dots([[10, 6], [20, 6], [13, 7], [18, 7]], '#ffffff');
       c.fill(ellipse(15.5, 2, 2.6, 2.2), '#ffffff', '#c9d6e3');
       break;
+    case 'penguin':
+      // Pinguinmütze (Weltpinguintag): schwarze Strickmütze mit weißem Gesicht, zwei Augen und orangem Schnabel
+      c.fill(and(ellipse(15.5, 10, 8.8, 7.5), above(10)), '#26282e', '#111216');
+      c.fill(ellipse(15.5, 6.5, 4.2, 3), '#ffffff', null);
+      c.dots([[14, 6], [17, 6]], '#26282e');
+      c.rect(15, 7, 2, 1, '#f08a24');
+      c.rect(7, 9, 18, 2, '#3a3d45');
+      break;
     case 'wheat':
       // Erntekranz (Erntedank): goldene Ähren auf einem Strohreif, dazwischen ein roter Apfel
       c.fill((x, y) => y === 9 && head(x, y), '#b8862c', null);

@@ -439,6 +439,10 @@ describe('Saisonartikel', () => {
     expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '👨‍👩‍👧').map((i) => `${i.slot}:${i.id}`)).toEqual(['hat:chef', 'companion:924']);
     const chef = TRAINER_ITEMS.find((i) => i.id === 'chef')!;
     expect([at('2027-05-14'), at('2027-05-15'), at('2027-05-21'), at('2027-05-22')].map((d) => itemOnSale(chef, d))).toEqual([false, true, true, false]);
+    // 🐧 Weltpinguintag: Pinguinmütze und Plinfa vom 21. bis 27. April
+    expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '🐧').map((i) => `${i.slot}:${i.id}`)).toEqual(['hat:penguin', 'companion:393']);
+    const penguin = TRAINER_ITEMS.find((i) => i.id === 'penguin')!;
+    expect([at('2027-04-20'), at('2027-04-21'), at('2027-04-27'), at('2027-04-28')].map((d) => itemOnSale(penguin, d))).toEqual([false, true, true, false]);
   });
 
   it('Kauf nur in der Saison (400 not_on_sale), danach bleibt er tragbar', async () => {
