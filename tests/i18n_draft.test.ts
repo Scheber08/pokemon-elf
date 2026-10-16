@@ -397,6 +397,9 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(container.querySelector('.draft__next')!.textContent).toBe(`Then: ${clubEn(CLUB_NAMES[0])} → ${clubEn(CLUB_NAMES[0])} → My Team`);
     // Board: das nächste Team ist gestrichelt markiert
     expect(container.querySelectorAll('.draft__board .draft__col').map((c) => c.className.includes('is-next'))).toEqual([false, true]);
+    // Board benannt über eine unsichtbare h2 – die Team-h3 hängen sonst während der CPU-Züge direkt unter der h1
+    expect(container.querySelector('.draft__board')!.getAttribute('aria-labelledby')).toBe('draft-board-title');
+    expect(container.querySelector('.draft__board h2')!.textContent).toBe('Draft board');
     // Bedarf des nächsten Teams (CPU, noch kein Pick: alle Positionen seiner Formation)
     expect(container.querySelector('.draft__needs')!.textContent).toMatch(new RegExp(`^${clubEn(CLUB_NAMES[0])} still needs: .+$`));
     // Beste Freie: ein Chip je verschiedener Position der Formation, Klick wählt das Pokémon aus

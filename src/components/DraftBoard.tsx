@@ -106,7 +106,11 @@ export function DraftBoard({ state, byId, currentId, nextId }: Props) {
   });
   const topFit = soleTopIndex(avgFits);
   return (
-    <section className="draft__board draft-board" aria-label={t.draft.draftBoard} ref={boardRef}>
+    <section className="draft__board draft-board" aria-labelledby="draft-board-title" ref={boardRef}>
+      {/* Unsichtbare h2: die Team-Spalten (h3) brauchen eine Ebene darüber, auch wenn die Pool-Überschrift fehlt */}
+      <h2 id="draft-board-title" className="sr-only">
+        {t.draft.draftBoard}
+      </h2>
       {state.teams.map((team, i) => {
         const defs = FORMATIONS[team.formation].slots;
         const rows: { slot: number; pos: PosCode | null; id: number | null }[] = defs.map((d, j) => ({ slot: j, pos: d.pos, id: team.slots[j] }));

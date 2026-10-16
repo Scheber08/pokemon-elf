@@ -2247,7 +2247,11 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               />
             </section>
           )}
-          <section className="draft__board" aria-label={t.draft.draftBoard} ref={boardRef}>
+          <section className="draft__board" aria-labelledby="draft-board-title" ref={boardRef}>
+            {/* Unsichtbare h2: während der CPU zieht, fehlt die Pick-Überschrift – die Team-Spalten (h3) brauchen eine Ebene darüber */}
+            <h2 id="draft-board-title" className="sr-only">
+              {t.draft.draftBoard}
+            </h2>
             {state.teams.map((tm, i) => (
               <div
                 key={i}

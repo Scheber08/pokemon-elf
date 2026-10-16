@@ -30,8 +30,9 @@ export function installScrollFocus(root: HTMLElement): () => void {
       if (seen.has(el)) return;
       seen.add(el);
       resize.observe(el);
-      // Die Tabelle selbst wächst mit neuen Zeilen/Spalten – auch sie beobachten
-      if (el.firstElementChild) resize.observe(el.firstElementChild);
+      // Der Inhalt wächst mit neuen Zeilen/Spalten – auch ihn beobachten (letztes Kind: die Tabelle bzw.
+      // die letzte Board-Spalte; vorne steht beim Board die unsichtbare Überschrift)
+      if (el.lastElementChild) resize.observe(el.lastElementChild);
       syncScrollFocus(el);
     });
   };

@@ -936,6 +936,8 @@ describe('DraftLive', () => {
     const other = await renderLive(fakeRoom(snap(drafting(), 't1')));
     expect(other.container.querySelector('.draft-turnbar__needs')).toBeNull();
     // Board: aktuelles Team gelb, nächstes gestrichelt
+    // Board benannt über eine unsichtbare h2 (Ebene über den Team-h3)
+    expect(container.querySelector('.draft-board h2')!.textContent).toBe('Draft-Board');
     const cols = container.querySelectorAll('.draft-board__col');
     expect(cols.map((c) => [c.className.includes('is-current'), c.className.includes('is-next')])).toEqual([
       [true, false],
