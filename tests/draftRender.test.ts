@@ -1001,7 +1001,14 @@ describe('DraftLive', () => {
     // Alle Regionen: Ultrabestien im Pool → „UB n“
     const ubs = ALL.filter((p) => engine.hasKind(p, 'ub')).length;
     expect(ubs).toBeGreaterThan(0);
-    expect(plain.container.querySelector('.draft-pool__ub')!.textContent).toBe(` UB ${ubs}${ubs} Ultrabestien noch frei`);
+    const ub = plain.container.querySelector('.draft-pool__ub') as MiniElement;
+    expect(ub.textContent).toBe(`UB ${ubs}${ubs} Ultrabestien noch frei – Antippen: nur Ultrabestien zeigen`);
+    // Antippen filtert das Raster auf Ultrabestien
+    await act(async () => ub.click());
+    expect(ub.getAttribute('aria-pressed')).toBe('true');
+    const ubNames = plain.container.querySelectorAll('.pcard .pcard__name').map((e) => e.textContent);
+    expect(ubNames.length).toBeGreaterThan(0);
+    expect(ubNames.every((n) => ALL.some((p) => p.de === n && engine.hasKind(p, 'ub')))).toBe(true);
     expect(plain.container.querySelector('.draft-pool__mega')).toBeNull();
     let st = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, legendary: true, mythical: true }), 'dev-h', 0, ALL);
     const legends = ALL.filter((p) => p.gen === 1 && (p.leg || p.myth));

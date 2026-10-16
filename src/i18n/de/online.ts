@@ -289,6 +289,8 @@ const online = {
   yourTurn: 'Du bist dran!',
   pool: 'Pool',
   /** Noch freie Legendäre/Mysteriöse im Pool (★ n) */
+  ubOnlyTitle: 'Antippen: nur Ultrabestien zeigen',
+  megasOnlyTitle: 'Antippen: nur Megas zeigen',
   legendsOnlyTitle: 'Antippen: nur Legendäre/Mysteriöse zeigen',
   legendsFreeTitle: (n: number) => (n === 1 ? 'Ein Legendäres/Mysteriöses noch frei' : `${n} Legendäre/Mysteriöse noch frei`),
   ubFreeTitle: (n: number) => (n === 1 ? 'Eine Ultrabestie noch frei' : `${n} Ultrabestien noch frei`),
