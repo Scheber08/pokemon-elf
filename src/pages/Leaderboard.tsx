@@ -48,6 +48,8 @@ interface BoardRow {
   trainer?: TrainerLook | null;
   /** Online: Eintrag aus der letzten Stunde (🆕) */
   fresh?: boolean;
+  /** Wochenwertung: Wochentag des Eintrags (voller Name) */
+  weekday?: string;
 }
 
 /** So lange gilt ein Ranglisten-Eintrag als neu (🆕) */
@@ -160,6 +162,12 @@ function BoardTable({ rows, mine, onReload, focusPlayer = null }: BoardTableProp
             <path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
+        {r.weekday && (
+          <abbr className="lb-day" title={r.weekday}>
+            {' '}
+            {r.weekday.slice(0, 2)}
+          </abbr>
+        )}
         {r.fresh && (
           <span className="lb-fresh" role="img" title={t.leaderboard.freshTitle} aria-label={t.leaderboard.freshTitle}>
             🆕
@@ -367,6 +375,8 @@ function OnlineBoard({ challenge, period, reload, onRetry, panelRef }: OnlineBoa
       profile: r.entryId,
       fresh: Date.now() - Date.parse(r.createdAt) < FRESH_MS,
       trainer: r.trainer ? parseLook(r.trainer) : null,
+      // Wochenwertung: an welchem Tag der Eintrag kam (Tag „YYYY-MM-DD“ der Antwort)
+      weekday: period === 'week' ? t.daily.weekdays[new Date(`${r.day}T12:00:00Z`).getUTCDay()] : undefined,
     };
   };
 

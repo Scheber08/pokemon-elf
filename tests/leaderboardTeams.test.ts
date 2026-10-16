@@ -772,16 +772,25 @@ describe('Rangliste: Team ansehen (online)', () => {
     expect(c.querySelector('.lb-meta')!.textContent).toContain('Lieblingsformation der Top 3: 4-3-3 (2×)');
   });
 
-  it('Wochenwertung: Kopfzeile nennt die Resttage bis Sonntag', async () => {
+  it('Wochenwertung: Kopfzeile nennt die Resttage bis Sonntag, Zeilen den Wochentag', async () => {
     storeSettings('de');
     await stubServer();
     const c = await render(app());
     await settle();
+    // Allzeit: kein Wochentag an den Zeilen
+    expect(c.querySelectorAll('.lb-day')).toHaveLength(0);
     const week = c.querySelectorAll('[role="radio"]').find((b) => b.textContent === 'Diese Woche')!;
     await click(week);
     await settle();
     const wd = new Date(`${dayKey()}T12:00:00Z`).getUTCDay();
     expect(c.querySelector('.lb-meta')!.textContent).toContain(wd === 0 ? 'endet heute' : `noch ${8 - wd} Tage`);
+    // Wochentag des Eintrags an jeder Zeile, auch der eigenen außerhalb der Top-Liste (12.10.2026 = Montag)
+    const days = c.querySelectorAll('.lb-day');
+    expect(days.map((d) => [d.textContent, d.getAttribute('title')])).toEqual([
+      [' Mo', 'Montag'],
+      [' Mo', 'Montag'],
+      [' Mo', 'Montag'],
+    ]);
   });
 
   it('Sprites folgen der Einstellung des Nutzers – im Dialog und im Builder-Link', async () => {
