@@ -299,6 +299,16 @@
   height: 20px;
   pointer-events: none;
 }
+/* Halbzeit-Strich auf der Zeitleiste */
+.match-pitch__half {
+  position: absolute;
+  top: -6px;
+  width: 2px;
+  height: 12px;
+  margin-left: -1px;
+  background: var(--text-dim);
+  opacity: 0.7;
+}
 .match-pitch__mark {
   position: absolute;
   top: 0;

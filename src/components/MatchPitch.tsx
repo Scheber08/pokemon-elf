@@ -121,7 +121,8 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
           {lineups[1]?.crest && <Crest crest={lineups[1].crest} size={16} />}
           <span className="match-pitch__kit is-away" aria-hidden="true" />
         </span>
-        <span className="match-pitch__clock">{formatMinute(minute)}</span>
+        {/* Kurz nach der 45. Minute: „Halbzeit“ statt der Minute */}
+        <span className="match-pitch__clock">{time > 45 && time < 46.5 ? tx.halfTime : formatMinute(minute)}</span>
       </div>
       <svg className="match-pitch__field" viewBox={`-3 -1 ${PITCH_W + 6} ${PITCH_H + 2}`} role="img" aria-label={tx.aria}>
         {Array.from({ length: 10 }, (_, i) => (
@@ -257,6 +258,9 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
           />
           {/* Tore auf der Zeitleiste – Klick springt kurz davor */}
           <div className="match-pitch__marks">
+            {replay.end > 45 && (
+              <span className="match-pitch__half" style={{ left: `${(45 / replay.end) * 100}%` }} title={tx.halfTime} aria-hidden="true" />
+            )}
             {replay.events
               .filter((e) => e.kind === 'goal')
               .map((e, i) => {

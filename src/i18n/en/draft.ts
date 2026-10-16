@@ -549,6 +549,7 @@ const draft: Messages['draft'] = {
     seek: 'Match minute',
     nextGoal: 'Jump to the next goal (key N)',
     playKey: 'Play/pause (space bar)',
+    halfTime: 'Half-time',
     goalFlash: 'GOAL!',
     focus: (who, pos, team) => `${who} · ${pos} · ${team}`,
     focusStats: (goals, assists) => [goals ? `⚽ ${goals}` : '', assists ? `🅰️ ${assists}` : ''].filter(Boolean).join(' '),

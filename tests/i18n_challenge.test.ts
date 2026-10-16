@@ -492,6 +492,8 @@ describe('Saisonbilanz und Ticker', () => {
     }
     expect(goals).toBeGreaterThan(0);
     expect(document.body.querySelectorAll('.match-pitch__mark')).toHaveLength(goals);
+    // Halbzeit-Strich auf der Zeitleiste
+    expect(document.body.querySelectorAll('.match-pitch__half')).toHaveLength(1);
     expect(jumps).toBe(goals);
     // Tastatur: Leertaste schaltet Abspielen/Pause
     const play = () => document.body.querySelector('.match-pitch__controls .btn') as unknown as { textContent: string };

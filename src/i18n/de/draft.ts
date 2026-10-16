@@ -605,6 +605,7 @@ const draft = {
     seek: 'Spielminute',
     nextGoal: 'Zum nächsten Tor springen (Taste N)',
     playKey: 'Abspielen/Pause (Leertaste)',
+    halfTime: 'Halbzeit',
     goalFlash: 'TOR!',
     focus: (who: string, pos: string, team: string) => `${who} · ${pos} · ${team}`,
     focusStats: (goals: number, assists: number) => [goals ? `⚽ ${goals}` : '', assists ? `🅰️ ${assists}` : ''].filter(Boolean).join(' '),
