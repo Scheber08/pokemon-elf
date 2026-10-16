@@ -512,7 +512,7 @@ describe('Saisonbilanz und Ticker', () => {
   it('🏅 Neuer Bestwert nur, wenn der Score den bisherigen übertrifft (nicht beim ersten Run)', async () => {
     storeLang('de');
     stubFetch();
-    const view = (last?: { score: number; prevBest?: number | null }) =>
+    const view = (last?: { score: number; prevBest?: number | null }, sum?: { scoreSum: number; scored: number }) =>
       render(
         app(
           h(SeasonResultView, {
@@ -522,7 +522,7 @@ describe('Saisonbilanz und Ticker', () => {
             sprite: 'pixel',
             entryId: null,
             onNewRun: () => {},
-            stats: { bestScore: 900, bestRecord: null, runs: 2, last: last && { ...last, record: { w: 1, d: 0, l: 0 } } },
+            stats: { bestScore: 900, bestRecord: null, runs: 2, last: last && { ...last, record: { w: 1, d: 0, l: 0 } }, ...sum },
           }),
         ),
       );
@@ -540,6 +540,21 @@ describe('Saisonbilanz und Ticker', () => {
       await settle();
       expect(v.querySelector('.result-hero__best')).toBeNull();
     }
+    // ▲/▼ gegen den Schnitt der früheren Runs (ab drei früheren, nicht neben 🏅)
+    const under = await view({ score, prevBest: score + 50 }, { scoreSum: score + 3 * (score + 20), scored: 4 });
+    await settle();
+    expect(under.querySelector('.result-hero__avg')!.textContent).toBe(`▼ 20 unter deinem Ø Score (${score + 20})`);
+    expect(under.querySelector('.result-hero__avg')!.className).toContain('is-down');
+    const over = await view({ score, prevBest: score + 50 }, { scoreSum: score + 3 * (score - 15), scored: 4 });
+    await settle();
+    expect(over.querySelector('.result-hero__avg')!.textContent).toBe(`▲ 15 über deinem Ø Score (${score - 15})`);
+    // Zu wenige frühere Runs (zwei) oder neuer Bestwert: kein Vergleich
+    const few = await view({ score, prevBest: score + 50 }, { scoreSum: score + 2 * (score - 15), scored: 3 });
+    await settle();
+    expect(few.querySelector('.result-hero__avg')).toBeNull();
+    const best = await view({ score, prevBest: score - 5 }, { scoreSum: score + 3 * (score - 15), scored: 4 });
+    await settle();
+    expect(best.querySelector('.result-hero__avg')).toBeNull();
   });
 
   it('Kapitän: Tore der Saison im Ergebnis', async () => {

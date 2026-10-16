@@ -215,6 +215,14 @@ export function SeasonResultView({
     return { plus: last.score - last.prevBest, before: last.prevBest };
   })();
 
+  // Score gegen den Schnitt der früheren Runs dieser Challenge (ab drei, gehört der letzte gespeicherte Run zu diesem Ergebnis)
+  const vsAvg = (() => {
+    const last = stats?.last;
+    if (!last || last.score !== evaluation.score || stats?.scoreSum == null || stats.scored == null || stats.scored - 1 < 3) return null;
+    const avg = Math.round((stats.scoreSum - last.score) / (stats.scored - 1));
+    return { diff: last.score - avg, avg };
+  })();
+
   const onShare = async () => {
     setBusy(true);
     try {
@@ -346,6 +354,9 @@ export function SeasonResultView({
             <p className="result-hero__verdict">{verdict(season, tr.verdict)}</p>
             {/* 🏅 Neuer persönlicher Bestwert (Score) – nicht beim ersten Run */}
             {newBest && <p className="result-hero__best">{tr.newBest(newBest.plus, newBest.before)}</p>}
+            {!newBest && vsAvg && vsAvg.diff !== 0 && (
+              <p className={`result-hero__avg ${vsAvg.diff > 0 ? 'is-up' : 'is-down'}`}>{tr.vsAvg(vsAvg.diff, vsAvg.avg)}</p>
+            )}
             {(() => {
               // Tore des Kapitäns (alle Positionen, an denen er getroffen hat)
               const c = input.captain;

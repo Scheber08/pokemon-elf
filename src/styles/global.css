@@ -3063,3 +3063,14 @@ button.sheet__row:hover {
   font-weight: 600;
   color: var(--green-text);
 }
+/* Score gegen den eigenen Schnitt (▲ grün, ▼ rot) */
+.result-hero__avg {
+  margin: 0;
+  font-size: 14px;
+}
+.result-hero__avg.is-up {
+  color: var(--green-text);
+}
+.result-hero__avg.is-down {
+  color: var(--red-text);
+}

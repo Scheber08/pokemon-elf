@@ -46,6 +46,8 @@ const result = {
   /** Unter den Toren: Tordifferenz mit Vorzeichen */
   goalDiff: (diff: number) => `Differenz ${diff > 0 ? '+' : diff < 0 ? '−' : '±'}${Math.abs(diff)}`,
   /** Neuer persönlicher Bestwert (Score) dieser Challenge */
+  /** Score gegen den Schnitt der früheren Runs */
+  vsAvg: (diff: number, avg: number) => `${diff > 0 ? '▲' : '▼'} ${Math.abs(diff)} ${diff > 0 ? 'über' : 'unter'} deinem Ø Score (${avg})`,
   newBest: (plus: number, before: number) => `🏅 Neuer Bestwert – ${plus} mehr als dein bisher bester Score (${before})`,
   weakSpots: 'Schwachstellen laut Scouting: ',
   venueRecords: (home: string, away: string) => `🏠 Zu Hause ${home} · ✈️ Auswärts ${away} (S–U–N)`,
