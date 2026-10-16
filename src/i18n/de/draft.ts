@@ -805,6 +805,8 @@ const draft = {
     marketCancel: 'Zurückziehen',
     marketFit: (pos: string, fit: number) => `${pos} ${fit}`,
     marketNone: 'Kein passendes freies Pokémon.',
+    newcomers: (list: string) => `Deine Neuzugänge: ${list}`,
+    newcomerItem: (name: string, goals: number) => `${name} (${goals} ${goals === 1 ? 'Tor' : 'Tore'})`,
     transfersTitle: (n: number) => `Transfers vor Spieltag ${n}`,
     transfersAll: (n: number) => `Alle früheren Transfers der Saison (${n})`,
     transferLine: (team: string, inn: string, out: string) => `${team}: ${inn} kommt, ${out} geht`,

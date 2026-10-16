@@ -735,6 +735,8 @@ const draft: Messages['draft'] = {
     marketCancel: 'Withdraw',
     marketFit: (pos, fit) => `${pos} ${fit}`,
     marketNone: 'No matching free Pokémon.',
+    newcomers: (list) => `Your signings: ${list}`,
+    newcomerItem: (name, goals) => `${name} (${goals} ${goals === 1 ? 'goal' : 'goals'})`,
     transfersTitle: (n) => `Transfers before matchday ${n}`,
     transfersAll: (n) => `All earlier transfers this season (${n})`,
     transferLine: (team, inn, out) => `${team}: ${inn} in, ${out} out`,

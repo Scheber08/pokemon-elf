@@ -848,6 +848,16 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
         </section>
       )}
 
+      {meIndex >= 0 && (() => {
+        // 📥 Eigene Neuzugänge der Saison (Markt und Tausch) mit ihren Toren für dein Team
+        const myId = s.teams[meIndex].id;
+        const ins = [...new Set((m.transfers ?? []).filter((x) => x.teamId === myId).map((x) => x.in))];
+        if (!ins.length) return null;
+        const goals = goalsOf(league, meIndex);
+        const items = ins.map((id) => tx.newcomerItem(pokemonName(id), goals.get(id) ?? 0));
+        return <p className="card small manager__newcomers">📥 {tx.newcomers(items.join(', '))}</p>;
+      })()}
+
       {/* Alle Transfers der Saison (ohne die schon oben gezeigten), neueste zuerst */}
       {(() => {
         const earlier = (m.transfers ?? []).filter((x) => x.matchday < m.played).filter(shownOnce);

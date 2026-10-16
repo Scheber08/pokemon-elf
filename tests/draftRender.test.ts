@@ -1782,6 +1782,17 @@ describe('ManagerSeason', () => {
     const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(st, 'h')), readOnly: false })));
     await settle();
     expect(container.querySelector('.manager__shiny')!.textContent).toContain(ALL.find((p) => p.id === inn)!.de);
+    // 📥 Eigene Neuzugänge mit ihren Toren fürs eigene Team
+    {
+      const { storedLeague } = await import('../src/lib/leagueTimeline');
+      const meIdx = st.teams.findIndex((t) => t.id === 'h');
+      let g = 0;
+      for (const mt of storedLeague(st.league, st.teams.length)!.matches) {
+        const list = mt.home === meIdx ? mt.homeScorers : mt.away === meIdx ? mt.awayScorers : [];
+        g += list.filter((x) => x.pokemonId === inn).length;
+      }
+      expect(container.querySelector('.manager__newcomers')!.textContent).toBe(`📥 Deine Neuzugänge: ${ALL.find((p) => p.id === inn)!.de} (${g} ${g === 1 ? 'Tor' : 'Tore'})`);
+    }
     expect(container.querySelector('.manager__place')!.textContent).toMatch(/^Dein Team: Platz \d+ · \d+ Pkt.* · (\d+ Pkt (Vorsprung|hinter Platz 1)|punktgleich)/);
     expect(container.querySelector('.manager__goal')!.textContent).toContain('🎯 Nicht auf den letzten 3 Plätzen');
     // Saisonziel „Titel“: erreicht ✓ oder Punkterückstand auf Platz 1
