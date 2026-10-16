@@ -106,7 +106,7 @@ export function closest(me: MeResponse): MeResponse['achievements'] {
 }
 
 /** Bilanz: die Kennzahlen hinter den Erfolgen auf einen Blick */
-function RecordCard({ stats }: { stats: AchievementStats }) {
+export function RecordCard({ stats }: { stats: AchievementStats }) {
   const tx = useT().trainer.record;
   const d = stats.draft;
   const items: [string, string | number][] = [
@@ -116,6 +116,9 @@ function RecordCard({ stats }: { stats: AchievementStats }) {
     [tx.bestPlace, stats.bestPlace != null ? `${stats.bestPlace}.` : '–'],
     [tx.leagues, d.leagues],
     [tx.titles, d.titles + d.cups + d.manager],
+    // Podestplätze (Ligen, Turniere und Manager-Saisons zusammen), perfekte Saisons (nur Siege) über alle Challenges
+    [tx.podiums, d.podiums],
+    [tx.perfect, Object.values(stats.challenges).reduce((sum, c) => sum + (c?.perfect ?? 0), 0)],
   ];
   return (
     <section className="card trainer__record" aria-labelledby="trainer-record">

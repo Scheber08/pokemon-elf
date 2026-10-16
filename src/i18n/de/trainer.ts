@@ -59,6 +59,8 @@ const trainer = {
     bestPlace: 'Bester Allzeit-Platz',
     leagues: 'Online-Ligen',
     titles: 'Titel',
+    podiums: 'Podestplätze',
+    perfect: 'Perfekte Saisons',
   },
   collection: (have: number, total: number) => `🛍️ Gesammelt: ${have} von ${total} Artikeln`,
   seasonNext: (icon: string, from: string) => `⏭️ Als Nächstes im Shop: ${icon} ab ${Number(from.slice(3))}.${Number(from.slice(0, 2))}.`,

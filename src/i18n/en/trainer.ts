@@ -60,6 +60,8 @@ const trainer: Messages['trainer'] = {
     bestPlace: 'Best all-time rank',
     leagues: 'Online leagues',
     titles: 'Titles',
+    podiums: 'Podium finishes',
+    perfect: 'Perfect seasons',
   },
   collection: (have, total) => `🛍️ Collected: ${have} of ${total} items`,
   seasonNext: (icon, from) =>
