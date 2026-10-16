@@ -104,6 +104,8 @@ const draft = {
     mark: 'Merken',
     marked: 'gemerkt',
     /** Ergebnis: Dauer des lokalen Drafts */
+    thinkTime: (list: string) => `⌀ Bedenkzeit je Pick: ${list}`,
+    thinkTimeTeam: (team: string, s: number) => `${team} ${s} s`,
     draftDuration: (time: string, picks: number) => `⏱️ Draft-Dauer: ${time} Min. für ${picks} Picks`,
     randomCpuFormations: '🎲 CPU-Formationen würfeln',
     randomCpuNames: '🎲 CPU-Namen würfeln',

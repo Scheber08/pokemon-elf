@@ -1048,6 +1048,18 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           {state.draftMs != null && (
             <p className="muted small draft__duration">{tx.draftDuration(formatDuration(state.draftMs), state.log?.length ?? state.pick)}</p>
           )}
+          {(() => {
+            // ⌀ Bedenkzeit je menschlichem Team: Abstand jedes eigenen Picks zum vorigen (nur Einträge mit Zeitpunkt)
+            const log = state.log ?? [];
+            const per = new Map<number, number[]>();
+            log.forEach((x, k) => {
+              const prev = log[k - 1]?.at;
+              if (x.at == null || prev == null || state.teams[x.team]?.cpu) return;
+              per.set(x.team, [...(per.get(x.team) ?? []), Math.max(0, x.at - prev)]);
+            });
+            const parts = [...per].sort((a, b) => a[0] - b[0]).filter(([, ms]) => ms.length >= 2).map(([team, ms]) => tx.thinkTimeTeam(teamName(state.teams[team].name), Math.round(ms.reduce((a, b) => a + b, 0) / ms.length / 1000)));
+            return parts.length > 0 && <p className="muted small draft__think">{tx.thinkTime(parts.join(' · '))}</p>;
+          })()}
           {/* Platz jedes menschlichen Teams (Hot-Seat: auch mehrere) */}
           {league.table.map((r, i) =>
             state.teams[r.team] && !state.teams[r.team].cpu ? (

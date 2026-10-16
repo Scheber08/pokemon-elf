@@ -710,6 +710,22 @@ describe('/draft an einem Gerät auf Englisch', () => {
     localStorage.removeItem('pokemon-elf:draft');
   });
 
+  it('Lokale Liga: ⌀ Bedenkzeit je menschlichem Team aus den Zeitpunkten im Verlauf', async () => {
+    storeLang('de');
+    const formation = FORMATION_IDS[0];
+    const mons = ALL.filter((p) => !p.leg && !p.myth && !p.form);
+    const teams = [0, 1].map((i) => ({ name: i === 0 ? 'Mein Team' : 'CPU', cpu: i === 1, formation, slots: emptySlots(formation).map((_, j) => mons[i * 11 + j].id) }));
+    // Abwechselnd Mensch/CPU, Mensch jeweils 4 s bzw. 8 s nach dem CPU-Pick → ⌀ 6 s
+    const log = Array.from({ length: 22 }, (_, k) => ({ team: k % 2, slot: Math.floor(k / 2), id: teams[k % 2].slots[Math.floor(k / 2)], at: k * 10_000 + (k % 2 === 0 && k > 0 ? (k % 4 === 0 ? -6_000 : -2_000) : 0) }));
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'league', teams, region: 0, legends: false, pick: 22, selected: null, seed: 7, log }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const gaps = log.flatMap((x, k) => (k > 0 && x.team === 0 ? [x.at - log[k - 1].at] : []));
+    const avg = Math.round(gaps.reduce((a, b) => a + b, 0) / gaps.length / 1000);
+    expect(container.querySelector('.draft__think')!.textContent).toBe(`⌀ Bedenkzeit je Pick: Mein Team ${avg} s`);
+    localStorage.removeItem('pokemon-elf:draft');
+  });
+
   it('Pick-Verlauf: Start legt ihn an, jeder Pick wird angehängt; Liga zeigt das Schnäppchen des Drafts', async () => {
     storeLang('en');
     localStorage.removeItem('pokemon-elf:draft');

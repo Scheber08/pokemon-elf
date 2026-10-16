@@ -102,6 +102,8 @@ const draft: Messages['draft'] = {
     elevenDone: (team, avg) => `✅ ${team}’s eleven is complete – avg fit ${avg}`,
     mark: 'Shortlist',
     marked: 'shortlisted',
+    thinkTime: (list) => `⌀ thinking time per pick: ${list}`,
+    thinkTimeTeam: (team, s) => `${team} ${s}s`,
     draftDuration: (time, picks) => `⏱️ Draft time: ${time} min for ${picks} picks`,
     randomCpuFormations: '🎲 Roll CPU formations',
     randomCpuNames: '🎲 Roll CPU names',
