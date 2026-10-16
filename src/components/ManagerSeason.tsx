@@ -1378,6 +1378,29 @@ export function ManagerCupView({
           )}
         </>
       )}
+      {cup.rounds.length > 0 && winner == null && nextStage && alive.length >= 2 && (() => {
+        // Nächste Runde steht schon fest: die Weitergekommenen der Reihe nach gepaart (wie die Engine)
+        const pairs = Array.from({ length: Math.floor(alive.length / 2) }, (_, i) => [alive[2 * i], alive[2 * i + 1]] as const);
+        const mine = you != null ? pairs.find(([h, a]) => h === you || a === you) : undefined;
+        return (
+          <div className="manager__cup-round manager__cup-next">
+            <h3 className="manager__cup-stage">
+              {stages[nextStage]}
+              {nextDay ? ` · ${t.draft.matchday(nextDay)}` : ''}
+            </h3>
+            {mine && <p className="small manager__cup-opp">⚔️ {tx.cupNextOpp(nameOf(mine[0] === you ? mine[1] : mine[0]))}</p>}
+            <ul className="manager__cup-ties">
+              {pairs.map(([h, a]) => (
+                <li key={`${h}-${a}`} className={h === you || a === you ? 'is-user' : ''}>
+                  <span>{nameOf(h)}</span>
+                  <span className="manager__cup-score">–</span>
+                  <span>{nameOf(a)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })()}
       {[...cup.rounds].reverse().map((r) => (
         <div key={r.round} className="manager__cup-round">
           <h3 className="manager__cup-stage">

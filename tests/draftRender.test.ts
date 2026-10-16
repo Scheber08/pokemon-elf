@@ -1818,6 +1818,21 @@ describe('ManagerSeason', () => {
     else expect(f).toBeNull();
   });
 
+  it('Pokal: nächste Runde schon ausgelost, mit eigenem Gegner', async () => {
+    const { ManagerCupView } = await import('../src/components/ManagerSeason');
+    const bracket = Array.from({ length: 16 }, (_, i) => i);
+    const ties = Array.from({ length: 8 }, (_, i) => ({ home: 2 * i, away: 2 * i + 1, winner: i % 2 ? 2 * i + 1 : 2 * i }));
+    const cup = { bracket, rounds: [{ stage: 'r16' as const, round: 3, ties }], matches: [] };
+    const nameOf = (i: number) => `T${i}`;
+    const { container } = await render(app(h(ManagerCupView, { cup: cup as never, you: 0, nameOf })));
+    await settle();
+    const next = container.querySelector('.manager__cup-next')!;
+    expect(next.querySelector('.manager__cup-opp')!.textContent).toBe('⚔️ Dein nächster Pokalgegner: T3');
+    const pairs = next.querySelectorAll('li').map((li) => li.textContent);
+    expect(pairs).toEqual(['T0–T3', 'T4–T7', 'T8–T11', 'T12–T15']);
+    expect(next.querySelector('li')!.className).toContain('is-user');
+  });
+
   it('Manager: Tabellenausschnitt um das eigene Team mit Punkteabstand', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
