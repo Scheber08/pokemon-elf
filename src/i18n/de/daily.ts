@@ -52,6 +52,8 @@ const daily = {
   rankValue: (n: number) => `${n}.`,
   topPercent: (n: number) => `Top ${n} %`,
   /** „Heute gespielt“: Punkte im Vergleich zu gestern */
+  /** „Heute gespielt“: Punkte im Vergleich zum Schnitt der früheren Tage */
+  vsAverage: (diff: number, avg: number) => `${diff > 0 ? '▲' : '▼'} ${Math.abs(diff)} Pkt ${diff > 0 ? 'über' : 'unter'} deinem Schnitt (Ø ${avg})`,
   vsYesterday: (diff: number) =>
     diff > 0 ? `▲ ${diff} Pkt mehr als gestern` : diff < 0 ? `▼ ${-diff} Pkt weniger als gestern` : '= genauso viele Punkte wie gestern',
   playersToday: (n: number) => `${fmtNumber(n, 0, 'de')} Spieler heute`,

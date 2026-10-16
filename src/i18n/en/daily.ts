@@ -47,6 +47,7 @@ const daily: Messages['daily'] = {
   factScore: 'Score',
   rankValue: (n) => ordinal(n),
   topPercent: (n) => `top ${n}%`,
+  vsAverage: (diff, avg) => `${diff > 0 ? '▲' : '▼'} ${Math.abs(diff)} pts ${diff > 0 ? 'above' : 'below'} your average (avg ${avg})`,
   vsYesterday: (diff) => (diff > 0 ? `▲ ${diff} pts more than yesterday` : diff < 0 ? `▼ ${-diff} pts fewer than yesterday` : '= same points as yesterday'),
   playersToday: (n) => `${fmtNumber(n, 0, 'en')} ${n === 1 ? 'player' : 'players'} today`,
   yourTeam: (name) => ` · your team: ${name}`,

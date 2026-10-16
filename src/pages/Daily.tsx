@@ -222,6 +222,11 @@ function PlayedToday({ entry, message }: { entry: TodayEntry; message: string | 
   const { row, players } = entry;
   // Vergleich mit gestern (lokaler Verlauf dieses Geräts)
   const yesterday = useMemo(() => loadDailyHistory().find((d) => d.day === previousDay(entry.day)) ?? null, [entry.day]);
+  // Ø Punkte der früheren Tage (ab drei) – zum Vergleich mit heute
+  const earlierAvg = useMemo(() => {
+    const earlier = loadDailyHistory().filter((d) => d.day < entry.day);
+    return earlier.length >= 3 ? Math.round(earlier.reduce((n, d) => n + d.points, 0) / earlier.length) : null;
+  }, [entry.day]);
   return (
     <section className="card daily-done" aria-labelledby={titleId}>
       <h2 id={titleId} className="section-title">
@@ -257,6 +262,9 @@ function PlayedToday({ entry, message }: { entry: TodayEntry; message: string | 
         <p className={`small daily-done__vs ${row.points > yesterday.points ? 'is-up' : row.points < yesterday.points ? 'is-down' : ''}`}>
           {t.daily.vsYesterday(row.points - yesterday.points)}
         </p>
+      )}
+      {earlierAvg != null && row.points !== earlierAvg && (
+        <p className={`small daily-done__vs daily-done__vsavg ${row.points > earlierAvg ? 'is-up' : 'is-down'}`}>{t.daily.vsAverage(row.points - earlierAvg, earlierAvg)}</p>
       )}
       <p className="muted small">
         {t.daily.playersToday(players)}

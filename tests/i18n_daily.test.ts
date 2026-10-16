@@ -323,6 +323,33 @@ describe('Tägliche Elf auf Englisch', () => {
     const en = (await import('../src/i18n/en/daily')).default;
     expect([-3, 0].map((d) => en.vsYesterday(d))).toEqual(['▼ 3 pts fewer than yesterday', '= same points as yesterday']);
   });
+
+  it('heute gespielt: Punkte im Vergleich zum Schnitt der früheren Tage (ab drei)', async () => {
+    localStorage.clear();
+    storeLang('de');
+    const { recordDailyDay } = await import('../src/lib/dailyHistory');
+    const { previousDay } = await import('../src/lib/dailyRun');
+    let d = previousDay(dayKey());
+    for (const points of [70, 80]) {
+      recordDailyDay({ day: d, record: { w: 25, d: 3, l: 6 }, points, score: 800, position: 2 });
+      d = previousDay(d);
+    }
+    const mine = () => stubFetch(() => json(200, { challenge: 'daily', period: 'today', day: dayKey(), players: 5, rows: [], mine: row({ rank: 2, points: 85, me: true }) }));
+    mine();
+    let c = await render(app(h(Daily)));
+    await settle();
+    // Erst zwei frühere Tage: kein Vergleich mit dem Schnitt
+    expect(c.querySelector('.daily-done__vsavg')).toBeNull();
+    recordDailyDay({ day: d, record: { w: 25, d: 3, l: 6 }, points: 90, score: 800, position: 2 });
+    mine();
+    c = await render(app(h(Daily)));
+    await settle();
+    const avg = c.querySelector('.daily-done__vsavg')!;
+    expect(avg.textContent).toBe('▲ 5 Pkt über deinem Schnitt (Ø 80)');
+    expect(avg.className).toContain('is-up');
+    const en = (await import('../src/i18n/en/daily')).default;
+    expect(en.vsAverage(-4, 80)).toBe('▼ 4 pts below your average (avg 80)');
+  });
 });
 
 /** fetch: nur die Pokémon-Daten – das Backend ist nicht erreichbar */
