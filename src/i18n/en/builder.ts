@@ -88,6 +88,7 @@ const builder: Messages['builder'] = {
   },
   sheet: {
     title: 'Team sheet',
+    fit: (n) => `Fit ${n}`,
   },
   picker: {
     title: 'Pick a Pokémon',

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } f
 import { dexId } from '../config/categories';
 import { FORMATIONS } from '../config/formations';
 import { useT } from '../i18n';
+import { BULLSEYE_FIT, positionFit, type Scale } from '../lib/fit';
 import { usePokemonData } from '../state/PokemonData';
 import type { FormationId, PosCode, Pokemon, Slots, SpriteStyle } from '../types';
 import { PosBadge, TypeBadges } from './Badges';
@@ -16,10 +17,12 @@ interface Props {
   sprite: SpriteStyle;
   onRowClick?: (index: number) => void;
   title?: string;
+  /** Mit Skala: Fit jedes Pokémon auf seiner Position hinter der Pokédex-Nummer */
+  fitScale?: Scale;
 }
 
 /** Teamblatt: alle Positionen mit Kürzel, Sprite, Name und Typen. */
-export function TeamSheet({ formation, slots, ss, sprite, onRowClick, title }: Props) {
+export function TeamSheet({ formation, slots, ss, sprite, onRowClick, title, fitScale }: Props) {
   const { byId } = usePokemonData();
   const t = useT();
   const hoverTimer = useRef<number | undefined>(undefined);
@@ -84,7 +87,19 @@ export function TeamSheet({ formation, slots, ss, sprite, onRowClick, title }: P
                 {p ? (
                   <>
                     <strong>{t.game.pokemon(p)}</strong>
-                    <small>{t.game.dexNo(dexId(p))}</small>
+                    <small>
+                      {t.game.dexNo(dexId(p))}
+                      {fitScale &&
+                        (() => {
+                          const fit = Math.round(positionFit(p, r.pos, fitScale));
+                          return (
+                            <span className={`sheet__fit ${fit >= BULLSEYE_FIT ? 'is-bullseye' : ''}`}>
+                              <span className="sheet__fit-sep"> · </span>
+                              {t.builder.sheet.fit(fit)}
+                            </span>
+                          );
+                        })()}
+                    </small>
                   </>
                 ) : (
                   <em>{t.common.empty}</em>

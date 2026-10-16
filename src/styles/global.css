@@ -1222,6 +1222,23 @@ button.sheet__row:hover {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.sheet__fit,
+.sheet__name small {
+  white-space: nowrap;
+}
+/* Schmale Handys: Fit in eigener Zeile statt mitten in der Nummer umzubrechen */
+@media (max-width: 420px) {
+  .sheet__fit {
+    display: block;
+  }
+  .sheet__fit-sep {
+    display: none;
+  }
+}
+.sheet__fit.is-bullseye {
+  color: var(--green-text);
+  font-weight: 700;
+}
 .sheet__name small,
 .sheet__name em {
   color: var(--text-dim);

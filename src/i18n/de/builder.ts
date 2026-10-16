@@ -86,6 +86,7 @@ const builder = {
   },
   sheet: {
     title: 'Teamblatt',
+    fit: (n: number) => `Fit ${n}`,
   },
   picker: {
     title: 'Wähle ein Pokémon',

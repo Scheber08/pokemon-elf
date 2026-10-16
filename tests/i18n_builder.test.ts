@@ -130,6 +130,14 @@ describe('Builder auf Englisch', () => {
     expect(capOptions[0]).toBe('No captain');
     expect(capOptions).toHaveLength(12);
     for (const o of capOptions.slice(1)) expect(o).toMatch(/^[A-Z]+ · .+ · Fit \d+$/);
+    // Teamblatt: Fit jedes Pokémon auf seiner Position hinter der Nummer (Torwart Relaxo)
+    {
+      const { buildScale, positionFit } = await import('../src/lib/fit');
+      const fits = container.querySelectorAll('.sheet__fit').map((f) => f.textContent);
+      expect(fits.length).toBeGreaterThanOrEqual(11);
+      for (const f of fits) expect(f).toMatch(/^ · Fit \d+$/);
+      expect(fits[0]).toBe(` · Fit ${Math.round(positionFit(ALL.find((p) => p.id === 143)!, 'TW', buildScale(ALL, 'all')))}`);
+    }
     // Typ-Chips wie auf dem Draft-Board (Standard-Elf)
     {
       const { dominantType, typeVariety, RAINBOW_TYPES } = await import('../src/config/pokemonTypes');

@@ -377,6 +377,7 @@ export function Builder() {
           ss={state.ssEnabled ? state.ss : undefined}
           sprite={sprite}
           onRowClick={setPicking}
+          fitScale={scale('all')}
         />
 
         <section className="card">
