@@ -582,6 +582,7 @@ const draft: Messages['draft'] = {
     /** Running score after a goal */
     running: (home, away) => `Score ${home}:${away}`,
     winner: '🏆 winner',
+    nthGoal: (n) => (n === 2 ? '⚽⚽ brace' : n === 3 ? '🎩 hat-trick' : `goal no. ${n}`),
     setPiece: 'set piece',
     stats: 'Stats',
     halfTime: (home, away) => `Half-time ${home}:${away}`,

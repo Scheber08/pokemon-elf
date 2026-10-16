@@ -154,6 +154,17 @@ function ReportBody({
     const need = (homeWon ? match.ag : match.hg) + 1;
     return running.findIndex((r, i) => events[i].home === homeWon && r[homeWon ? 0 : 1] === need);
   })();
+  // Wie vielter Treffer des Schützen in diesem Spiel (Doppelpack, Hattrick …) – nur in richtiger Reihenfolge
+  const nth = (() => {
+    if (!running) return null;
+    const seen = new Map<string, number>();
+    return events.map(({ goal, home }) => {
+      const k = `${home ? 'h' : 'a'}${goal!.pokemonId}`;
+      const n = (seen.get(k) ?? 0) + 1;
+      seen.set(k, n);
+      return n;
+    });
+  })();
   const st = match.stats;
   const rows: { label: string; home: number; away: number; text?: (v: number) => string }[] = st
     ? [
@@ -186,6 +197,7 @@ function ReportBody({
                     <strong>{who(goal.pokemonId, home)}</strong>
                     {goal.pos === 'SS' && <small className="muted"> ({tx.setPiece})</small>}
                     {goal.assist != null && <small className="muted"> · {tx.assist(who(goal.assist, home))}</small>}
+                    {nth && nth[i] >= 2 && <small className="match-report__brace"> · {tx.nthGoal(nth[i])}</small>}
                     {i === winnerIdx && <small className="match-report__winner"> · {tx.winner}</small>}
                   </>
                 ) : (

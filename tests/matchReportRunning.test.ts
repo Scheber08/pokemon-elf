@@ -1,4 +1,4 @@
-/** Spielbericht: laufender Spielstand nach jedem Tor (nur, wenn alle Tore eine Minute haben) und 🏆 Siegtor. */
+/** Spielbericht: laufender Spielstand nach jedem Tor (nur, wenn alle Tore eine Minute haben) 🏆 Siegtor und Doppelpack/Hattrick. */
 import { afterEach, describe, expect, it } from 'vitest';
 import { installMiniDom } from './miniDom';
 
@@ -62,5 +62,20 @@ describe('Spielbericht: laufender Spielstand', () => {
   it('ohne Minuten (Vereinstore) kein laufender Stand', () => {
     const body = render({ round: 1, home: 0, away: 1, hg: 2, ag: 0, homeScorers: [{ pokemonId: 1, minute: 5 }], awayScorers: [] });
     expect(body.querySelectorAll('.match-report__running').length).toBe(0);
+  });
+
+  it('markiert Doppelpack und Hattrick am 2. und 3. Tor desselben Schützen', () => {
+    const body = render({
+      round: 1, home: 0, away: 1, hg: 4, ag: 1,
+      homeScorers: [{ pokemonId: 25, minute: 60 }, { pokemonId: 25, minute: 10 }, { pokemonId: 4, minute: 50 }, { pokemonId: 25, minute: 30 }],
+      // gleiche ID beim Gegner zählt getrennt
+      awayScorers: [{ pokemonId: 25, minute: 20 }],
+    });
+    const tags = body.querySelectorAll('.match-report__brace').map((el) => el.parentNode!.parentNode!.textContent);
+    expect(tags.length).toBe(2);
+    expect(tags[0]).toContain("30'");
+    expect(tags[0]).toContain('⚽⚽ Doppelpack');
+    expect(tags[1]).toContain("60'");
+    expect(tags[1]).toContain('🎩 Hattrick');
   });
 });
