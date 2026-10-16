@@ -711,6 +711,8 @@ select {
 }
 .builder__side {
   display: grid;
+  /* Spalte nicht breiter als der Platz – lange Optionen (z. B. Kapitän mit Fit) sprengen sonst schmale Handys */
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
 }
 .hint--pitch {
@@ -2569,11 +2571,13 @@ button.sheet__row:hover {
 }
 .saved-teams__item {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
+/* Knöpfe rutschen auf sehr schmalen Handys unter den Namen statt seitlich hinaus */
 .saved-teams__name {
-  flex: 1;
+  flex: 1 1 9rem;
   min-width: 0;
   overflow-wrap: anywhere;
 }
