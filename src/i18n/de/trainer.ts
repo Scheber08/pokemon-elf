@@ -141,6 +141,7 @@ const trainer = {
       facepaint: 'Fanschminke',
       locket: 'Herz-Medaillon',
       lantern: 'Laterne',
+      sapling: 'Setzling',
       medal: 'Medaille',
     },
     background: {

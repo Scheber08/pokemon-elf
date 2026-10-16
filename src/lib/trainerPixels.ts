@@ -544,6 +544,16 @@ function accessory(c: Canvas, id: string, cloth: string) {
       c.dots([[23, 24], [27, 24], [23, 27], [27, 27]], '#26282e');
       c.rect(24, 28, 3, 1, '#26282e');
       break;
+    case 'sapling':
+      // Setzling (Tag der Erde): Tontopf mit Erde, Stiel und zwei grünen Blättern vor der Brust
+      c.rect(21, 22, 6, 1, '#a0522d');
+      c.rect(22, 23, 4, 3, '#c46a3a');
+      c.dots([[22, 25], [25, 25]], '#8a4523');
+      c.rect(22, 21, 4, 1, '#4a3222');
+      c.rect(24, 17, 1, 4, '#3f7a2e');
+      c.dots([[22, 17], [23, 17], [23, 18]], '#4fbf5a');
+      c.dots([[25, 16], [26, 16], [25, 15]], '#4fbf5a');
+      break;
     case 'whistle':
       c.dots([[12, 24], [13, 25], [14, 26], [19, 24], [18, 25], [17, 26]], '#26282e');
       c.rect(15, 27, 3, 2, '#c9ced6');

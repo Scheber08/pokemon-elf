@@ -69,6 +69,8 @@ const WINTER = ['01-11', '01-31', '❄️'] as const;
 const ADVENT = ['11-20', '11-30', '🕯️'] as const;
 /** Weltkindertag (20. September) */
 const CHILDREN = ['09-16', '09-22', '🎈'] as const;
+/** Tag der Erde (22. April) */
+const EARTH = ['04-18', '04-24', '🌍'] as const;
 /** Valentinstag */
 const VALENTINE = ['02-07', '02-14', '💘'] as const;
 
@@ -189,6 +191,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('accessory', 'facepaint', 200), ...FOOTBALL),
   seasonal(item('accessory', 'locket', 250), ...MOTHERSDAY),
   seasonal(item('accessory', 'lantern', 250), ...MARTIN),
+  seasonal(item('accessory', 'sapling', 200), ...EARTH),
   // Hintergrund
   item('background', 'plain', 0, '#22324a'),
   item('background', 'sky', 0, '#7ec4ef'),
@@ -250,6 +253,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('companion', '613', 350), ...WINTER),
   seasonal(item('companion', '607', 350), ...ADVENT),
   seasonal(item('companion', '172', 350), ...CHILDREN),
+  seasonal(item('companion', '389', 500), ...EARTH),
   item('companion', '6', 600),
   item('companion', '149', 600),
   item('companion', '448', 600),
