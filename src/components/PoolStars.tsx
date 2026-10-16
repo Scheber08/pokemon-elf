@@ -58,8 +58,14 @@ export interface ScarcePos {
 export function poolScarcity(pool: readonly Pokemon[], scale: Scale, formations: readonly FormationId[], n = 3): ScarcePos[] {
   const need = new Map<PosCode, number>();
   for (const f of formations) for (const d of FORMATIONS[f].slots) need.set(d.pos, (need.get(d.pos) ?? 0) + 1);
+  return scarceFor(pool, scale, need, n);
+}
+
+/** Wie poolScarcity, aber mit beliebigem Bedarf je Position (z. B. die noch offenen Plätze im laufenden Draft) */
+export function scarceFor(pool: readonly Pokemon[], scale: Scale, need: ReadonlyMap<PosCode, number>, n = 3): ScarcePos[] {
   const out: ScarcePos[] = [];
   for (const [pos, k] of need) {
+    if (k <= 0) continue;
     const strong = pool.filter((p) => positionFit(p, pos, scale) >= SCARCE_FIT).length;
     if (strong < k) out.push({ pos, strong, need: k });
   }

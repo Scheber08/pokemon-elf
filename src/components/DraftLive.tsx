@@ -43,6 +43,7 @@ import {
 import type { Pokemon, PosCode } from '../types';
 import { TypeBadge } from './Badges';
 import { BenchRow } from './BenchRow';
+import { scarceFor } from './PoolStars';
 import { CaptainPicker } from './CaptainPicker';
 import { JerseyEditor } from './JerseyEditor';
 import { DraftBoard, DraftPickFeed } from './DraftBoard';
@@ -304,6 +305,18 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
       .sort((a, b) => b.fit - a.fit || a.id - b.id);
     return new Set(ranked.slice(0, k).map((x) => x.id));
   }, [pool, owners, s.pickIndex, s.phase, myTurn, me?.id]);
+  // ⚠️ Wird knapp: offene Plätze aller Teams gegen starke Freie (Fit ≥ SCARCE_FIT) – nur Positionen, die man selbst noch braucht
+  const liveScarce = useMemo(() => {
+    if (!me || s.phase !== 'drafting') return [];
+    const need = new Map<PosCode, number>();
+    for (const tm of s.teams)
+      FORMATIONS[tm.formation].slots.forEach((d, j) => {
+        if (tm.slots[j] == null) need.set(d.pos, (need.get(d.pos) ?? 0) + 1);
+      });
+    const mine = new Set(FORMATIONS[me.formation].slots.filter((_, j) => me.slots[j] == null).map((d) => d.pos));
+    for (const pos of [...need.keys()]) if (!mine.has(pos)) need.delete(pos);
+    return scarceFor(pool.filter((p) => !owners.has(p.id)), scale('all'), need);
+  }, [pool, owners, s.phase, s.pickIndex, me?.id]);
   // Bestpassender freier Feldplatz eines Pokémon (Position und Fit) – für die Notiz auf den Karten
   const freeFieldPos = useMemo(() => {
     if (!me) return [];
@@ -815,6 +828,11 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                   // Snake-Wende: gleich noch einmal dran
                   <p className="small draft-double">🐍 {t.online.doublePick}</p>
                 )}
+              {liveScarce.length > 0 && (
+                <p className="small draft-scarce" title={t.online.liveScarceTitle}>
+                  {t.online.liveScarce(liveScarce.map((x) => `${t.game.posShort[x.pos]} ${x.strong}/${x.need}`).join(' · '))}
+                </p>
+              )}
               <div className="draft-pooltools">
                 <button type="button" className="btn btn--small" onClick={suggest} disabled={!mySlots.length} title={t.online.suggestKey} aria-keyshortcuts="V">
                   {t.online.suggest}

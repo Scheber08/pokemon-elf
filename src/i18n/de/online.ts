@@ -202,6 +202,9 @@ const online = {
   /** Dauer (Minuten, gerundet): Draft höchstens, danach der Saison-Ticker */
   duration: (draft: number, season: number) => `Dauer: Draft höchstens ~${draft} Min., danach Saison-Ticker ~${season} Min.`,
   poolStars: 'Stars im Pool',
+  /** Im laufenden Draft: knappe Positionen (starke Freie / offene Plätze aller Teams), die man selbst noch braucht */
+  liveScarce: (list: string) => `⚠️ Wird knapp: ${list}`,
+  liveScarceTitle: 'Starke Freie (Fit ≥ 85) / noch offene Plätze aller Teams – nur Positionen, die du noch brauchst',
   poolScarce: (list: string) => `Knapp im Pool: ${list} – früh zugreifen!`,
   poolScarceItem: (pos: string, strong: number, need: number) => `${pos} ${strong} für ${need} Plätze`,
   poolScarceTitle: (fit: number) => `Starke Kandidaten (Fit ab ${fit}) gegen die Plätze aller Formationen`,

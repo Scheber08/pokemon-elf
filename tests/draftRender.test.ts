@@ -547,6 +547,24 @@ describe('DraftLive', () => {
   // Alle Regionen (großer Pool), Reihenfolge wie gelistet: Host zuerst
   const drafting = () => engine.startDraft(lobby(2, { region: 0, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
 
+  it('⚠️ Wird knapp: offene Plätze aller Teams gegen starke Freie, nur eigene offene Positionen', async () => {
+    const { scarceFor } = await import('../src/components/PoolStars');
+    const { poolOf } = await import('../src/lib/draftEngine');
+    const { FORMATIONS } = await import('../src/config/formations');
+    // Nur Kanto, acht Teams: einige Positionen reichen nicht für alle
+    const s = engine.startDraft(lobby(8, { region: 1, maxTeams: 8, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
+    const need = new Map<string, number>();
+    for (const tm of s.teams) for (const d of FORMATIONS[tm.formation].slots) need.set(d.pos, (need.get(d.pos) ?? 0) + 1);
+    const mine = new Set(FORMATIONS['4-3-3'].slots.map((d) => d.pos));
+    for (const pos of [...need.keys()]) if (!mine.has(pos as never)) need.delete(pos);
+    const expected = scarceFor(poolOf(s.settings, ALL), SCALE, need as never);
+    const { container } = await renderLive(fakeRoom(snap(s, 'h')));
+    const el = container.querySelector('.draft-scarce');
+    expect(expected.length).toBeGreaterThan(0);
+    const short = { TW: 'TW', IV: 'IV', LV: 'LV', RV: 'RV', ZDM: 'ZDM', ZM: 'ZM', ZOM: 'ZOM', LM: 'LM', RM: 'RM', LF: 'LF', RF: 'RF', ST: 'ST', SS: 'SS' } as Record<string, string>;
+    expect(el!.textContent).toBe(`⚠️ Wird knapp: ${expected.map((x) => `${short[x.pos] ?? x.pos} ${x.strong}/${x.need}`).join(' · ')}`);
+  });
+
   // CLIENT-9
   it('genau eine Live-Region, eine Ansage pro Pick', async () => {
     let s = autoPick(drafting());

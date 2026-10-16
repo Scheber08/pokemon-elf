@@ -186,6 +186,8 @@ const online: Messages['online'] = {
   startNoTimer: 'Without a timer you can have absent teams’ picks made automatically.',
   duration: (draft, season) => `Duration: draft at most ~${draft} min, then the season ticker ~${season} min.`,
   poolStars: 'Stars in the pool',
+  liveScarce: (list) => `⚠️ Running short: ${list}`,
+  liveScarceTitle: 'Strong free picks (fit ≥ 85) / open spots across all teams – only positions you still need',
   poolScarce: (list) => `Scarce in the pool: ${list} – grab them early!`,
   poolScarceItem: (pos, strong, need) => `${pos} ${strong} for ${need} spots`,
   poolScarceTitle: (fit) => `Strong candidates (fit ${fit}+) vs. the spots in all formations`,
