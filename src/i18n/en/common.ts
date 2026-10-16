@@ -3,6 +3,7 @@ import type { Messages } from '../de';
 
 const common: Messages['common'] = {
   close: 'Close',
+  offlineBanner: '📡 Offline – the builder, challenges and local draft keep working. Leaderboards and online leagues are back once you reconnect.',
   retry: 'Try again',
   formationPreview: (f) => `Preview of formation ${f}`,
   randomName: 'Random club name',

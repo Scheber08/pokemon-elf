@@ -3,6 +3,7 @@ import { lazy, Suspense, useEffect, useRef } from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AchievementWatcher } from './components/AchievementWatcher';
 import { Footer, Header } from './components/Layout';
+import { OfflineBanner } from './components/OfflineBanner';
 import { useT } from './i18n';
 import { apiAvailable, fetchLeaderboard } from './lib/api/client';
 import { refreshRankingNames } from './lib/rankingNames';
@@ -92,6 +93,7 @@ export function App() {
           <AchievementWatcher />
           <RankingNames />
           <Header />
+          <OfflineBanner />
           <main id="main" className="main" tabIndex={-1}>
             <PokemonDataProvider>
               <RouteEffects />

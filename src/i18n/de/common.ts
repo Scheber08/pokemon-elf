@@ -1,6 +1,8 @@
 /** Texte: common (Deutsch – Quelle). Die englische Fassung in ../en/common.ts muss dieselben Schlüssel haben. */
 const common = {
   close: 'Schließen',
+  /** Hinweis ohne Netz (unter dem Kopf) */
+  offlineBanner: '📡 Offline – Builder, Challenges und lokaler Draft laufen weiter. Rangliste und Online-Ligen sind zurück, sobald du wieder verbunden bist.',
   retry: 'Erneut versuchen',
   formationPreview: (f: string) => `Formation ${f} als Vorschau`,
   randomName: 'Zufälliger Vereinsname',
