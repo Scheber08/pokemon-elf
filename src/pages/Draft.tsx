@@ -1,3 +1,4 @@
+import { lineupText } from '../lib/lineupText';
 import { rescueFocus } from '../lib/focusRescue';
 import { scrollBehavior } from '../lib/motion';
 import { titleClinched } from '../lib/foes';
@@ -1881,6 +1882,19 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   }}
                 >
                   {t.builder.saveImage}
+                </button>
+              )}
+              {!tm.cpu && (
+                <button
+                  type="button"
+                  className="btn btn--small"
+                  onClick={async () => {
+                    // Elf als Text (wie im Builder)
+                    const text = lineupText(t, { teamName: teamName(tm.name), formation: tm.formation, slots: tm.slots, captain: captainOf(tm) }, byId);
+                    toast((await copyText(text)) ? t.builder.textCopied : t.common.copyFailed);
+                  }}
+                >
+                  {t.builder.copyText}
                 </button>
               )}
               {!tm.cpu && (

@@ -3039,6 +3039,26 @@ describe('ManagerSeason', () => {
     else expect(el!.textContent).toMatch(new RegExp(`^🏁 .+ stand schon am ${c.round}\\. Spieltag rechnerisch als Meister fest – ${c.left === 1 ? '1 Spieltag' : `${c.left} Spieltage`} vor Schluss$`));
   });
 
+  it('Saisonende: eigene Elf „Als Text kopieren“ mit Link zur Liga', async () => {
+    const { DraftSeasonStage } = await import('../src/components/DraftSeasonStage');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = engine.withLeague(s, ALL, SCALE);
+    const done = { ...s, season: { ...s.season!, startsAt: Date.now() - 30 * 86_400_000 } };
+    const writes: string[] = [];
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (x: string) => void writes.push(x) }, configurable: true });
+    const { container } = await render(app(h(DraftSeasonStage, { room: fakeRoom(snap(done, 'h')) })));
+    await settle();
+    const btn = container.querySelectorAll('.draft-results__actions button').find((b) => b.textContent === 'Als Text kopieren')!;
+    await act(async () => btn.click());
+    await settle();
+    const lines = writes[0].split('\n');
+    const me = s.teams.find((t) => t.id === 'h')!;
+    expect(lines[0]).toMatch(new RegExp(`^⚽ .+ \\(${me.formation}\\)$`));
+    expect(lines.length).toBeGreaterThanOrEqual(13);
+    expect(lines.at(-1)).toContain('/draft/');
+  });
+
   it('Saisonende: 🗺️ Regionen-Mix in den Kader-Karten (nur bei mehreren Regionen)', async () => {
     const { DraftSeasonStage } = await import('../src/components/DraftSeasonStage');
     let s = engine.startDraft(lobby(2, { gens: [1, 2], maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);

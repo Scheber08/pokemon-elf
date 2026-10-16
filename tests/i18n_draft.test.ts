@@ -502,6 +502,13 @@ describe('/draft an einem Gerät auf Englisch', () => {
         expect(writes).toHaveLength(1);
         expect(writes[0]).toMatch(/^Pokémon Elf – Fantasy-Draft an einem Gerät: Meister Mein Team \(\d+ Pkt\)\. Mein Team: Platz 1\.\n.+\/draft$/);
         expect(container.querySelector('.toast')?.textContent ?? doc.body.querySelector('.toast')?.textContent).toBe('Ergebnis kopiert');
+        // „Als Text kopieren“ für das menschliche Team: Kopfzeile, 11 Spieler, ohne Link
+        const textBtn = container.querySelectorAll('button').find((b) => b.textContent === 'Als Text kopieren') as MiniElement;
+        await act(async () => textBtn.click());
+        await settle();
+        const lines = writes[1].split('\n');
+        expect(lines[0]).toBe(`⚽ Mein Team (${FORMATION_IDS[0]})`);
+        expect(lines).toHaveLength(12);
       }
       await act(async () => root.unmount());
     }

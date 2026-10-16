@@ -1,3 +1,4 @@
+import { lineupText } from '../lib/lineupText';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useT } from '../i18n';
@@ -495,6 +496,20 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
           {ownRow && (
             <button type="button" className="btn" onClick={onSaveImage} disabled={saving}>
               {saving ? t.builder.savingImage : tx.saveOwnImage}
+            </button>
+          )}
+          {ownRow && you != null && teams[you] && (
+            <button
+              type="button"
+              className="btn"
+              onClick={async () => {
+                // Eigene Elf als Text (wie im Builder), mit Link zur Liga
+                const team = teams[you];
+                const text = lineupText(t, { teamName: nameOf(ownRow.team), formation: team.formation, slots: team.slots, ss: hasSs ? team.ss : null, captain: team.captain ?? null }, byId, draftLink(code));
+                toast((await copyText(text)) ? t.builder.textCopied : tx.copyFailed);
+              }}
+            >
+              {t.builder.copyText}
             </button>
           )}
         </div>
