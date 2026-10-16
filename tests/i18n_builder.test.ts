@@ -123,6 +123,11 @@ describe('Builder auf Englisch', () => {
     expect(all).toContain('Set-piece taker');
     expect(all).toContain('#0143');
     expect(germanLeft(container)).toEqual([]);
+    // Kapitänswahl: jede Option mit Fit auf der eigenen Position
+    const capOptions = container.querySelector('.captain-picker select')!.querySelectorAll('option').map((o) => o.textContent);
+    expect(capOptions[0]).toBe('No captain');
+    expect(capOptions).toHaveLength(12);
+    for (const o of capOptions.slice(1)) expect(o).toMatch(/^[A-Z]+ · .+ · Fit \d+$/);
     // Typ-Chips wie auf dem Draft-Board (Standard-Elf)
     {
       const { dominantType, typeVariety, RAINBOW_TYPES } = await import('../src/config/pokemonTypes');

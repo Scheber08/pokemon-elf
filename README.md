@@ -99,7 +99,7 @@ Routen: `/` Builder · `/challenge` 34–0 · `/taeglich` Tägliche Elf · `/151
 4. **Team-Score** = gewichteter Durchschnitt der 11 Fits × 10. Gewichte TW 1,6 · IV 1,2 · AV/WB 1,0 ·
    DM 1,1 · ZM 1,0 · OM 1,2 · LM/RM/LF/RF 1,0 · ST 1,4. Die drei schwächsten Fits zählen zusätzlich mit
    doppeltem Gewicht. Der **Kapitän** (optional, einer der elf) zählt mit doppeltem Positionsgewicht
-   (`SCORING.team.captainWeight`) – gut passend hebt, schlecht passend senkt.
+   (`SCORING.team.captainWeight`) – gut passend hebt, schlecht passend senkt. Die Auswahl zeigt je Spieler seinen Fit (`CaptainPicker`).
 5. **Saison:** 18 Teams, Hin- und Rückrunde. Tore ~ Poisson mit
    `λ = 1,4 · exp((eigen − Gegner)/250) + 0,15 (Heim)`, leichte Streuung, λ auf 0,05–5,5 begrenzt.
    Gegner-Ratings 350–910. Das ist `CLASSIC_MODEL` (`src/lib/season.ts`) – der Server rechnet gewertete Runs

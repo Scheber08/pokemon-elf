@@ -6,6 +6,7 @@ const captain: Messages['captain'] = {
   label: 'Captain',
   best: 'Best choice',
   bestForAll: (n) => (n === 1 ? 'Best choice for the team without a captain' : `Best choice for ${n} teams without a captain`),
+  fit: (n) => `Fit ${n}`,
   none: 'No captain',
   note: "The captain's position fit counts double in the team rating – a well-fitting captain lifts the team, a poorly fitting one drags it down.",
   effect: (diff) => `Effect on the team score: ${diff}`,

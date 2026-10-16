@@ -1,7 +1,7 @@
 import { useId } from 'react';
 import { FORMATIONS } from '../config/formations';
 import { useT } from '../i18n';
-import type { Scale } from '../lib/fit';
+import { positionFit, type Scale } from '../lib/fit';
 import { bestCaptain } from '../lib/teamScore';
 import { usePokemonData } from '../state/PokemonData';
 import type { FormationId, Slots } from '../types';
@@ -28,9 +28,11 @@ export function CaptainPicker({ formation, slots, captain, onChange, disabled = 
   const { byId, scale } = usePokemonData();
   const id = useId();
   const defs = FORMATIONS[formation].slots;
+  const sc = scaleProp ?? scale('all');
+  // Mit Fit auf der eigenen Position – der Kapitän zählt doppelt, der Fit hilft bei der Wahl
   const players = defs.flatMap((d, i) => {
     const mon = slots[i] != null ? byId.get(slots[i] as number) : undefined;
-    return mon ? [{ id: mon.id, label: `${t.game.posShort[d.pos]} · ${t.game.pokemon(mon)}` }] : [];
+    return mon ? [{ id: mon.id, label: `${t.game.posShort[d.pos]} · ${t.game.pokemon(mon)} · ${tx.fit(Math.round(positionFit(mon, d.pos, sc)))}` }] : [];
   });
   for (const b of bench) {
     const mon = byId.get(b);
@@ -40,7 +42,7 @@ export function CaptainPicker({ formation, slots, captain, onChange, disabled = 
   const best = bestCaptain(
     formation,
     defs.map((_, i) => (slots[i] != null ? byId.get(slots[i] as number) : undefined)),
-    scaleProp ?? scale('all'),
+    sc,
   );
   return (
     <div className="captain-picker">

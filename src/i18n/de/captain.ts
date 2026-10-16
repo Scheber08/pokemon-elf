@@ -4,6 +4,7 @@ const captain = {
   label: 'Kapitän',
   best: 'Beste Wahl',
   bestForAll: (n: number) => (n === 1 ? 'Beste Wahl fürs Team ohne Kapitän' : `Beste Wahl für ${n} Teams ohne Kapitän`),
+  fit: (n: number) => `Fit ${n}`,
   none: 'Kein Kapitän',
   note: 'Die Positionspassung des Kapitäns zählt in der Teamwertung doppelt – ein gut passender Kapitän hebt das Team, ein schlecht passender zieht es runter.',
   effect: (diff: string) => `Wirkung auf den Team-Score: ${diff}`,
