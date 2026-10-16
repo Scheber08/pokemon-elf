@@ -95,6 +95,12 @@ export function Profile() {
               {!!p.online?.shinies && <> · {tp.shinies(p.online.shinies)}</>}
               {!!p.online?.captainGoals && <> · {tp.captainGoals(p.online.captainGoals)}</>}
               {!!p.online?.goalsReached && <> · {tp.goalsReached(p.online.goalsReached)}</>}
+              {(() => {
+                // ⭐ Lieblings-Challenge: die mit den meisten Runs (nur eindeutig und bei mindestens zwei gespielten)
+                const played = p.challenges.filter((c) => c.runs > 0).sort((a, b) => b.runs - a.runs);
+                if (played.length < 2 || played[0].runs === played[1].runs) return null;
+                return <> · <span className="profile__fav">{tp.favourite(t.game.challenge[played[0].challenge], played[0].runs)}</span></>;
+              })()}
             </p>
           </div>
         </div>

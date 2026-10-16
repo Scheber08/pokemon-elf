@@ -49,7 +49,7 @@ Erledigt (siehe README): Ultrabestien/Megas/Formen, Revanche + ewige Tabelle, Be
 dran", Testspiel, Spielerprofil, Wochenwertung, Tägliche-Elf-Serie, OG-Tags (auch je Liga), Routen
 nachladen, PWA, Wunschliste, Emoji-Reaktionen, Vorlagen und Draft-Noten im Draft, Rückgängig,
 Fit-Sortierung und „Beste Elf" im Builder, Wochenwertung rückwirkend gefüllt, Schnäppchen des Drafts,
-„Deine Duelle", Allzeit-Platz im Profil, Taste „/" im Draft, Noten in der lokalen Liga, QR-Code in der Lobby,
+„Deine Duelle", Allzeit-Platz und ⭐ Lieblings-Challenge im Profil, Taste „/" im Draft, Noten in der lokalen Liga, QR-Code in der Lobby,
 Saison auf 18 Teams mit Ranglisten-Teams aufgefüllt, KO-Turnier mit optionaler Gruppenphase, Draft-Spielmodell
 (Tagesform, Torminuten), Formkurve, Saisonrekorde, Saisonverlauf, „Meine Teams" im Builder, Manager-Saison
 (Bank, Spieltage im Takt, Aufstellung, Tagesform je Pokémon), Erfolge mit Münzen (Filter „Nur offene“), eigener Trainer mit
