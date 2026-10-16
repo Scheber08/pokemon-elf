@@ -443,6 +443,18 @@ function hat(c: Canvas, id: string, cloth: string) {
       c.dots([[15, 4], [16, 4], [14, 5], [15, 5], [16, 5], [17, 5], [15, 6], [16, 6]], '#f2c230');
       c.fill((x, y) => y === 9 && Math.abs(x - 15.5) <= 7, '#f2c230', null);
       break;
+    case 'propeller':
+      // Propellermütze (Weltkindertag): bunte Kappe in vier Feldern, kurzer Stiel und Propeller obendrauf
+      c.fill(and(ellipse(15.5, 9.5, 8.4, 5.5), above(9)), '#d8342a', '#8f1f18');
+      c.fill((x, y) => and(ellipse(15.5, 9.5, 7.4, 4.5), above(9))(x, y) && x >= 12 && x <= 15, '#f2c230', null);
+      c.fill((x, y) => and(ellipse(15.5, 9.5, 7.4, 4.5), above(9))(x, y) && x >= 16 && x <= 19, '#2f62c9', null);
+      c.fill((x, y) => and(ellipse(15.5, 9.5, 7.4, 4.5), above(9))(x, y) && x >= 20, '#2f9a57', null);
+      c.rect(7, 9, 18, 1, '#26282e');
+      c.rect(15, 2, 2, 2, '#26282e');
+      c.rect(10, 1, 5, 1, '#e86fb4');
+      c.rect(17, 1, 5, 1, '#3fb8e6');
+      c.rect(15, 1, 2, 1, '#f2c230');
+      break;
     case 'wizard':
       c.fill((x, y) => y <= 9 && y >= 0 && Math.abs(x - 15.5) <= 1 + y * 0.9, '#5b3fb0');
       c.rect(6, 9, 20, 2, '#4a3191');

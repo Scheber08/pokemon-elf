@@ -67,6 +67,8 @@ const HARVEST = ['09-25', '10-10', '🌾'] as const;
 const WINTER = ['01-11', '01-31', '❄️'] as const;
 /** Advent (Ende November, vor Nikolaus) */
 const ADVENT = ['11-20', '11-30', '🕯️'] as const;
+/** Weltkindertag (20. September) */
+const CHILDREN = ['09-16', '09-22', '🎈'] as const;
 /** Valentinstag */
 const VALENTINE = ['02-07', '02-14', '💘'] as const;
 
@@ -170,6 +172,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('hat', 'wheat', 250), ...HARVEST),
   seasonal(item('hat', 'snowcap', 250), ...WINTER),
   seasonal(item('hat', 'advent', 300), ...ADVENT),
+  seasonal(item('hat', 'propeller', 250), ...CHILDREN),
   // Accessoire
   item('accessory', 'none', 0),
   item('accessory', 'freckles', 0),
@@ -246,6 +249,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('companion', '840', 350), ...HARVEST),
   seasonal(item('companion', '613', 350), ...WINTER),
   seasonal(item('companion', '607', 350), ...ADVENT),
+  seasonal(item('companion', '172', 350), ...CHILDREN),
   item('companion', '6', 600),
   item('companion', '149', 600),
   item('companion', '448', 600),

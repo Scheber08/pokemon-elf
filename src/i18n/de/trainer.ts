@@ -120,6 +120,7 @@ const trainer = {
       wheat: 'Erntekranz',
       snowcap: 'Schneeflockenmütze',
       advent: 'Adventskranz',
+      propeller: 'Propellermütze',
       jester: 'Narrenkappe',
       tyrolean: 'Tirolerhut',
       leaves: 'Herbstkranz',
