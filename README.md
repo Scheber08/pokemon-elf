@@ -277,7 +277,7 @@ beide gleich, dann in seiner Auswärtsfarbe (notfalls eine Ausweichfarbe). Gespe
 (`src/lib/cheer.ts`, bis 40 Zeichen, Nachricht `cheer`), der in der 2D-Ansicht unter „TOR!“ erscheint – frei getippt oder aus fünf Vorschlägen angetippt.
 
 **Vereinswappen** (alle Modi, `src/lib/crest.ts`, `src/components/Crest.tsx` + `CrestEditor.tsx`): Form, Muster,
-zwei Farben und ein Symbol bzw. ein Pokémon aus dem eigenen Team als Wappentier. Zu sehen neben dem Teamnamen
+zwei Farben (mit „⇄ Farben tauschen“) und ein Symbol bzw. ein Pokémon aus dem eigenen Team als Wappentier. Zu sehen neben dem Teamnamen
 (Builder, Bild, Saisonbilanz), in Tabellen, im Spielbericht und auf der 2D-Anzeigetafel; online als
 `DraftTeam.crest` (Nachricht `crest`).
 

@@ -92,6 +92,11 @@ export function CrestEditor({ crest, onChange, pokemon = [], disabled = false }:
         <button type="button" className="btn btn--small" disabled={disabled} onClick={() => onChange(randomCrest(Math.random, mons))}>
           🎲 {tx.random}
         </button>
+        {cur.primary !== cur.secondary && (
+          <button type="button" className="btn btn--small" disabled={disabled} title={tx.swapTitle} onClick={() => set({ primary: cur.secondary, secondary: cur.primary })}>
+            ⇄ {tx.swap}
+          </button>
+        )}
         {crest && (
           <button type="button" className="btn btn--small btn--ghost" disabled={disabled} onClick={() => onChange(null)}>
             {tx.reset}

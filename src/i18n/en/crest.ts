@@ -11,6 +11,8 @@ const crest: Messages['crest'] = {
   symbol: 'Symbol / mascot',
   reset: 'No custom crest',
   random: 'Random crest',
+  swap: 'Swap colours',
+  swapTitle: 'Swap the main and second colour',
   mascot: (name) => `Mascot: ${name}`,
   shapes: { shield: 'Shield', round: 'Round', square: 'Square', diamond: 'Diamond' },
   patterns: { plain: 'Plain', stripes: 'Stripes', halves: 'Halves', hoop: 'Hoop', diagonal: 'Diagonal' },
