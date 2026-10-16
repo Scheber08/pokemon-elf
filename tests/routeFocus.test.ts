@@ -11,13 +11,15 @@ const { SettingsProvider } = await import('../src/state/Settings');
 const { act, createElement: h } = React;
 
 describe('Fokus nach Seitenwechsel', () => {
-  it('erst nach einem Wechsel, nicht beim ersten Laden', async () => {
+  for (const strict of [false, true])
+  it(`erst nach einem Wechsel, nicht beim ersten Laden${strict ? ' (StrictMode: Effekte doppelt)' : ''}`, async () => {
     (window as unknown as { scrollTo: () => void }).scrollTo = vi.fn();
     const container = doc.createElement('div');
     doc.body.appendChild(container);
     const root = createRoot(container as unknown as Element);
+    const wrap = (el: ReturnType<typeof h>) => (strict ? h(React.StrictMode, null, el) : el);
     await act(async () =>
-      root.render(
+      root.render(wrap(
         h(
           MemoryRouter,
           { initialEntries: ['/'] },
@@ -28,7 +30,7 @@ describe('Fokus nach Seitenwechsel', () => {
             h('main', { id: 'main', tabIndex: -1 }, h(Routes, null, h(Route, { path: '/', element: h(Link, { to: '/rangliste' }, 'weiter') }), h(Route, { path: '/rangliste', element: h('p', null, 'Rangliste') }))),
           ),
         ),
-      ),
+      )),
     );
     const main = container.querySelector('main')!;
     expect(doc.activeElement).not.toBe(main);

@@ -48,15 +48,14 @@ export function RouteEffects() {
     const title = t.nav.titles[pathname] ?? (pathname.startsWith('/draft/') ? t.nav.onlineLeague : undefined);
     document.title = title ? `${title} · Pokémon Elf` : t.nav.siteTitle;
   }, [pathname, t]);
-  const first = useRef(true);
+  const shown = useRef(pathname);
   useEffect(() => {
     window.scrollTo(0, 0);
     // Nach einem Seitenwechsel (nicht beim ersten Laden) den Fokus an den Seitenanfang – Tastatur und
-    // Screenreader starten dann auf der neuen Seite statt auf dem alten Menülink
-    if (first.current) {
-      first.current = false;
-      return;
-    }
+    // Screenreader starten dann auf der neuen Seite statt auf dem alten Menülink. Vergleich mit dem zuletzt
+    // gezeigten Pfad (statt „erster Aufruf“), damit doppelt ausgeführte Effekte (StrictMode) nichts fokussieren.
+    if (shown.current === pathname) return;
+    shown.current = pathname;
     document.getElementById('main')?.focus({ preventScroll: true });
   }, [pathname]);
   return null;
