@@ -44,3 +44,8 @@ export function ordinal(n: number): string {
   const suffix = tens >= 11 && tens <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[n % 10] ?? 'th';
   return `${n}${suffix}`;
 }
+
+/** Englisch: Zahl mit Einzahl/Mehrzahl – „1 goal“, „3 goals“ */
+export function plural(n: number, one: string, many: string): string {
+  return `${n} ${n === 1 ? one : many}`;
+}

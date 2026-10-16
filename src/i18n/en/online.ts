@@ -1,7 +1,6 @@
 /** Texts: online league – fantasy draft with lobby, live draft and connection (English). */
 import type { Messages } from '../de';
-
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+import { plural } from '../lang';
 
 const online: Messages['online'] = {
   soundOn: 'Sound on',

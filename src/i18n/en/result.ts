@@ -1,8 +1,6 @@
 /** Texts: result (English). Must have exactly the keys of ../de/result.ts (checked by TypeScript). */
 import type { Messages } from '../de';
-import { ordinal } from '../lang';
-
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+import { ordinal, plural } from '../lang';
 
 const result: Messages['result'] = {
   // ---------------------------------------------------------------- Season summary (SeasonResultView)

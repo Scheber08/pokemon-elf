@@ -1,8 +1,6 @@
 /** Texts: draft (English). Must have exactly the keys of ../de/draft.ts (checked by TypeScript). */
 import type { Messages } from '../de';
-import { ordinal } from '../lang';
-
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+import { ordinal, plural } from '../lang';
 
 const draft: Messages['draft'] = {
   // ---------------------------------------------------------------- Shared
