@@ -655,6 +655,8 @@ const draft: Messages['draft'] = {
     goalsNear: (n, left) => `🏭 ${n} goals – ${left} more for “Goal factory”`,
     goalGap: (pts) => (pts === 0 ? ' (level on points)' : ` (${pts} ${pts === 1 ? 'point' : 'points'} behind)`),
     vsTop: (record, games) => `🔝 Against the top 4: ${record} (W–D–L, ${games === 1 ? '1 game' : `${games} games`})`,
+    crowd: (n) => `🏟️ Expected crowd: ${n}`,
+    crowdFull: (n) => `🏟️ Sold out: ${n} fans!`,
     winRun: (n, left) => `🏅 ${n} wins in a row – ${left} more for the “Winning run” achievement`,
     linesTitle: 'Goals by unit',
     distinctScorers: (n) => `👥 ${n} different scorers`,

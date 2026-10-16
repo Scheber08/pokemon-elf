@@ -1414,3 +1414,17 @@ export interface FoeRecord {
   gf: number;
   ga: number;
 }
+
+/** Stadion der Manager-Saison: so viele Plätze (darüber: ausverkauft) */
+export const STADIUM_CAPACITY = 40_000;
+
+/**
+ * 🏟️ Erwartete Zuschauer beim nächsten Heimspiel (nur Spielerei, deterministisch): Grundstock 18.000,
+ * bis zu +18.000 je nach Tabellenplatz (1. = voll), dazu die Fan-Stimmung; auf 500 gerundet, höchstens STADIUM_CAPACITY.
+ */
+export function expectedCrowd(place: number, teams: number, mood: FanMood | null): number {
+  const share = teams > 1 ? (teams - place) / (teams - 1) : 1;
+  const moodBonus = mood === 'euphoria' ? 5000 : mood === 'happy' ? 2500 : mood === 'angry' ? -3000 : 0;
+  const raw = 18_000 + share * 18_000 + moodBonus;
+  return Math.min(STADIUM_CAPACITY, Math.max(0, Math.round(raw / 500) * 500));
+}

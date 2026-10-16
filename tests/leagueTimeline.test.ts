@@ -23,6 +23,7 @@ import { biggestUpset, currentRun, biggestWin, goalFest, fastestPicker, longestW
   topScorers,
   weightExtremes,
   favouriteFoes,
+  expectedCrowd,
 } from '../src/lib/leagueTimeline';
 import { createRng } from '../src/lib/rng';
 import { buildTable, simulateLeague, type LeagueResult, type LeagueTeam } from '../src/lib/season';
@@ -675,5 +676,15 @@ describe('favouriteFoes', () => {
   it('null bei nur einem Gegner oder ohne Unterschied; fremde Spiele zählen nicht', () => {
     expect(favouriteFoes([m(0, 1, 1, 0)], 0)).toBeNull();
     expect(favouriteFoes([m(0, 1, 1, 1), m(2, 0, 1, 1), m(1, 2, 5, 0)], 0)).toBeNull();
+  });
+});
+
+describe('expectedCrowd', () => {
+  it('Platz und Fan-Stimmung, auf 500 gerundet, höchstens ausverkauft', () => {
+    expect(expectedCrowd(1, 18, null)).toBe(36000);
+    expect(expectedCrowd(18, 18, null)).toBe(18000);
+    expect(expectedCrowd(1, 18, 'euphoria')).toBe(40000);
+    expect(expectedCrowd(18, 18, 'angry')).toBe(15000);
+    expect(expectedCrowd(9, 18, 'happy')).toBe(30000);
   });
 });

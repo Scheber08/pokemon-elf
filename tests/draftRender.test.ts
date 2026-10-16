@@ -2118,6 +2118,18 @@ describe('ManagerSeason', () => {
     const f = container.querySelector('.manager__rival-formation');
     if (lineup) expect(f!.textContent!.trimEnd()).toBe(` · spielt ${lineup.formation}`);
     else expect(f).toBeNull();
+    // 🏟️ Erwartete Zuschauer nur beim eigenen Heimspiel
+    {
+      const { expectedCrowd, fanMood, recentForm } = await import('../src/lib/leagueTimeline');
+      const crowdEl = container.querySelector('.manager__crowd');
+      if (home !== me) expect(crowdEl).toBeNull();
+      else {
+        const place = league.table.findIndex((r) => r.team === me) + 1;
+        const n = expectedCrowd(place, league.table.length, fanMood(recentForm(league.matches, me, s.manager!.played)));
+        const txt = n.toLocaleString('de-DE');
+        expect(crowdEl!.textContent).toBe(n >= 40000 ? `🏟️ Ausverkauft: ${txt} Zuschauer!` : `🏟️ Erwartet: ${txt} Zuschauer`);
+      }
+    }
     // 🔝 Eigene Bilanz gegen die aktuellen Top 4 (ohne sich selbst)
     {
       const top = new Set(league.table.filter((r) => r.team !== me).slice(0, 4).map((r) => r.team));
