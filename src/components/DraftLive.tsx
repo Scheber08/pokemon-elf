@@ -381,6 +381,27 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   const ultraBeastLimit = maxUltraBeasts != null && ultraBeasts ? maxUltraBeasts : null;
   const megaLimit = maxMegas != null && megas ? maxMegas : null;
 
+  // 🔔 Ende einer Draft-Runde: Top-Pick der Runde (Fit an seiner Feldposition) – wie im lokalen Draft.
+  // Steht vor den übrigen Ansagen, damit speziellere (🏅, 💯, ★, ✨) beim selben Pick Vorrang haben.
+  const roundSeen = useRef(s.picks.length);
+  useEffect(() => {
+    const before = roundSeen.current;
+    roundSeen.current = s.picks.length;
+    const n = s.teams.length;
+    if (s.picks.length <= before || !n || s.picks.length % n !== 0) return;
+    const sc = scale('all');
+    let top: { mon: Pokemon; team: DraftTeam; fit: number } | null = null;
+    for (const pk of s.picks.slice(-n)) {
+      const team = s.teams.find((x) => x.id === pk.teamId);
+      const mon = byId.get(pk.pokemonId);
+      const j = team ? team.slots.indexOf(pk.pokemonId) : -1;
+      if (!team || !mon || j < 0) continue;
+      const fit = positionFit(mon, FORMATIONS[team.formation].slots[j].pos, sc);
+      if (!top || fit > top.fit) top = { mon, team, fit };
+    }
+    if (top) setInfo(t.draft.local.roundDone(s.picks.length / n, t.game.pokemon(top.mon), teamLabel(top.team, t), Math.round(top.fit)));
+  }, [s.picks.length]);
+
   // Eigener Pick setzt den besten Positions-Fit des Drafts (🏅 im Verlauf): kurz feiern; sonst 💯 ab Fit 95
   const recordSeen = useRef(s.picks.length);
   useEffect(() => {

@@ -690,6 +690,37 @@ describe('DraftLive', () => {
     expect(container.querySelector('.run-notice__text')!.textContent).toMatch(new RegExp(`^💯 Volltreffer: ${mon.de} passt mit ${fit} als .+!$`));
   });
 
+  it('🔔 Ende einer Draft-Runde: Top-Pick der Runde (nicht beim Laden)', async () => {
+    const { FORMATIONS } = await import('../src/config/formations');
+    const { positionFit } = await import('../src/lib/fit');
+    const fitIn = (team: { formation: keyof typeof FORMATIONS }, id: number, slot: number) => positionFit(ALL.find((p) => p.id === id)!, FORMATIONS[team.formation].slots[slot].pos, SCALE);
+    // Alle picken schwach (kein Rekord, kein Volltreffer) – bis auf den letzten Pick der ersten Runde
+    const weakPick = (st: DraftState): DraftState => {
+      const tm = engine.currentTeam(st)!;
+      const sl = tm.slots.findIndex((x) => x == null);
+      const free = ALL.filter((p) => engine.pickError(st, tm.id, p.id, sl, ALL) == null);
+      const weakest = free.reduce((a, b) => (fitIn(tm, b.id, sl) < fitIn(tm, a.id, sl) ? b : a));
+      return engine.applyPick(st, tm.id, weakest.id, sl, false, 2000, ALL);
+    };
+    let s = drafting();
+    const n = s.teams.length;
+    for (let i = 0; i < n - 1; i++) s = weakPick(s);
+    const { container, root } = await renderLive(fakeRoom(snap(s, 'h')));
+    // Beim Laden mitten in der Runde: keine Ansage
+    expect(container.querySelector('.run-notice__text')?.textContent ?? '').not.toContain('🔔');
+    s = weakPick(s);
+    await act(async () => root.render(app(h(DraftLive, { room: fakeRoom(snap(s, 'h')) }))));
+    // Erwartet: höchster Fit unter den n Picks der Runde
+    const round = s.picks.slice(-n).map((pk) => {
+      const tm = s.teams.find((x) => x.id === pk.teamId)!;
+      return { pk, tm, fit: fitIn(tm, pk.pokemonId, tm.slots.indexOf(pk.pokemonId)) };
+    });
+    const top = round.reduce((a, b) => (b.fit > a.fit ? b : a));
+    const name = ALL.find((p) => p.id === top.pk.pokemonId)!.de;
+    const { teamLabel } = await import('../src/state/useDraftRoom');
+    expect(container.querySelector('.run-notice__text')!.textContent).toBe(`🔔 Runde 1 vorbei – Top-Pick: ${name} (${teamLabel(top.tm)}, Fit ${Math.round(top.fit)})`);
+  });
+
   it('✅ eigene Elf vollständig: Hinweis mit Ø Fit (einmal, nicht beim Laden)', async () => {
     const { FORMATIONS } = await import('../src/config/formations');
     const { positionFit } = await import('../src/lib/fit');
@@ -764,7 +795,8 @@ describe('DraftLive', () => {
     // Nur bei spürbarem Abstand zum nächstbesten Freien dieser Position
     const rest = pool.filter((p) => p.id !== best.id);
     const next = rest.reduce((a, b) => (positionFit(b, pos, SCALE) > positionFit(a, pos, SCALE) ? b : a));
-    if (positionFit(best, pos, SCALE) - positionFit(next, pos, SCALE) < 5) return expect(container.querySelector('.run-notice')).toBeNull();
+    // (Der Pick beendet hier Runde 1 – die 🔔-Ansage darf stehen, nur kein 🧲)
+    if (positionFit(best, pos, SCALE) - positionFit(next, pos, SCALE) < 5) return expect(container.querySelector('.run-notice__text')?.textContent ?? '').not.toMatch(/^🧲/);
     expect(container.querySelector('.run-notice__text')!.textContent).toMatch(new RegExp(`^🧲 Team 1 schnappt dir ${best.de} weg \\(bester Freier für \\S+\\)\\.$`));
   });
 
