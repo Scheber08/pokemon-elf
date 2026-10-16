@@ -246,13 +246,25 @@ describe('Builder auf Englisch', () => {
     // Sortierung „Best for the position“: Fit-Notiz auf den Karten, absteigend
     const fitRadio = dialog.querySelectorAll('[role="radio"]').find((b) => b.textContent === 'Best for the position')!;
     await act(async () => fitRadio.click());
-    const fits = dialog
-      .querySelectorAll('.pcard__note')
-      .map((n) => /^Fit (\d+)$/.exec(n.textContent)?.[1])
+    const notes = dialog.querySelectorAll('.pcard__note').map((n) => n.textContent!);
+    const fits = notes
+      .map((n) => /^Fit (\d+)/.exec(n)?.[1])
       .filter((x): x is string => x != null)
       .map(Number);
     expect(fits.length).toBeGreaterThan(5);
     expect(fits).toEqual([...fits].sort((a, b) => b - a));
+    // Differenz zum aktuellen Torwart (Relaxo) hinter dem Fit – Vorzeichen passend
+    const { buildScale, positionFit } = await import('../src/lib/fit');
+    const cur = Math.round(positionFit(ALL.find((p) => p.id === 143)!, 'TW', buildScale(ALL, 'all')));
+    for (const n of notes) {
+      const m = /^Fit (\d+)(?: · ([+−])(\d+))?$/.exec(n);
+      if (!m) continue;
+      const f = Number(m[1]);
+      if (f === cur) continue;
+      expect(m[2] && m[3], n).toBeTruthy();
+      expect(Number(m[3]) * (m[2] === '+' ? 1 : -1)).toBe(f - cur);
+    }
+    expect(notes.some((n) => / · \+\d+$/.test(n))).toBe(true);
   });
 
   it('Umschalten DE → EN im Kopf übersetzt die Seite sofort (und zurück)', async () => {

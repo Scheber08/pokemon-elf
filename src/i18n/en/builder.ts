@@ -102,7 +102,7 @@ const builder: Messages['builder'] = {
     sort: 'Sort by',
     sortDex: 'Number',
     sortFit: 'Best for the position',
-    fitNote: (fit) => `Fit ${fit}`,
+    fitNote: (fit, diff = null) => (diff ? `Fit ${fit} · ${diff > 0 ? '+' : '−'}${Math.abs(diff)}` : `Fit ${fit}`),
   },
   filter: {
     searchLabel: 'Search Pokémon',

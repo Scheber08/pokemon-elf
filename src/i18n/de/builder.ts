@@ -108,7 +108,8 @@ const builder = {
     sort: 'Sortierung',
     sortDex: 'Nummer',
     sortFit: 'Beste für die Position',
-    fitNote: (fit: number) => `Fit ${fit}`,
+    /** Fit auf der Position, dazu (falls belegt) die Differenz zum aktuellen Spieler */
+    fitNote: (fit: number, diff: number | null = null) => (diff ? `Fit ${fit} · ${diff > 0 ? '+' : '−'}${Math.abs(diff)}` : `Fit ${fit}`),
   },
   filter: {
     searchLabel: 'Pokémon suchen',

@@ -111,7 +111,10 @@ export function PickerModal({ pos, pool, initialRegion, sprite, currentId, onFie
             const at = onField.get(p.id);
             if (at && p.id !== currentId) return t.builder.picker.onField(t.game.posShort[at]);
             const fit = fits?.get(p.id);
-            return fit != null ? t.builder.picker.fitNote(Math.round(fit)) : null;
+            if (fit == null) return null;
+            // Differenz zum aktuellen Spieler der Position (nicht an ihm selbst)
+            const cur = currentId != null && p.id !== currentId ? fits?.get(currentId) : undefined;
+            return t.builder.picker.fitNote(Math.round(fit), cur != null ? Math.round(fit) - Math.round(cur) : null);
           }}
           onPick={(p) => onPick(p.id)}
           disabledReason={disabledReason}
