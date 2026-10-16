@@ -687,6 +687,29 @@ describe('/draft an einem Gerät auf Englisch', () => {
     localStorage.removeItem('pokemon-elf:draft');
   });
 
+  it('Lokaler Draft: ⚡ Blitz-Pick für menschliche Teams (höchstens 5 s nach dem vorigen Pick)', async () => {
+    storeLang('de');
+    const empty = Array(11).fill(null);
+    const teams = [
+      { name: 'Mein Team', cpu: false, formation: '4-3-3', slots: [150, 1, ...empty.slice(2)] },
+      { name: 'CPU', cpu: true, formation: '4-4-2', slots: [4, 7, ...empty.slice(2)] },
+    ];
+    // #1 ohne Vorgänger, #2 CPU nach 2 s (CPU zählt nicht), #3 Mensch nach 3 s (⚡), #4 CPU; ältere Einträge ohne `at` zählen nicht
+    const log = [
+      { team: 0, slot: 0, id: 150, at: 1_000 },
+      { team: 1, slot: 0, id: 4, at: 3_000 },
+      { team: 0, slot: 1, id: 1, at: 6_000 },
+      { team: 1, slot: 1, id: 7 },
+    ];
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: true, pick: 4, selected: null, seed: null, log }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const items = container.querySelectorAll('.draft-feed li');
+    expect(items.map((li) => !!li.querySelector('.draft-feed__fast'))).toEqual([false, true, false, false]);
+    expect(items[1].querySelector('.draft-feed__fast')!.getAttribute('title')).toBe('Blitz-Pick: nach 3 Sekunden');
+    localStorage.removeItem('pokemon-elf:draft');
+  });
+
   it('Pick-Verlauf: Start legt ihn an, jeder Pick wird angehängt; Liga zeigt das Schnäppchen des Drafts', async () => {
     storeLang('en');
     localStorage.removeItem('pokemon-elf:draft');

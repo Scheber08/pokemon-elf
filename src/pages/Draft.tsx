@@ -53,7 +53,7 @@ import { cleanCheer } from '../lib/cheer';
 import { cleanCrest, type Crest as CrestData } from '../lib/crest';
 import { Crest } from '../components/Crest';
 import { CrestEditor } from '../components/CrestEditor';
-import { cpuCaptain, isLegend, limitKindsOf, pickNumbersLabel } from '../lib/draftEngine';
+import { cpuCaptain, FAST_PICK_SECONDS, isLegend, limitKindsOf, pickNumbersLabel } from '../lib/draftEngine';
 import { SHINY_CHANCE, SHINY_FIT_BONUS, SHINY_PARTY_CHANCE, shinyBonus, shinyRoll, shinyTeamBoost } from '../lib/shiny';
 import { useToast } from '../state/Toast';
 import { copyText, downloadBlob } from '../lib/exportImage';
@@ -105,8 +105,8 @@ interface DraftState {
   shinySalt?: number;
   /** Shinys dieses Drafts (Pokémon-IDs) */
   shinies?: number[];
-  /** Pick-Verlauf (Team-Index, Platz, Pokémon) – fehlt bei älteren gespeicherten Drafts */
-  log?: { team: number; slot: number; id: number }[];
+  /** Pick-Verlauf (Team-Index, Platz, Pokémon, Zeitpunkt) – fehlt bei älteren gespeicherten Drafts; `at` erst seit ⚡ */
+  log?: { team: number; slot: number; id: number; at?: number }[];
   /** Shinys ausgeschaltet (Einstellung vor dem Draft) */
   noShinies?: true;
   /** Shiny-Party: 10 % statt 2 % */
@@ -428,7 +428,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
         teams,
         pick,
         // Verlauf nur, wenn er von Anfang an mitläuft (sonst stimmten die Pick-Nummern nicht)
-        ...(s.log && s.log.length === s.pick ? { log: [...s.log, { team: teamIdx, slot, id: pokemonId }] } : {}),
+        ...(s.log && s.log.length === s.pick ? { log: [...s.log, { team: teamIdx, slot, id: pokemonId, at: Date.now() }] } : {}),
         ...(shiny ? { shinies: [...(s.shinies ?? []), pokemonId] } : {}),
         selected: null,
         phase: pick >= s.teams.length * ROUNDS ? (s.teams.some((x) => !x.cpu) ? 'captains' : 'league') : 'drafting',
@@ -2263,6 +2263,9 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               .map((x, k) => {
                 const { mon, pos, fit } = placed(x);
                 const kinds = mon ? limitKindsOf(mon) : [];
+                // ⚡ Blitz-Pick wie online: menschliches Team, höchstens FAST_PICK_SECONDS nach dem vorigen Pick
+                const prevAt = log[k - 1]?.at;
+                const secs = x.at != null && prevAt != null && !state.teams[x.team]?.cpu ? Math.max(0, Math.round((x.at - prevAt) / 1000)) : null;
                 return {
                   key: `${k}-${x.id}`,
                   no: k + 1,
@@ -2274,6 +2277,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   ...(state.shinies?.includes(x.id) ? { shiny: true } : {}),
                   ...(k === top ? { top: true } : {}),
                   ...(kinds.length ? { kinds } : {}),
+                  ...(secs != null && secs <= FAST_PICK_SECONDS ? { fast: secs } : {}),
                 };
               })
               .slice(-8)
