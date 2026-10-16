@@ -415,6 +415,24 @@ describe('/draft an einem Gerät auf Englisch', () => {
       const name = ALL.find((p) => p.id === guess.id)!.en;
       expect(container.querySelector('.draft__cpuguess')!.textContent).toBe(`🤖 ${clubEn(CLUB_NAMES[0])} will probably take ${name}`);
     }
+    // „Best for my team first“: sortiert das Raster nach bestem Fit × Positionsgewicht auf einem freien Platz
+    {
+      const { FORMATIONS } = await import('../src/config/formations');
+      const { POSITIONS } = await import('../src/config/positions');
+      const { buildScale, positionFit } = await import('../src/lib/fit');
+      const sc = buildScale(ALL, 'all');
+      const box = container.querySelector('.draft__bestfirst input') as MiniElement;
+      await act(async () => {
+        (box as unknown as { checked: boolean }).checked = true;
+        box.click();
+      });
+      const positions = [...new Set(FORMATIONS[FORMATION_IDS[0]].slots.map((d) => d.pos))];
+      const score = (p: (typeof ALL)[number]) => Math.max(...positions.map((pos) => positionFit(p, pos, sc) * (0.92 + 0.08 * POSITIONS[pos].teamWeight)));
+      const pool = ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth && !p.form);
+      const best = [...pool].sort((a, b) => score(b) - score(a) || a.id - b.id)[0];
+      expect(container.querySelector('button.pcard')!.textContent).toContain(best.en);
+      await act(async () => box.click());
+    }
     // Beste Freie: ein Chip je verschiedener Position der Formation, Klick wählt das Pokémon aus
     const { FORMATIONS } = await import('../src/config/formations');
     const chips = container.querySelectorAll('.draft__bestfree button');

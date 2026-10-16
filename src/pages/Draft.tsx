@@ -341,7 +341,20 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   const filtered = useFilteredPokemon(pool, filters);
   // „★ … noch frei“ als Umschalter: nur Legendäre/Mysteriöse im Raster (wie online)
   const [legendsOnly, setLegendsOnly] = useState(false);
-  const shownPool = useMemo(() => (legendsOnly && state.legends ? filtered.filter((p) => p.leg || p.myth) : filtered), [filtered, legendsOnly, state.legends]);
+  // „Beste für mein Team zuerst“ (wie online): nach dem besten Fit auf einem freien Platz des Teams am Zug
+  const [bestFirst, setBestFirst] = useState(false);
+  const freeKey = team ? team.slots.map((id, j) => (id == null ? j : '')).join(',') : '';
+  const shownPool = useMemo(() => {
+    const shown = legendsOnly && state.legends ? filtered.filter((p) => p.leg || p.myth) : filtered;
+    if (!bestFirst || !team || team.cpu) return shown;
+    const defs = FORMATIONS[team.formation].slots;
+    const positions = defs.filter((_, j) => team.slots[j] == null).map((d) => d.pos);
+    if (!positions.length) return shown;
+    const sc = scale('all');
+    // Wie der Auto-Pick: Fit × Positionsgewicht
+    const score = new Map(shown.map((p) => [p.id, Math.max(...positions.map((pos) => positionFit(p, pos, sc) * (0.92 + 0.08 * POSITIONS[pos].teamWeight)))]));
+    return [...shown].sort((a, b) => score.get(b.id)! - score.get(a.id)! || a.id - b.id);
+  }, [filtered, legendsOnly, state.legends, bestFirst, freeKey, team?.formation, team?.cpu]);
   // ⚠️ Wird knapp (wie online): offene Plätze aller Teams gegen starke Freie – nur Positionen, die das menschliche Team am Zug noch braucht
   const liveScarce = useMemo(() => {
     if (!team || team.cpu || state.phase !== 'drafting') return [];
@@ -2256,6 +2269,9 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   </button>
                 </p>
               )}
+              <label className="draft-check draft__bestfirst">
+                <input type="checkbox" checked={bestFirst} onChange={(e) => setBestFirst(e.target.checked)} /> {t.online.bestFirst}
+              </label>
               <FilterBar filters={filters} onChange={setFilters} showRegion={state.region === 0} resultCount={shownPool.length} slashFocus />
               <PokemonGrid
                 items={shownPool}
