@@ -2977,9 +2977,41 @@ button.sheet__row:hover {
 .back-to-top:hover {
   border-color: var(--yellow);
 }
+/* Druckansicht: immer helles Design auf weißem Papier, ohne Kopf, Navigation und Bedienelemente –
+   Teamblatt, Ergebnis, Tabellen und Scouting-Guide bleiben */
 @media print {
-  .back-to-top {
+  :root,
+  :root[data-theme='dark'],
+  :root[data-theme='light'] {
+    --bg: #ffffff;
+    --bg-deep: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #f2f5f8;
+    --surface-3: #e3eaf1;
+    --line: rgba(13, 27, 42, 0.18);
+    --line-strong: rgba(13, 27, 42, 0.3);
+    --text: #0d1b2a;
+    --text-dim: #4b5f73;
+    --yellow-text: #7d5200;
+    --green-text: #18702e;
+    --red-text: #b52a0b;
+    --shadow: none;
+    color-scheme: light;
+  }
+  body {
+    background: #ffffff;
+  }
+  .back-to-top,
+  .skip-link,
+  .site-header,
+  .offline-banner-wrap,
+  .toasts,
+  .actionbar,
+  .site-footer__links {
     display: none;
+  }
+  .card {
+    break-inside: avoid;
   }
 }
 
