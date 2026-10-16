@@ -50,6 +50,23 @@ export function friendlyMatch(own: FriendlySide, opp: FriendlySide, byId: Map<nu
   return { ratings: [teams[0].rating, teams[1].rating], matches, aggregate: [goals(0), goals(1)] };
 }
 
+/**
+ * 📈 Prognose: Hin- und Rückspiel mit festen Seeds 1…runs durchgerechnet – Anteil Siege, Remis und
+ * Niederlagen der eigenen Elf nach Gesamtergebnis (in Prozent, gerundet; deterministisch).
+ */
+export function friendlyOdds(own: FriendlySide, opp: FriendlySide, byId: Map<number, Pokemon>, scale: Scale, runs = 100): { win: number; draw: number; loss: number } {
+  const teams = leagueTeams({ teams: [asTeam(own, 'own'), asTeam(opp, 'opp')], settings: DEFAULT_DRAFT_SETTINGS }, byId, scale);
+  const n = { win: 0, draw: 0, loss: 0 };
+  for (let seed = 1; seed <= runs; seed++) {
+    const league = simulateLeague(teams, createRng(seed), DRAFT_MODEL);
+    let diff = 0;
+    for (const m of league.matches) diff += m.home === 0 ? m.hg - m.ag : m.ag - m.hg;
+    n[diff > 0 ? 'win' : diff < 0 ? 'loss' : 'draw']++;
+  }
+  const pct = (x: number) => Math.round((100 * x) / runs);
+  return { win: pct(n.win), draw: pct(n.draw), loss: pct(n.loss) };
+}
+
 /** Volle Elf? (alle 11 Plätze besetzt) */
 export const fullEleven = (slots: readonly (number | null)[]): boolean => slots.length === 11 && slots.every((id) => id != null);
 

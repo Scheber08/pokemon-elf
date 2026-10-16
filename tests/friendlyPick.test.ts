@@ -58,6 +58,10 @@ describe('Testspiel mit gespeicherter Elf', () => {
     // Die unvollständige Elf fehlt
     expect(options).toEqual(['Builder-Elf (aktuelle Elf)', 'Gespeichert']);
     expect(container.querySelector('h3')!.textContent).toContain('Builder-Elf – Gegner');
+    // 📈 Prognose bleibt beim Nochmal-Spielen gleich (feste Seeds)
+    const odds = () => container.querySelector('.friendly__odds')!.textContent!;
+    expect(odds()).toMatch(/^📈 Prognose aus 100 Testspielen: \d+ % Sieg · \d+ % Remis · \d+ % Niederlage$/);
+    const before = odds();
     // Bilanz erst ab dem zweiten Testspiel; „Nochmal spielen" zählt weiter
     const tally = () => container.querySelector('.friendly__tally')?.textContent ?? null;
     expect(tally()).toBeNull();
@@ -67,6 +71,7 @@ describe('Testspiel mit gespeicherter Elf', () => {
     const m = tally()!.match(/Bilanz aus 3 Testspielen: (\d+) S · (\d+) U · (\d+) N/)!;
     expect(m).not.toBeNull();
     expect(Number(m[1]) + Number(m[2]) + Number(m[3])).toBe(3);
+    expect(odds()).toBe(before);
     await act(async () => {
       select.value = '1';
       select.dispatchEvent(new MiniEvent('change', { bubbles: true }));

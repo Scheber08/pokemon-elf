@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useT } from '../i18n';
-import { friendlyMatch, friendlyStar, fullEleven, type FriendlySide } from '../lib/friendly';
+import { friendlyMatch, friendlyOdds, friendlyStar, fullEleven, type FriendlySide } from '../lib/friendly';
 import { formatMinute, type Goal } from '../lib/season';
 import { load, STORAGE_KEYS } from '../lib/storage';
 import { loadSavedTeams } from './SavedTeams';
@@ -58,6 +58,7 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
   const [history, setHistory] = useState<number[]>([]);
   const own = sides[Math.min(choice, sides.length - 1)] ?? null;
   const result = useMemo(() => (own ? friendlyMatch(own, opponent, byId, scale('all'), seed) : null), [own, opponent, byId, scale, seed]);
+  const odds = useMemo(() => (own ? friendlyOdds(own, opponent, byId, scale('all')) : null), [own, opponent, byId, scale]);
   // Spielwiedergabe (2D/Bericht) – beide Elfen mit ihren Pokémon
   const report = useMatchReport(
     (i) => (i === 0 ? (own?.name ?? '') : opponent.name),
@@ -118,6 +119,7 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
         </label>
       )}
       <p className="muted small">{tr.friendlyScore(result.ratings[0], result.ratings[1])}</p>
+      {odds && <p className="small friendly__odds">{tr.friendlyOdds(odds.win, odds.draw, odds.loss)}</p>}
       <ol className="friendly__legs">
         {result.matches.map((m, i) => {
           const ownHome = m.home === 0;

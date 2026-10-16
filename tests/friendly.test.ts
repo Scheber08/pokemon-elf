@@ -1,7 +1,7 @@
 /** Testspiel: eigene Elf gegen ein Ranglisten-Team – Hin- und Rückspiel, deterministisch aus dem Seed. */
 import { describe, expect, it } from 'vitest';
 import { buildScale } from '../src/lib/fit';
-import { friendlyMatch, fullEleven, type FriendlySide } from '../src/lib/friendly';
+import { friendlyMatch, friendlyOdds, fullEleven, type FriendlySide } from '../src/lib/friendly';
 import { ALL } from './helpers';
 
 const byId = new Map(ALL.map((p) => [p.id, p]));
@@ -30,6 +30,19 @@ describe('Testspiel', () => {
       if (a > b) wins++;
     }
     expect(wins).toBeGreaterThan(70);
+  });
+
+  it('📈 Prognose: deckt sich mit friendlyMatch über die Seeds 1…100, Summe ≈ 100 %', () => {
+    const odds = friendlyOdds(strong, weak, byId, scale);
+    const n = { win: 0, draw: 0, loss: 0 };
+    for (let seed = 1; seed <= 100; seed++) {
+      const [a, b] = friendlyMatch(strong, weak, byId, scale, seed).aggregate;
+      n[a > b ? 'win' : a < b ? 'loss' : 'draw']++;
+    }
+    expect(odds).toEqual(n);
+    expect(odds.win).toBeGreaterThan(odds.loss);
+    const back = friendlyOdds(weak, strong, byId, scale, 40);
+    expect(Math.abs(back.win + back.draw + back.loss - 100)).toBeLessThanOrEqual(1);
   });
 
   it('Tore mit Spielminute (Spielmodell des Online-Drafts)', () => {
