@@ -247,7 +247,7 @@ lassen Ausfälle draußen; eigene Aufstellungen bekommen zum Anpfiff den besten 
 **Pokal der Manager-Saison** (`ManagerState.cup`, `CUP_MATCHDAYS`): neben der Liga ein KO-Pokal mit 16 Teams
 (alle gedrafteten, aufgefüllt mit den stärksten Auffüllteams, Auslosung aus dem Liga-Seed). Je eine Runde nach den
 Spieltagen 4, 8, 12 und 16 – gleiche Aufstellungen und Tagesform, Remis → Elfmeterschießen, Finale neutral.
-Nur in Saisons, die nach der Einführung starten. Nach jeder Runde zeigt die Pokal-Karte die schon feststehenden Paarungen der nächsten Runde (die Weitergekommenen der Reihe nach) samt „⚔️ Dein nächster Pokalgegner“.
+Nur in Saisons, die nach der Einführung starten. Nach jeder Runde zeigt die Pokal-Karte die schon feststehenden Paarungen der nächsten Runde (die Weitergekommenen der Reihe nach) samt „⚔️ Dein nächster Pokalgegner“; „🛤️ Dein Pokalweg“ listet die eigenen Runden mit Ergebnis aus eigener Sicht (Elfmeterschießen inklusive) und ✅/❌.
 
 **Karriere** (`nextCareer`, `rematchTemplate(..., { career: true })`, `POST /api/drafts/:code/rematch` mit
 `career: true`): Nach einer Manager-Saison „Nächste Saison“ – gleiche Teams mit ihren Kadern (inkl. Transfers) und

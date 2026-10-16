@@ -2212,6 +2212,37 @@ describe('ManagerSeason', () => {
     expect(next.querySelector('li')!.className).toContain('is-user');
   });
 
+  it('Pokal: eigener Pokalweg aus eigener Sicht, mit Elfmeterschießen', async () => {
+    const { ManagerCupView } = await import('../src/components/ManagerSeason');
+    const bracket = Array.from({ length: 16 }, (_, i) => i);
+    const r16 = Array.from({ length: 8 }, (_, i) => ({ home: 2 * i, away: 2 * i + 1, winner: 2 * i + 1 }));
+    const qf = [{ home: 1, away: 3, winner: 1, pens: { home: 4, away: 3 } }];
+    const cup = {
+      bracket,
+      rounds: [
+        { stage: 'r16' as const, round: 4, ties: r16 },
+        { stage: 'qf' as const, round: 8, ties: qf },
+      ],
+      matches: [
+        { round: 4, home: 0, away: 1, hg: 1, ag: 2 },
+        { round: 8, home: 1, away: 3, hg: 2, ag: 2 },
+      ],
+    };
+    const nameOf = (i: number) => `T${i}`;
+    const { container } = await render(app(h(ManagerCupView, { cup: cup as never, you: 1, nameOf })));
+    await settle();
+    const rows = container.querySelectorAll('.manager__cup-path li');
+    expect(rows.map((r) => r.textContent)).toEqual([
+      'Achtelfinale 2:1 gegen T0 ✅weiter',
+      'Viertelfinale 2:2 (i. E. 4:3) gegen T3 ✅weiter',
+    ]);
+    const lost = await render(app(h(ManagerCupView, { cup: cup as never, you: 3, nameOf })));
+    await settle();
+    const r2 = lost.container.querySelectorAll('.manager__cup-path li');
+    expect(r2[1].className).toBe('is-lost');
+    expect(r2[1].textContent).toBe('Viertelfinale 2:2 (i. E. 3:4) gegen T1 ❌ausgeschieden');
+  });
+
   it('Manager: Tabellenausschnitt um das eigene Team mit Punkteabstand', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');

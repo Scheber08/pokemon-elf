@@ -2765,6 +2765,21 @@ button.sheet__row:hover {
 .manager__cup-winner {
   font-size: 1.1rem;
 }
+.manager__cup-path {
+  margin-top: 0.75rem;
+}
+.manager__cup-path ol {
+  margin: 0;
+  padding-left: 1.3rem;
+  display: grid;
+  gap: 4px;
+}
+.manager__cup-path-stage {
+  font-weight: 700;
+}
+.manager__cup-path li.is-lost {
+  color: var(--text-dim);
+}
 
 .manager__live {
   color: var(--red-text);

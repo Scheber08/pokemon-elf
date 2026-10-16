@@ -1575,6 +1575,19 @@ export function ManagerCupView({
     const m = cup.matches.find((x) => x.round === r.round && x.home === tie.home && x.away === tie.away);
     return m ? `${m.hg}:${m.ag}${tie.pens ? ` (${t.draft.cup.pens(tie.pens.home, tie.pens.away)})` : ''}` : '–';
   };
+  // Eigener Pokalweg: je gespielte Runde Ergebnis aus eigener Sicht (eigene Tore zuerst)
+  const path =
+    you == null
+      ? []
+      : cup.rounds.flatMap((r) => {
+          const tie = r.ties.find((x) => x.home === you || x.away === you);
+          if (!tie) return [];
+          const home = tie.home === you;
+          const m = cup.matches.find((x) => x.round === r.round && x.home === tie.home && x.away === tie.away);
+          const pens = tie.pens ? ` (${t.draft.cup.pens(home ? tie.pens.home : tie.pens.away, home ? tie.pens.away : tie.pens.home)})` : '';
+          const score = m ? `${home ? m.hg : m.ag}:${home ? m.ag : m.hg}${pens}` : '–';
+          return [{ stage: r.stage, opp: home ? tie.away : tie.home, score, won: tie.winner === you }];
+        });
   return (
     <section className="card manager__cup" aria-labelledby="manager-cup">
       <h2 id="manager-cup" className="section-title">
@@ -1592,6 +1605,21 @@ export function ManagerCupView({
             <p className="small">{youOut ? tx.cupYouOut(stages[youOut.stage]) : alive.includes(you) ? tx.cupYouAlive : null}</p>
           )}
         </>
+      )}
+      {path.length > 0 && (
+        <div className="manager__cup-path">
+          <h3 className="manager__cup-stage">🛤️ {tx.cupPath}</h3>
+          <ol>
+            {path.map((x) => (
+              <li key={x.stage} className={x.won ? 'is-won' : 'is-lost'}>
+                <span className="manager__cup-path-stage">{stages[x.stage]}</span>{' '}
+                <span className="manager__cup-score">{x.score}</span> {tx.cupPathVs(nameOf(x.opp))}{' '}
+                <span aria-hidden="true">{x.won ? '✅' : '❌'}</span>
+                <span className="sr-only">{x.won ? tx.cupPathWon : tx.cupPathLost}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
       )}
       {cup.rounds.length > 0 && winner == null && nextStage && alive.length >= 2 && (() => {
         // Nächste Runde steht schon fest: die Weitergekommenen der Reihe nach gepaart (wie die Engine)
