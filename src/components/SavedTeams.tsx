@@ -10,6 +10,9 @@ import { useSettings } from '../state/Settings';
 import { useToast } from '../state/Toast';
 import { cleanCheer } from '../lib/cheer';
 import { cleanCrest } from '../lib/crest';
+import { evaluateTeam } from '../lib/teamScore';
+import { usePokemonData } from '../state/PokemonData';
+import { FORMATION_IDS } from '../config/formations';
 
 /** Testspiel erst beim Öffnen laden – es zieht die Draft-Engine mit, die der Builder sonst nicht braucht */
 const FriendlyMatch = lazy(() => import('./FriendlyMatch').then((m) => ({ default: m.FriendlyMatch })));
@@ -80,6 +83,15 @@ export function SavedTeams<T extends Playable>({ current, onLoad }: Props<T>) {
   const tx = t.builder.saved;
   const toast = useToast();
   const { sprite } = useSettings();
+  const { byId, scale } = usePokemonData();
+  /** Team-Score einer gespeicherten Elf (alle 1.025 Pokémon, mit Kapitän – wie im Testspiel); null bei unbekannter Formation */
+  const scoreOf = (x: SavedTeam<T>): number | null => {
+    if (!(FORMATION_IDS as readonly string[]).includes(x.formation) || !x.state.slots) return null;
+    const players = x.state.slots.map((id) => (id != null ? byId.get(id) : undefined));
+    if (!players.some(Boolean)) return null;
+    const captain = (x.state as { captain?: unknown }).captain;
+    return evaluateTeam(x.formation as FormationId, players, scale('all'), typeof captain === 'number' ? captain : null).score;
+  };
   const [list, setList] = useState<SavedTeam<T>[]>(() => loadSavedTeams<T>());
   /** Testspiel der aktuellen Elf gegen diese gespeicherte (id) */
   const [vs, setVs] = useState<string | null>(null);
@@ -119,6 +131,15 @@ export function SavedTeams<T extends Playable>({ current, onLoad }: Props<T>) {
                   <span className="saved-teams__formation">{x.formation}</span>
                   {/* Speicherdatum (lokaler Kalendertag) */}
                   {x.at > 0 && <span className="saved-teams__at"> · {t.game.day(localDay(x.at))}</span>}
+                  {(() => {
+                    const score = scoreOf(x);
+                    return score != null && (
+                      <span className="saved-teams__score" title={tx.scoreTitle}>
+                        {' '}
+                        · {tx.score(score)}
+                      </span>
+                    );
+                  })()}
                   {/* Steht genau diese Elf gerade im Builder? (Formation und Aufstellung – ohne Namen speichert der Builder „Team n“) */}
                   {x.formation === current.formation && JSON.stringify(x.state.slots ?? []) === JSON.stringify(current.slots ?? []) && (
                     <span className="saved-teams__current"> · {tx.current}</span>

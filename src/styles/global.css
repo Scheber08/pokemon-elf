@@ -2533,6 +2533,7 @@ button.sheet__row:hover {
   white-space: nowrap;
 }
 .saved-teams__formation,
+.saved-teams__score,
 .saved-teams__at {
   white-space: nowrap;
 }

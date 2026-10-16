@@ -40,6 +40,8 @@ const builder: Messages['builder'] = {
     saved: (name) => `“${name}” saved`,
     updated: (name) => `“${name}” updated`,
     current: '✓ current',
+    score: (n) => `Score ${n}`,
+    scoreTitle: 'Team score across all 1,025 Pokémon (with captain) – as in friendlies',
     loaded: (name) => `“${name}” loaded`,
     friendly: 'Friendly',
     link: 'Link',

@@ -36,6 +36,8 @@ const builder = {
     saved: (name: string) => `„${name}" gespeichert`,
     updated: (name: string) => `„${name}" aktualisiert`,
     current: '✓ aktuell',
+    score: (n: number) => `Score ${n}`,
+    scoreTitle: 'Team-Score über alle 1.025 Pokémon (mit Kapitän) – wie im Testspiel',
     loaded: (name: string) => `„${name}" geladen`,
     friendly: 'Testspiel',
     link: 'Link',

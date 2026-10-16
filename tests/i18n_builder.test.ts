@@ -160,12 +160,20 @@ describe('Builder auf Englisch', () => {
     const { container } = await render(app(h(Builder)));
     await settle();
     expect(container.querySelector('.saved-teams__at')!.textContent).toBe(' · Oct 12, 2026');
+    // Leere Elf: kein Score
+    expect(container.querySelector('.saved-teams__score')).toBeNull();
     // Gespeicherte Elf ≠ aktuelle Builder-Elf: kein „✓ current“
     expect(container.querySelector('.saved-teams__current')).toBeNull();
     // Aktuelle Elf speichern: der neue Eintrag ist „✓ current“
     const saveBtn = container.querySelectorAll('button').find((b) => b.textContent === en.builder.saved.save)!;
     await act(async () => saveBtn.click());
     expect(container.querySelectorAll('.saved-teams__current').map((e) => e.textContent)).toEqual([' · ✓ current']);
+    // Gespeicherte Standard-Elf: Team-Score wie evaluateTeam (alle 1.025, mit Kapitän)
+    const { evaluateTeam } = await import('../src/lib/teamScore');
+    const { buildScale } = await import('../src/lib/fit');
+    const saved = JSON.parse(localStorage.getItem('pokemon-elf:saved-teams')!)[0];
+    const expected = evaluateTeam(saved.formation, saved.state.slots.map((id: number | null) => ALL.find((p) => p.id === id)), buildScale(ALL, 'all'), saved.state.captain ?? null).score;
+    expect(container.querySelectorAll('.saved-teams__score')[0].textContent).toBe(` · Score ${expected}`);
   });
 
   it('Auswahl-Dialog (Filter, Raster, Hinweise) ohne deutschen Text', async () => {
