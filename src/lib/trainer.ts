@@ -94,6 +94,19 @@ export function itemOnSale(it: TrainerItem, now: number): boolean {
   return from <= to ? day >= from && day <= to : day >= from || day <= to;
 }
 
+/**
+ * Nächste Shop-Saison, die noch nicht läuft: die mit dem nächsten Startdatum nach heute (über den Jahreswechsel).
+ * null, wenn es keine Saisonartikel gibt.
+ */
+export function nextSeason(items: readonly TrainerItem[], now: number): { from: string; icon: string } | null {
+  const day = new Date(now).toISOString().slice(5, 10);
+  const starts = [...new Map(items.filter((i) => i.season && !itemOnSale(i, now)).map((i) => [i.season!.icon, i.season!])).values()];
+  if (!starts.length) return null;
+  const ahead = (from: string) => (from > day ? 0 : 1);
+  const next = starts.reduce((a, b) => (ahead(b.from) < ahead(a.from) || (ahead(b.from) === ahead(a.from) && b.from < a.from) ? b : a));
+  return { from: next.from, icon: next.icon };
+}
+
 export const TRAINER_ITEMS: readonly TrainerItem[] = [
   // Haut
   item('skin', 's1', 0, '#f6d7c3'),

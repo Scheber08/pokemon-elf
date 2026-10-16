@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ACHIEVEMENTS, achievementStates, earnedCoins, longestDayStreak, type AchievementStats } from '../src/lib/achievements';
 import type { MeResponse } from '../src/lib/api/contract';
-import { DEFAULT_LOOK, itemOnSale, lockedItem, parseLook, TRAINER_ITEMS, TRAINER_SLOTS } from '../src/lib/trainer';
+import { DEFAULT_LOOK, itemOnSale, lockedItem, nextSeason, parseLook, TRAINER_ITEMS, TRAINER_SLOTS } from '../src/lib/trainer';
 import { achievementStats, saveDraftResults } from '../server/achievements';
 import { handleApi } from '../server/handler';
 import { ensureSchema } from '../server/schema';
@@ -392,6 +392,17 @@ describe('Kennzahlen und /api/me', () => {
 });
 
 describe('Saisonartikel', () => {
+  it('nächste Saison: nächstes Startdatum nach heute (über den Jahreswechsel), laufende zählen nicht', () => {
+    const at = (d: string) => Date.parse(`${d}T12:00:00Z`);
+    const it = (icon: string, from: string, to: string) => ({ slot: 'hat' as const, id: icon, price: 1, season: { from, to, icon } });
+    const items = [it('🎃', '10-01', '11-07'), it('🎄', '12-01', '01-06'), it('🐣', '03-20', '04-30'), { slot: 'hat' as const, id: 'n', price: 0 }];
+    expect(nextSeason(items, at('2026-10-16'))).toEqual({ from: '12-01', icon: '🎄' });
+    expect(nextSeason(items, at('2026-12-24'))).toEqual({ from: '03-20', icon: '🐣' });
+    expect(nextSeason(items, at('2026-05-01'))).toEqual({ from: '10-01', icon: '🎃' });
+    expect(nextSeason([], at('2026-05-01'))).toBeNull();
+    // Mit den echten Artikeln gibt es immer eine nächste Saison
+    expect(nextSeason(TRAINER_ITEMS, at('2026-10-16'))).not.toBeNull();
+  });
   it('nur in ihrem Zeitraum (auch über den Jahreswechsel)', () => {
     const at = (d: string) => Date.parse(`${d}T12:00:00Z`);
     const spooky = { slot: 'hat' as const, id: 'x', price: 1, season: { from: '10-01', to: '11-07', icon: '🎃' } };

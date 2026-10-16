@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useT, type Messages } from '../i18n';
 import { ApiRequestError, buyTrainerItem, saveTrainer } from '../lib/api/client';
 import type { MeResponse } from '../lib/api/contract';
-import { itemKey, itemOnSale, itemsOf, lockedItem, TRAINER_ITEMS, TRAINER_SLOTS, type TrainerItem, type TrainerLook, type TrainerSlot } from '../lib/trainer';
+import { itemKey, itemOnSale, itemsOf, lockedItem, nextSeason, TRAINER_ITEMS, TRAINER_SLOTS, type TrainerItem, type TrainerLook, type TrainerSlot } from '../lib/trainer';
 import type { Pokemon } from '../types';
 import { usePokemonData } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
@@ -166,11 +166,21 @@ export function TrainerEditor({ me, onMe }: Props) {
             // Hinweis auf Saisonartikel, die gerade im Shop sind (je Saison einmal)
             const now = Date.now();
             const seasons = [...new Map(TRAINER_ITEMS.filter((i) => i.season && itemOnSale(i, now)).map((i) => [i.season!.icon, i.season!])).values()];
-            return seasons.map((s) => (
-              <p key={s.icon} className="trainer-editor__season">
-                <span aria-hidden="true">{s.icon}</span> {tx.seasonNow(s.to)}
-              </p>
-            ));
+            const next = nextSeason(TRAINER_ITEMS, now);
+            return (
+              <>
+                {seasons.map((s) => (
+                  <p key={s.icon} className="trainer-editor__season">
+                    <span aria-hidden="true">{s.icon}</span> {tx.seasonNow(s.to)}
+                  </p>
+                ))}
+                {next && (
+                  <p className="trainer-editor__season trainer-editor__next muted small">
+                    {tx.seasonNext(next.icon, next.from)}
+                  </p>
+                )}
+              </>
+            );
           })()}
           <Segmented<'all' | 'owned' | 'affordable'>
             label={tx.filter}
