@@ -197,6 +197,8 @@ const online: Messages['online'] = {
   poolSizes: (tall, th, small, sh) => `📏 Tallest: ${tall} (${th.toLocaleString('en-US')}\u00a0m) · 🐭 Smallest: ${small} (${sh.toLocaleString('en-US')}\u00a0m)`,
   poolTypes: 'Most common types:',
   poolStarsNote: 'The five strongest Pokémon with these settings – at their best position.',
+  poolKinds: (legend, ub, mega) =>
+    `Including ${[legend && `★ ${legend} ${legend === 1 ? 'legendary' : 'legendaries'}`, ub && `${ub} Ultra ${ub === 1 ? 'Beast' : 'Beasts'}`, mega && `${mega} ${mega === 1 ? 'Mega' : 'Megas'}`].filter(Boolean).join(', ')}.`,
   poolLine: (pool, picks) => `Pool: ${pool} Pokémon for ${picks} picks.`,
   durationNoTimer: (season) => `After the draft the season ticker runs ~${season} min.`,
   draftRunning: 'The draft is already under way',

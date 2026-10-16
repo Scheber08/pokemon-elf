@@ -1351,6 +1351,27 @@ describe('DraftLobby', () => {
     await settle();
     const pool = engine.poolOf(st.settings, ALL).length;
     expect(container.textContent).toContain(`Pool: ${pool} Pokémon für ${picks} Picks.`);
+    // ★ Sonder-Pokémon im Pool (nur vorhandene Arten)
+    const kinds = { legend: 0, ub: 0, mega: 0 };
+    for (const p of engine.poolOf(st.settings, ALL)) for (const k of engine.limitKindsOf(p)) kinds[k]++;
+    const kindEl = container.querySelector('.draft-lobby__pool-kinds');
+    if (!kinds.legend && !kinds.ub && !kinds.mega) expect(kindEl).toBeNull();
+    else expect(kindEl!.textContent).toBe(` ${(await import('../src/i18n')).messages().online.poolKinds(kinds.legend, kinds.ub, kinds.mega)}`);
+    {
+      // Mit Legendären und Alola (Ultrabestien); Megas stecken nur in forms.json (nicht in ALL)
+      const st2 = lobby(2, { gens: [1, 7], legendary: true });
+      const k2 = { legend: 0, ub: 0, mega: 0 };
+      for (const p of engine.poolOf(st2.settings, ALL)) for (const k of engine.limitKindsOf(p)) k2[k]++;
+      expect(k2.legend && k2.ub).toBeGreaterThan(0);
+      expect(k2.mega).toBe(0);
+      const { messages } = await import('../src/i18n');
+      expect(messages().online.poolKinds(0, 1, 2)).toBe('Darunter 1 Ultrabestie, 2 Megas.');
+      const { container: c2 } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st2, 'h')) })));
+      await settle();
+      expect(c2.querySelector('.draft-lobby__pool-kinds')!.textContent).toBe(
+        ` Darunter ★ ${k2.legend} Legendäre, ${k2.ub} Ultrabestien.`,
+      );
+    }
     // CPU-Stärke als Lobby-Einstellung (Standard normal), Klick schickt den Patch
     expect(container.textContent).toContain('CPU-Stärke');
     const room = fakeRoom(snap(st, 'h'));

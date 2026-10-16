@@ -32,7 +32,7 @@ import '../styles/draft.css';
 import { cleanKit } from '../lib/kits';
 import { CrestEditor } from './CrestEditor';
 import { cleanCrest } from '../lib/crest';
-import { pickNumbersLabel, poolOf, rosterOf, rounds as draftRounds } from '../lib/draftEngine';
+import { limitKindsOf, pickNumbersLabel, poolOf, rosterOf, rounds as draftRounds } from '../lib/draftEngine';
 import { Crest } from './Crest';
 import { PoolStars } from './PoolStars';
 import { FilterBar, useFilteredPokemon, type PokemonFilters } from './FilterBar';
@@ -657,6 +657,13 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
                   return s.settings.pickSeconds ? t.online.duration(min(draftMs), min(seasonMs)) : t.online.durationNoTimer(min(seasonMs));
                 })()}
                 {list.length > 0 && ` ${t.online.poolLine(poolOf(s.settings, list).length, draftRounds(s.settings) * s.teams.length)}`}
+                {list.length > 0 && (() => {
+                  // ★ Legendäre, Ultrabestien und Megas im Pool (nur wenn es welche gibt)
+                  const n = { legend: 0, ub: 0, mega: 0 };
+                  for (const p of poolOf(s.settings, list)) for (const k of limitKindsOf(p)) n[k]++;
+                  if (!n.legend && !n.ub && !n.mega) return null;
+                  return <span className="draft-lobby__pool-kinds"> {t.online.poolKinds(n.legend, n.ub, n.mega)}</span>;
+                })()}
               </p>
             )}
             {!blocker && s.settings.format !== 'manager' && (() => {

@@ -216,6 +216,9 @@ const online = {
     `📏 Größter: ${tall} (${th.toLocaleString('de-DE')}\u00a0m) · 🐭 Kleinster: ${small} (${sh.toLocaleString('de-DE')}\u00a0m)`,
   poolTypes: 'Häufigste Typen:',
   poolStarsNote: 'Die fünf stärksten Pokémon dieser Einstellungen – mit ihrer besten Position.',
+  /** Lobby: Sonder-Pokémon im Pool (nur Arten mit mindestens einem) */
+  poolKinds: (legend: number, ub: number, mega: number) =>
+    `Darunter ${[legend && `★ ${legend} Legendäre`, ub && `${ub} ${ub === 1 ? 'Ultrabestie' : 'Ultrabestien'}`, mega && `${mega} ${mega === 1 ? 'Mega' : 'Megas'}`].filter(Boolean).join(', ')}.`,
   poolLine: (pool: number, picks: number) => `Pool: ${pool} Pokémon für ${picks} Picks.`,
   durationNoTimer: (season: number) => `Nach dem Draft läuft der Saison-Ticker ~${season} Min.`,
   draftRunning: 'Der Draft läuft schon',
