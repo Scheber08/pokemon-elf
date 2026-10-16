@@ -190,7 +190,7 @@ export function Achievements({ me, seen }: { me: MeResponse; seen: Set<string> }
 }
 
 /** Ein Erfolg: Name, Beschreibung, Fortschritt und Belohnung */
-function AchievementItem({ a, fresh }: { a: MeResponse['achievements'][number]; fresh: boolean }) {
+export function AchievementItem({ a, fresh }: { a: MeResponse['achievements'][number]; fresh: boolean }) {
   const tx = useT().trainer;
   const text = tx.list[a.id] ?? { name: a.id, desc: '' };
   return (
@@ -205,7 +205,14 @@ function AchievementItem({ a, fresh }: { a: MeResponse['achievements'][number]; 
         </strong>
         <span className="achievement__desc">{text.desc}</span>
         {!a.done && a.goal > 1 && (
-          <span className="achievement__bar" role="progressbar" aria-valuemin={0} aria-valuemax={a.goal} aria-valuenow={a.value}>
+          <span
+            className="achievement__bar"
+            role="progressbar"
+            aria-label={tx.progressAria(text.name)}
+            aria-valuemin={0}
+            aria-valuemax={a.goal}
+            aria-valuenow={a.value}
+          >
             <span style={{ width: `${(a.value / a.goal) * 100}%` }} />
           </span>
         )}

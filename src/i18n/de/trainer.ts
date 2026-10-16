@@ -23,6 +23,8 @@ const trainer = {
   newBadge: 'Neu',
   reward: (n: number) => `+${n}`,
   rewardTitle: (n: number) => `${n} Münzen`,
+  /** Name des Fortschrittsbalkens eines Erfolgs (Screenreader) */
+  progressAria: (name: string) => `Fortschritt „${name}“`,
   progressValue: (v: number, goal: number) => `${v}/${goal}`,
   unlocked: (name: string) => `Erfolg freigeschaltet: ${name}`,
   editorTitle: 'Dein Trainer',

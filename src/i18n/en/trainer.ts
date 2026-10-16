@@ -25,6 +25,7 @@ const trainer: Messages['trainer'] = {
   newBadge: 'New',
   reward: (n) => `+${n}`,
   rewardTitle: (n) => `${n} coins`,
+  progressAria: (name) => `Progress “${name}”`,
   progressValue: (v, goal) => `${v}/${goal}`,
   unlocked: (name) => `Achievement unlocked: ${name}`,
   editorTitle: 'Your trainer',
