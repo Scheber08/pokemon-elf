@@ -518,6 +518,8 @@ export interface PublicLobby {
   legends: boolean;
   /** Shiny-Party (nur gesetzt, wenn an) */
   shinyParty?: true;
+  /** Spielmodus, nur gesetzt bei KO-Turnier oder Manager-Saison (sonst Liga) */
+  format?: Exclude<DraftFormat, 'league'>;
   pickSeconds: PickSeconds;
   createdAt: number;
 }

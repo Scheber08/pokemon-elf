@@ -276,8 +276,18 @@ function PublicLobbies() {
                       {l.legends ? t.online.plusLegends : ''}
                     </span>
                     <span>{timerLabel(l.pickSeconds, t)}</span>
-                    {l.shinyParty && <span className="draft-lobbies__party">{t.online.shinyPartyBadge}</span>}
                   </span>
+                  {(l.format || l.shinyParty) && (
+                    // Modus und Shiny-Party in eigener Zeile (kein verwaister Trenner beim Umbruch)
+                    <span className="draft-lobbies__facts">
+                      {l.format && (
+                        <span className="draft-lobbies__format">
+                          {l.format === 'cup' ? `🏆 ${t.draft.settings.formatCup}` : `🏟️ ${t.draft.settings.formatManager}`}
+                        </span>
+                      )}
+                      {l.shinyParty && <span className="draft-lobbies__party">{t.online.shinyPartyBadge}</span>}
+                    </span>
+                  )}
                 </div>
                 <Link className={`btn btn--small ${full ? '' : 'btn--primary'}`} to={`/draft/${l.code}`}>
                   {full ? t.online.watch : t.online.join}

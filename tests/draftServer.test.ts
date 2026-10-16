@@ -261,6 +261,13 @@ describe('Online-Draft: HTTP-Endpunkte', () => {
     expect(listed).toMatchObject({ legends: false, shinyParty: true });
     expect(db.query<{ legends: number }>('SELECT legends FROM draft_lobbies WHERE code = ?', party.code)[0].legends).toBe(2);
     db.update('DELETE FROM draft_lobbies WHERE code = ?', party.code);
+    // Spielmodus: Bit 4 = KO-Turnier, Bit 8 = Manager-Saison (Liga ohne Feld)
+    const mgr = await createLeague(newDevice(), { visibility: 'public', name: 'Mgr', legends: true, format: 'manager' });
+    const mgrListed = (await call<PublicLobbiesResponse>('GET', '/api/drafts/public')).body.lobbies.find((l) => l.code === mgr.code)!;
+    expect(mgrListed).toMatchObject({ legends: true, format: 'manager' });
+    expect(mgrListed.shinyParty).toBeUndefined();
+    expect(db.query<{ legends: number }>('SELECT legends FROM draft_lobbies WHERE code = ?', mgr.code)[0].legends).toBe(9);
+    db.update('DELETE FROM draft_lobbies WHERE code = ?', mgr.code);
 
     // Beitritt und CPU werden nachgezogen, gestartete Ligen verschwinden.
     const hostDev = newDevice();

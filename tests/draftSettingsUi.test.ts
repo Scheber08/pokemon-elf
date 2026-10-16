@@ -516,7 +516,7 @@ describe('/draft (Online-Modus)', () => {
             lobbies: [
               { code: 'QWE789', name: 'Mix', hostName: 'Mix FC', teams: 1, maxTeams: 2, region: 10, legends: false, pickSeconds: 0, createdAt: Date.now() - 60_000 },
               // Nur Mysteriöse im Pool: Die Spalte legends ist an – das Etikett darf nicht „Legendäre" allein sagen
-              { code: 'MYT234', name: 'Myth', hostName: 'Myth FC', teams: 1, maxTeams: 2, region: 1, legends: true, pickSeconds: 30, createdAt: Date.now() - 60_000, shinyParty: true },
+              { code: 'MYT234', name: 'Myth', hostName: 'Myth FC', teams: 1, maxTeams: 2, region: 1, legends: true, pickSeconds: 30, createdAt: Date.now() - 60_000, shinyParty: true, format: 'cup' },
             ],
           });
         }
@@ -528,6 +528,7 @@ describe('/draft (Online-Modus)', () => {
     expect(container.querySelector('.draft-lobbies')!.textContent).toContain('Kanto + Legendäre/Mysteriöse');
     // ✨ Shiny-Party-Badge nur an der Party-Lobby
     expect(container.querySelectorAll('.draft-lobbies__party').map((e) => e.textContent)).toEqual(['✨ Shiny-Party']);
+    expect(container.querySelectorAll('.draft-lobbies__format').map((e) => e.textContent)).toEqual(['🏆 KO-Turnier']);
     const gens = field(container, 'Generationen');
     expect(button(gens, 'Hoenn').getAttribute('aria-pressed')).toBe('true');
     expect(button(gens, 'Kanto').getAttribute('aria-pressed')).toBe('false');

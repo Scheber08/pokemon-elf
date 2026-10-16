@@ -36,6 +36,7 @@ import {
   type DraftSnapshot,
   type LobbyRegion,
   type PickSeconds,
+  type DraftFormat,
 } from '../src/lib/api/draftContract';
 import {
   addCpuTeam,
@@ -545,6 +546,8 @@ export interface LobbyFields {
   legends: boolean;
   /** Shiny-Party (10 % Shinys) – steckt als Bit 2 in der Spalte legends (LOBBY_SHINY_PARTY_BIT) */
   shinyParty: boolean;
+  /** Spielmodus – KO-Turnier und Manager-Saison stecken als Bit 4/8 in der Spalte legends */
+  format: DraftFormat;
   pickSeconds: PickSeconds;
   teams: number;
   maxTeams: number;
@@ -602,6 +605,7 @@ export function lobbyFields(
     region: pool.region,
     legends: pool.legends,
     shinyParty: s.shinies && s.shinyParty,
+    format: s.format,
     pickSeconds: s.pickSeconds,
     teams: state.teams.length,
     maxTeams: s.maxTeams,
@@ -615,7 +619,13 @@ export function lobbyFields(
  * Badge keine neue Spalte (Schema nur additiv; alte Zeilen haben 0/1).
  */
 export const LOBBY_SHINY_PARTY_BIT = 2;
-const legendsColumn = (f: LobbyFields) => (f.legends ? 1 : 0) | (f.shinyParty ? LOBBY_SHINY_PARTY_BIT : 0);
+/** Bits 4/8 der Spalte legends: KO-Turnier bzw. Manager-Saison (Liga = keins) */
+export const LOBBY_CUP_BIT = 4;
+export const LOBBY_MANAGER_BIT = 8;
+const legendsColumn = (f: LobbyFields) =>
+  (f.legends ? 1 : 0) |
+  (f.shinyParty ? LOBBY_SHINY_PARTY_BIT : 0) |
+  (f.format === 'cup' ? LOBBY_CUP_BIT : f.format === 'manager' ? LOBBY_MANAGER_BIT : 0);
 
 const sameFields = (a: LobbyFields, b: LobbyFields) =>
   (Object.keys(a) as (keyof LobbyFields)[]).every((k) => a[k] === b[k]);
