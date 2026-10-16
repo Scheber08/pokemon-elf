@@ -60,6 +60,12 @@ describe('Spielerprofil', () => {
     );
     for (let i = 0; i < 5; i++) await act(async () => new Promise((r) => setTimeout(r, 0)));
     expect(text(container)).toContain('Platz 4 von 57');
+    // „zuletzt aktiv …“ aus dem neuesten Run
+    {
+      const { ago } = await import('../src/lib/ago');
+      const { messages } = await import('../src/i18n');
+      expect(container.querySelector('.profile__active')!.textContent).toBe(` · zuletzt aktiv ${ago(Date.parse(PROFILE.recent[0].createdAt), messages('de'))}`);
+    }
     // ⭐ Lieblings-Challenge (meiste Runs, eindeutig)
     expect(container.querySelector('.profile__fav')!.textContent).toBe('⭐ Lieblings-Challenge: 34–0 Challenge (3 Runs)');
     // 🏅 nur am Run, der der Bestwert seiner Wertung ist

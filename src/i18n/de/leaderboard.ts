@@ -120,6 +120,7 @@ const leaderboard = {
   profile: {
     kicker: 'Spielerprofil',
     since: (date: string) => `Dabei seit ${date}`,
+    lastActive: (when: string) => `zuletzt aktiv ${when}`,
     runs: (n: number) => (n === 1 ? '1 gewerteter Run' : `${n} gewertete Runs`),
     achievements: (done: number, total: number) => `🏅 ${done}/${total} Erfolge`,
     online: (titles: number, leagues: number) =>

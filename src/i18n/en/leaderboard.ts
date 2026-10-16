@@ -116,6 +116,7 @@ const leaderboard: Messages['leaderboard'] = {
   profile: {
     kicker: 'Player profile',
     since: (date) => `Playing since ${date}`,
+    lastActive: (when) => `last active ${when}`,
     runs: (n) => (n === 1 ? '1 ranked run' : `${n} ranked runs`),
     achievements: (done, total) => `🏅 ${done}/${total} achievements`,
     online: (titles, leagues) => `🏆 ${titles} ${titles === 1 ? 'title' : 'titles'} in ${leagues} online ${leagues === 1 ? 'league' : 'leagues'}`,

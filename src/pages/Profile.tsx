@@ -1,3 +1,4 @@
+import { ago } from '../lib/ago';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { EntryDialog, type EntrySource } from '../components/EntryDialog';
@@ -92,6 +93,7 @@ export function Profile() {
             )}
             <p className="page-lead">
               {tp.since(date(p.since))} · {tp.runs(p.runs)}
+              {p.recent[0] && <span className="profile__active"> · {tp.lastActive(ago(Date.parse(p.recent[0].createdAt), t))}</span>}
               {p.achievements && <> · {tp.achievements(p.achievements.done, p.achievements.total)}</>}
               {p.online && p.online.leagues > 0 && <> · {tp.online(p.online.titles, p.online.leagues)}</>}
               {!!p.online?.managerCups && <> · {tp.managerCups(p.online.managerCups)}</>}
