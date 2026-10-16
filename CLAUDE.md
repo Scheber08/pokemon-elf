@@ -34,7 +34,7 @@ Deploy stehen in der README.
 - Alle UI-Texte in `src/i18n/de/<bereich>.ts` (Quelle) und `src/i18n/en/<bereich>.ts` (typgeprüft, gleiche
   Form). In Komponenten `useT()`, außerhalb von React `messages()`. Pokémon-, Positions-, Typ-, Regions- und
   Vereinsnamen über `t.game.*`.
-- Englische Ordinalzahlen („1st“, „22nd“) und Einzahl/Mehrzahl („1 goal“) nur über `ordinal()`/`plural()` aus `src/i18n/lang.ts`.
+- Englische Ordinalzahlen („1st“, „22nd“) und Einzahl/Mehrzahl („1 goal“) nur über `ordinal()`/`plural()` aus `src/i18n/lang.ts` (`plural` setzt den englischen Tausendertrenner: „1,500 coins“).
 - Dezimalzahlen in der Oberfläche über `fmtNumber(n, digits, lang)` (de „1,5“, en „1.5“), kein `toFixed` in Komponenten/Seiten (`tests/decimalFormat.test.ts`; Ausnahme: SVG-Koordinaten in `PlaceChart`).
 - Tests laufen fest auf Deutsch (`tests/setup.ts`); neue Texte immer in beiden Sprachen.
 

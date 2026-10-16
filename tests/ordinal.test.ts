@@ -13,5 +13,7 @@ describe('ordinal', () => {
 describe('plural', () => {
   it('Einzahl nur bei genau 1', () => {
     expect([0, 1, 2].map((n) => plural(n, 'goal', 'goals'))).toEqual(['0 goals', '1 goal', '2 goals']);
+    // Große Zahlen mit englischem Tausendertrenner
+    expect(plural(1500, 'coin', 'coins')).toBe('1,500 coins');
   });
 });

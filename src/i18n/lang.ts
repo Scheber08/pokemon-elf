@@ -47,5 +47,6 @@ export function ordinal(n: number): string {
 
 /** Englisch: Zahl mit Einzahl/Mehrzahl – „1 goal“, „3 goals“ */
 export function plural(n: number, one: string, many: string): string {
-  return `${n} ${n === 1 ? one : many}`;
+  // Englische Zahl mit Tausendertrenner („1,500 coins“)
+  return `${fmtNumber(n, 0, 'en')} ${n === 1 ? one : many}`;
 }
