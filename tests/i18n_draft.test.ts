@@ -723,6 +723,10 @@ describe('/draft an einem Gerät auf Englisch', () => {
     const gaps = log.flatMap((x, k) => (k > 0 && x.team === 0 ? [x.at - log[k - 1].at] : []));
     const avg = Math.round(gaps.reduce((a, b) => a + b, 0) / gaps.length / 1000);
     expect(container.querySelector('.draft__think')!.textContent).toBe(`⌀ Bedenkzeit je Pick: Mein Team ${avg} s`);
+    // ⚡ Blitz-König: Mein Team pickt jedes zweite Mal nach 4 s (≤ 5 s) – ab 3 Blitz-Picks in den Saisonrekorden
+    const fast = gaps.filter((g) => Math.round(g / 1000) <= 5).length;
+    expect(fast).toBeGreaterThanOrEqual(3);
+    expect(container.querySelector('.draft-records__blitz dd')!.textContent).toBe(`Mein Team – ${fast} Blitz-Picks ⚡`);
     localStorage.removeItem('pokemon-elf:draft');
   });
 

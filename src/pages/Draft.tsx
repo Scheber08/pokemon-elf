@@ -53,7 +53,7 @@ import { cleanCheer } from '../lib/cheer';
 import { cleanCrest, type Crest as CrestData } from '../lib/crest';
 import { Crest } from '../components/Crest';
 import { CrestEditor } from '../components/CrestEditor';
-import { cpuCaptain, FAST_PICK_SECONDS, isLegend, limitKindsOf, pickNumbersLabel } from '../lib/draftEngine';
+import { cpuCaptain, FAST_PICK_SECONDS, fastPickCounts, isLegend, limitKindsOf, pickNumbersLabel } from '../lib/draftEngine';
 import { SHINY_CHANCE, SHINY_FIT_BONUS, SHINY_PARTY_CHANCE, shinyBonus, shinyRoll, shinyTeamBoost } from '../lib/shiny';
 import { useToast } from '../state/Toast';
 import { copyText, downloadBlob } from '../lib/exportImage';
@@ -1424,6 +1424,18 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     <div className="draft-records__sharp">
                       <dt>{r.recordSharp}</dt>
                       <dd>{r.recordSharpLine(nameOf(sharp.team), sharp.pct, sharp.goals, sharp.onTarget)}</dd>
+                    </div>
+                  ) : null;
+                })()}
+                {(() => {
+                  // ⚡ Blitz-König (wie online, ab 3): Blitz-Picks menschlicher Teams aus den Zeitpunkten im Verlauf
+                  const timed = (state.log ?? []).flatMap((x, k) => (x.at != null ? [{ pick: k + 1, teamId: String(x.team), auto: !!state.teams[x.team]?.cpu, at: x.at }] : []));
+                  const counts = fastPickCounts(timed);
+                  const best = [...counts].sort((a, b) => b[1] - a[1] || Number(a[0]) - Number(b[0]))[0];
+                  return best && best[1] >= 3 ? (
+                    <div className="draft-records__blitz">
+                      <dt>{r.recordBlitz}</dt>
+                      <dd>{r.recordBlitzLine(nameOf(Number(best[0])), best[1])}</dd>
                     </div>
                   ) : null;
                 })()}
