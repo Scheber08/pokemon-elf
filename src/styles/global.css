@@ -2851,3 +2851,8 @@ button.sheet__row:hover {
     display: none;
   }
 }
+
+/* Hauptbereich bekommt nach Seitenwechseln den Fokus (Tastatur/Screenreader) – ohne sichtbaren Rahmen */
+.main:focus {
+  outline: none;
+}

@@ -1,5 +1,5 @@
 import { BackToTop } from './components/BackToTop';
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AchievementWatcher } from './components/AchievementWatcher';
 import { Footer, Header } from './components/Layout';
@@ -40,7 +40,7 @@ function PageLoading() {
   );
 }
 
-function RouteEffects() {
+export function RouteEffects() {
   const { pathname } = useLocation();
   const t = useT();
   useEffect(() => {
@@ -48,8 +48,16 @@ function RouteEffects() {
     const title = t.nav.titles[pathname] ?? (pathname.startsWith('/draft/') ? t.nav.onlineLeague : undefined);
     document.title = title ? `${title} · Pokémon Elf` : t.nav.siteTitle;
   }, [pathname, t]);
+  const first = useRef(true);
   useEffect(() => {
     window.scrollTo(0, 0);
+    // Nach einem Seitenwechsel (nicht beim ersten Laden) den Fokus an den Seitenanfang – Tastatur und
+    // Screenreader starten dann auf der neuen Seite statt auf dem alten Menülink
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    document.getElementById('main')?.focus({ preventScroll: true });
   }, [pathname]);
   return null;
 }
@@ -82,7 +90,7 @@ export function App() {
           <AchievementWatcher />
           <RankingNames />
           <Header />
-          <main id="main" className="main">
+          <main id="main" className="main" tabIndex={-1}>
             <PokemonDataProvider>
               <RouteEffects />
               <Suspense fallback={<PageLoading />}>

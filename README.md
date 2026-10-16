@@ -136,7 +136,7 @@ Typ-Bonus, Gewicht im Team-Score). Die Oberfläche gibt es auf Deutsch und Engli
 `src/i18n/`; Texte je Bereich in `de/*.ts`, `en/*.ts` ist dagegen typgeprüft).
 
 Nach jedem Challenge-Run läuft die Saison im **Live-Ticker** ab (Spieltag für Spieltag, Pause, 1×/2×/4×,
-Überspringen), danach folgt die Saisonbilanz. Auf langen Seiten erscheint nach dem Scrollen unten links „↑ Nach oben“ (`BackToTop`).
+Überspringen), danach folgt die Saisonbilanz. Auf langen Seiten erscheint nach dem Scrollen unten links „↑ Nach oben“ (`BackToTop`). Nach einem Seitenwechsel liegt der Fokus auf dem Hauptbereich (Tastatur, Screenreader).
 
 ## Persistenz
 
