@@ -722,6 +722,8 @@ const draft: Messages['draft'] = {
     marketCaptainOut: (name) => `${name} is your captain – if you let them go, the new signing takes the armband.`,
     marketGoals: (n) => (n === 1 ? '1 goal' : `${n} goals`),
     marketOut: 'Release',
+    marketPos: 'Position',
+    marketPosAll: 'All positions',
     marketSearch: 'Search free Pokémon',
     marketFree: (n) => `${n} free`,
     marketTake: 'Sign',

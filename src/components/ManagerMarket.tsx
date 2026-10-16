@@ -7,7 +7,7 @@ import { rosterOf } from '../lib/draftEngine';
 import { positionFit } from '../lib/fit';
 import { claimError, freeAgents, squadStrength } from '../lib/manager';
 import { usePokemonData } from '../state/PokemonData';
-import type { Pokemon } from '../types';
+import type { Pokemon, PosCode } from '../types';
 import { PosBadge } from './Badges';
 import { Sprite } from './Sprite';
 import { useSettings } from '../state/Settings';
@@ -52,6 +52,8 @@ export function TransferMarket({
     () => claim?.out ?? roster.reduce((a, id) => ((byId.get(id) ? best(byId.get(id)!).fit : 999) < (byId.get(a) ? best(byId.get(a)!).fit : 999) ? id : a), roster[0]),
   );
   const [query, setQuery] = useState('');
+  // Positionsfilter: nur freie Pokémon, deren beste Position (in der eigenen Formation) diese ist
+  const [posFilter, setPosFilter] = useState<PosCode | ''>('');
   const teamsKey = state.teams.map((tm) => rosterOf(tm).join(',')).join('|');
   const free = useMemo(
     () => freeAgents(state, list).map((p) => ({ p, ...best(p) })).sort((a, b) => b.fit - a.fit || a.p.id - b.p.id),
@@ -72,7 +74,7 @@ export function TransferMarket({
     return top;
   }, [free, teamsKey, team.formation]);
   const q = query.trim().toLowerCase();
-  const shown = (q ? free.filter((x) => t.game.pokemon(x.p).toLowerCase().includes(q)) : free).slice(0, 12);
+  const shown = free.filter((x) => (!q || t.game.pokemon(x.p).toLowerCase().includes(q)) && (!posFilter || x.pos === posFilter)).slice(0, 12);
   const name = (id: number) => {
     const p = byId.get(id);
     return p ? t.game.pokemon(p) : `#${id}`;
@@ -116,6 +118,17 @@ export function TransferMarket({
                 </option>
               );
             })}
+          </select>
+        </label>
+        <label className="field manager__posfilter">
+          <span className="field__label">{tx.marketPos}</span>
+          <select className="input" value={posFilter} onChange={(e) => setPosFilter(e.target.value as PosCode | '')}>
+            <option value="">{tx.marketPosAll}</option>
+            {positions.map((pos) => (
+              <option key={pos} value={pos}>
+                {t.game.posName[pos]}
+              </option>
+            ))}
           </select>
         </label>
         <label className="field manager__search">

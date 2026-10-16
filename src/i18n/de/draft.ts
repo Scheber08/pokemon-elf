@@ -792,6 +792,8 @@ const draft = {
     marketOut: 'Abgeben',
     marketGoals: (n: number) => (n === 1 ? '1 Tor' : `${n} Tore`),
     marketCaptainOut: (name: string) => `${name} ist dein Kapitän – gibst du ihn ab, übernimmt der Neuzugang die Binde.`,
+    marketPos: 'Position',
+    marketPosAll: 'Alle Positionen',
     marketSearch: 'Freie Pokémon suchen',
     marketFree: (n: number) => `${n} frei`,
     marketTake: 'Holen',

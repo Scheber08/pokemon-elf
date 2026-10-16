@@ -1641,6 +1641,22 @@ describe('ManagerSeason', () => {
       expect(items.length).toBeGreaterThan(0);
       expect(items.every((li) => li.querySelector('.manager__free-sprite'))).toBe(true);
     }
+    // Positionsfilter: nur freie Pokémon mit dieser besten Position
+    {
+      const r = await render(app(h(TransferMarket, { state: s, team: me, claim, matchday: 1, onTransfer: () => {} })));
+      await settle();
+      const sel = r.container.querySelector('.manager__posfilter select') as MiniElement;
+      const opts = sel.querySelectorAll('option');
+      expect(opts[0].textContent).toBe('Alle Positionen');
+      const target = (opts[1] as MiniElement).getAttribute('value')!;
+      await act(async () => {
+        (sel as unknown as { value: string }).value = target;
+        sel.dispatchEvent(Object.assign(new MiniEvent('change', { bubbles: true }), { target: sel }) as unknown as MiniEvent);
+      });
+      const items = r.container.querySelectorAll('.manager__free li');
+      expect(items.length).toBeGreaterThan(0);
+      for (const li of items) expect(li.querySelector('.pos-badge')!.textContent).toBe(target);
+    }
     // Saisontore stehen in der Auswahl „Abgeben“
     const { container } = await render(
       app(h(TransferMarket, { state: s, team: me, claim, matchday: 1, onTransfer: () => {}, goals: new Map([[out, 3]]) })),
