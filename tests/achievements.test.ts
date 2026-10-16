@@ -422,6 +422,11 @@ describe('Saisonartikel', () => {
     expect(itemOnSale(winter, at('2027-02-01'))).toBe(false);
     expect(itemOnSale({ slot: 'hat', id: 'cap', price: 0 }, at('2026-06-01'))).toBe(true);
     expect(TRAINER_ITEMS.some((i) => i.season)).toBe(true);
+    // 🌱 Weltumwelttag: Keimling und Unratütox vom 1. bis 5. Juni
+    const env = TRAINER_ITEMS.filter((i) => i.season?.icon === '🌱').map((i) => `${i.slot}:${i.id}`);
+    expect(env).toEqual(['hat:sprout', 'companion:568']);
+    const sprout = TRAINER_ITEMS.find((i) => i.id === 'sprout')!;
+    expect([at('2027-05-31'), at('2027-06-01'), at('2027-06-05'), at('2027-06-06')].map((d) => itemOnSale(sprout, d))).toEqual([false, true, true, false]);
   });
 
   it('Kauf nur in der Saison (400 not_on_sale), danach bleibt er tragbar', async () => {

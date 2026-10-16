@@ -495,6 +495,13 @@ function hat(c: Canvas, id: string, cloth: string) {
       c.rect(14, 2, 2, 2, '#26282e');
       c.dots([[20, 6], [20, 5], [21, 4], [19, 7], [20, 7]], '#f2c230');
       break;
+    case 'sprout':
+      // Keimling (Weltumwelttag): grüner Stiel aus dem Scheitel mit zwei runden Blättern
+      c.rect(15, 3, 2, 6, '#3f8f3a');
+      c.fill(ellipse(11.5, 3.5, 3.4, 1.9), '#6cc04a', '#2f6b2a');
+      c.fill(ellipse(20.5, 2.5, 3.4, 1.9), '#6cc04a', '#2f6b2a');
+      c.dots([[10, 3], [19, 2]], '#a8e07a');
+      break;
     case 'catears':
       // Katzenohren (Weltkatzentag): schwarzer Haarreif mit zwei spitzen Ohren, innen rosa
       c.fill((x, y) => y === 9 && head(x, y), '#26282e', null);

@@ -133,6 +133,7 @@ const trainer: Messages['trainer'] = {
       birdnest: "Bird's nest",
       dogears: 'Dog ears',
       beret: 'Beret',
+      sprout: 'Sprout',
       catears: 'Cat ears',
       flowercrown: 'Flower crown',
       antennae: 'Bee antennae',

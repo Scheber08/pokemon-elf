@@ -131,6 +131,7 @@ const trainer = {
       birdnest: 'Vogelnest',
       dogears: 'Hundeohren',
       beret: 'Baskenmütze',
+      sprout: 'Keimling',
       catears: 'Katzenohren',
       flowercrown: 'Blumenkranz',
       antennae: 'Bienen-Fühler',
