@@ -1002,4 +1002,17 @@ describe('Deine Ligen (lokal gemerkt)', () => {
     map.set('pokemon-elf:draft-online:recent', JSON.stringify([null, { code: 1 }, { code: 'ABC234', at: Date.now() }]));
     expect(loadRecentLeagues().map((l) => l.code)).toEqual(['ABC234']);
   });
+
+  it('„zuletzt“ der gemerkten Ligen: Minuten, Stunden, ab zwei Tagen Tage', async () => {
+    const { ago } = await import('../src/pages/DraftOnline');
+    const { messages } = await import('../src/i18n');
+    const de = messages('de');
+    const en = messages('en');
+    const H = 3_600_000;
+    expect(ago(0, de, 20_000)).toBe('gerade eben');
+    expect(ago(0, de, 5 * 60_000)).toBe('vor 5 Min.');
+    expect(ago(0, de, 47 * H)).toBe('vor 47 Std.');
+    expect(ago(0, de, 96 * H)).toBe('vor 4 Tagen');
+    expect(ago(0, en, 96 * H)).toBe('4 days ago');
+  });
 });

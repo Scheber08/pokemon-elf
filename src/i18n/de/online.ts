@@ -49,6 +49,7 @@ const online = {
   justNow: 'gerade eben',
   minutesAgo: (n: number) => `vor ${n} Min.`,
   hoursAgo: (n: number) => `vor ${n} Std.`,
+  daysAgo: (n: number) => `vor ${n} Tagen`,
   publicTitle: 'Öffentliche Lobbys',
   loading: 'Lädt …',
   refresh: 'Aktualisieren',

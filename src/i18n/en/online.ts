@@ -47,6 +47,7 @@ const online: Messages['online'] = {
   justNow: 'just now',
   minutesAgo: (n) => `${n} min ago`,
   hoursAgo: (n) => `${n} h ago`,
+  daysAgo: (n) => `${n} days ago`,
   publicTitle: 'Public lobbies',
   loading: 'Loading …',
   refresh: 'Refresh',
