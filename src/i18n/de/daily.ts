@@ -67,6 +67,8 @@ const daily = {
   /** Teil-Text, Zeile 1: „Pokémon Elf · Tägliche Elf #1 (12.10.2026)" */
   shareHeader: (n: number, date: string) => `Pokémon Elf · Tägliche Elf #${n} (${date})`,
   /** Serie im Teil-Text */
+  /** Teil-Text: heute der beste Tag */
+  shareBestDay: '🏅 bester Tag',
   shareStreak: (n: number) => `🔥 ${n} Tage in Folge`,
   /** Teil-Text, Zeile 2: „30–2–2 · 92 Pkt · Score 812 · Platz 1" (ohne Pokal) */
   shareStats: (record: string, points: number, score: number, position: number) =>

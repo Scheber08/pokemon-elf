@@ -27,6 +27,8 @@ export interface DailyShareInput {
   url: string;
   /** Tage am Stück (Serie) – ab 2 steht sie im Text */
   streak?: number;
+  /** 🏅 Mehr Punkte als an jedem früheren Tag (nicht am ersten Tag) */
+  bestDay?: boolean;
 }
 
 /** Ergebnisse als Emoji-Reihe (🟩 Sieg, 🟨 Remis, 🟥 Niederlage). */
@@ -52,9 +54,10 @@ export function buildDailyShareText(i: DailyShareInput, t: Messages = messages()
   const half = Math.ceil(i.outcomes.length / 2);
   const trophy = isPerfectRecord(i.record) ? ' 🏆' : '';
   const streak = i.streak && i.streak >= 2 ? ` · ${t.daily.shareStreak(i.streak)}` : '';
+  const best = i.bestDay ? ` · ${t.daily.shareBestDay}` : '';
   return [
     t.daily.shareHeader(i.number, t.game.day(i.day)),
-    `${t.daily.shareStats(`${w}–${d}–${l}`, i.points, i.score, i.position)}${trophy}${streak}`,
+    `${t.daily.shareStats(`${w}–${d}–${l}`, i.points, i.score, i.position)}${trophy}${streak}${best}`,
     outcomeEmojis(i.outcomes.slice(0, half)),
     outcomeEmojis(i.outcomes.slice(half)),
     i.url,

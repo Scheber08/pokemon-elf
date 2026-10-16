@@ -167,6 +167,11 @@ function DailyShare({ day, run }: { day: string; run: ComputedRun }) {
             loadDailyHistory().map((d) => d.day),
             day,
           ).current,
+          bestDay: (() => {
+            // 🏅 Heute mehr Punkte als an jedem früheren Tag (wie im Archiv)
+            const earlier = loadDailyHistory().filter((d) => d.day !== day);
+            return earlier.length > 0 && season.points > Math.max(...earlier.map((d) => d.points));
+          })(),
         },
         t,
       ),

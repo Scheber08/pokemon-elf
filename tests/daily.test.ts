@@ -282,6 +282,11 @@ describe('Teil-Text mit Serie', () => {
     const base = { day: '2026-10-14', number: 3, record: { w: 30, d: 2, l: 2 }, points: 92, score: 812, position: 1, outcomes: [], url: 'x' };
     expect(buildDailyShareText({ ...base, streak: 5 }).split('\n')[1]).toMatch(/· 🔥 5 Tage in Folge$/);
     expect(buildDailyShareText({ ...base, streak: 1 }).split('\n')[1]).not.toContain('🔥');
+    // 🏅 bester Tag (hinter der Serie), sonst nichts
+    expect(buildDailyShareText({ ...base, streak: 5, bestDay: true }).split('\n')[1]).toMatch(/· 🔥 5 Tage in Folge · 🏅 bester Tag$/);
+    expect(buildDailyShareText({ ...base, bestDay: false }).split('\n')[1]).not.toContain('🏅');
+    const { messages } = await import('../src/i18n');
+    expect(buildDailyShareText({ ...base, bestDay: true }, messages('en')).split('\n')[1]).toMatch(/ · 🏅 best day yet$/);
     expect(buildDailyShareText(base).split('\n')[1]).not.toContain('🔥');
   });
 });
