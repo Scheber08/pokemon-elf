@@ -473,6 +473,14 @@ function hat(c: Canvas, id: string, cloth: string) {
         c.fill((x, y) => ellipse(cx, 4, 2.4, 2.1)(x, y) && y === 5, '#26282e', null);
       }
       break;
+    case 'flowercrown':
+      // Blumenkranz (Tag der Freundschaft): grünes Band um den Kopf mit bunten Blüten
+      c.fill((x, y) => (y === 7 || y === 8) && Math.abs(x - 15.5) <= 6.5 + (y - 7), '#4f9a3c', null);
+      for (const [cx, col] of [[9, '#f08a8a'], [12, '#f2c230'], [15.5, '#9fc9f2'], [19, '#f08ac8'], [22, '#f2c230']] as const) {
+        c.fill(ellipse(cx, 6.2, 1.5, 1.5), col, null);
+        c.dots([[Math.round(cx), 6]], '#ffffff');
+      }
+      break;
     case 'catears':
       // Katzenohren (Weltkatzentag): schwarzer Haarreif mit zwei spitzen Ohren, innen rosa
       c.fill((x, y) => y === 9 && head(x, y), '#26282e', null);

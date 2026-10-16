@@ -126,6 +126,7 @@ const trainer = {
       pikaears: 'Pikachu-Ohren',
       birdnest: 'Vogelnest',
       catears: 'Katzenohren',
+      flowercrown: 'Blumenkranz',
       antennae: 'Bienen-Fühler',
       jester: 'Narrenkappe',
       tyrolean: 'Tirolerhut',
