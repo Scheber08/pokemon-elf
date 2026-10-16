@@ -1585,6 +1585,14 @@ describe('ManagerSeason', () => {
     };
     expect(await view(out)).toContain('übernimmt der Neuzugang die Binde');
     expect(await view(engine.rosterOf(me)[1])).not.toContain('übernimmt der Neuzugang die Binde');
+    // Freie Pokémon mit Sprite
+    {
+      const r = await render(app(h(TransferMarket, { state: s, team: me, claim, matchday: 1, onTransfer: () => {} })));
+      await settle();
+      const items = r.container.querySelectorAll('.manager__free li');
+      expect(items.length).toBeGreaterThan(0);
+      expect(items.every((li) => li.querySelector('.manager__free-sprite'))).toBe(true);
+    }
     // Saisontore stehen in der Auswahl „Abgeben“
     const { container } = await render(
       app(h(TransferMarket, { state: s, team: me, claim, matchday: 1, onTransfer: () => {}, goals: new Map([[out, 3]]) })),

@@ -9,6 +9,8 @@ import { claimError, freeAgents, squadStrength } from '../lib/manager';
 import { usePokemonData } from '../state/PokemonData';
 import type { Pokemon } from '../types';
 import { PosBadge } from './Badges';
+import { Sprite } from './Sprite';
+import { useSettings } from '../state/Settings';
 import '../styles/draft.css';
 
 /** Transfermarkt: eigenen Wunsch setzen (wen abgeben, wen holen) bzw. zurückziehen. */
@@ -28,6 +30,7 @@ export function TransferMarket({
   /** Saisontore je Pokémon des eigenen Teams (für die Auswahl „Abgeben“) */
   goals?: ReadonlyMap<number, number>;
 }) {
+  const { sprite } = useSettings();
   const t = useT();
   const tx = t.draft.manager;
   const { all: list, byId, scale } = usePokemonData();
@@ -125,7 +128,9 @@ export function TransferMarket({
         <ul className="manager__free">
           {shown.map(({ p, pos, fit }) => (
             <li key={p.id} className={claim?.in === p.id ? 'is-claimed' : ''}>
-              <span className="manager__free-name">{t.game.pokemon(p)}</span>
+              <span className="manager__free-name">
+                <Sprite pokemon={p} style={sprite} className="manager__free-sprite" /> {t.game.pokemon(p)}
+              </span>
               <PosBadge pos={pos} />
               <span className="manager__free-fit">{Math.round(fit)}</span>
               <TradeEffect team={team} out={validOut} inn={p.id} short />
