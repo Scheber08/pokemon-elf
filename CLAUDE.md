@@ -28,6 +28,8 @@ Deploy stehen in der README.
   Der Liga-Seed des Online-Drafts ist geheim (nie in Schnappschüssen).
 - Gespeicherte Daten (Vereinsnamen, Teamnamen, Server-Fehlermeldungen) bleiben deutsch; übersetzt wird
   erst bei der Anzeige.
+- Neue gespeicherte Daten (localStorage oder Server/D1) auch auf der Datenschutzseite nennen
+  (`privacy` in `src/i18n/{de,en}/info.ts`, `tests/privacyText.test.ts`).
 
 ## Sprachen (DE/EN)
 

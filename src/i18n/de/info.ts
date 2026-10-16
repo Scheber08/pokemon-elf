@@ -64,7 +64,7 @@ const info = {
       'Kurz gesagt: Diese App kommt ohne Konto aus und setzt keine Tracking-Cookies. Nur für die Online-Rangliste und Online-Ligen speichert der Server das Nötigste – mehr dazu unten.',
     localTitle: 'Lokale Speicherung',
     local:
-      'Deine Aufstellung, Einstellungen, Bestwerte, laufende Runs, die lokale Rangliste, die Online-Ligen, in denen du mitspielst (Code, Liga- und Teamname), und die zufällige Geräte-Kennung für die Online-Rangliste und Online-Ligen werden im localStorage deines Browsers gespeichert. Du kannst sie jederzeit über die Browser-Einstellungen löschen – dann gilt dein Browser als neues Gerät.',
+      'Deine Aufstellung, „Meine Teams“, Einstellungen, Bestwerte, laufende Runs, der Verlauf der Täglichen Elf, die lokale Rangliste, Trikots, Torjubel und Wappen, deine Tipps in der Manager-Saison, zwischengespeicherte Teamnamen aus der Online-Rangliste (für die Ligagegner), die Online-Ligen, in denen du mitspielst (Code, Liga- und Teamname), und die zufällige Geräte-Kennung für die Online-Rangliste und Online-Ligen werden im localStorage deines Browsers gespeichert. Du kannst sie jederzeit über die Browser-Einstellungen löschen – dann gilt dein Browser als neues Gerät.',
     usage: (entries: number, kb: number) => `Auf diesem Gerät gerade: ${entries} ${entries === 1 ? 'Eintrag' : 'Einträge'}, etwa ${kb} KB.`,
     leaderboardTitle: 'Online-Rangliste',
     leaderboardIntro:
@@ -73,6 +73,7 @@ const info = {
       'eine zufällige Geräte-ID und ein Hash des Geräte-Schlüssels (der Schlüssel selbst bleibt auf deinem Gerät),',
       'dein gewählter Spielername und Teamname,',
       'deine Runs: Aufstellung, Züge, Team-Score, Bilanz und Zeitpunkt,',
+      'dein Trainer (Aussehen) und die im Shop gekauften Artikel mit Preis – Münzen und Erfolge berechnet der Server daraus und aus deinen Runs und Ligen,',
       'zum Schutz vor Missbrauch (Begrenzung neuer Geräte pro Anschluss) ein Hash deiner IP-Adresse bei der ersten Anmeldung des Geräts, bei IPv6 nur des Netzpräfixes (/64). Der Hash ist mit einem geheimen Zufallswert gesalzen, wird nur eine Stunde lang gebraucht und danach beim nächsten Serverzugriff gelöscht; die IP-Adresse selbst wird nie gespeichert.',
     ] as string[],
     leaderboardStorage:

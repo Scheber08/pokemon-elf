@@ -62,7 +62,7 @@ const info: Messages['info'] = {
       'In short: this app works without an account and sets no tracking cookies. Only for the online leaderboard and online leagues does the server store the bare minimum – more on that below.',
     localTitle: 'Local storage',
     local:
-      'Your lineup, settings, best scores, runs in progress, the local leaderboard, the online leagues you take part in (code, league and team name) and the random device identifier for the online leaderboard and online leagues are stored in your browser’s localStorage. You can delete them at any time via your browser settings – your browser then counts as a new device.',
+      'Your lineup, “My teams”, settings, best scores, runs in progress, your Daily XI history, the local leaderboard, kits, goal celebrations and crests, your manager-season predictions, cached team names from the online leaderboard (for league opponents), the online leagues you take part in (code, league and team name) and the random device identifier for the online leaderboard and online leagues are stored in your browser’s localStorage. You can delete them at any time via your browser settings – your browser then counts as a new device.',
     usage: (entries, kb) => `On this device right now: ${entries} ${entries === 1 ? 'entry' : 'entries'}, about ${kb} KB.`,
     leaderboardTitle: 'Online leaderboard',
     leaderboardIntro:
@@ -71,6 +71,7 @@ const info: Messages['info'] = {
       'a random device ID and a hash of the device key (the key itself stays on your device),',
       'your chosen player name and team name,',
       'your runs: lineup, moves, team score, record and time,',
+      'your trainer (appearance) and the items bought in the shop with their price – the server works out coins and achievements from these and from your runs and leagues,',
       'to prevent abuse (limiting new devices per internet connection), a hash of your IP address when the device first registers – for IPv6, only of its network prefix (/64). The hash is salted with a secret random value, is only needed for one hour and is then deleted on the next server access; the IP address itself is never stored.',
     ],
     leaderboardStorage:
