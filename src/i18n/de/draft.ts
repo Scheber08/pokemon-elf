@@ -398,6 +398,8 @@ const draft = {
     recordComeback: 'Größtes Comeback',
     recordComebackLine: (winner: string, behind: string, score: string, loser: string, round: number) =>
       `${winner} dreht ein ${behind} gegen ${loser} zum ${score} (${round}. Spieltag)`,
+    rosterSize: (h: number, kg: number) =>
+      `📏 Ø ${h.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} m · ⚖️ ${kg.toLocaleString('de-DE', { maximumFractionDigits: 1 })} kg`,
     recordHeavy: '⚖️ Schwergewicht',
     recordLight: '🪶 Federgewicht',
     recordWeightLine: (team: string, kg: number) => `${team} – ${kg.toLocaleString('de-DE', { maximumFractionDigits: 1 })} kg Kader`,

@@ -2599,6 +2599,16 @@ describe('ManagerSeason', () => {
     const bulls = container.querySelectorAll('.draft-results__roster-bullseye').map((e) => e.textContent);
     expect(bulls).toHaveLength(counts.filter((n) => n > 0).length);
     for (const b of bulls) expect(b).toMatch(/^💯 \d+ Volltreffer \(Fit ≥ 95\)$/);
+    // 📏 Ø Größe und ⚖️ Gesamtgewicht je Kader-Karte
+    const sizes = container.querySelectorAll('.draft-results__roster-size').map((e) => e.textContent);
+    expect(sizes).toHaveLength(s.teams.length);
+    const want = s.teams.map((tm) => {
+      const mons = tm.slots.map((id) => ALL.find((p) => p.id === id)!);
+      const h = mons.reduce((a, p) => a + p.h, 0) / mons.length;
+      const w = mons.reduce((a, p) => a + p.w, 0);
+      return `📏 Ø ${h.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} m · ⚖️ ${w.toLocaleString('de-DE', { maximumFractionDigits: 1 })} kg`;
+    });
+    expect([...sizes].sort()).toEqual([...want].sort());
   });
 
   it('Saisonende: Saisonrekorde mit Angriff, Abwehr und ggf. Remis-König', async () => {

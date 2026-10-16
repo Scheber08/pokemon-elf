@@ -357,6 +357,8 @@ const draft: Messages['draft'] = {
     recordFest: 'Highest-scoring game',
     recordComeback: 'Biggest comeback',
     recordComebackLine: (winner, behind, score, loser, round) => `${winner} – from ${behind} down to a ${score} win against ${loser} (matchday ${round})`,
+    rosterSize: (h, kg) =>
+      `📏 avg ${h.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} m · ⚖️ ${kg.toLocaleString('en-US', { maximumFractionDigits: 1 })} kg`,
     recordHeavy: '⚖️ Heavyweights',
     recordLight: '🪶 Featherweights',
     recordWeightLine: (team, kg) => `${team} – ${kg.toLocaleString('en-US', { maximumFractionDigits: 1 })} kg squad`,

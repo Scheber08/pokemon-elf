@@ -985,6 +985,14 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                   }).length;
                   return n > 0 && <p className="draft-results__roster-meta small draft-results__roster-bullseye">{tx.bullseyes(n, BULLSEYE_FIT)}</p>;
                 })()}
+                {(() => {
+                  // 📏 Durchschnittsgröße und ⚖️ Gesamtgewicht der Elf
+                  const mons = team.slots.flatMap((id) => (id != null && byId.has(id) ? [byId.get(id)!] : []));
+                  if (!mons.length) return null;
+                  const h = mons.reduce((sum, p) => sum + p.h, 0) / mons.length;
+                  const w = mons.reduce((sum, p) => sum + p.w, 0);
+                  return <p className="draft-results__roster-meta small draft-results__roster-size">{tx.rosterSize(h, w)}</p>;
+                })()}
                 {teamTopScorer.has(r.team) && (
                   <p className="draft-results__roster-meta small">
                     {tx.teamTopScorer(pokemonName(teamTopScorer.get(r.team)!.pokemonId), teamTopScorer.get(r.team)!.goals)}
