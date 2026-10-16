@@ -2621,6 +2621,15 @@ describe('ManagerSeason', () => {
     expect(clean).not.toBeNull();
     const cleanName = clean!.team < s.teams.length ? s.teams[clean!.team].name : s.league!.teams[clean!.team].name;
     expect(rec.textContent).toContain(`Weiße Weste${cleanName} – ${clean!.n} Spiele ohne Gegentor`);
+    // ⚖️ Schwergewicht / 🪶 Federgewicht: Gesamtgewicht der gedrafteten Kader
+    {
+      const kg = s.teams.map((tm) => Math.round(tm.slots.reduce<number>((sum, id) => sum + (ALL.find((p) => p.id === id)?.w ?? 0), 0) * 10) / 10);
+      const hi = kg.indexOf(Math.max(...kg));
+      const lo = kg.indexOf(Math.min(...kg));
+      const fmt = (n: number) => n.toLocaleString('de-DE', { maximumFractionDigits: 1 });
+      expect(rec.querySelector('.draft-records__heavy')!.textContent).toBe(`⚖️ Schwergewicht${s.teams[hi].name} – ${fmt(kg[hi])} kg Kader`);
+      expect(rec.querySelector('.draft-records__light')!.textContent).toBe(`🪶 Federgewicht${s.teams[lo].name} – ${fmt(kg[lo])} kg Kader`);
+    }
     // Größtes Comeback der Saison (falls es eins gab)
     {
       const { comebackOf } = await import('../src/lib/leagueTimeline');

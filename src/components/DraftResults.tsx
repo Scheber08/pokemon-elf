@@ -7,7 +7,7 @@ import { poolStars, StarsLanded } from './PoolStars';
 import { LeagueNumbers } from './LeagueNumbers';
 import { TypeGoals } from './TypeGoals';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { bestTransfer, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, formatDuration, goalFest, dreamDuo, attackDefenseRanks, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { bestTransfer, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, formatDuration, goalFest, dreamDuo, attackDefenseRanks, weightExtremes, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { buildTable, formatRecord, sideTable, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -709,6 +709,22 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                         <dd>{tx.recordDrawsLine(nameOf(draws.team), draws.d)}</dd>
                       </div>
                     )}
+                    {(() => {
+                      // ⚖️ Schwergewicht und 🪶 Federgewicht: Gesamtgewicht der gedrafteten Kader
+                      const wx = weightExtremes(teams.map((tm) => rosterOf(tm)), (id) => byId.get(id)?.w);
+                      return wx ? (
+                        <>
+                          <div className="draft-records__heavy">
+                            <dt>{tx.recordHeavy}</dt>
+                            <dd>{tx.recordWeightLine(nameOf(wx.heavy.team), wx.heavy.kg)}</dd>
+                          </div>
+                          <div className="draft-records__light">
+                            <dt>{tx.recordLight}</dt>
+                            <dd>{tx.recordWeightLine(nameOf(wx.light.team), wx.light.kg)}</dd>
+                          </div>
+                        </>
+                      ) : null;
+                    })()}
                     {(() => {
                       const clean = mostCleanSheets(league.matches, table.map((r) => r.team));
                       return clean ? (

@@ -398,6 +398,9 @@ const draft = {
     recordComeback: 'Größtes Comeback',
     recordComebackLine: (winner: string, behind: string, score: string, loser: string, round: number) =>
       `${winner} dreht ein ${behind} gegen ${loser} zum ${score} (${round}. Spieltag)`,
+    recordHeavy: '⚖️ Schwergewicht',
+    recordLight: '🪶 Federgewicht',
+    recordWeightLine: (team: string, kg: number) => `${team} – ${kg.toLocaleString('de-DE', { maximumFractionDigits: 1 })} kg Kader`,
     recordClean: 'Weiße Weste',
     recordCleanLine: (team: string, n: number) => `${team} – ${n} Spiele ohne Gegentor`,
     recordDraws: 'Remis-König',

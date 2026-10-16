@@ -1361,3 +1361,17 @@ export function fastestPicker(
   }
   return best;
 }
+
+/** ⚖️ Schwerstes und 🪶 leichtestes Team nach Gesamtgewicht des Kaders (kg, auf 0,1 gerundet; ab zwei Kadern; bei Gleichstand das erste) */
+export function weightExtremes(
+  rosters: readonly (readonly number[])[],
+  weightOf: (id: number) => number | undefined,
+): { heavy: { team: number; kg: number }; light: { team: number; kg: number } } | null {
+  const sums = rosters
+    .map((ids, team) => ({ team, n: ids.length, kg: Math.round(ids.reduce((s, id) => s + (weightOf(id) ?? 0), 0) * 10) / 10 }))
+    .filter((x) => x.n > 0);
+  if (sums.length < 2) return null;
+  const heavy = sums.reduce((a, b) => (b.kg > a.kg ? b : a));
+  const light = sums.reduce((a, b) => (b.kg < a.kg ? b : a));
+  return { heavy: { team: heavy.team, kg: heavy.kg }, light: { team: light.team, kg: light.kg } };
+}
