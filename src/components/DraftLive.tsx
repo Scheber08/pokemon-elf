@@ -198,6 +198,9 @@ function AutoPickNotice({ room, team, opensAt }: { room: DraftRoom; team: DraftT
 const SNATCH_GAP = 5;
 
 /** Live-Draft: Wer ist dran, Timer, Pool, eigenes Feld, Board und Verlauf. readOnly: öffentliche Vorschau ohne Live-Verbindung. */
+/** 💯 Volltreffer ab diesem Positions-Fit (wie in den Kader-Karten des Ergebnisses) */
+const BULLSEYE_FIT = 95;
+
 export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnly?: boolean }) {
   const { all: list, byId, scale } = usePokemonData();
   const { sprite } = useSettings();
@@ -368,7 +371,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   const ultraBeastLimit = maxUltraBeasts != null && ultraBeasts ? maxUltraBeasts : null;
   const megaLimit = maxMegas != null && megas ? maxMegas : null;
 
-  // Eigener Pick setzt den besten Positions-Fit des Drafts (🏅 im Verlauf): kurz feiern (ein Shiny-Hinweis geht vor)
+  // Eigener Pick setzt den besten Positions-Fit des Drafts (🏅 im Verlauf): kurz feiern; sonst 💯 ab Fit 95
   const recordSeen = useRef(s.picks.length);
   useEffect(() => {
     if (s.picks.length <= recordSeen.current) return;
@@ -376,6 +379,9 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     const top = feed[0];
     if (top?.top && top.teamId === me?.id && top.pos && top.fit != null) {
       setInfo(t.online.recordPick(top.pokemon, top.fit, t.game.posName[top.pos]));
+    } else if (top && top.teamId === me?.id && top.pos && top.fit != null && top.fit >= BULLSEYE_FIT) {
+      // 💯 Volltreffer: eigener Pick passt mit Fit ≥ 95 (ohne Rekord)
+      setInfo(t.online.bullseyePick(top.pokemon, top.fit, t.game.posName[top.pos]));
     }
   }, [s.picks.length]);
 

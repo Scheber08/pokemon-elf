@@ -233,6 +233,7 @@ const online = {
   favouriteFallback: 'Dein Favorit',
   /** Eigener Pick mit dem besten Positions-Fit des Drafts bisher (🏅) */
   recordPick: (name: string, fit: number, pos: string) => `🏅 Draft-Rekord: ${name} passt mit ${fit} als ${pos} – bester Fit bisher!`,
+  bullseyePick: (name: string, fit: number, pos: string) => `💯 Volltreffer: ${name} passt mit ${fit} als ${pos}!`,
   elevenDone: (avg: number) => `✅ Deine Elf steht – Ø Fit ${avg}`,
   progressLabel: (done: number, total: number, left: number) =>
     `Draft-Fortschritt: ${done} von ${total} Picks${left > 0 ? ` – noch ${left} ${left === 1 ? 'eigener Pick' : 'eigene Picks'}` : ''}`,

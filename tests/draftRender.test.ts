@@ -634,6 +634,38 @@ describe('DraftLive', () => {
     expect(container.querySelector('.run-notice__text')!.textContent).toMatch(new RegExp(`^🏅 Draft-Rekord: ${best.de} passt mit ${fit} als .+ – bester Fit bisher!$`));
   });
 
+  it('eigener Pick mit Fit ≥ 95 (ohne Rekord): 💯-Hinweis', async () => {
+    const { FORMATIONS } = await import('../src/config/formations');
+    const { positionFit } = await import('../src/lib/fit');
+    const fitOf = (st: DraftState, id: number, slot: number) => {
+      const team = engine.currentTeam(st)!;
+      return Math.round(positionFit(ALL.find((p) => p.id === id)!, FORMATIONS[team.formation].slots[slot].pos, SCALE));
+    };
+    const freeFor = (st: DraftState, slot: number) => ALL.filter((p) => engine.pickError(st, engine.currentTeam(st)!.id, p.id, slot, ALL) == null);
+    // Host: zuerst der stärkste Pick (setzt den Rekord), dann einer mit Fit 95+ unter dem Rekord
+    let s = drafting();
+    const slot0 = engine.currentTeam(s)!.slots.findIndex((x) => x == null);
+    const first = freeFor(s, slot0).reduce((a, b) => (fitOf(s, b.id, slot0) > fitOf(s, a.id, slot0) ? b : a));
+    const record = fitOf(s, first.id, slot0);
+    s = engine.applyPick(s, 'h', first.id, slot0, false, 1000, ALL);
+    // Gegner picken schwach, bis der Host wieder dran ist
+    while (engine.currentTeam(s)!.id !== 'h') {
+      const tm = engine.currentTeam(s)!;
+      const sl = tm.slots.findIndex((x) => x == null);
+      const weakest = freeFor(s, sl).reduce((a, b) => (fitOf(s, b.id, sl) < fitOf(s, a.id, sl) ? b : a));
+      s = engine.applyPick(s, tm.id, weakest.id, sl, false, 2000, ALL);
+    }
+    const { container, root } = await renderLive(fakeRoom(snap(s, 'h')));
+    const slot1 = engine.currentTeam(s)!.slots.findIndex((x) => x == null);
+    const cand = freeFor(s, slot1).filter((p) => fitOf(s, p.id, slot1) >= 95 && fitOf(s, p.id, slot1) < record);
+    expect(cand.length).toBeGreaterThan(0);
+    const mon = cand[0];
+    const fit = fitOf(s, mon.id, slot1);
+    s = engine.applyPick(s, 'h', mon.id, slot1, false, 5000, ALL);
+    await act(async () => root.render(app(h(DraftLive, { room: fakeRoom(snap(s, 'h')) }))));
+    expect(container.querySelector('.run-notice__text')!.textContent).toMatch(new RegExp(`^💯 Volltreffer: ${mon.de} passt mit ${fit} als .+!$`));
+  });
+
   it('✅ eigene Elf vollständig: Hinweis mit Ø Fit (einmal, nicht beim Laden)', async () => {
     const { FORMATIONS } = await import('../src/config/formations');
     const { positionFit } = await import('../src/lib/fit');

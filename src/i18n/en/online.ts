@@ -211,6 +211,7 @@ const online: Messages['online'] = {
   autoPickFor: (team) => `Pick automatically for ${team}`,
   favouriteFallback: 'Your favourite',
   recordPick: (name, fit, pos) => `🏅 Draft record: ${name} fits ${fit} as ${pos} – best fit so far!`,
+  bullseyePick: (name, fit, pos) => `💯 Bullseye: ${name} fits ${fit} as ${pos}!`,
   elevenDone: (avg) => `✅ Your eleven is complete – avg fit ${avg}`,
   progressLabel: (done, total, left) => `Draft progress: ${done} of ${total} picks${left > 0 ? ` – ${left} ${left === 1 ? 'pick' : 'picks'} of yours to go` : ''}`,
   slotBest: (fit) => `best free fit here: ${fit}`,
