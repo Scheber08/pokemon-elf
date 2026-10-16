@@ -123,6 +123,21 @@ describe('Builder auf Englisch', () => {
     expect(all).toContain('Set-piece taker');
     expect(all).toContain('#0143');
     expect(germanLeft(container)).toEqual([]);
+    // Typ-Chips wie auf dem Draft-Board (Standard-Elf)
+    {
+      const { dominantType, typeVariety, RAINBOW_TYPES } = await import('../src/config/pokemonTypes');
+      const mons = [143, 9, 68, 76, 130, 65, 112, 3, 25, 6, 135].map((id) => ALL.find((p) => p.id === id)!);
+      const dom = dominantType(mons);
+      const v = typeVariety(mons);
+      const el = container.querySelector('.builder__types');
+      if (!dom && v < RAINBOW_TYPES) expect(el).toBeNull();
+      else {
+        expect(dom || v >= RAINBOW_TYPES).toBeTruthy();
+        if (v >= RAINBOW_TYPES) expect(el!.textContent).toContain(`🌈 ${v}`);
+        if (dom) expect(el!.textContent).toContain(`×${dom.n}`);
+      }
+      expect(v).toBeGreaterThanOrEqual(RAINBOW_TYPES);
+    }
   });
 
   it('Auswahl-Dialog (Filter, Raster, Hinweise) ohne deutschen Text', async () => {

@@ -705,6 +705,25 @@ select {
 .hint--pitch {
   text-align: center;
 }
+/* Builder: Typ-Elf- und Regenbogen-Chips über dem Feld */
+.builder__types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 8px;
+}
+.builder__type {
+  white-space: nowrap;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.builder__rainbow {
+  background: linear-gradient(90deg, #e3350d, #f7a21b, #ffcb05, #43a047, #3d7dca, #8e44ad);
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
 .team-title {
   font-family: var(--font-head);
   text-transform: uppercase;
