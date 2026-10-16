@@ -16,6 +16,7 @@ const info = {
     /** „Was ist neu?" – die wichtigsten Neuerungen, neueste zuerst */
     newsTitle: 'Was ist neu?',
     news: [
+      'Neu: 🔻 schwächster Fit im Teamblatt, 🏆 stärkste Elf unter „Meine Teams“, Ø Punkte pro Spiel und Tordifferenz im Ergebnis, Torverhältnis im Testspiel, Wochentag in der Wochenwertung, „Leistbar (n)“ im Shop, ✅ komplette Erfolgs-Kategorien, Saison „Tag der Schokolade“, Offline-Hinweis und Druckansicht',
       'Neu: Spielbericht mit laufendem Spielstand, 🏆 Siegtor, 🟰 Ausgleich, Doppelpack und Hattrick; 2D-Wiedergabe mit ←/→ (±5 Minuten); Abstand zum Vordermann in der Rangliste',
       'Neu: Tägliche Elf mit ▲/▼ gegenüber gestern, „Letzter Run“ mit „vor …“, 🛡️ für ungeschlagene Runs im Profil, Rang auf der besten Position in „Wo spielt …?“, Saison „Weltpinguintag“ im Shop; dazu viele Verbesserungen für Tastatur und Screenreader',
       'Neu: Scouting-Guide mit „Top 3 je Position“ und „Wo spielt …?“, Fit je Spieler im Teamblatt (Builder und „Team ansehen“) und im Rundenverlauf der Challenges, Rangliste nach Formation filtern',
