@@ -346,6 +346,8 @@ const draft: Messages['draft'] = {
     placeChartCaption: (best, last, running = false) => `Best position: ${best} · ${running ? 'now' : 'final'}: ${last}`,
     placeChartSpan: (bestDay, worst, worstDay) => `🟢 Best position first reached on matchday ${bestDay} · 🔴 lowest: ${worst} (matchday ${worstDay})`,
     records: 'Season records',
+    leagueNumbers: (games, goals, avg, draws, clean) =>
+      `📊 League in numbers: ${games} matches · ${goals} goals (avg ${avg.toLocaleString('en-GB', { maximumFractionDigits: 1, minimumFractionDigits: 1 })}) · ${draws} draws · ${clean} clean sheets`,
     recordAttack: 'Best attack',
     recordDefense: 'Best defence',
     recordWin: 'Biggest win',

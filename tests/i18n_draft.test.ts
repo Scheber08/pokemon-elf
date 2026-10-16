@@ -1374,6 +1374,8 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(all).toContain('Draft league');
     // ⏱️ Draft-Dauer (ohne Verlauf zählt pick)
     expect(container.querySelector('.draft__duration')!.textContent).toBe('⏱️ Draft time: 4:32 min for 33 picks');
+    // 📊 Liga in Zahlen (über den Saisonrekorden)
+    expect(container.querySelector('.league-numbers')!.textContent).toMatch(/^📊 League in numbers: 6 matches · \d+ goals \(avg \d+\.\d\) · \d+ draws · \d+ clean sheets$/);
     expect(all).toContain('Everyone plays everyone, home and away – 6 matches.');
     expect(all).toContain('Top scorers');
     expect(all).toContain('My Team');

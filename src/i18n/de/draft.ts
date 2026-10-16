@@ -385,6 +385,8 @@ const draft = {
       `🟢 Bester Platz erstmals am ${bestDay}. Spieltag · 🔴 tiefster Platz: ${worst} (${worstDay}. Spieltag)`,
     /** Saisonrekorde (Liga) */
     records: 'Saisonrekorde',
+    leagueNumbers: (games: number, goals: number, avg: number, draws: number, clean: number) =>
+      `📊 Liga in Zahlen: ${games} Spiele · ${goals} Tore (Ø ${avg.toLocaleString('de-DE', { maximumFractionDigits: 1, minimumFractionDigits: 1 })}) · ${draws} Remis · ${clean}× zu null`,
     recordAttack: 'Bester Angriff',
     recordDefense: 'Beste Abwehr',
     recordWin: 'Höchster Sieg',

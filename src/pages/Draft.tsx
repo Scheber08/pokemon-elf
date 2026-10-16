@@ -8,6 +8,7 @@ import { PosBadge } from '../components/Badges';
 import { DraftPickFeed, DraftTypeChip, KindMarks, RoundBest } from '../components/DraftBoard';
 import type { FeedItem } from '../state/useDraftRoom';
 import { PoolStars, poolStars, scarceFor, StarsLanded } from '../components/PoolStars';
+import { LeagueNumbers } from '../components/LeagueNumbers';
 import { TypeGoals } from '../components/TypeGoals';
 import { DraftProgress } from '../components/DraftProgress';
 import { Confetti } from '../components/Confetti';
@@ -1235,6 +1236,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 if (!joker || !mon) return null;
                 return <p className="draft-results__steal draft-results__joker">{r.joker(t.game.pokemon(mon), joker.pick + 1, nameOf(joker.team), joker.goals)}</p>;
               })()}
+              <LeagueNumbers matches={league.matches} />
               <dl className="draft-records">
                 <div>
                   <dt>{r.recordAttack}</dt>

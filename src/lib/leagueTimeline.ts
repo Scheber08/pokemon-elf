@@ -987,6 +987,20 @@ export function headToHead(league: Pick<LeagueResult, 'matches' | 'table'>, team
   return league.table.flatMap((r) => byOpp.get(r.team) ?? []);
 }
 
+/** Liga in Zahlen: Spiele, Tore, Remis und Zu-null-Spiele (je Team, das nichts kassiert) */
+export function leagueNumbers(matches: readonly Pick<Match, 'hg' | 'ag'>[]): { games: number; goals: number; draws: number; cleanSheets: number } {
+  let goals = 0;
+  let draws = 0;
+  let cleanSheets = 0;
+  for (const m of matches) {
+    goals += m.hg + m.ag;
+    if (m.hg === m.ag) draws++;
+    if (m.ag === 0) cleanSheets++;
+    if (m.hg === 0) cleanSheets++;
+  }
+  return { games: matches.length, goals, draws, cleanSheets };
+}
+
 export type FanMood = 'euphoria' | 'happy' | 'calm' | 'angry';
 
 /** Fan-Stimmung aus den letzten (bis zu) fünf Spielen: Punkte je Spiel – ab drei Spielen, sonst null */

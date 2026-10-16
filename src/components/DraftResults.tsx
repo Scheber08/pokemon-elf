@@ -4,6 +4,7 @@ import { useT } from '../i18n';
 import { draftLink } from '../lib/api/draftClient';
 import type { DraftPickLog, DraftSettings, DraftTeam, ManagerTransfer } from '../lib/api/draftContract';
 import { poolStars, StarsLanded } from './PoolStars';
+import { LeagueNumbers } from './LeagueNumbers';
 import { TypeGoals } from './TypeGoals';
 import { copyText, downloadBlob } from '../lib/exportImage';
 import { bestTransfer, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
@@ -680,6 +681,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
             <h2 id="draft-results-records" className="section-title">
               {tx.records}
             </h2>
+            <LeagueNumbers matches={league.matches} />
             <dl className="draft-records">
               {(() => {
                 const attack = table.reduce((a, b) => (b.gf > a.gf ? b : a));

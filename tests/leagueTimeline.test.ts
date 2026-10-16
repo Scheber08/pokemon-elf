@@ -567,6 +567,14 @@ describe('Stärkste Torphase', () => {
   });
 });
 
+describe('Liga in Zahlen', () => {
+  it('zählt Spiele, Tore, Remis und Zu-null-Spiele', async () => {
+    const { leagueNumbers } = await import('../src/lib/leagueTimeline');
+    expect(leagueNumbers([{ hg: 2, ag: 0 }, { hg: 1, ag: 1 }, { hg: 0, ag: 0 }, { hg: 3, ag: 2 }])).toEqual({ games: 4, goals: 9, draws: 2, cleanSheets: 3 });
+    expect(leagueNumbers([])).toEqual({ games: 0, goals: 0, draws: 0, cleanSheets: 0 });
+  });
+});
+
 describe('Fan-Stimmung', () => {
   it('Punkte je Spiel der letzten Spiele, erst ab drei Spielen', async () => {
     const { fanMood } = await import('../src/lib/leagueTimeline');
