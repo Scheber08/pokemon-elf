@@ -487,6 +487,10 @@ describe('/draft an einem Gerät auf Englisch', () => {
       await settle();
       const champ = container.querySelector('.draft__champion strong')!.textContent;
       expect(champ).toBe(humanStrong ? 'Mein Team' : CLUB_NAMES[1]);
+      // 🏁 Meister rechnerisch fest: der überlegene Meister steht vor dem letzten Spieltag fest
+      expect(container.querySelector('.draft__clinched')!.textContent).toMatch(
+        new RegExp(`^🏁 ${humanStrong ? 'Mein Team' : CLUB_NAMES[1]} stand schon am \\d+\\. Spieltag rechnerisch als Meister fest – (1 Spieltag|\\d+ Spieltage) vor Schluss$`),
+      );
       expect(doc.body.querySelectorAll('canvas').filter((c) => c.className === 'confetti')).toHaveLength(humanStrong ? 1 : 0);
       // „Ergebnis teilen“: ohne Teilen-Menü in die Zwischenablage (Hinweis als Toast)
       if (humanStrong) {

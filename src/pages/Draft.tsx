@@ -1,3 +1,4 @@
+import { titleClinched } from '../lib/foes';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { isMega } from '../config/categories';
 import { DEFAULT_FORMATION, FORMATION_IDS, FORMATIONS } from '../config/formations';
@@ -1039,6 +1040,11 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               <strong>{teamName(champion.name)}</strong> · {t.draft.results.heroLine(champion, champion.rating)}
             </p>
           )}
+          {(() => {
+            // 🏁 Meister rechnerisch fest – nur, wenn das vor dem letzten Spieltag war (wie online)
+            const c = titleClinched(league.matches, league.teams.length);
+            return c && <p className="muted small draft__clinched">{t.draft.results.clinched(teamName(league.teams[c.team].name), c.round, c.left)}</p>;
+          })()}
           {state.draftMs != null && (
             <p className="muted small draft__duration">{tx.draftDuration(formatDuration(state.draftMs), state.log?.length ?? state.pick)}</p>
           )}

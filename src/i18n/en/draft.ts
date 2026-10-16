@@ -409,6 +409,8 @@ const draft: Messages['draft'] = {
       `1️⃣ First pick: ${pokemon} (${team}) – ${goals} ${goals === 1 ? 'goal' : 'goals'}, ${assists} ${assists === 1 ? 'assist' : 'assists'}`,
     ownScorers: (n, total) => `⚽ ${n} of your ${total} picks found the net`,
     foeLine: (team, pts, goals) => `${team} (${pts} ${pts === 1 ? 'point' : 'points'}, ${goals})`,
+    clinched: (team, round, left) =>
+      `🏁 ${team} had the title sewn up on matchday ${round} – ${left === 1 ? '1 matchday' : `${left} matchdays`} to spare`,
     foeBest: (line) => `😊 Favourite opponent: ${line}`,
     foeWorst: (line) => `😖 Bogey team: ${line}`,
     joker: (pokemon, pick, team, goals) => `🃏 Joker of the draft: ${pokemon} (only pick ${pick}) scored ${goals} for ${team}`,

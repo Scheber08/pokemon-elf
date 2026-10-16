@@ -7,6 +7,7 @@ import { poolStars, StarsLanded } from './PoolStars';
 import { LeagueNumbers } from './LeagueNumbers';
 import { TypeGoals } from './TypeGoals';
 import { copyText, downloadBlob } from '../lib/exportImage';
+import { titleClinched } from '../lib/foes';
 import { bestTransfer, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, formatDuration, goalFest, dreamDuo, attackDefenseRanks, weightExtremes, sharpestTeam, playerTallies, favouriteFoes, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { buildTable, formatRecord, sideTable, type LeagueResult } from '../lib/season';
@@ -327,6 +328,11 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
           </p>
         )}
         {tieNote && <p className="draft-results__tie">{tieNote}</p>}
+        {!cup && (() => {
+          // 🏁 Meister rechnerisch fest – nur, wenn das vor dem letzten Spieltag war
+          const c = titleClinched(league.matches, league.teams.length);
+          return c && <p className="draft-results__clinched muted small">{tx.clinched(nameOf(c.team), c.round, c.left)}</p>;
+        })()}
         {!cup && defendingId && (() => {
           // 🏆 Revanche: Titel verteidigt – oder wo der Titelverteidiger landete
           const at = teams.findIndex((tm) => tm.id === defendingId);

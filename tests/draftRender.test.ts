@@ -2950,6 +2950,23 @@ describe('ManagerSeason', () => {
     expect(formatDuration(3_725_000)).toBe('1:02:05');
   });
 
+  it('Saisonende: 🏁 Meister rechnerisch fest (wie titleClinched, nur vor dem letzten Spieltag)', async () => {
+    const { DraftSeasonStage } = await import('../src/components/DraftSeasonStage');
+    const { storedLeague } = await import('../src/lib/leagueTimeline');
+    const { titleClinched } = await import('../src/lib/foes');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = engine.withLeague(s, ALL, SCALE);
+    const done = { ...s, season: { ...s.season!, startsAt: Date.now() - 30 * 86_400_000 } };
+    const { container } = await render(app(h(DraftSeasonStage, { room: fakeRoom(snap(done, 'h')) })));
+    await settle();
+    const league = storedLeague(s.league, s.teams.length)!;
+    const c = titleClinched(league.matches, league.teams.length);
+    const el = container.querySelector('.draft-results__clinched');
+    if (!c) expect(el).toBeNull();
+    else expect(el!.textContent).toMatch(new RegExp(`^🏁 .+ stand schon am ${c.round}\\. Spieltag rechnerisch als Meister fest – ${c.left === 1 ? '1 Spieltag' : `${c.left} Spieltage`} vor Schluss$`));
+  });
+
   it('Saisonende: 🗺️ Regionen-Mix in den Kader-Karten (nur bei mehreren Regionen)', async () => {
     const { DraftSeasonStage } = await import('../src/components/DraftSeasonStage');
     let s = engine.startDraft(lobby(2, { gens: [1, 2], maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);

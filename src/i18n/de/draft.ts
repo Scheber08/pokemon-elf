@@ -453,6 +453,8 @@ const draft = {
       `1️⃣ Erster Pick: ${pokemon} (${team}) – ${goals} ${goals === 1 ? 'Tor' : 'Tore'}, ${assists} ${assists === 1 ? 'Vorlage' : 'Vorlagen'}`,
     ownScorers: (n: number, total: number) => `⚽ ${n} von ${total} deiner Picks ${n === 1 ? 'hat' : 'haben'} getroffen`,
     foeLine: (team: string, pts: number, goals: string) => `${team} (${pts} ${pts === 1 ? 'Punkt' : 'Punkte'}, ${goals})`,
+    clinched: (team: string, round: number, left: number) =>
+      `🏁 ${team} stand schon am ${round}. Spieltag rechnerisch als Meister fest – ${left === 1 ? '1 Spieltag' : `${left} Spieltage`} vor Schluss`,
     foeBest: (line: string) => `😊 Lieblingsgegner: ${line}`,
     foeWorst: (line: string) => `😖 Angstgegner: ${line}`,
     joker: (pokemon: string, pick: number, team: string, goals: number) => `🃏 Joker des Drafts: ${pokemon} (erst Pick ${pick}) traf ${goals}-mal für ${team}`,
