@@ -373,6 +373,8 @@ const draft: Messages['draft'] = {
     recordBlitzLine: (team, n) => `${team} – ${n} lightning picks ⚡`,
     recordFastest: 'Fastest picker',
     recordFastestLine: (team, sec) => `${team} – avg ${sec} s per pick`,
+    recordDuration: 'Draft time',
+    recordDurationLine: (time, picks) => `${time} min for ${picks} picks`,
     recordGoals: (team, n) => `${team} – ${n} goals`,
     recordConceded: (team, n) => `${team} – ${n === 1 ? '1 goal conceded' : `${n} goals conceded`}`,
     recordWinLine: (home, score, away, round) => `${home} ${score} ${away} (matchday ${round})`,

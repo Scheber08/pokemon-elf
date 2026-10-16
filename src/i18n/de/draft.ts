@@ -414,6 +414,8 @@ const draft = {
     recordBlitzLine: (team: string, n: number) => `${team} – ${n} Blitz-Picks ⚡`,
     recordFastest: 'Schnellster Picker',
     recordFastestLine: (team: string, sec: number) => `${team} – Ø ${sec} s pro Pick`,
+    recordDuration: 'Draft-Dauer',
+    recordDurationLine: (time: string, picks: number) => `${time} Min. für ${picks} Picks`,
     recordGoals: (team: string, n: number) => `${team} – ${n} Tore`,
     recordConceded: (team: string, n: number) => `${team} – ${n === 1 ? '1 Gegentor' : `${n} Gegentore`}`,
     recordWinLine: (home: string, score: string, away: string, round: number) => `${home} ${score} ${away} (${round}. Spieltag)`,

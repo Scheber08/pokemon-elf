@@ -7,7 +7,7 @@ import { poolStars, StarsLanded } from './PoolStars';
 import { LeagueNumbers } from './LeagueNumbers';
 import { TypeGoals } from './TypeGoals';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { bestTransfer, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, goalFest, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { bestTransfer, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, formatDuration, goalFest, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { buildTable, formatRecord, sideTable, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -787,6 +787,17 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                   <dd>{tx.recordFastestLine(nameOf(fastestTeam), Math.max(1, Math.round(fastest.avgMs / 1000)))}</dd>
                 </div>
               )}
+              {picks.length >= 2 && (() => {
+                // ⏱️ Draft-Dauer: vom ersten bis zum letzten Pick (wie im lokalen Ergebnis)
+                const at = picks.map((pk) => pk.at);
+                const ms = Math.max(...at) - Math.min(...at);
+                return ms > 0 ? (
+                  <div className="draft-records__duration">
+                    <dt>{tx.recordDuration}</dt>
+                    <dd>{tx.recordDurationLine(formatDuration(ms), picks.length)}</dd>
+                  </div>
+                ) : null;
+              })()}
               {(() => {
                 const { up, down } = seasonSwings(table.map((r) => r.team), teams.map((_, i) => ratingOf(i)));
                 return (

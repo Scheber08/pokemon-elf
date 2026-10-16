@@ -1280,6 +1280,15 @@ export interface FastestPicker {
  * Bedenkzeit = Abstand zum vorigen Pick (der erste Pick zählt nicht). Automatische Picks
  * (CPU, Timer, Auto-Pick) bleiben draußen; ein Team braucht mindestens minPicks eigene Picks.
  */
+/** Dauer als „m:ss“ (ab einer Stunde „h:mm:ss“) */
+export function formatDuration(ms: number): string {
+  const sec = Math.round(ms / 1000);
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const ss = String(sec % 60).padStart(2, '0');
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
+}
+
 /** Selbst gewählte Picks je Team: Summe der Bedenkzeiten (ab dem vorigen Pick) und Anzahl */
 export function pickTimes(picks: readonly Pick<DraftPickLog, 'pick' | 'teamId' | 'auto' | 'at'>[]): Map<string, { ms: number; n: number }> {
   const sorted = [...picks].sort((a, b) => a.pick - b.pick);

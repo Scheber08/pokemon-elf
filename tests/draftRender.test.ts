@@ -2469,6 +2469,22 @@ describe('ManagerSeason', () => {
     expect(r2.container.querySelector('.draft-results__defended')!.textContent).toMatch(new RegExp(`^🔄 Neuer Meister – Titelverteidiger .+ wird Platz ${place}$`));
   });
 
+  it('Saisonende: ⏱️ Draft-Dauer in den Saisonrekorden (erster bis letzter Pick)', async () => {
+    const { DraftSeasonStage } = await import('../src/components/DraftSeasonStage');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = engine.withLeague(s, ALL, SCALE);
+    // 22 Picks im Abstand von 15 s → 5:15 Min.
+    const timed = { ...s, picks: s.picks.map((pk, i) => ({ ...pk, at: i * 15_000 })), season: { ...s.season!, startsAt: Date.now() - 30 * 86_400_000 } };
+    const { container } = await render(app(h(DraftSeasonStage, { room: fakeRoom(snap(timed, 'h')) })));
+    await settle();
+    const el = container.querySelector('.draft-records__duration')!;
+    expect(el.querySelector('dt')!.textContent).toBe('Draft-Dauer');
+    expect(el.querySelector('dd')!.textContent).toBe(`5:15 Min. für ${s.picks.length} Picks`);
+    const { formatDuration } = await import('../src/lib/leagueTimeline');
+    expect(formatDuration(3_725_000)).toBe('1:02:05');
+  });
+
   it('Saisonende: 🗺️ Regionen-Mix in den Kader-Karten (nur bei mehreren Regionen)', async () => {
     const { DraftSeasonStage } = await import('../src/components/DraftSeasonStage');
     let s = engine.startDraft(lobby(2, { gens: [1, 2], maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);

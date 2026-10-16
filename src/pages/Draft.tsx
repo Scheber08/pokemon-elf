@@ -9,6 +9,7 @@ import { DraftPickFeed, DraftTypeChip, KindMarks, RoundBest } from '../component
 import type { FeedItem } from '../state/useDraftRoom';
 import { PoolStars, poolStars, scarceFor, StarsLanded } from '../components/PoolStars';
 import { LeagueNumbers } from '../components/LeagueNumbers';
+import { formatDuration } from '../lib/leagueTimeline';
 import { TypeGoals } from '../components/TypeGoals';
 import { DraftProgress } from '../components/DraftProgress';
 import { Confetti } from '../components/Confetti';
@@ -121,15 +122,6 @@ interface DraftState {
   draftMs?: number;
 }
 
-
-/** Dauer als „m:ss“ (ab einer Stunde „h:mm:ss“) */
-function formatDuration(ms: number): string {
-  const sec = Math.round(ms / 1000);
-  const h = Math.floor(sec / 3600);
-  const m = Math.floor((sec % 3600) / 60);
-  const ss = String(sec % 60).padStart(2, '0');
-  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
-}
 
 /**
  * Namen für CPU-Teams: zuerst Teams aus den Online-Ranglisten (sofern geladen), dann Vereinsnamen –
