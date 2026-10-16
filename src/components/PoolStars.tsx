@@ -84,12 +84,21 @@ export function poolTypes(pool: readonly Pokemon[], n = 3): { type: TypeKey; cou
     .slice(0, n);
 }
 
+/** 📏 Größtes und 🐭 kleinstes Pokémon im Pool (Größe `h` in m; bei Gleichstand die kleinere Nummer) */
+export function poolSizes(pool: readonly Pokemon[]): { tallest: Pokemon; smallest: Pokemon } | null {
+  if (pool.length < 2) return null;
+  const tallest = pool.reduce((a, b) => (b.h > a.h || (b.h === a.h && b.id < a.id) ? b : a));
+  const smallest = pool.reduce((a, b) => (b.h < a.h || (b.h === a.h && b.id < a.id) ? b : a));
+  return tallest.h > smallest.h ? { tallest, smallest } : null;
+}
+
 /** Lobby: Vorschau der fünf stärksten Pokémon im Pool – damit man vor dem Draft weiß, um wen es geht. */
 export function PoolStars({ pool, scale, formations }: { pool: readonly Pokemon[]; scale: Scale; formations?: readonly FormationId[] }) {
   const t = useT();
   const { sprite } = useSettings();
   const stars = useMemo(() => poolStars(pool, scale), [pool, scale]);
   const types = useMemo(() => poolTypes(pool), [pool]);
+  const sizes = useMemo(() => poolSizes(pool), [pool]);
   const formationKey = formations?.join(',') ?? '';
   const scarce = useMemo(() => (formations?.length ? poolScarcity(pool, scale, formations) : []), [pool, scale, formationKey]);
   if (!stars.length) return null;
@@ -121,6 +130,11 @@ export function PoolStars({ pool, scale, formations }: { pool: readonly Pokemon[
               <TypeBadge type={x.type} small /> <strong>{x.count}</strong>
             </span>
           ))}
+        </p>
+      )}
+      {sizes && (
+        <p className="small pool-stars__sizes">
+          {t.online.poolSizes(t.game.pokemon(sizes.tallest), sizes.tallest.h, t.game.pokemon(sizes.smallest), sizes.smallest.h)}
         </p>
       )}
       {scarce.length > 0 && (

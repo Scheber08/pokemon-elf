@@ -1227,6 +1227,23 @@ describe('DraftLobby', () => {
     expect(row.querySelectorAll('strong').map((e) => e.textContent)).toEqual(top.map((x) => String(x.count)));
   });
 
+  it('Pool-Größen: größtes und kleinstes Pokémon im Pool', async () => {
+    const { poolSizes } = await import('../src/components/PoolStars');
+    const { poolOf } = await import('../src/lib/draftEngine');
+    const st = lobby(1, { region: 1, maxTeams: 4 });
+    const pool = poolOf(st.settings, ALL);
+    const x = poolSizes(pool)!;
+    expect(x.tallest.h).toBe(Math.max(...pool.map((p) => p.h)));
+    expect(x.smallest.h).toBe(Math.min(...pool.map((p) => p.h)));
+    expect(poolSizes(pool.slice(0, 1))).toBeNull();
+    const { container } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) })));
+    await settle();
+    const fmt = (n: number) => n.toLocaleString('de-DE');
+    expect(container.querySelector('.pool-stars__sizes')!.textContent).toBe(
+      `📏 Größter: ${x.tallest.de} (${fmt(x.tallest.h)}\u00a0m) · 🐭 Kleinster: ${x.smallest.de} (${fmt(x.smallest.h)}\u00a0m)`,
+    );
+  });
+
   it('Knapp im Pool: weniger starke Kandidaten als Plätze in allen Formationen', async () => {
     const { poolScarcity, SCARCE_FIT } = await import('../src/components/PoolStars');
     const { poolOf } = await import('../src/lib/draftEngine');

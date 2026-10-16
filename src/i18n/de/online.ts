@@ -212,6 +212,8 @@ const online = {
   poolScarce: (list: string) => `Knapp im Pool: ${list} – früh zugreifen!`,
   poolScarceItem: (pos: string, strong: number, need: number) => `${pos} ${strong} für ${need} Plätze`,
   poolScarceTitle: (fit: number) => `Starke Kandidaten (Fit ab ${fit}) gegen die Plätze aller Formationen`,
+  poolSizes: (tall: string, th: number, small: string, sh: number) =>
+    `📏 Größter: ${tall} (${th.toLocaleString('de-DE')}\u00a0m) · 🐭 Kleinster: ${small} (${sh.toLocaleString('de-DE')}\u00a0m)`,
   poolTypes: 'Häufigste Typen:',
   poolStarsNote: 'Die fünf stärksten Pokémon dieser Einstellungen – mit ihrer besten Position.',
   poolLine: (pool: number, picks: number) => `Pool: ${pool} Pokémon für ${picks} Picks.`,
