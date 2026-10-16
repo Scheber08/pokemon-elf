@@ -124,6 +124,13 @@ export function apiEverOnline(): boolean {
 let healthFailedAt: number | null = null;
 const healthListeners = new Set<(ok: boolean) => void>();
 
+/** Nur für Tests: zwischengespeicherten Health-Check vergessen (Tests unabhängig von ihrer Reihenfolge). */
+export function resetApiHealthForTests(): void {
+  health = null;
+  healthFailedAt = null;
+  everOnline = false;
+}
+
 /**
  * Prüft, ob das Backend da ist. Ein Erfolg gilt für den ganzen Seitenaufruf, ein
  * Fehlschlag nur HEALTH_RETRY_MS lang – danach (oder mit force) wird neu geprüft.

@@ -21,6 +21,7 @@ const { Daily } = await import('../src/pages/Daily');
 const { de } = await import('../src/i18n/de');
 const { en } = await import('../src/i18n/en');
 const { setCurrentLang } = await import('../src/i18n/lang');
+const { resetApiHealthForTests } = await import('../src/lib/api/client');
 const { dayKey } = await import('../src/lib/daily');
 const { buildDailyShareText, formatDayLong, weekdayName } = await import('../src/lib/dailyShare');
 const { CHALLENGE_LABEL } = await import('../src/lib/leaderboard');
@@ -137,6 +138,7 @@ afterEach(async () => {
   vi.restoreAllMocks();
   localStorage.clear();
   setCurrentLang('de');
+  resetApiHealthForTests();
 });
 
 describe('Tägliche Elf: Texte außerhalb von React', () => {

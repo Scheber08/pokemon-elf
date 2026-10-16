@@ -1,5 +1,5 @@
 /** Fokus retten: nur nach einer echten Eingabe kurz zuvor, nie beim bloßen Laden. */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { installMiniDom, MiniEvent } from './miniDom';
 
 const doc = installMiniDom();
@@ -13,10 +13,13 @@ const el = () => {
 };
 
 describe('rescueFocus', () => {
-  it('ohne vorherige Eingabe (Seite lädt): nichts', () => {
+  it('ohne vorherige Eingabe (Seite lädt): nichts', async () => {
+    // Frisch geladenes Modul: keine Eingabe gemerkt – unabhängig von der Reihenfolge der Tests
+    vi.resetModules();
+    const fresh = await import('../src/lib/focusRescue');
     doc.activeElement = null;
     const target = el();
-    expect(rescueFocus(target)).toBe(false);
+    expect(fresh.rescueFocus(target)).toBe(false);
     expect(doc.activeElement).toBeNull();
   });
 

@@ -82,7 +82,7 @@ worker/index.ts            Cloudflare Worker: /api/* → server/handler.ts, sons
 wrangler.jsonc             Worker-Konfiguration (Assets aus dist/, SPA-Fallback, D1-Binding „DB")
 functions/api/[[route]].ts Alternative für Cloudflare Pages → server/handler.ts
 migrations/0001_init.sql   D1-Schema (der Server legt es auch selbst an)
-tests/                     Unit-Tests: Fit, Team-Score, Saison, Engine, Server/API, Ticker, Tages-Elf …
+tests/                     Unit-Tests: Fit, Team-Score, Saison, Engine, Server/API, Ticker, Tages-Elf … (laufen in jeder Reihenfolge: `npx vitest run --sequence.shuffle`)
 ```
 
 Routen: `/` Builder · `/challenge` 34–0 · `/taeglich` Tägliche Elf · `/151` 151 Challenge & Retro 34–0 ·

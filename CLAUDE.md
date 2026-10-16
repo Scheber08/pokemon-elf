@@ -44,6 +44,8 @@ Deploy stehen in der README.
 
 - Vitest, `node:sqlite`-Shim für D1 (`tests/d1shim.ts`, braucht Node ≥ 22.5), Render-Tests auf dem
   Mini-DOM (`tests/miniDom.ts`). Wegwerf-Tests (`tests/_*.test.ts`) vor dem Commit löschen.
+- Tests müssen in jeder Reihenfolge laufen (ab und zu `npx vitest run --sequence.shuffle --sequence.seed=<n>`);
+  Modul-Zustand zurücksetzen (z. B. `resetApiHealthForTests()`, `vi.resetModules()`).
 - Lokal mit echtem Worker: `npm run dev:cf` (Port 8788). Nach `npm run build` den Dev-Server neu starten,
   sonst liefert er alte Asset-Hashes aus.
 
