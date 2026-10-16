@@ -474,6 +474,10 @@ describe('Saisonartikel', () => {
     expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '🩺').map((i) => `${i.slot}:${i.id}`)).toEqual(['hat:nursecap', 'companion:531']);
     const nursecap = TRAINER_ITEMS.find((i) => i.id === 'nursecap')!;
     expect([at('2027-04-03'), at('2027-04-04'), at('2027-04-10'), at('2027-04-11')].map((d) => itemOnSale(nursecap, d))).toEqual([false, true, true, false]);
+    // ☕ Tag des Kaffees: Kaffeebecher und Backel vom 28. September bis 4. Oktober
+    expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '☕').map((i) => `${i.slot}:${i.id}`)).toEqual(['accessory:coffee', 'companion:926']);
+    const coffee = TRAINER_ITEMS.find((i) => i.id === 'coffee')!;
+    expect([at('2027-09-27'), at('2027-09-28'), at('2027-10-04'), at('2027-10-05')].map((d) => itemOnSale(coffee, d))).toEqual([false, true, true, false]);
   });
 
   it('Kauf nur in der Saison (400 not_on_sale), danach bleibt er tragbar', async () => {

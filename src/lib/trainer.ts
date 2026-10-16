@@ -105,6 +105,8 @@ const CHOCOLATE = ['07-04', '07-10', '🍫'] as const;
 const MOON = ['07-17', '07-23', '🌙'] as const;
 /** Weltgesundheitstag (7. April) */
 const HEALTH = ['04-04', '04-10', '🩺'] as const;
+/** Internationaler Tag des Kaffees (1. Oktober) */
+const COFFEE = ['09-28', '10-04', '☕'] as const;
 /** Valentinstag */
 const VALENTINE = ['02-07', '02-14', '💘'] as const;
 
@@ -256,6 +258,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('accessory', 'sapling', 200), ...EARTH),
   seasonal(item('accessory', 'divemask', 250), ...OCEANS),
   seasonal(item('accessory', 'clownnose', 150), ...LAUGHTER),
+  seasonal(item('accessory', 'coffee', 150), ...COFFEE),
   // Hintergrund
   item('background', 'plain', 0, '#22324a'),
   item('background', 'sky', 0, '#7ec4ef'),
@@ -335,6 +338,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('companion', '869', 350), ...CHOCOLATE),
   seasonal(item('companion', '337', 350), ...MOON),
   seasonal(item('companion', '531', 350), ...HEALTH),
+  seasonal(item('companion', '926', 300), ...COFFEE),
   item('companion', '6', 600),
   item('companion', '149', 600),
   item('companion', '448', 600),

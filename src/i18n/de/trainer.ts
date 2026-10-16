@@ -172,6 +172,7 @@ const trainer = {
       eyepatch: 'Augenklappe',
       facepaint: 'Fanschminke',
       locket: 'Herz-Medaillon',
+      coffee: 'Kaffeebecher',
       lantern: 'Laterne',
       sapling: 'Setzling',
       divemask: 'Taucherbrille',

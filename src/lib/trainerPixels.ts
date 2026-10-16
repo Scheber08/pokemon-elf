@@ -668,6 +668,14 @@ function accessory(c: Canvas, id: string, cloth: string) {
       c.rect(15, 28, 3, 1, '#f08a8a');
       c.dots([[16, 29]], '#f08a8a');
       break;
+    case 'coffee':
+      // Kaffeebecher (Tag des Kaffees): weißer Becher mit Henkel, dunkler Kaffee und Dampf
+      c.rect(23, 24, 4, 4, '#f4f1ea');
+      c.rect(23, 24, 4, 1, '#6b3f22');
+      c.dots([[27, 25], [27, 26]], '#d8d2c4');
+      c.dots([[24, 22], [25, 21], [25, 23]], '#cfd6dd');
+      c.rect(23, 28, 4, 1, '#c9c1b2');
+      break;
     case 'lantern':
       // Laterne am Stab: dunkler Stab über der Schulter, leuchtend orange Laterne mit Rahmen
       c.dots([[20, 23], [21, 22], [22, 21], [23, 20], [24, 20], [25, 21]], '#b07a3e');
