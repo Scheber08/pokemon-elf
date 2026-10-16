@@ -710,6 +710,8 @@ const draft = {
     rivalMark: 'Dein nächster Gegner',
     rivalLast: (kind: 'w' | 'd' | 'l', score: string, opp: string) =>
       `⏮️ Zuletzt: ${score}-${kind === 'w' ? 'Sieg' : kind === 'd' ? 'Remis' : 'Niederlage'} gegen ${opp}`,
+    rivalRanks: (gfRank: number, gf: string, gaRank: number, ga: string) =>
+      `⚽ Angriff: Platz ${gfRank} (${gf} Tore/Spiel) · 🧱 Abwehr: Platz ${gaRank} (${ga} Gegentore/Spiel)`,
     rivalWeak: (pos: string, pokemon: string, fit: number) => `🎯 Schwachpunkt des Gegners: ${pos} ${pokemon} (Fit ${fit})`,
     weakSpot: (pos: string, pokemon: string, fit: number) => `Schwachstelle: ${pos} ${pokemon} (Fit ${fit})`,
     weakAlt: (pokemon: string, fit: number) => `Bank: ${pokemon} passt mit ${fit}`,

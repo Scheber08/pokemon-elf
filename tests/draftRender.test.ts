@@ -1946,6 +1946,15 @@ describe('ManagerSeason', () => {
     expect(container.querySelector('.manager__rival-last')!.textContent).toMatch(
       new RegExp(`^⏮️ Zuletzt: ${lgf}:${lga}-${lgf > lga ? 'Sieg' : lgf < lga ? 'Niederlage' : 'Remis'} gegen .+$`),
     );
+    // ⚽/🧱 Angriff und Abwehr des Gegners mit Rang und Schnitt
+    const { attackDefenseRanks } = await import('../src/lib/leagueTimeline');
+    const rRow = league.table.find((r) => r.team === rival)!;
+    const ad = attackDefenseRanks(league.table, rival)!;
+    const per = (n: number) => (n / rRow.played).toFixed(1).replace('.', ',');
+    expect(container.querySelector('.manager__rival-ranks')!.textContent).toBe(
+      `⚽ Angriff: Platz ${ad.gfRank} (${per(ad.gf)} Tore/Spiel) · 🧱 Abwehr: Platz ${ad.gaRank} (${per(ad.ga)} Gegentore/Spiel)`,
+    );
+    expect(before.querySelector('.manager__rival-ranks')).toBeNull();
     // 🎯 Schwachpunkt des Gegners: Starter mit dem niedrigsten Fit (mit Tagesform)
     const weakEl = container.querySelector('.manager__rival-weak');
     if (!lineup) expect(weakEl).toBeNull();

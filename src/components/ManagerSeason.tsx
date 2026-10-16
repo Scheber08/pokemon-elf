@@ -4,7 +4,7 @@ import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
 import { loadTips, MATCH_TIPS, saveTip, tipScore } from '../lib/managerTips';
-import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance, goalMilestones, scoringRuns, goalsByLine, GOAL_LINES, distinctScorers, bestGoalPhase, fanMood, winRun } from '../lib/leagueTimeline';
+import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance, goalMilestones, scoringRuns, goalsByLine, GOAL_LINES, distinctScorers, bestGoalPhase, fanMood, winRun, attackDefenseRanks } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -644,6 +644,14 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             for (const [id, n] of goalsOf(league, rival)) if (!top || n > top[1]) top = [id, n];
             if (!top || top[1] < 2) return null;
             return <p className="small manager__rival-scorer">⚽ {tx.rivalScorer(pokemonName(top[0]), top[1])}</p>;
+          })()}
+          {(() => {
+            // Angriff und Abwehr des Gegners: Rang in der Liga und Schnitt pro Spiel
+            const row = shown.table.find((r) => r.team === rival);
+            const r = attackDefenseRanks(shown.table, rival);
+            if (!row || !r || row.played === 0) return null;
+            const per = (n: number) => (n / row.played).toLocaleString(localeOf(lang), { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+            return <p className="small manager__rival-ranks">{tx.rivalRanks(r.gfRank, per(r.gf), r.gaRank, per(r.ga))}</p>;
           })()}
           {s.teams[rival] && (() => {
             // Ausfälle des Gegners zum nächsten Spieltag

@@ -643,6 +643,7 @@ const draft: Messages['draft'] = {
     lineNames: { att: 'Attack', mid: 'Midfield', def: 'Defence', gk: 'Keeper' },
     rivalMark: 'Your next opponent',
     rivalLast: (kind, score, opp) => `⏮️ Last time: ${kind === 'w' ? 'won' : kind === 'd' ? 'drew' : 'lost'} ${score} against ${opp}`,
+    rivalRanks: (gfRank, gf, gaRank, ga) => `⚽ Attack: #${gfRank} (${gf} goals/game) · 🧱 Defence: #${gaRank} (${ga} conceded/game)`,
     rivalWeak: (pos, pokemon, fit) => `🎯 Opponent's weak spot: ${pos} ${pokemon} (fit ${fit})`,
     weakSpot: (pos, pokemon, fit) => `Weak spot: ${pos} ${pokemon} (fit ${fit})`,
     weakAlt: (pokemon, fit) => `Bench: ${pokemon} fits at ${fit}`,
