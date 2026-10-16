@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { FORMATIONS } from '../config/formations';
 import { useT } from '../i18n';
-import { dexJerseys, isJerseyNumber, jerseyNumbers, setJersey, type Jerseys } from '../lib/jerseys';
+import { dexJerseys, randomJerseys, isJerseyNumber, jerseyNumbers, setJersey, type Jerseys } from '../lib/jerseys';
 import { usePokemonData } from '../state/PokemonData';
 import type { FormationId, PosCode, Slots } from '../types';
 import { PosBadge } from './Badges';
@@ -65,6 +65,9 @@ export function JerseyEditor({ formation, slots, ss, bench = [], jerseys, onChan
           onClick={() => onChange(dexJerseys(players.map((p) => ({ pokemonId: p.pokemonId, dex: byId.get(p.pokemonId)?.base ?? p.pokemonId }))))}
         >
           {tx.dex}
+        </button>
+        <button type="button" className="btn btn--small" title={tx.randomTitle} onClick={() => onChange(randomJerseys(players.map((p) => p.pokemonId), Math.random))}>
+          🎲 {tx.random}
         </button>
         {custom && (
           <button type="button" className="btn btn--small btn--ghost" onClick={() => onChange({})}>

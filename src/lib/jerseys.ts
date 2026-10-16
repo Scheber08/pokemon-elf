@@ -114,3 +114,15 @@ export function dexJerseys(players: readonly { pokemonId: number; dex: number }[
   }
   return out;
 }
+
+/** Zufällige, eindeutige Trikotnummern (1–99) für alle Pokémon; rnd liefert Zahlen in [0, 1). */
+export function randomJerseys(pokemonIds: readonly number[], rnd: () => number): Jerseys {
+  const pool = Array.from({ length: JERSEY_MAX - JERSEY_MIN + 1 }, (_, i) => JERSEY_MIN + i);
+  const out: Jerseys = {};
+  for (const id of new Set(pokemonIds)) {
+    if (!pool.length) break;
+    const [n] = pool.splice(Math.floor(rnd() * pool.length), 1);
+    out[String(id)] = n;
+  }
+  return out;
+}

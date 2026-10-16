@@ -267,7 +267,7 @@ Pokémon Nummern von 1 bis 99 geben – je Team eindeutig (belegte Nummern tausc
 nicht an der Position. Builder: im Zustand und in „Meine Teams“; Online-Draft/Manager-Saison: Feld `jerseys` am
 Team (Nachricht `jerseys`, nach dem Draft); Challenges und lokaler Draft: im Browser (`useJerseys`). Reine Optik
 auf Feld, Bild, 2D-Wiedergabe und im Spielbericht (Torschützen mit Nummer) – Wertung und Rangliste kennen
-keine Nummern. Der Knopf „Pokédex-Nummern“ vergibt die letzten beiden Ziffern der Pokédex-Nummer; der Teilen-Link
+keine Nummern. Der Knopf „Pokédex-Nummern“ vergibt die letzten beiden Ziffern der Pokédex-Nummer, „🎲 Würfeln“ zufällige eindeutige Nummern (`randomJerseys`); der Teilen-Link
 des Builders trägt eigene Nummern im Parameter `nr`.
 
 **Trikotfarben** (alle Modi, `src/lib/kits.ts`, `src/components/KitPicker.tsx`): je Team eine Heim- und eine

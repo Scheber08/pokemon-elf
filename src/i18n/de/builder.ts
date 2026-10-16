@@ -17,6 +17,8 @@ const builder = {
     reset: 'Alle auf Standard zurücksetzen',
     dex: 'Pokédex-Nummern',
     dexTitle: 'Jedes Pokémon bekommt die letzten beiden Ziffern seiner Pokédex-Nummer (Doppelte behalten die Vorgabe)',
+    random: 'Würfeln',
+    randomTitle: 'Zufällige, eindeutige Nummern von 1 bis 99',
   },
   savingImage: 'Erstelle Bild …',
   random: 'Zufällig',

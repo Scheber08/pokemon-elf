@@ -1,6 +1,6 @@
 /** Trikotnummern: Vorgabe nach Position, eigene Nummern, Bereinigen und Tauschen. */
 import { describe, expect, it } from 'vitest';
-import { cleanJerseys, dexJerseys, jerseyNumbers, setJersey } from '../src/lib/jerseys';
+import { cleanJerseys, dexJerseys, jerseyNumbers, randomJerseys, setJersey } from '../src/lib/jerseys';
 import type { PosCode } from '../src/types';
 
 const team = (...pos: (PosCode | null)[]) => pos.map((p, i) => ({ pokemonId: 100 + i, pos: p }));
@@ -59,5 +59,18 @@ describe('Trikotnummern', () => {
         { pokemonId: 10034, dex: 6 },
       ]),
     ).toEqual({ '25': 25, '150': 50, '10034': 6 });
+  });
+
+  it('Würfeln: eindeutige Nummern 1–99 für alle (doppelte IDs nur einmal), deterministisch mit festem Zufall', () => {
+    let x = 0.123;
+    const rnd = () => (x = (x * 9301 + 0.49297) % 1);
+    const ids = [25, 6, 9, 143, 150, 25, 1, 4, 7, 94, 131, 59];
+    const j = randomJerseys(ids, rnd);
+    const nums = Object.values(j);
+    expect(Object.keys(j)).toHaveLength(11);
+    expect(new Set(nums).size).toBe(11);
+    for (const n of nums) expect(n >= 1 && n <= 99 && Number.isInteger(n)).toBe(true);
+    // Immer die kleinste Zahl gewürfelt → 1, 2, 3 …
+    expect(randomJerseys([5, 6, 7], () => 0)).toEqual({ '5': 1, '6': 2, '7': 3 });
   });
 });

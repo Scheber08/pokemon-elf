@@ -22,6 +22,8 @@ const builder: Messages['builder'] = {
     reset: 'Reset all to default',
     dex: 'Pokédex numbers',
     dexTitle: 'Every Pokémon gets the last two digits of its Pokédex number (duplicates keep the default)',
+    random: 'Roll',
+    randomTitle: 'Random unique numbers from 1 to 99',
   },
   savingImage: 'Creating image …',
   random: 'Random',
