@@ -2798,6 +2798,16 @@ describe('ManagerSeason', () => {
       if (joker) expect(el!.textContent).toContain(`${ALL.find((p) => p.id === joker.pokemonId)!.de} (erst Pick ${joker.pick + 1}) traf ${joker.goals}-mal`);
       else expect(el).toBeNull();
     }
+    // ⚽ eigene Picks mit Saisontor
+    {
+      const { playerTallies } = await import('../src/lib/leagueTimeline');
+      const me = s.teams.findIndex((t) => t.id === 'h');
+      const roster = engine.rosterOf(s.teams[me]);
+      const scored = new Set(playerTallies(s.league!).filter((x) => x.teamIndex === me && x.goals > 0).map((x) => x.pokemonId));
+      const n = roster.filter((id) => scored.has(id)).length;
+      expect(n).toBeGreaterThan(0);
+      expect(container.querySelector('.draft-results__ownscorers')!.textContent).toBe(`⚽ ${n} von ${roster.length} deiner Picks ${n === 1 ? 'hat' : 'haben'} getroffen`);
+    }
     // 1️⃣ Erster Pick mit Saisonbilanz
     {
       const { playerTallies } = await import('../src/lib/leagueTimeline');

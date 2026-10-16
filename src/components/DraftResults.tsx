@@ -436,6 +436,14 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
             </p>
           );
         })()}
+        {you != null && teams[you] && !cup && (() => {
+          // ⚽ Wie viele eigene Picks (ganzer Kader) haben in der Saison getroffen?
+          const roster = rosterOf(teams[you]);
+          if (!roster.length) return null;
+          const scored = new Set(playerTallies(league).filter((x) => x.teamIndex === you && x.goals > 0).map((x) => x.pokemonId));
+          const n = roster.filter((id) => scored.has(id)).length;
+          return <p className="draft-results__ownscorers muted small">{tx.ownScorers(n, roster.length)}</p>;
+        })()}
         {missed && byId.get(missed.pokemonId) && byId.get(missed.altId) && (
           <p className="draft-results__missed muted small">
             😬{' '}
