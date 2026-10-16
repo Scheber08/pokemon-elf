@@ -1280,10 +1280,8 @@ export interface FastestPicker {
  * Bedenkzeit = Abstand zum vorigen Pick (der erste Pick zählt nicht). Automatische Picks
  * (CPU, Timer, Auto-Pick) bleiben draußen; ein Team braucht mindestens minPicks eigene Picks.
  */
-export function fastestPicker(
-  picks: readonly Pick<DraftPickLog, 'pick' | 'teamId' | 'auto' | 'at'>[],
-  minPicks = 3,
-): FastestPicker | null {
+/** Selbst gewählte Picks je Team: Summe der Bedenkzeiten (ab dem vorigen Pick) und Anzahl */
+export function pickTimes(picks: readonly Pick<DraftPickLog, 'pick' | 'teamId' | 'auto' | 'at'>[]): Map<string, { ms: number; n: number }> {
   const sorted = [...picks].sort((a, b) => a.pick - b.pick);
   const sum = new Map<string, { ms: number; n: number }>();
   for (let i = 1; i < sorted.length; i++) {
@@ -1296,8 +1294,15 @@ export function fastestPicker(
     cur.n++;
     sum.set(p.teamId, cur);
   }
+  return sum;
+}
+
+export function fastestPicker(
+  picks: readonly Pick<DraftPickLog, 'pick' | 'teamId' | 'auto' | 'at'>[],
+  minPicks = 3,
+): FastestPicker | null {
   let best: FastestPicker | null = null;
-  for (const [teamId, { ms, n }] of sum) {
+  for (const [teamId, { ms, n }] of pickTimes(picks)) {
     if (n < minPicks) continue;
     const avgMs = ms / n;
     if (!best || avgMs < best.avgMs) best = { teamId, avgMs, picks: n };

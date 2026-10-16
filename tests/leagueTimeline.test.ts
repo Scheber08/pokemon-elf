@@ -320,7 +320,7 @@ describe('Überraschung des Spieltags', () => {
 
 describe('Schnellster Picker', () => {
   const p = (pick: number, teamId: string, at: number, auto = false) => ({ pick, teamId, at, auto });
-  it('Ø Abstand zum vorigen Pick, ohne automatische Picks, Mindestzahl', () => {
+  it('Ø Abstand zum vorigen Pick, ohne automatische Picks, Mindestzahl', async () => {
     const picks = [
       p(0, 'a', 0), p(1, 'b', 10_000), p(2, 'b', 12_000), p(3, 'a', 30_000),
       p(4, 'a', 32_000), p(5, 'b', 40_000), p(6, 'b', 41_000, true), p(7, 'a', 45_000),
@@ -330,6 +330,10 @@ describe('Schnellster Picker', () => {
     expect(fastestPicker(picks)!.avgMs).toBeCloseTo(20_000 / 3);
     expect(fastestPicker(picks, 4)).toBeNull();
     expect(fastestPicker([])).toBeNull();
+    // Bedenkzeiten je Team (Grundlage für ⌀ in der Statusleiste)
+    const { pickTimes } = await import('../src/lib/leagueTimeline');
+    expect(pickTimes(picks).get('a')).toEqual({ ms: 24_000, n: 3 });
+    expect(pickTimes(picks).get('b')).toEqual({ ms: 20_000, n: 3 });
   });
 });
 

@@ -290,6 +290,7 @@ const online: Messages['online'] = {
   joinedLobby: (team) => `👋 ${team} joined`,
   leftLobby: (team) => `🚪 ${team} left`,
   readyLobby: (team) => `✅ ${team} is ready`,
+  avgPickTitle: (sec, n) => `Your thinking time: ${sec} s on average over ${n} picks you made`,
   blitzTitle: (n) => `${n} ${n === 1 ? 'lightning pick' : 'lightning picks'} – 5 earn the “Lightning drafter” achievement`,
   doublePick: 'Double pick – you’re up again right after this one.',
   finalRound: 'Final round',

@@ -565,6 +565,25 @@ describe('DraftLive', () => {
     expect(el!.textContent).toBe(`⚠️ Wird knapp: ${expected.map((x) => `${short[x.pos] ?? x.pos} ${x.strong}/${x.need}`).join(' · ')}`);
   });
 
+  it('⌀ eigene Bedenkzeit in der Statusleiste (ab zwei selbst gewählten Picks)', async () => {
+    const manual = (st: DraftState, now: number) => {
+      const team = engine.currentTeam(st)!;
+      const c = engine.autoPickChoice(st, team.id, ALL, SCALE, false);
+      return engine.applyPick(st, team.id, c.pokemonId, c.slot, false, now, ALL);
+    };
+    // Snake mit 2 Teams: h, t1, t1, h, h → h wählt bei 0 s, 30 s und 34 s (Bedenkzeiten 20 s und 4 s)
+    let s = drafting();
+    s = manual(s, 0);
+    s = manual(s, 5_000);
+    s = manual(s, 10_000);
+    const r1 = await renderLive(fakeRoom(snap(s, 'h')));
+    expect(r1.container.querySelector('.draft-turnbar__avg')).toBeNull();
+    s = manual(s, 30_000);
+    s = manual(s, 34_000);
+    const { container } = await renderLive(fakeRoom(snap(s, 'h')));
+    expect(container.querySelector('.draft-turnbar__avg strong')!.textContent).toBe('12 s');
+  });
+
   // CLIENT-9
   it('genau eine Live-Region, eine Ansage pro Pick', async () => {
     let s = autoPick(drafting());

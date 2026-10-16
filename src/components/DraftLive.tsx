@@ -44,6 +44,7 @@ import type { Pokemon, PosCode } from '../types';
 import { TypeBadge } from './Badges';
 import { BenchRow } from './BenchRow';
 import { scarceFor } from './PoolStars';
+import { pickTimes } from '../lib/leagueTimeline';
 import { CaptainPicker } from './CaptainPicker';
 import { JerseyEditor } from './JerseyEditor';
 import { DraftBoard, DraftPickFeed } from './DraftBoard';
@@ -694,6 +695,19 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                 <span aria-hidden="true">⚡ </span>
                 <strong>{n >= 5 ? n : `${n}/5`}</strong>
                 <span className="sr-only"> – {t.online.blitzTitle(n)}</span>
+              </span>
+            );
+          })()}
+          {me && (() => {
+            // ⌀ Eigene Bedenkzeit je selbst gewähltem Pick (ab zwei Picks)
+            const own = pickTimes(s.picks).get(me.id);
+            if (!own || own.n < 2) return null;
+            const sec = Math.round(own.ms / own.n / 1000);
+            return (
+              <span className="statusline__item draft-turnbar__avg" title={t.online.avgPickTitle(sec, own.n)}>
+                <span aria-hidden="true">⌀ </span>
+                <strong>{sec} s</strong>
+                <span className="sr-only"> – {t.online.avgPickTitle(sec, own.n)}</span>
               </span>
             );
           })()}

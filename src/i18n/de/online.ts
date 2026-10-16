@@ -328,6 +328,7 @@ const online = {
   /** Mitspieler ist bereit (Hinweis) */
   readyLobby: (team: string) => `✅ ${team} ist bereit`,
   /** Eigene Blitz-Picks in der Statusleiste */
+  avgPickTitle: (sec: number, n: number) => `Deine Bedenkzeit: im Schnitt ${sec} s über ${n} selbst gewählte Picks`,
   blitzTitle: (n: number) => `${n} ${n === 1 ? 'Blitz-Pick' : 'Blitz-Picks'} – ab 5 gibt es den Erfolg „Blitzdrafter“`,
   /** Snake-Wende: zwei Picks hintereinander */
   doublePick: 'Doppelpick – du bist gleich noch einmal dran.',
