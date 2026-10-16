@@ -1,6 +1,6 @@
 /** Texts: leaderboard (English). Must have exactly the keys of ../de/leaderboard.ts (checked by TypeScript). */
 import type { Messages } from '../de';
-import { fmtNumber, ordinal } from '../lang';
+import { fmtNumber, ordinal, plural } from '../lang';
 import errors from './errors';
 
 /**
@@ -42,6 +42,7 @@ const leaderboard: Messages['leaderboard'] = {
   formationFilter: 'Filter leaderboard by formation',
   formationAll: 'All formations',
   topFormation: (formation, n, total) => `Favourite formation of the top ${total}: ${formation} (${n}×)`,
+  perfectTop: (n, total) => `🏆 ${plural(n, 'perfect season', 'perfect seasons')} in the top ${total}`,
   players: (n) => `${fmtNumber(n, 0, 'en')} ${n === 1 ? 'player' : 'players'}`,
   loading: 'Loading …',
   loadError: (message) => `Leaderboard unavailable: ${message}`,

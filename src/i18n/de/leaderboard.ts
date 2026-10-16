@@ -29,6 +29,8 @@ const leaderboard = {
   formationFilter: 'Rangliste nach Formation filtern',
   formationAll: 'Alle Formationen',
   topFormation: (formation: string, n: number, total: number) => `Lieblingsformation der Top ${total}: ${formation} (${n}×)`,
+  /** Perfekte Saisons (nur Siege) unter den gezeigten Einträgen */
+  perfectTop: (n: number, total: number) => `🏆 ${n}× perfekte Saison in den Top ${total}`,
   players: (n: number) => `${fmtNumber(n, 0, 'de')} Spieler`,
   loading: 'Lade …',
   loadError: (message: string) => `Rangliste nicht erreichbar: ${message}`,

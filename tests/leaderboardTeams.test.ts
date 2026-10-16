@@ -772,6 +772,18 @@ describe('Rangliste: Team ansehen (online)', () => {
     expect(c.querySelector('.lb-meta')!.textContent).toContain('Lieblingsformation der Top 3: 4-3-3 (2×)');
   });
 
+  it('🏆 perfekte Saisons (nur Siege) unter den gezeigten Einträgen in der Kopfzeile', async () => {
+    storeSettings('de');
+    const board = { ...BOARD, rows: [row({ record: { w: 34, d: 0, l: 0 }, points: 102 }), BOARD.rows[1]] };
+    await stubServer(undefined, () => json(200, board));
+    const c = await render(app());
+    await settle();
+    expect(c.querySelector('.lb-meta')!.textContent).toContain('🏆 1× perfekte Saison in den Top 2');
+    const { messages } = await import('../src/i18n');
+    expect(messages('en').leaderboard.perfectTop(1, 50)).toBe('🏆 1 perfect season in the top 50');
+    expect(messages('en').leaderboard.perfectTop(3, 50)).toBe('🏆 3 perfect seasons in the top 50');
+  });
+
   it('Wochenwertung: Kopfzeile nennt die Resttage bis Sonntag, Zeilen den Wochentag', async () => {
     storeSettings('de');
     await stubServer();

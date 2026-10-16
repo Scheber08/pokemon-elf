@@ -353,6 +353,10 @@ function OnlineBoard({ challenge, period, reload, onRetry, panelRef }: OnlineBoa
     if (top[0][1] >= 2 && (!top[1] || top[1][1] < top[0][1])) meta.push(t.leaderboard.topFormation(top[0][0], top[0][1], shownRows.length));
   }
 
+  // 🏆 Perfekte Saisons (nur Siege) unter den gezeigten Einträgen
+  const perfect = shownRows.filter((r) => r.record.d === 0 && r.record.l === 0).length;
+  if (perfect > 0) meta.push(t.leaderboard.perfectTop(perfect, shownRows.length));
+
   const toRow = (r: LeaderboardResponse['rows'][number]): BoardRow => {
     const summary: EntrySummary = {
       challenge,
