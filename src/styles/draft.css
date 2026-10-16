@@ -2037,3 +2037,18 @@ button.draft-bench__slot {
   margin-top: 2px;
   color: var(--text-dim);
 }
+
+/* Pool-Kopf: „★ n“ als Umschalter (nur Legendäre zeigen) */
+button.draft-pool__legends {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 0 6px;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+button.draft-pool__legends.is-on {
+  border-color: var(--yellow);
+  color: var(--yellow);
+}

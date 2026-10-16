@@ -1012,7 +1012,14 @@ describe('DraftLive', () => {
     // Nur Kanto: keine Ultrabestien
     expect(container.querySelector('.draft-pool__ub')).toBeNull();
     const n = legends.length - 1;
-    expect(container.querySelector('.draft-pool__legends')!.textContent).toBe(` ★ ${n}${n === 1 ? 'Ein Legendäres/Mysteriöses noch frei' : `${n} Legendäre/Mysteriöse noch frei`}`);
+    const star = container.querySelector('.draft-pool__legends') as MiniElement;
+    expect(star.textContent).toBe(`★ ${n}${n === 1 ? 'Ein Legendäres/Mysteriöses noch frei' : `${n} Legendäre/Mysteriöse noch frei`} – Antippen: nur Legendäre/Mysteriöse zeigen`);
+    // Antippen: Raster zeigt nur noch die freien Legendären
+    expect(star.getAttribute('aria-pressed')).toBe('false');
+    await act(async () => star.click());
+    expect(star.getAttribute('aria-pressed')).toBe('true');
+    const names = container.querySelectorAll('.pcard .pcard__name').map((e) => e.textContent);
+    expect(names.sort()).toEqual(legends.slice(1).map((p) => p.de).sort());
   });
 
   it('Statusleiste: 🏁 in der letzten Draft-Runde', async () => {

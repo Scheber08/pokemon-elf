@@ -258,6 +258,7 @@ const online: Messages['online'] = {
   autoTag: ' (auto)',
   yourTurn: 'It’s your turn!',
   pool: 'Pool',
+  legendsOnlyTitle: 'Tap: show legendary/mythical only',
   legendsFreeTitle: (n) => (n === 1 ? 'One legendary/mythical still available' : `${n} legendaries/mythicals still available`),
   ubFreeTitle: (n) => (n === 1 ? 'One Ultra Beast still available' : `${n} Ultra Beasts still available`),
   megasFreeTitle: (n) => (n === 1 ? 'One Mega still available' : `${n} Megas still available`),

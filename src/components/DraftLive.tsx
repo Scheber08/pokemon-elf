@@ -347,7 +347,10 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     () => (regionShown && gens.includes(filters.region) ? filters : { ...filters, region: 0 as const }),
     [filters, regionShown, gens.join(',')],
   );
-  const filtered = useFilteredPokemon(items, effFilters);
+  const filteredAll = useFilteredPokemon(items, effFilters);
+  // „★ n“ im Pool-Kopf als Umschalter: nur Legendäre/Mysteriöse zeigen
+  const [legendsOnly, setLegendsOnly] = useState(false);
+  const filtered = useMemo(() => (legendsOnly ? filteredAll.filter((p) => isLegend(p)) : filteredAll), [filteredAll, legendsOnly]);
   const feed = useMemo(() => pickFeed(s, byId, undefined, t, scale('all')), [s, byId, t, scale]);
   // Raster nur bei anderem Filter/Pool/Wurf wieder von vorn – ein Pick nimmt nur eine Karte heraus
   const gridKey = `${poolKey}|${showTaken}|${bestFirst ? `best:${freeKey}` : ''}|${fitOnly ? rollKey || 'fit' : ''}|${effFilters.region}|${effFilters.type ?? ''}|${effFilters.query}`;
@@ -845,11 +848,19 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                   if (!legends) return null;
                   const free = pool.filter((p) => isLegend(p) && !owners.has(p.id)).length;
                   return (
-                    <span className="muted draft-pool__legends" title={t.online.legendsFreeTitle(free)}>
+                    <>
                       {' '}
-                      <span aria-hidden="true">★ {free}</span>
-                      <span className="sr-only">{t.online.legendsFreeTitle(free)}</span>
-                    </span>
+                      <button
+                        type="button"
+                        className={`draft-pool__legends ${legendsOnly ? 'is-on' : 'muted'}`}
+                        title={`${t.online.legendsFreeTitle(free)} – ${t.online.legendsOnlyTitle}`}
+                        aria-pressed={legendsOnly}
+                        onClick={() => setLegendsOnly((v) => !v)}
+                      >
+                        <span aria-hidden="true">★ {free}</span>
+                        <span className="sr-only">{t.online.legendsFreeTitle(free)} – {t.online.legendsOnlyTitle}</span>
+                      </button>
+                    </>
                   );
                 })()}
                 {(['ub', 'mega'] as const).map((kind) => {
@@ -928,7 +939,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
                 regions={gens}
                 // Die Trefferzahl ist eine Live-Region – ohne Filter änderte sie sich bei jedem Pick
                 // (die freie Zahl steht ohnehin in der Überschrift)
-                resultCount={filtering ? filtered.length : undefined}
+                resultCount={filtering || legendsOnly ? filtered.length : undefined}
                 slashFocus
               />
               <PokemonGrid
