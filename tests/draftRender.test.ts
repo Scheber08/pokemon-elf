@@ -1173,10 +1173,14 @@ describe('DraftLobby', () => {
     expect(container.querySelector('.draft-lobby__defending-line')!.textContent).toBe('🏆 Titelverteidiger: Team 1');
     const marked = container.querySelectorAll('.draft-lobby__team').filter((li) => li.querySelector('.draft-lobby__defending'));
     expect(marked.map((li) => li.querySelector('.draft-lobby__name strong')!.textContent)).toEqual(['Team 1 🏆Titelverteidiger (Meister der letzten Liga)']);
+    // Platz aus der letzten Liga an jedem Team
+    const places = container.querySelectorAll('.draft-lobby__team').map((li) => li.querySelector('.draft-lobby__lastplace')?.textContent ?? null);
+    expect(places).toEqual([' · zuletzt Platz 2', ' · zuletzt Platz 1']);
     // Ohne Vorgänger-Liga: nichts
     const r2 = await render(app(h(DraftLobby, { room: fakeRoom(snap(lobby(2), 'h')) })));
     await settle();
     expect(r2.container.querySelector('.draft-lobby__defending-line')).toBeNull();
+    expect(r2.container.querySelector('.draft-lobby__lastplace')).toBeNull();
   });
 
   it('🧩 Lobby: Formations-Mix aller Teams, Hinweis bei eigener Einzel-Formation', async () => {

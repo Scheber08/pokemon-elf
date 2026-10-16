@@ -156,6 +156,7 @@ const online: Messages['online'] = {
   readyOn: '✓ Ready – undo',
   readyMark: 'ready',
   defending: (team) => `🏆 Defending champion: ${team}`,
+  lastPlace: (rank) => `last time #${rank}`,
   defendingTitle: 'Defending champion (won the last league)',
   lobbyFormations: (list) => `🧩 Formations: ${list}`,
   lobbyFormationSolo: ' – nobody else plays yours',

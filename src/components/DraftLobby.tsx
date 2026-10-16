@@ -452,6 +452,11 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
                       </strong>
                       <small>
                         {team.formation}
+                        {(() => {
+                          // Revanche: Platz dieses Teams in der letzten Liga der Kette
+                          const rank = lastLeague?.rows.find((r) => r.teamId === team.id)?.rank;
+                          return rank ? <span className="draft-lobby__lastplace">{' · '}{t.online.lastPlace(rank)}</span> : null;
+                        })()}
                         {team.cpu && s.settings.cpuLevel && s.settings.cpuLevel !== 'normal' && (
                           <span className="draft-lobby__cpulevel" title={t.draft.local.cpuLevel}>
                             {' · '}

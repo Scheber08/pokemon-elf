@@ -172,6 +172,7 @@ const online = {
   readyMark: 'bereit',
   /** Revanche: Meister der letzten Liga */
   defending: (team: string) => `🏆 Titelverteidiger: ${team}`,
+  lastPlace: (rank: number) => `zuletzt Platz ${rank}`,
   defendingTitle: 'Titelverteidiger (Meister der letzten Liga)',
   /** Formations-Mix aller Teams in der Lobby */
   lobbyFormations: (list: string) => `🧩 Formationen: ${list}`,
