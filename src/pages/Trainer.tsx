@@ -134,12 +134,24 @@ function RecordCard({ stats }: { stats: AchievementStats }) {
   );
 }
 
-function Achievements({ me, seen }: { me: MeResponse; seen: Set<string> }) {
+export function Achievements({ me, seen }: { me: MeResponse; seen: Set<string> }) {
   const t = useT();
   const tx = t.trainer;
   const near = closest(me);
+  // Nur offene Erfolge zeigen – mit den Münzen, die dort noch zu holen sind
+  const [openOnly, setOpenOnly] = useState(false);
+  const open = me.achievements.filter((a) => !a.done);
+  const openCoins = open.reduce((sum, a) => sum + a.coins, 0);
   return (
     <>
+      {open.length > 0 && open.length < me.achievements.length && (
+        <p className="achievements__filter">
+          <button type="button" className="btn btn--small btn--ghost" aria-pressed={openOnly} onClick={() => setOpenOnly((v) => !v)}>
+            {openOnly ? '✓ ' : ''}
+            {tx.openOnly(open.length, openCoins)}
+          </button>
+        </p>
+      )}
       {near.length > 0 && (
         <section className="card" aria-labelledby="ach-near">
           <h2 id="ach-near" className="section-title">
@@ -153,13 +165,14 @@ function Achievements({ me, seen }: { me: MeResponse; seen: Set<string> }) {
         </section>
       )}
       {ACHIEVEMENT_CATEGORIES.map((cat) => {
-        const items = me.achievements.filter((a) => CATEGORY_OF.get(a.id) === cat);
+        const all = me.achievements.filter((a) => CATEGORY_OF.get(a.id) === cat);
+        const items = openOnly ? all.filter((a) => !a.done) : all;
         if (!items.length) return null;
         return (
           <section key={cat} className="card" aria-labelledby={`ach-${cat}`}>
             <h2 id={`ach-${cat}`} className="section-title">
               {tx.category[cat]}{' '}
-              <small className="muted">{tx.progressValue(items.filter((a) => a.done).length, items.length)}</small>
+              <small className="muted">{tx.progressValue(all.filter((a) => a.done).length, all.length)}</small>
             </h2>
             <ul className="achievements">
               {items.map((a) => (

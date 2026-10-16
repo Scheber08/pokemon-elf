@@ -46,6 +46,7 @@ const trainer: Messages['trainer'] = {
   owned: 'Owned',
   price: (n) => `${n} ◎`,
   seasonal: (to) => `Seasonal item – only until ${new Date(`2000-${to}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })}`,
+  openOnly: (n, coins) => `Open only (${n} · ${coins.toLocaleString('en-US')} coins left)`,
   nearTitle: 'Almost there',
   filter: 'Show',
   filterAll: 'All',

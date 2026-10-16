@@ -45,6 +45,7 @@ const trainer = {
   price: (n: number) => `${n} ◎`,
   /** Saisonartikel: Ende der Saison (MM-DD) */
   seasonal: (to: string) => `Saisonartikel – nur bis ${Number(to.slice(3))}.${Number(to.slice(0, 2))}.`,
+  openOnly: (n: number, coins: number) => `Nur offene (${n} · noch ${coins.toLocaleString('de-DE')} Münzen)`,
   nearTitle: 'Fast geschafft',
   filter: 'Anzeigen',
   filterAll: 'Alle',

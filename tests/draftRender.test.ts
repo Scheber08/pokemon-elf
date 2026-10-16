@@ -955,6 +955,22 @@ describe('DraftLive', () => {
     expect(btn.getAttribute('aria-keyshortcuts')).toBe('R');
   });
 
+  it('Erfolge: „Nur offene“ blendet geschaffte aus und nennt die offenen Münzen', async () => {
+    const { Achievements } = await import('../src/pages/Trainer');
+    const { ACHIEVEMENTS } = await import('../src/lib/achievements');
+    const list = ACHIEVEMENTS.slice(0, 6).map((d, i) => ({ id: d.id, done: i < 2, value: i < 2 ? d.goal : 0, goal: d.goal, coins: d.coins }));
+    const me = { achievements: list } as never;
+    const { container } = await render(app(h(Achievements, { me, seen: new Set<string>() })));
+    await settle();
+    const btn = container.querySelector('.achievements__filter button') as MiniElement;
+    const coins = list.filter((a) => !a.done).reduce((s, a) => s + a.coins, 0);
+    expect(btn.textContent).toBe(`Nur offene (4 · noch ${coins.toLocaleString('de-DE')} Münzen)`);
+    expect(container.querySelectorAll('.achievement.is-done').length).toBeGreaterThan(0);
+    await act(async () => btn.click());
+    expect(btn.getAttribute('aria-pressed')).toBe('true');
+    expect(container.querySelectorAll('.achievement.is-done')).toHaveLength(0);
+  });
+
   it('Taste ? zeigt die Tastenkürzel', async () => {
     const { container } = await renderLive(fakeRoom(snap(drafting(), 'h')));
     const ev = Object.assign(new MiniEvent('keydown', { bubbles: true, cancelable: true }), { key: '?', ctrlKey: false, metaKey: false, altKey: false });
