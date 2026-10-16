@@ -84,7 +84,7 @@ export function KitPicker({ kit, onChange, disabled = false, cheer = '', onCheer
       )}
       {onCheer && !disabled && (
         // Vorschläge zum Antippen – übernimmt den Spruch sofort
-        <p className="kit-picker__ideas" aria-label={tx.cheerIdeasLabel}>
+        <p className="kit-picker__ideas" role="group" aria-label={tx.cheerIdeasLabel}>
           {tx.cheerIdeas.map((idea) => (
             <button
               key={idea}

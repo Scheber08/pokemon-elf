@@ -683,7 +683,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                         </small>
                       )}
                     </span>
-                    <span className="scorers__goals" aria-label={tx.goalsAria(s.goals)}>
+                    <span className="scorers__goals" role="img" aria-label={tx.goalsAria(s.goals)}>
                       {s.goals}
                     </span>
                   </li>

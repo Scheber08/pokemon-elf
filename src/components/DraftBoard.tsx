@@ -54,6 +54,7 @@ export function DraftTeamTags({ team, host, you }: { team: DraftTeam; host: bool
         <span
           className={`draft-dot ${team.online ? 'draft-dot--on' : ''}`}
           title={team.online ? tx.onlineTitle : tx.offlineTitle}
+          role="img"
           aria-label={team.online ? tx.onlineAria : tx.offlineAria}
         />
       )}

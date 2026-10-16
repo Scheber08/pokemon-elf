@@ -12,7 +12,7 @@ export function MiniStats({ pokemon }: { pokemon: Pokemon }) {
   const labels = useT().builder.grid.mini;
   const title = MINI.map((k) => `${labels[k]} ${pokemon[k]}`).join(' · ');
   return (
-    <span className="ministats" title={title} aria-label={title}>
+    <span className="ministats" role="img" title={title} aria-label={title}>
       {MINI.map((k) => (
         <span key={k} className="ministats__bar" data-label={labels[k]}>
           <span style={{ height: `${Math.min(100, (pokemon[k] / 180) * 100)}%` }} />

@@ -632,6 +632,7 @@ export function FixtureList({ matches, you, nameOf, pokemonName, upcoming, class
               ) : (
                 <span
                   className="league-fixture__score"
+                  role="img"
                   aria-label={upcoming ? t.draft.ticker.scoreOpen : t.draft.ticker.scoreAria(m.hg, m.ag)}
                 >
                   {upcoming ? '–:–' : `${m.hg}:${m.ag}`}
@@ -797,7 +798,7 @@ export function FormDots({ form }: { form: ('S' | 'U' | 'N')[] }) {
   const t = useT();
   if (!form.length) return <span aria-hidden="true">–</span>;
   return (
-    <span className="league-form" aria-label={t.draft.col.formAria(form.map((o) => t.draft.outcome[o]).join(', '))}>
+    <span className="league-form" role="img" aria-label={t.draft.col.formAria(form.map((o) => t.draft.outcome[o]).join(', '))}>
       {form.map((o, i) => (
         <span key={i} className={`league-form__dot is-${o}`} aria-hidden="true" />
       ))}

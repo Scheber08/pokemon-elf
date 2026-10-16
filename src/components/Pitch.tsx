@@ -280,6 +280,7 @@ export function Pitch({
           className={classes}
           style={style}
           data-slot-index={index}
+          role="group"
           aria-label={slotLabel}
           onPointerEnter={(e) => onPointerEnter(e, index)}
           onPointerLeave={onPointerLeave}

@@ -150,7 +150,7 @@ export function Scouting() {
       </header>
 
       <div className="scouting__table card" ref={tableRef}>
-        <div className="scouting__legend" aria-label={s.legendAria}>
+        <div className="scouting__legend" role="group" aria-label={s.legendAria}>
           {LEVELS.map((l) => (
             <span key={l} className={`lvl lvl--${l}`}>
               <LevelIcon level={l} size={16} /> {t.game.level[l]}

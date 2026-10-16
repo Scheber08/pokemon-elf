@@ -131,7 +131,7 @@ function DraftCodeCard({ code, name = '', settings, teams }: { code: string; nam
       <span id="draft-code-title" className="kicker">
         {t.online.leagueCode}
       </span>
-      <p className="draft-code__value" aria-label={t.online.codeAria(code.split('').join(' '))}>
+      <p className="draft-code__value" role="img" aria-label={t.online.codeAria(code.split('').join(' '))}>
         {code}
       </p>
       <div className="draft-code__actions">

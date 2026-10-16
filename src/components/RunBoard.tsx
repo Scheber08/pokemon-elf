@@ -225,7 +225,7 @@ export function RunBoard({
   useFocusRescue(playRef);
 
   return (
-    <div ref={playRef} tabIndex={-1} aria-label={tc.playAria} className={`challenge__play ${challenge === 'retro340' ? 'challenge--retro' : ''}`}>
+    <div ref={playRef} tabIndex={-1} role="region" aria-label={tc.playAria} className={`challenge__play ${challenge === 'retro340' ? 'challenge--retro' : ''}`}>
       <div className="challenge__controls">
         {notice}
         <StatusLine items={status} />

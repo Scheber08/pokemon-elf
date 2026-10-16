@@ -299,6 +299,7 @@ export function SeasonResultView({
             </h1>
             <div
               className={`result-hero__record ${season.perfect ? 'is-perfect' : ''}`}
+              role="img"
               aria-label={tr.recordAria(season.record.w, season.record.d, season.record.l)}
             >
               {record}
