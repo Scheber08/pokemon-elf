@@ -4,7 +4,7 @@ import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
 import { loadTips, MATCH_TIPS, saveTip, tipScore } from '../lib/managerTips';
-import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance, goalMilestones, scoringRuns, goalsByLine, GOAL_LINES, distinctScorers, bestGoalPhase, fanMood, winRun, attackDefenseRanks, expectedCrowd, STADIUM_CAPACITY, weatherFor } from '../lib/leagueTimeline';
+import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance, goalMilestones, scoringRuns, goalsByLine, GOAL_LINES, distinctScorers, bestGoalPhase, fanMood, winRun, attackDefenseRanks, expectedCrowd, STADIUM_CAPACITY, weatherFor, matchPreview } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -644,6 +644,11 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
               <FormDots form={recentForm(shown.matches, rival, m.played)} />
             </p>
           )}
+          {you != null && m.played >= 2 && rivalPlace > 0 && (() => {
+            // 📢 Vorschau je nach Tabellenabstand
+            const own = shown.table.findIndex((r) => r.team === you) + 1;
+            return own > 0 && <p className="small manager__preview">📢 {tx.preview[matchPreview(own, rivalPlace)]}</p>;
+          })()}
           {(() => {
             // 🌦️ Wetter-Vorhersage (nur Deko, deterministisch aus Spieltag und Paarung)
             const w = weatherFor(nextNo, myNext.home, myNext.away);

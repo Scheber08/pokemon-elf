@@ -659,6 +659,12 @@ const draft: Messages['draft'] = {
     crowdFull: (n) => `🏟️ Sold out: ${n} fans!`,
     weather: (kind, temp) => `Weather: ${kind}, ${temp} °C`,
     weatherKinds: { sun: '☀️ sunny', cloud: '⛅ cloudy', rain: '🌧️ rain', wind: '🌬️ windy', snow: '❄️ snow' },
+    preview: {
+      top: 'Top of the table clash!',
+      even: 'An even contest – form on the day decides.',
+      favourite: 'You are clear favourites – a must-win?',
+      underdog: 'Underdogs today – anything can happen!',
+    },
     winRun: (n, left) => `🏅 ${n} wins in a row – ${left} more for the “Winning run” achievement`,
     linesTitle: 'Goals by unit',
     distinctScorers: (n) => `👥 ${n} different scorers`,

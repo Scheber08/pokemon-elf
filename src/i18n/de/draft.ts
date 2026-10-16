@@ -725,6 +725,12 @@ const draft = {
     crowdFull: (n: string) => `🏟️ Ausverkauft: ${n} Zuschauer!`,
     weather: (kind: string, temp: number) => `Wetter: ${kind}, ${temp} °C`,
     weatherKinds: { sun: '☀️ sonnig', cloud: '⛅ bewölkt', rain: '🌧️ Regen', wind: '🌬️ windig', snow: '❄️ Schnee' },
+    preview: {
+      top: 'Spitzenspiel! Hier geht es um die Tabellenspitze.',
+      even: 'Ein Duell auf Augenhöhe – Tagesform entscheidet.',
+      favourite: 'Ihr seid klarer Favorit – ein Pflichtsieg?',
+      underdog: 'Außenseiter-Rolle – alles ist möglich!',
+    },
     winRun: (n: number, left: number) => `🏅 ${n} Siege in Folge – noch ${left} bis zum Erfolg „Siegesserie“`,
     linesTitle: 'Tore nach Mannschaftsteil',
     distinctScorers: (n: number) => `👥 ${n} verschiedene Torschützen`,

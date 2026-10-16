@@ -25,6 +25,7 @@ import { biggestUpset, currentRun, biggestWin, goalFest, fastestPicker, longestW
   favouriteFoes,
   expectedCrowd,
   weatherFor,
+  matchPreview,
 } from '../src/lib/leagueTimeline';
 import { createRng } from '../src/lib/rng';
 import { buildTable, simulateLeague, type LeagueResult, type LeagueTeam } from '../src/lib/season';
@@ -703,5 +704,14 @@ describe('weatherFor', () => {
         if (w.kind === 'snow') expect(w.temp).toBeLessThanOrEqual(2);
       }
     expect([...kinds].sort()).toEqual(['cloud', 'rain', 'snow', 'sun', 'wind']);
+  });
+});
+
+describe('matchPreview', () => {
+  it('Spitzenspiel, Favorit, Außenseiter, sonst Augenhöhe', () => {
+    expect(matchPreview(1, 3)).toBe('top');
+    expect(matchPreview(2, 8)).toBe('favourite');
+    expect(matchPreview(14, 4)).toBe('underdog');
+    expect(matchPreview(9, 12)).toBe('even');
   });
 });

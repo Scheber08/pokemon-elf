@@ -1444,3 +1444,16 @@ export function weatherFor(round: number, home: number, away: number): { kind: W
   const kind: Weather = temp <= 2 && roll < 50 ? 'snow' : roll < 40 ? 'sun' : roll < 70 ? 'cloud' : roll < 88 ? 'rain' : 'wind';
   return { kind, temp };
 }
+
+export type MatchPreview = 'top' | 'even' | 'favourite' | 'underdog';
+
+/**
+ * 📢 Vorschau aufs nächste Spiel aus den Tabellenplätzen: Spitzenspiel (beide in den Top 3),
+ * Favorit bzw. Außenseiter ab 6 Plätzen Abstand, sonst ein Duell auf Augenhöhe.
+ */
+export function matchPreview(ownPlace: number, rivalPlace: number): MatchPreview {
+  if (ownPlace <= 3 && rivalPlace <= 3) return 'top';
+  if (rivalPlace - ownPlace >= 6) return 'favourite';
+  if (ownPlace - rivalPlace >= 6) return 'underdog';
+  return 'even';
+}

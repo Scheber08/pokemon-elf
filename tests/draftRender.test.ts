@@ -2118,6 +2118,14 @@ describe('ManagerSeason', () => {
     const f = container.querySelector('.manager__rival-formation');
     if (lineup) expect(f!.textContent!.trimEnd()).toBe(` · spielt ${lineup.formation}`);
     else expect(f).toBeNull();
+    // 📢 Vorschau je nach Tabellenabstand
+    {
+      const { matchPreview } = await import('../src/lib/leagueTimeline');
+      const own = league.table.findIndex((r) => r.team === me) + 1;
+      const rp = league.table.findIndex((r) => r.team === rival) + 1;
+      const texts = { top: 'Spitzenspiel! Hier geht es um die Tabellenspitze.', even: 'Ein Duell auf Augenhöhe – Tagesform entscheidet.', favourite: 'Ihr seid klarer Favorit – ein Pflichtsieg?', underdog: 'Außenseiter-Rolle – alles ist möglich!' };
+      expect(container.querySelector('.manager__preview')!.textContent).toBe(`📢 ${texts[matchPreview(own, rp)]}`);
+    }
     // 🌦️ Wetter-Vorhersage fürs nächste Spiel
     {
       const { weatherFor } = await import('../src/lib/leagueTimeline');
