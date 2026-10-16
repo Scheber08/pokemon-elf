@@ -175,6 +175,7 @@ const online: Messages['online'] = {
   careerStart: 'Start season',
   careerSeason: (n, tier) => `Season ${n} · ${tier}`,
   careerHistory: 'So far:',
+  careerFirsts: (n) => `🏅 ${n}× first place`,
   careerPlace: (season, tier, place) => `S${season} tier ${tier}: place ${place}`,
   careerTier: { 1: 'Pokémon League 1', 2: 'Pokémon League 2', 3: 'Pokémon League 3' },
   careerNext: (tier) => `Next season: ${tier}`,

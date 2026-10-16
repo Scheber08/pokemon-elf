@@ -1560,6 +1560,11 @@ describe('ManagerSeason', () => {
     const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(st, 'h')), readOnly: false })));
     await settle();
     expect(container.querySelector('.manager__career')!.textContent).toBe('Bisher: S1 Liga 2: Platz 2 · S2 Liga 1: Platz 7');
+    // 🏅 Platz 1 in einer früheren Saison
+    const won = { ...s, career: { season: 3, tier: 1 as const, history: [{ season: 1, tier: 2 as const, places: { h: 1 } as Record<string, number> }, { season: 2, tier: 1 as const, places: { h: 7 } as Record<string, number> }] } };
+    const r2 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(won, 'h')), readOnly: false })));
+    await settle();
+    expect(r2.container.querySelector('.manager__career')!.textContent).toBe('Bisher: S1 Liga 2: Platz 1 · S2 Liga 1: Platz 7 · 🏅 1× Platz 1');
   });
 
   it('Transfermarkt: Hinweis, wenn der Kapitän abgegeben werden soll', async () => {

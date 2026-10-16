@@ -509,6 +509,11 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             <p className="muted small manager__career">
               {t.online.careerHistory}{' '}
               {mine.map((h) => t.online.careerPlace(h.season, h.tier, h.places[room.me!.id])).join(' · ')}
+              {(() => {
+                // 🏅 Wie oft Platz 1 (Meister der jeweiligen Liga)
+                const firsts = mine.filter((h) => h.places[room.me!.id] === 1).length;
+                return firsts > 0 && <strong className="manager__career-firsts"> · {t.online.careerFirsts(firsts)}</strong>;
+              })()}
             </p>
           );
         })()}

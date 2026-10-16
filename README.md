@@ -254,7 +254,7 @@ Nur in Saisons, die nach der Einführung starten. Nach jeder Runde zeigt die Pok
 ihrer Optik, kein Draft: Der Host startet die Saison direkt (jedes Team stellt seine beste Elf auf). Liga-Stufe 1–3
 (`DraftState.career`): Steht ein Mensch unter den ersten drei, steigt die Liga auf, stehen alle Menschen auf den
 letzten drei Plätzen, ab; die Auffüllteams sind je Stufe stärker bzw. schwächer (`CAREER_TIER_SHIFT`). In der
-Karriere-Lobby kann niemand neu beitreten, und nur Name, Sichtbarkeit und Takt lassen sich ändern.
+Karriere-Lobby kann niemand neu beitreten, und nur Name, Sichtbarkeit und Takt lassen sich ändern. Die Status-Karte listet die früheren Saisons des eigenen Teams („Bisher: S1 Liga 2: Platz 2 · …“) und zählt mit „🏅 n× Platz 1“ die gewonnenen Ligen.
 
 **Live-Spieltag** (`src/lib/liveMatchday.ts`): Der Server spielt jeden Manager-Spieltag zum Anpfiff aus; die Seite
 lässt ihn danach in Echtzeit ablaufen (bis 4 Minuten bzw. 40 % des Takts) – Minute aus der Serverzeit, also für
