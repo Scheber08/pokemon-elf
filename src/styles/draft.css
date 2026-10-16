@@ -2000,3 +2000,10 @@ button.draft-bench__slot {
   display: inline-flex;
   margin: 6px 0 0;
 }
+
+/* Lokales Ergebnis: Erwartung gegen Ergebnis unter dem Platz eines menschlichen Teams */
+.draft__expect {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-dim);
+}

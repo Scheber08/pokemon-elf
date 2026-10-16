@@ -740,6 +740,11 @@ describe('/draft an einem Gerät auf Englisch', () => {
       if (el) expect(el.textContent).toMatch(/^🃏 Joker of the draft: .+ \(only pick \d+\) scored \d+ for .+$/);
       if (joker) expect(el).not.toBeNull();
     }
+    // Expectation vs. result under the human team's place (English)
+    {
+      const line = r.container.querySelector('.draft__you .draft__expect')!.textContent!;
+      expect(line).toMatch(/^(📈 |📉 )Team score rank [\d–]+, finished in place \d+ – \d+ places? (better|worse)$|^🎯 As the team score suggested: place \d+/);
+    }
     // Top-scoring types below the scorers (English)
     expect(r.container.querySelector('.type-goals')!.textContent).toMatch(/^Top-scoring types:/);
     expect(r.container.querySelectorAll('.type-goals__item').length).toBeGreaterThan(0);
@@ -1356,7 +1361,8 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(all).toContain('Grade');
     // Platz des eigenen (menschlichen) Teams im Kopf
     const ownAt = container.querySelectorAll('.league-table tbody tr').findIndex((r) => r.textContent?.includes('My Team'));
-    expect(container.querySelector('.draft__you')!.textContent).toMatch(new RegExp(`^Your team: place ${ownAt + 1} · \\d+ pts$`));
+    expect(container.querySelector('.draft__you')!.textContent).toMatch(new RegExp(`^Your team: place ${ownAt + 1} · \\d+ pts`));
+    expect(container.querySelector('.draft__you .draft__expect')).not.toBeNull();
     // Saisonverlauf des eigenen Teams (Platzkurve)
     const chart = container.querySelectorAll('section').find((sec) => sec.querySelector('h2')?.textContent === 'Your season');
     expect(chart).toBeTruthy();

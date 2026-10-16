@@ -26,7 +26,7 @@ import { draftsSupported } from '../lib/api/draftClient';
 import { fitImpact, positionFit, roundBestPicks, soleTopIndex } from '../lib/fit';
 import { rankingNames } from '../lib/rankingNames';
 import { emptySlots } from '../lib/formation';
-import { biggestWin, comebackOf, missedChance, draftJoker, draftGrades, hatTricks, localShareText, mostCleanSheets, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
+import { biggestWin, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, hatTricks, localShareText, mostCleanSheets, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
 import { createRng, randomSeed, shuffle } from '../lib/rng';
 import { cpuLevelOf, cpuPickChoice } from '../lib/localCpu';
 import { buildTable, CLASSIC_MODEL, DRAFT_MODEL, formatRecord, sideTable, simulateLeague, type LeagueTeam } from '../lib/season';
@@ -926,6 +926,18 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               <p key={r.team} className="draft__you">
                 {/* Standardname „Mein Team“: ohne Namen, sonst hieße es „Dein Team Mein Team“ */}
                 {r.name === OWN_TEAM ? t.draft.manager.yourPlace(i + 1, r.pts) : t.draft.results.yourPlace(teamName(r.name), i + 1, r.pts)}
+                {(() => {
+                  // Erwartet (Rang nach Team-Score) gegen Ergebnis – wie online
+                  const gap = expectationGap(league.table, r.team);
+                  if (!gap) return null;
+                  const expected = gap.from === gap.to ? String(gap.from) : `${gap.from}–${gap.to}`;
+                  return (
+                    <small className="draft__expect">
+                      {gap.delta > 0 ? '📈 ' : gap.delta < 0 ? '📉 ' : '🎯 '}
+                      {t.draft.results.expectation(expected, gap.place, gap.delta)}
+                    </small>
+                  );
+                })()}
               </p>
             ) : null,
           )}
