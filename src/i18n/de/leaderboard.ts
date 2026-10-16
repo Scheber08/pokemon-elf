@@ -138,6 +138,8 @@ const leaderboard = {
     perfectTitle: (n: number) => (n === 1 ? 'Eine perfekte Saison (nur Siege)' : `${n} perfekte Saisons (nur Siege)`),
     best: 'Bester Run',
     showTeam: 'Team ansehen',
+    /** Letzte Runs: Saison ohne Niederlage */
+    unbeatenTitle: 'Ungeschlagen – keine Niederlage in der Saison',
     bestRunTitle: 'Bestwert dieser Wertung',
     recentFilter: 'Letzte Runs nach Wertung filtern',
     recentAll: 'Alle',

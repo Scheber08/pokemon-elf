@@ -27,7 +27,7 @@ const PROFILE: PlayerProfile = {
   recent: [
     { challenge: 'c151', day: '2026-10-02', teamName: 'Kanto', record: { w: 30, d: 2, l: 2 }, points: 92, score: 800, createdAt: '2026-10-02T10:00:00.000Z' },
     { challenge: 'c151', day: '2026-10-01', teamName: 'Kanto', record: { w: 20, d: 2, l: 12 }, points: 62, score: 780, createdAt: '2026-10-01T10:00:00.000Z' },
-    { challenge: 'c340', day: '2026-09-30', teamName: 'Johto', record: { w: 18, d: 4, l: 12 }, points: 58, score: 700, createdAt: '2026-09-30T10:00:00.000Z' },
+    { challenge: 'c340', day: '2026-09-30', teamName: 'Johto', record: { w: 18, d: 16, l: 0 }, points: 58, score: 700, createdAt: '2026-09-30T10:00:00.000Z' },
   ],
 };
 
@@ -70,6 +70,10 @@ describe('Spielerprofil', () => {
     expect(container.querySelector('.profile__fav')!.textContent).toBe('⭐ Lieblings-Challenge: 34–0 Challenge (3 Runs)');
     // 🏅 nur am Run, der der Bestwert seiner Wertung ist
     expect(container.querySelectorAll('.profile__best').length).toBe(1);
+    // 🛡️ an Runs ohne Niederlage
+    const unbeaten = container.querySelectorAll('.profile__unbeaten');
+    expect(unbeaten.length).toBe(1);
+    expect(unbeaten[0].getAttribute('aria-label')).toBe('Ungeschlagen – keine Niederlage in der Saison');
     // Filter „Letzte Runs“ nach Wertung (Runs aus zwei Wertungen)
     const chips = container.querySelectorAll('.profile__filter button');
     expect(chips.map((b) => b.textContent)).toEqual(['Alle', '151 Challenge', '34–0 Challenge']);

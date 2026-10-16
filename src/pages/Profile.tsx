@@ -239,6 +239,13 @@ export function Profile() {
                   </td>
                   <td>
                     <strong>{formatRecord(r.record)}</strong>
+                    {/* 🛡️ Ungeschlagene Saison (keine Niederlage) */}
+                    {r.record.l === 0 && (
+                      <span className="profile__unbeaten" role="img" title={tp.unbeatenTitle} aria-label={tp.unbeatenTitle}>
+                        {' '}
+                        🛡️
+                      </span>
+                    )}
                   </td>
                   <td>{tp.pts(r.points)}</td>
                   <td>{tp.score(r.score)}</td>
