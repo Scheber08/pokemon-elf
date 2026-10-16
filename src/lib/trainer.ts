@@ -81,6 +81,8 @@ const BEES = ['05-17', '05-23', '🐝'] as const;
 const TREES = ['04-25', '04-30', '🌳'] as const;
 /** Weltlachtag (erster Sonntag im Mai liegt jedes Jahr darin) */
 const LAUGHTER = ['05-01', '05-07', '😂'] as const;
+/** Weltkatzentag (8. August) */
+const CATS = ['08-05', '08-11', '🐱'] as const;
 /** Valentinstag */
 const VALENTINE = ['02-07', '02-14', '💘'] as const;
 
@@ -188,6 +190,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('hat', 'pikaears', 300), ...POKEDAY),
   seasonal(item('hat', 'antennae', 200), ...BEES),
   seasonal(item('hat', 'birdnest', 250), ...TREES),
+  seasonal(item('hat', 'catears', 200), ...CATS),
   // Accessoire
   item('accessory', 'none', 0),
   item('accessory', 'freckles', 0),
@@ -274,6 +277,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('companion', '415', 300), ...BEES),
   seasonal(item('companion', '185', 400), ...TREES),
   seasonal(item('companion', '272', 400), ...LAUGHTER),
+  seasonal(item('companion', '677', 350), ...CATS),
   item('companion', '6', 600),
   item('companion', '149', 600),
   item('companion', '448', 600),

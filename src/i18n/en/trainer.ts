@@ -124,6 +124,7 @@ const trainer: Messages['trainer'] = {
       propeller: 'Propeller cap',
       pikaears: 'Pikachu ears',
       birdnest: "Bird's nest",
+      catears: 'Cat ears',
       antennae: 'Bee antennae',
       jester: 'Jester cap',
       tyrolean: 'Tyrolean hat',

@@ -123,6 +123,7 @@ const trainer = {
       propeller: 'Propellermütze',
       pikaears: 'Pikachu-Ohren',
       birdnest: 'Vogelnest',
+      catears: 'Katzenohren',
       antennae: 'Bienen-Fühler',
       jester: 'Narrenkappe',
       tyrolean: 'Tirolerhut',

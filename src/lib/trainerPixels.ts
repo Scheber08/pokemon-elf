@@ -473,6 +473,15 @@ function hat(c: Canvas, id: string, cloth: string) {
         c.fill((x, y) => ellipse(cx, 4, 2.4, 2.1)(x, y) && y === 5, '#26282e', null);
       }
       break;
+    case 'catears':
+      // Katzenohren (Weltkatzentag): schwarzer Haarreif mit zwei spitzen Ohren, innen rosa
+      c.fill((x, y) => y === 9 && head(x, y), '#26282e', null);
+      for (const cx of [10.5, 20.5]) {
+        const ear: Mask = (x, y) => y >= 2 && y <= 8 && Math.abs(x - cx) <= (y - 2) * 0.55;
+        c.fill(ear, '#26282e', '#0d0e11');
+        c.fill((x, y) => y >= 5 && y <= 7 && Math.abs(x - cx) <= (y - 4.5) * 0.5, '#f29ab8', null);
+      }
+      break;
     case 'birdnest':
       // Vogelnest (Tag des Baumes): geflochtenes Nest mit abstehenden Zweigen und drei hellblauen Eiern
       for (const [cx, cy] of [[12.5, 5], [15.5, 4.2], [18.5, 5]] as const) c.fill(ellipse(cx, cy, 1.8, 2.3), '#a8e4f2', '#3f7f94');
