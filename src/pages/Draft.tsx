@@ -9,7 +9,7 @@ import { DraftPickFeed, DraftTypeChip, KindMarks, RoundBest } from '../component
 import type { FeedItem } from '../state/useDraftRoom';
 import { PoolStars, poolStars, scarceFor, StarsLanded } from '../components/PoolStars';
 import { LeagueNumbers } from '../components/LeagueNumbers';
-import { formatDuration } from '../lib/leagueTimeline';
+import { dreamDuo, formatDuration } from '../lib/leagueTimeline';
 import { TypeGoals } from '../components/TypeGoals';
 import { DraftProgress } from '../components/DraftProgress';
 import { Confetti } from '../components/Confetti';
@@ -1230,6 +1230,19 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               })()}
               <LeagueNumbers matches={league.matches} />
               <dl className="draft-records">
+                {(() => {
+                  // 🤝 Traumduo (wie online)
+                  const duo = dreamDuo(league.matches);
+                  const am = duo ? byId.get(duo.assist) : undefined;
+                  const gm = duo ? byId.get(duo.scorer) : undefined;
+                  if (!duo || !am || !gm) return null;
+                  return (
+                    <div className="draft-records__duo">
+                      <dt>{r.recordDuo}</dt>
+                      <dd>{r.recordDuoLine(t.game.pokemon(am), t.game.pokemon(gm), nameOf(duo.team), duo.goals)}</dd>
+                    </div>
+                  );
+                })()}
                 <div>
                   <dt>{r.recordAttack}</dt>
                   <dd>{r.recordGoals(nameOf(attack.team), attack.gf)}</dd>

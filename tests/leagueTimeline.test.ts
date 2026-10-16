@@ -571,6 +571,23 @@ describe('Stärkste Torphase', () => {
   });
 });
 
+describe('Traumduo', () => {
+  it('häufigstes Vorlage → Tor-Paar eines Teams, ab 2, bei Gleichstand das zuerst erfolgreiche', async () => {
+    const { dreamDuo } = await import('../src/lib/leagueTimeline');
+    const g = (pokemonId: number, assist?: number) => ({ pokemonId, pos: 'ST' as const, assist });
+    const matches = [
+      { home: 0, away: 1, homeScorers: [g(7, 4), g(7, 4), g(9, 7)], awayScorers: [g(5, 6)] },
+      { home: 1, away: 0, homeScorers: [g(5, 6), g(5, 6)], awayScorers: [g(7, 4), g(8)] },
+    ];
+    // 7←4 (Team 0) und 5←6 (Team 1) je 3 → Gleichstand: 7←4 traf zuerst
+    expect(dreamDuo(matches)).toEqual({ team: 0, assist: 4, scorer: 7, goals: 3 });
+    expect(dreamDuo(matches.slice(0, 1).map((m) => ({ ...m, homeScorers: [g(7, 4)] })))).toBeNull();
+    const more = [...matches, { home: 0, away: 1, homeScorers: [g(7, 4)], awayScorers: [] }];
+    expect(dreamDuo(more)).toEqual({ team: 0, assist: 4, scorer: 7, goals: 4 });
+    expect(dreamDuo(more, 5)).toBeNull();
+  });
+});
+
 describe('Liga in Zahlen', () => {
   it('zählt Spiele, Tore, Remis und Zu-null-Spiele', async () => {
     const { leagueNumbers } = await import('../src/lib/leagueTimeline');

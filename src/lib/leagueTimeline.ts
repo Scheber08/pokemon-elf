@@ -987,6 +987,26 @@ export function headToHead(league: Pick<LeagueResult, 'matches' | 'table'>, team
   return league.table.flatMap((r) => byOpp.get(r.team) ?? []);
 }
 
+/** Traumduo: Vorlage → Tor-Paar eines Teams mit den meisten gemeinsamen Toren (ab `min`; bei Gleichstand das Paar, das zuerst zusammen traf) */
+export function dreamDuo(
+  matches: readonly Pick<Match, 'home' | 'away' | 'homeScorers' | 'awayScorers'>[],
+  min = 2,
+): { team: number; assist: number; scorer: number; goals: number } | null {
+  const count = new Map<string, { team: number; assist: number; scorer: number; goals: number }>();
+  for (const m of matches)
+    for (const [team, list] of [[m.home, m.homeScorers], [m.away, m.awayScorers]] as const)
+      for (const g of list) {
+        if (g.assist == null || g.assist === g.pokemonId) continue;
+        const key = `${team}:${g.assist}:${g.pokemonId}`;
+        const cur = count.get(key) ?? { team, assist: g.assist, scorer: g.pokemonId, goals: 0 };
+        cur.goals++;
+        count.set(key, cur);
+      }
+  // Stabile Sortierung: bei Gleichstand bleibt die Reihenfolge des ersten gemeinsamen Tors
+  const ranked = [...count.values()].sort((a, b) => b.goals - a.goals);
+  return ranked.length && ranked[0].goals >= min ? ranked[0] : null;
+}
+
 /** Liga in Zahlen: Spiele, Tore, Remis und Zu-null-Spiele (je Team, das nichts kassiert) */
 export function leagueNumbers(matches: readonly Pick<Match, 'hg' | 'ag'>[]): { games: number; goals: number; draws: number; cleanSheets: number } {
   let goals = 0;

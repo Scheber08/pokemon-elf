@@ -374,6 +374,8 @@ const draft: Messages['draft'] = {
     recordFastest: 'Fastest picker',
     recordFastestLine: (team, sec) => `${team} – avg ${sec} s per pick`,
     recordDuration: 'Draft time',
+    recordDuo: 'Dream duo',
+    recordDuoLine: (assist, scorer, team, goals) => `🤝 ${assist} → ${scorer} (${team}) – ${goals} goals together`,
     recordDurationLine: (time, picks) => `${time} min for ${picks} picks`,
     recordGoals: (team, n) => `${team} – ${n} goals`,
     recordConceded: (team, n) => `${team} – ${n === 1 ? '1 goal conceded' : `${n} goals conceded`}`,

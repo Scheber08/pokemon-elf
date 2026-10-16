@@ -7,7 +7,7 @@ import { poolStars, StarsLanded } from './PoolStars';
 import { LeagueNumbers } from './LeagueNumbers';
 import { TypeGoals } from './TypeGoals';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { bestTransfer, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, formatDuration, goalFest, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { bestTransfer, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, formatDuration, goalFest, dreamDuo, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { buildTable, formatRecord, sideTable, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -787,6 +787,19 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                   <dd>{tx.recordFastestLine(nameOf(fastestTeam), Math.max(1, Math.round(fastest.avgMs / 1000)))}</dd>
                 </div>
               )}
+              {(() => {
+                // 🤝 Traumduo: Vorlage → Tor-Paar mit den meisten gemeinsamen Toren
+                const duo = dreamDuo(league.matches);
+                const a = duo ? byId.get(duo.assist) : undefined;
+                const g = duo ? byId.get(duo.scorer) : undefined;
+                if (!duo || !a || !g) return null;
+                return (
+                  <div className="draft-records__duo">
+                    <dt>{tx.recordDuo}</dt>
+                    <dd>{tx.recordDuoLine(t.game.pokemon(a), t.game.pokemon(g), nameOf(duo.team), duo.goals)}</dd>
+                  </div>
+                );
+              })()}
               {picks.length >= 2 && (() => {
                 // ⏱️ Draft-Dauer: vom ersten bis zum letzten Pick (wie im lokalen Ergebnis)
                 const at = picks.map((pk) => pk.at);
