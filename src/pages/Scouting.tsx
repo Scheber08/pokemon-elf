@@ -1,3 +1,4 @@
+import { scrollBehavior } from '../lib/motion';
 import { useMemo, useRef, useState } from 'react';
 import { TypeBadge } from '../components/Badges';
 import { LevelIcon } from '../components/LevelIcon';
@@ -222,7 +223,7 @@ export function Scouting() {
         onPick={(name) => {
           setWhere(name);
           // Zur Suche springen, damit man das Ergebnis sieht
-          document.getElementById('scouting-where-input')?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+          document.getElementById('scouting-where-input')?.scrollIntoView?.({ behavior: scrollBehavior(), block: 'center' });
         }}
       />
       <WherePlays query={where} setQuery={setWhere} />

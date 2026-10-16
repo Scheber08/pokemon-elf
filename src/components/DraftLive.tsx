@@ -1,3 +1,4 @@
+import { scrollBehavior } from '../lib/motion';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { FORMATIONS } from '../config/formations';
 import { POSITIONS } from '../config/positions';
@@ -527,7 +528,7 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     setSelected(deselect ? null : p.id);
     setSuggestSlot(null);
     if (!deselect && me && window.matchMedia('(max-width: 899px)').matches) {
-      window.setTimeout(() => pitchRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+      window.setTimeout(() => pitchRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' }), 60);
     }
   };
 

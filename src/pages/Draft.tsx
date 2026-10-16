@@ -1,3 +1,4 @@
+import { scrollBehavior } from '../lib/motion';
 import { titleClinched } from '../lib/foes';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { isMega } from '../config/categories';
@@ -229,7 +230,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     const board = boardRef.current;
     const col = board?.querySelector<HTMLElement>('.draft__col.is-current');
     if (!board || !col || board.scrollWidth <= board.clientWidth) return;
-    board.scrollTo?.({ left: Math.max(0, col.offsetLeft - (board.clientWidth - col.offsetWidth) / 2), behavior: 'smooth' });
+    board.scrollTo?.({ left: Math.max(0, col.offsetLeft - (board.clientWidth - col.offsetWidth) / 2), behavior: scrollBehavior() });
   }, [currentTeam]);
   // Ø Positions-Fit der gesetzten Elf je Team – grobe Live-Stärke wie im Online-Draft, 👑 am alleinigen Bestwert
   const boardFits =
@@ -2213,7 +2214,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 onPick={(p: Pokemon) => {
                   setState((s) => ({ ...s, selected: s.selected === p.id ? null : p.id }));
                   if (window.matchMedia('(max-width: 899px)').matches) {
-                    setTimeout(() => pitchRef.current?.scrollIntoView({ behavior: 'smooth' }), 60);
+                    setTimeout(() => pitchRef.current?.scrollIntoView({ behavior: scrollBehavior() }), 60);
                   }
                 }}
                 note={(p) => {

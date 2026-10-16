@@ -1,3 +1,4 @@
+import { scrollBehavior } from '../lib/motion';
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { HowItWorks, RunNamesPrompt, RunSetup, StatCards } from '../components/ChallengeParts';
@@ -297,7 +298,7 @@ export function Daily() {
   const entry = useTodayEntry(today, run.apiOnline === true && phase === 'setup', run.error);
 
   const onFinish = async () => {
-    if (await run.finish()) window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (await run.finish()) window.scrollTo({ top: 0, behavior: scrollBehavior() });
   };
 
   if (phase === 'result' && result) {

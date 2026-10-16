@@ -1,3 +1,4 @@
+import { scrollBehavior } from '../lib/motion';
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { FORMATIONS } from '../config/formations';
 import { TYPE_KEYS, TYPES } from '../config/pokemonTypes';
@@ -152,7 +153,7 @@ export function RunBoard({
     const deselect = selectedId === p.id;
     setPick(deselect ? null : { key: rollKey, id: p.id });
     if (!deselect && window.matchMedia('(max-width: 899px)').matches) {
-      window.setTimeout(() => pitchRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+      window.setTimeout(() => pitchRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' }), 60);
     }
   };
 

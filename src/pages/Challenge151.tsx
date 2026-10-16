@@ -1,3 +1,4 @@
+import { scrollBehavior } from '../lib/motion';
 import { useEffect } from 'react';
 import { HowItWorks, RunNamesPrompt, RunSetup, StatCards } from '../components/ChallengeParts';
 import { OnlineNote, RunBoard, RunModeBadge, RunNotice } from '../components/RunBoard';
@@ -27,7 +28,7 @@ export function Challenge151() {
   }, [phase, result?.reveal, markRevealed]);
 
   const onFinish = async () => {
-    if (await run.finish()) window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (await run.finish()) window.scrollTo({ top: 0, behavior: scrollBehavior() });
   };
 
   if (phase === 'result' && result) {

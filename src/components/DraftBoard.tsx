@@ -1,3 +1,4 @@
+import { scrollBehavior } from '../lib/motion';
 import { useEffect, useRef } from 'react';
 import { FORMATIONS } from '../config/formations';
 import { RAINBOW_TYPES, TYPES, dominantType, typeVariety } from '../config/pokemonTypes';
@@ -85,7 +86,7 @@ export function DraftBoard({ state, byId, currentId, nextId }: Props) {
     if (!board || !col || board.scrollWidth <= board.clientWidth) return;
     // Die Tafel ist position: relative – offsetLeft der Spalte zählt also ab ihrem Rand
     const left = col.offsetLeft - (board.clientWidth - col.offsetWidth) / 2;
-    board.scrollTo?.({ left: Math.max(0, left), behavior: 'smooth' });
+    board.scrollTo?.({ left: Math.max(0, left), behavior: scrollBehavior() });
   }, [currentId]);
   const last = state.picks.length ? state.picks[state.picks.length - 1] : null;
   const maxLegends = state.settings.maxLegends;
