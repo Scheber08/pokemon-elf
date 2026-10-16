@@ -1,3 +1,4 @@
+import { useFocusRescue } from '../lib/focusRescue';
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { FORMATION_IDS } from '../config/formations';
 import { useT } from '../i18n';
@@ -187,8 +188,11 @@ export function RunSetup({
   note,
 }: SetupProps) {
   const t = useT();
+  // „Neuer Run“: Der Knopf im Ergebnis ist weg – Fokus ins Setup statt an den Seitenanfang
+  const setupRef = useRef<HTMLElement>(null);
+  useFocusRescue(setupRef);
   return (
-    <section className="card setup" aria-label={t.challenge.setupAria}>
+    <section ref={setupRef} tabIndex={-1} className="card setup" aria-label={t.challenge.setupAria}>
       {extra}
       <Segmented
         label={t.challenge.formation}

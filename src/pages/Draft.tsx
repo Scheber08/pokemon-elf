@@ -1,3 +1,4 @@
+import { rescueFocus } from '../lib/focusRescue';
 import { scrollBehavior } from '../lib/motion';
 import { titleClinched } from '../lib/foes';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
@@ -701,9 +702,15 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     (i) => (state.teams[i] ? { formation: state.teams[i].formation, ids: state.teams[i].slots, jerseys: cleanJerseys(state.teams[i].jerseys), captain: captainOf(state.teams[i]), kit: cleanKit(state.teams[i].kit), cheer: cleanCheer(state.teams[i].cheer), crest: cleanCrest(state.teams[i].crest), shinies: state.shinies } : null),
   );
 
+  // Ansicht gewechselt (Draft starten, Kapitäne, Liga) und der bediente Knopf ist weg: Fokus in die neue Ansicht
+  const viewRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    rescueFocus(viewRef.current);
+  }, [state.phase]);
+
   if (state.phase === 'setup') {
     return (
-      <div className="page draft">
+      <div className="page draft" ref={viewRef} tabIndex={-1}>
         {modeSwitch}
         <header className="page-head">
           <h1 className="page-title">{tx.title}</h1>
@@ -948,7 +955,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
 
   if (state.phase === 'captains') {
     return (
-      <div className="page draft">
+      <div className="page draft" ref={viewRef} tabIndex={-1}>
         {modeSwitch}
         <section className="card" aria-labelledby="draft-captains-title">
           <h1 id="draft-captains-title" className="section-title">
@@ -1027,7 +1034,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     const grades = draftGrades(league.teams.map((tm) => tm.rating));
     const champion = league.table[0];
     return (
-      <div className="page draft">
+      <div className="page draft" ref={viewRef} tabIndex={-1}>
         {modeSwitch}
         <header className="page-head">
           <h1 className="page-title">{tx.leagueTitle}</h1>
@@ -1966,7 +1973,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     ) : null;
 
   return (
-    <div className="page draft">
+    <div className="page draft" ref={viewRef} tabIndex={-1}>
         {modeSwitch}
       <header className="page-head">
         <h1 className="page-title">{tx.title}</h1>

@@ -1,3 +1,4 @@
+import { useFocusRescue } from '../lib/focusRescue';
 import { scrollBehavior } from '../lib/motion';
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { FORMATIONS } from '../config/formations';
@@ -221,11 +222,7 @@ export function RunBoard({
 
   // Run per Tastatur gestartet: Der Start-Knopf verschwindet – Fokus nicht auf der Seite verlieren, sondern ins Spiel
   const playRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const active = document.activeElement;
-    // Fokus verloren: auf der Seite selbst, nirgends oder auf einem entfernten Element (dem Start-Knopf)
-    if (active == null || active === document.body || !document.body.contains(active)) playRef.current?.focus({ preventScroll: true });
-  }, []);
+  useFocusRescue(playRef);
 
   return (
     <div ref={playRef} tabIndex={-1} aria-label={tc.playAria} className={`challenge__play ${challenge === 'retro340' ? 'challenge--retro' : ''}`}>

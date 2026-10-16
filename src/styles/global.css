@@ -2985,6 +2985,8 @@ button.sheet__row:hover {
 
 /* Hauptbereich bekommt nach Seitenwechseln den Fokus (Tastatur/Screenreader) – ohne sichtbaren Rahmen */
 .main:focus,
-.challenge__play:focus {
+.challenge__play:focus,
+.setup:focus,
+.page.draft:focus {
   outline: none;
 }

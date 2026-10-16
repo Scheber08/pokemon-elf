@@ -412,6 +412,8 @@ describe('34–0 Challenge auf Deutsch (unverändert)', () => {
     ]) {
       expect(text).toContain(s);
     }
+    // Per Tastatur bedient (Enter) – nur dann holt der Run den verlorenen Fokus zu sich
+    window.dispatchEvent(Object.assign(new MiniEvent('keydown', { bubbles: true }), { key: 'Enter' }) as unknown as Event);
     await click(button(el, 'Run starten'));
     await settle();
     // Der Start-Knopf ist weg – der Fokus landet im Run statt auf der Seite
