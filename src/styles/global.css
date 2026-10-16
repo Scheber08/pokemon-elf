@@ -2228,6 +2228,8 @@ button.sheet__row:hover {
    ============================================================ */
 .leaderboard {
   display: grid;
+  /* Spalte nie breiter als die Seite (sonst wächst sie auf 320 px auf die Mindestbreite der Kinder) */
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
 }
 .leaderboard .page-head {
