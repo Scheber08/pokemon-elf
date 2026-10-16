@@ -9,6 +9,7 @@ import { qrPath, type QrPath } from '../lib/qr';
 import { usePokemonData } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
 import { useSettings } from '../state/Settings';
+import { localeOf } from '../i18n/lang';
 import { showNotify } from '../lib/notify';
 import {
   cleanTeamName,
@@ -587,6 +588,20 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
                 {list.length > 0 && ` ${t.online.poolLine(poolOf(s.settings, list).length, draftRounds(s.settings) * s.teams.length)}`}
               </p>
             )}
+            {!blocker && s.settings.format !== 'manager' && (() => {
+              // 🕒 Uhrzeit bei sofortigem Start (Draft-Ende spätestens, Saisonende) – nicht in der Manager-Saison (läuft über Tage)
+              const rounds = draftRounds(s.settings);
+              const humans = s.teams.filter((tm) => !tm.cpu).length;
+              const draftMs = rounds * (humans * s.settings.pickSeconds * 1000 + (s.teams.length - humans) * DRAFT_LIMITS.cpuPickMs);
+              const days = s.settings.format === 'cup' ? (s.settings.cupGroups ? 9 : 4) : 2 * (DRAFT_LIMITS.leagueSize - 1);
+              const seasonMs = DRAFT_LIMITS.seasonLeadMs + days * DRAFT_LIMITS.seasonStepMs;
+              const clock = (ms: number) => new Date(Date.now() + ms).toLocaleTimeString(localeOf(), { hour: '2-digit', minute: '2-digit' });
+              return (
+                <p className="hint draft-lobby__endsat">
+                  🕒 {s.settings.pickSeconds ? t.online.endsAt(clock(draftMs), clock(draftMs + seasonMs)) : t.online.endsAtNoTimer(clock(seasonMs))}
+                </p>
+              );
+            })()}
           </section>
         )}
         {!!s.history?.length && <EternalTable entries={s.history} youTeamId={me?.id ?? null} title={t.draft.eternal.soFar} />}

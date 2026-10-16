@@ -109,6 +109,8 @@ const online: Messages['online'] = {
   invitePick: (sec) => `${sec} s per pick`,
   inviteNoTimer: 'no pick timer',
   inviteText: (name, code, rules, link) => `⚽ Join my Pokémon Elf draft league${name ? ` “${name}”` : ''}!\n${rules}\nCode: ${code}\n${link}`,
+  endsAt: (draft, season) => `If started now: draft done by ~${draft} at the latest, season over ~${season}.`,
+  endsAtNoTimer: (season) => `If started now: season over ~${season} at the earliest (depending on draft pace).`,
   linkCopied: 'Link copied',
   copyFailed: 'Couldn’t copy',
   copyLink: 'Copy link',

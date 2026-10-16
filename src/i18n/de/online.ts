@@ -116,6 +116,8 @@ const online = {
   inviteNoTimer: 'ohne Pick-Uhr',
   inviteText: (name: string, code: string, rules: string, link: string) =>
     `⚽ Komm in meine Pokémon-Elf-Draft-Liga${name ? ` „${name}“` : ''}!\n${rules}\nCode: ${code}\n${link}`,
+  endsAt: (draft: string, season: string) => `Bei Start jetzt: Draft-Ende spätestens ~${draft} Uhr, Saisonende ~${season} Uhr.`,
+  endsAtNoTimer: (season: string) => `Bei Start jetzt: Saisonende frühestens ~${season} Uhr (je nach Draft-Tempo).`,
   linkCopied: 'Link kopiert',
   copyFailed: 'Kopieren hat nicht geklappt',
   copyLink: 'Link kopieren',

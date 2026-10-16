@@ -1015,6 +1015,24 @@ describe('DraftLobby', () => {
     stubFetch();
   });
 
+  it('🕒 Lobby (Host): Uhrzeit für Draft- und Saisonende bei Start jetzt (nicht in der Manager-Saison)', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 9, 15, 20, 0, 0));
+    try {
+      const st = lobby(2, { region: 1, maxTeams: 4, pickSeconds: 60 });
+      const { container } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) })));
+      await act(async () => void (await vi.advanceTimersByTimeAsync(50)));
+      const line = container.querySelector('.draft-lobby__endsat')!.textContent!;
+      expect(line).toMatch(/^🕒 Bei Start jetzt: Draft-Ende spätestens ~2\d:\d\d Uhr, Saisonende ~\d\d:\d\d Uhr\.$/);
+      const mgr = lobby(2, { region: 1, maxTeams: 4, pickSeconds: 60, format: 'manager' });
+      const r2 = await render(app(h(DraftLobby, { room: fakeRoom(snap(mgr, 'h')) })));
+      await act(async () => void (await vi.advanceTimersByTimeAsync(50)));
+      expect(r2.container.querySelector('.draft-lobby__endsat')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('📋 Einladung kopieren: Liganame, Regeln, Code und Link', async () => {
     const st = lobby(2, { region: 1, maxTeams: 6, pickSeconds: 60, name: 'Montagsliga' });
     const writes: string[] = [];
