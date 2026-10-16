@@ -629,6 +629,7 @@ const draft = {
     assist: (name: string) => `Vorlage ${name}`,
     setPiece: 'Standard',
     stats: 'Statistik',
+    halfTime: (home: number, away: number) => `Halbzeit ${home}:${away}`,
     possession: 'Ballbesitz',
     shots: 'Schüsse',
     onTarget: 'Aufs Tor',

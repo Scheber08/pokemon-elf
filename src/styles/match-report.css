@@ -27,6 +27,7 @@
   font-size: 30px;
   font-variant-numeric: tabular-nums;
 }
+.match-report__half,
 .match-report__pens {
   margin: 4px 0 0;
   text-align: center;

@@ -10,6 +10,18 @@ import { useSettings, type ReplayMode } from '../state/Settings';
 import '../styles/match-report.css';
 import { Crest } from './Crest';
 
+/**
+ * Halbzeitstand aus den Torminuten (bis einschließlich 45.). null, wenn nicht jedes Tor eine Minute hat
+ * (Vereinstore ohne Kader, ältere Spiele) oder gar keine Tore fielen.
+ */
+export function halfTimeScore(match: Pick<Match, 'hg' | 'ag' | 'homeScorers' | 'awayScorers'>): [number, number] | null {
+  if (match.hg + match.ag === 0) return null;
+  const timed = (goals: Goal[], n: number) => goals.length === n && goals.every((g) => g.minute != null);
+  if (!timed(match.homeScorers, match.hg) || !timed(match.awayScorers, match.ag)) return null;
+  const first = (goals: Goal[]) => goals.filter((g) => g.minute! <= 45).length;
+  return [first(match.homeScorers), first(match.awayScorers)];
+}
+
 interface Props {
   match: Match;
   nameOf: (team: number) => string;
@@ -87,6 +99,10 @@ export function MatchReport({ match, nameOf, pokemonName, label, pens, lineupOf,
           </span>
         </div>
         {pens && <p className="match-report__pens">{t.draft.cup.pens(pens.home, pens.away)}</p>}
+        {(() => {
+          const ht = halfTimeScore(match);
+          return ht && <p className="match-report__half">{tx.halfTime(ht[0], ht[1])}</p>;
+        })()}
         {view === 'report' && <ReportBody match={match} nameOf={nameOf} pokemonName={pokemonName} lineups={lineups} />}
       </div>
       {view === 'pitch' ? (

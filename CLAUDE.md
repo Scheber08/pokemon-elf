@@ -54,7 +54,7 @@ Saison auf 18 Teams mit Ranglisten-Teams aufgefüllt, KO-Turnier mit optionaler 
 (Tagesform, Torminuten), Formkurve, Saisonrekorde, Saisonverlauf, „Meine Teams" (mit Speicherdatum und „✓ aktuell“) im Builder, Manager-Saison
 (Bank, Spieltage im Takt, Aufstellung, Tagesform je Pokémon), Erfolge mit Münzen (Filter „Nur offene“), eigener Trainer mit
 Cosmetics-Shop (auch in Rangliste, Profil und Draft), Transfermarkt (mit Sprites, Positionsfilter und 📥 eigenen Neuzugängen samt Toren) und Erinnerung vor dem Anpfiff in der
-Manager-Saison, eigener Menüpunkt „Manager", Spielbericht + 2D-Wiedergabe in allen Modi (einstellbar),
+Manager-Saison, eigener Menüpunkt „Manager", Spielbericht (mit Halbzeitstand) + 2D-Wiedergabe in allen Modi (einstellbar),
 Erfolge für die Manager-Saison, Hinweis „Erfolg freigeschaltet" nach Runs und Ligen, Saisonartikel im Shop
 (Halloween, Weihnachten, Frühling/Ostern, Sommer, Neujahr, Valentinstag, Herbst, Fußball-Sommer, Oktoberfest, Karneval, Muttertag, Schulanfang, Sankt Martin, Nikolaus, Erntedank, Winterzauber, Advent, Weltkindertag, Tag der Erde, Pokémon Day, Tag der Ozeane, Weltbienentag, Tag des Baumes, Weltlachtag, Weltkatzentag, Tag der Freundschaft, Welthundetag), Spieler des Spieltags, Tausch-Angebote zwischen Teams in der Manager-Saison,
 Trikotnummern in allen Modi,
