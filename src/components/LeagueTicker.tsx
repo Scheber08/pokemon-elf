@@ -401,7 +401,22 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
             <section key={day.round} className="league-board" aria-label={dayLabel(day.round)}>
               <div className="league-board__bar">
                 <span>{dayLabel(day.round)}</span>
-                <span>{finale ? tx.finalScores : tx.results}</span>
+                <span>
+                  {finale ? tx.finalScores : tx.results}
+                  {/* ⚽ Tore des Spieltags (ab einem) */}
+                  {(() => {
+                    const goals = day.matches.reduce((n, m) => n + m.hg + m.ag, 0);
+                    // Kurz „⚽ 27“ (passt auch am Handy in eine Zeile), voll als Tooltip und für Screenreader
+                    return (
+                      goals > 0 && (
+                        <span className="league-board__goals" title={tx.dayGoals(goals)}>
+                          <span aria-hidden="true"> · ⚽ {goals}</span>
+                          <span className="sr-only"> – {tx.dayGoals(goals)}</span>
+                        </span>
+                      )
+                    );
+                  })()}
+                </span>
               </div>
               {/* Hinweise des Spieltags in einem gemeinsamen Kasten (leer = ausgeblendet) */}
               <div className="league-board__notes">

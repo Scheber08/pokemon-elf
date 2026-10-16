@@ -513,6 +513,8 @@ const draft = {
     /** Hattrick auf der Ergebnistafel des Spieltags */
     hatTrick: (pokemon: string, team: string, goals: number) => `Hattrick: ${pokemon} (${team}) trifft ${goals}-mal`,
     /** Eigene Spiele ohne Gegentor bisher (🧤 n bei den Toren) */
+    /** Kopfleiste der Ergebnistafel: Tore des Spieltags */
+    dayGoals: (n: number) => `${n} ${n === 1 ? 'Tor' : 'Tore'} an diesem Spieltag`,
     cleanSheets: (n: number) => (n === 1 ? 'ein Spiel ohne Gegentor' : `${n} Spiele ohne Gegentor`),
     startsSoon: 'Die gemeinsame Saison beginnt gleich.',
     fullTime: 'Abpfiff!',

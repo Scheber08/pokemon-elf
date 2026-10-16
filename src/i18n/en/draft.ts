@@ -456,6 +456,7 @@ const draft: Messages['draft'] = {
 
   ticker: {
     hatTrick: (pokemon, team, goals) => `Hat-trick: ${pokemon} (${team}) scores ${goals}`,
+    dayGoals: (n) => `${plural(n, 'goal', 'goals')} on this matchday`,
     cleanSheets: (n) => (n === 1 ? 'one clean sheet' : `${n} clean sheets`),
     startsSoon: 'The shared season is about to start.',
     fullTime: 'Full time!',

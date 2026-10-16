@@ -1947,6 +1947,13 @@ describe('Online-Draft-Bausteine auf Englisch', () => {
         const tdays = timeline.leagueTimeline(league);
         const pl = tdays[0].places;
         const top = [...tdays[1].matches].sort((a, b) => pl[a.home] + pl[a.away] - (pl[b.home] + pl[b.away]))[0];
+        // ⚽ Tore des Spieltags in der Kopfleiste
+        const dayGoals = league.matches.filter((m) => m.round === 2).reduce((n, m) => n + m.hg + m.ag, 0);
+        if (dayGoals > 0) {
+          const g = container.querySelector('.league-board__goals')!;
+          expect(g.textContent).toBe(` · ⚽ ${dayGoals} – ${dayGoals} ${dayGoals === 1 ? 'goal' : 'goals'} on this matchday`);
+          expect(g.getAttribute('title')).toBe(`${dayGoals} ${dayGoals === 1 ? 'goal' : 'goals'} on this matchday`);
+        }
         expect(container.querySelector('.league-board__top')!.textContent).toContain(`Top game: ${pl[top.home]}. `);
         expect(container.querySelector('.league-board__top')!.textContent).toContain(` ${top.hg}:${top.ag} ${pl[top.away]}. `);
         const late = timeline.lateWinner(league.matches.filter((m) => m.round === 2));

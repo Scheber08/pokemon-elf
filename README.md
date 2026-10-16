@@ -180,7 +180,7 @@ leicht/normal/stark = Zufall ±12/±4/±1 Fit-Punkte beim CPU-Pick, aus dem Liga
 nicht auf den letzten 3) – das Ergebnis zeigt, ob es erreicht wurde; die Manager-Saison zeigt es mit ✓ bzw. dem Punkterückstand auf den Zielplatz. Timer, CPU-Picks und Auto-Picks laufen auf dem
 Server (Alarme). Ist das Team am Zug 20 s offline (ohne Timer: 3 min am Zug), darf jedes Mitglied für
 es auto-picken; ein abwesender Host gibt die Rolle nach 30 s (Lobby: 5 min) ab. Nach dem letzten Pick
-rechnet der Server die Saison einmal und alle sehen sie gleichzeitig im Ticker. Die Saison spielt immer mit
+rechnet der Server die Saison einmal und alle sehen sie gleichzeitig im Ticker (die Ergebnistafel nennt je Spieltag die Tore, „⚽ n“). Die Saison spielt immer mit
 18 Teams (`DRAFT_LIMITS.leagueSize`, 34 Spieltage): Freie Plätze füllen Teams echter Spieler aus der
 Allzeit-Rangliste der 34–0 Challenge (Teamname, Spielername, ihre Elf – `server/fill.ts`, Auswahl per
 Liga-Seed in `fillTeams`), fehlen welche, Vereine. Statt der Liga geht auch ein **KO-Turnier** (`settings.format = 'cup'`,
