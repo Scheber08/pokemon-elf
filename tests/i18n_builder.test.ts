@@ -199,6 +199,26 @@ describe('Builder auf Englisch', () => {
     expect(container.querySelectorAll('.saved-teams__score')[0].textContent).toBe(` · Score ${expected}`);
   });
 
+  it('Meine Teams: 🏆 an der eindeutig stärksten Elf (ab zwei mit Score)', async () => {
+    storeLang('en');
+    const strong = [143, 9, 68, 76, 130, 65, 112, 3, 25, 6, 135];
+    const weak = [129, 129, 129, 129, 129, 65, 112, 3, 25, 6, 135];
+    const team = (id: string, name: string, slots: number[]) => ({ id, name, formation: '4-3-3', at: 0, state: { teamName: name, formation: '4-3-3', slots } });
+    localStorage.setItem('pokemon-elf:saved-teams', JSON.stringify([team('1', 'Weak XI', weak), team('2', 'Strong XI', strong)]));
+    const { container } = await render(app(h(Builder)));
+    await settle();
+    const best = container.querySelectorAll('.saved-teams__best');
+    expect(best).toHaveLength(1);
+    expect(best[0].getAttribute('aria-label')).toBe('Your strongest saved XI');
+    const item = container.querySelectorAll('.saved-teams__item').find((li) => li.contains(best[0]))!;
+    expect(item.querySelector('.saved-teams__name')!.textContent).toContain('Strong XI');
+    // Gleichstand: kein 🏆
+    localStorage.setItem('pokemon-elf:saved-teams', JSON.stringify([team('1', 'A', strong), team('2', 'B', strong)]));
+    const again = await render(app(h(Builder)));
+    await settle();
+    expect(again.container.querySelectorAll('.saved-teams__best')).toHaveLength(0);
+  });
+
   it('Auswahl-Dialog (Filter, Raster, Hinweise) ohne deutschen Text', async () => {
     storeLang('en');
     const { container } = await render(app(h(Builder)));

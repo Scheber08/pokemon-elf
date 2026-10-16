@@ -41,6 +41,8 @@ const builder = {
     updated: (name: string) => `„${name}" aktualisiert`,
     current: '✓ aktuell',
     score: (n: number) => `Score ${n}`,
+    /** Eindeutig stärkste gespeicherte Elf (höchster Team-Score) */
+    strongest: 'Deine stärkste gespeicherte Elf',
     scoreTitle: 'Team-Score über alle 1.025 Pokémon (mit Kapitän) – wie im Testspiel',
     loaded: (name: string) => `„${name}" geladen`,
     friendly: 'Testspiel',

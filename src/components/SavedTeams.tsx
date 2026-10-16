@@ -93,6 +93,15 @@ export function SavedTeams<T extends Playable>({ current, onLoad }: Props<T>) {
     return evaluateTeam(x.formation as FormationId, players, scale('all'), typeof captain === 'number' ? captain : null).score;
   };
   const [list, setList] = useState<SavedTeam<T>[]>(() => loadSavedTeams<T>());
+  // Team-Scores aller gespeicherten Elfen; 🏆 an der eindeutig stärksten (ab zwei mit Score)
+  const scores = new Map(list.map((x) => [x.id, scoreOf(x)] as const));
+  const strongest = (() => {
+    const known = [...scores].filter((e): e is [string, number] => e[1] != null);
+    if (known.length < 2) return null;
+    const max = Math.max(...known.map((e) => e[1]));
+    const top = known.filter((e) => e[1] === max);
+    return top.length === 1 ? top[0][0] : null;
+  })();
   /** Testspiel der aktuellen Elf gegen diese gespeicherte (id) */
   const [vs, setVs] = useState<string | null>(null);
   const persist = (next: SavedTeam<T>[]) => {
@@ -132,11 +141,17 @@ export function SavedTeams<T extends Playable>({ current, onLoad }: Props<T>) {
                   {/* Speicherdatum (lokaler Kalendertag) */}
                   {x.at > 0 && <span className="saved-teams__at"> · {t.game.day(localDay(x.at))}</span>}
                   {(() => {
-                    const score = scoreOf(x);
+                    const score = scores.get(x.id) ?? null;
                     return score != null && (
                       <span className="saved-teams__score" title={tx.scoreTitle}>
                         {' '}
                         · {tx.score(score)}
+                        {x.id === strongest && (
+                          <span className="saved-teams__best" role="img" title={tx.strongest} aria-label={tx.strongest}>
+                            {' '}
+                            🏆
+                          </span>
+                        )}
                       </span>
                     );
                   })()}
