@@ -28,6 +28,10 @@ const builder: Messages['builder'] = {
   },
   savingImage: 'Creating image …',
   random: 'Random',
+  copyText: 'Copy as text',
+  textCopied: 'Lineup copied as text',
+  textCaptain: ' (C)',
+  textHeader: (name, formation) => `⚽ ${name || 'My XI'} (${formation})`,
   undo: 'Undo',
   saved: {
     title: 'My teams',

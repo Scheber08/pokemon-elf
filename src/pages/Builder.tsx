@@ -293,6 +293,19 @@ export function Builder() {
     }
   };
 
+  /** Aufstellung als Text (für Chats): Kopfzeile, je Position ein Spieler, Kapitän markiert, Link am Ende */
+  const copyLineupText = async () => {
+    const line = (pos: string, id: number | null | undefined) => {
+      const p = id != null ? byId.get(id) : undefined;
+      return p ? `${pos} ${t.game.pokemon(p)}${id === captain ? t.builder.textCaptain : ''}` : null;
+    };
+    const rows = formationDef.slots.map((d, i) => line(t.game.posShort[d.pos], state.slots[i]));
+    if (state.ssEnabled) rows.push(line(t.game.posShort.SS, state.ss));
+    const url = shareUrl({ ...state, sprite, ss: state.ssEnabled ? state.ss : null, captain });
+    const text = [t.builder.textHeader(state.teamName.trim(), formationDef.label), ...rows.filter((x): x is string => !!x), url].join('\n');
+    toast((await copyText(text)) ? t.builder.textCopied : t.common.copyFailed);
+  };
+
   const copyLink = async () => {
     const url = shareUrl({ ...state, sprite, ss: state.ssEnabled ? state.ss : null, captain });
     toast((await copyText(url)) ? t.common.linkCopied : t.common.copyFailed);
@@ -342,6 +355,9 @@ export function Builder() {
           </button>
           <button type="button" className="btn" onClick={copyLink}>
             {t.common.copyLink}
+          </button>
+          <button type="button" className="btn" onClick={copyLineupText} disabled={!state.slots.some((id) => id != null)}>
+            {t.builder.copyText}
           </button>
           <button type="button" className="btn" onClick={randomize}>
             {t.builder.random}

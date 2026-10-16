@@ -307,6 +307,26 @@ describe('Deutsch bleibt unverändert', () => {
     );
   });
 
+  it('„Als Text kopieren“: Kopfzeile, je Position ein Spieler, Link am Ende', async () => {
+    storeLang('de');
+    const writes: string[] = [];
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (x: string) => void writes.push(x) }, configurable: true });
+    const loc = (window as unknown as { location?: unknown }).location;
+    (window as unknown as { location: unknown }).location = { href: 'https://elf.example/' };
+    const { container } = await render(app(h(Builder)));
+    await settle();
+    const btn = container.querySelectorAll('button').find((b) => b.textContent === 'Als Text kopieren')!;
+    await act(async () => btn.click());
+    await settle();
+    expect(writes).toHaveLength(1);
+    const lines = writes[0].split('\n');
+    expect(lines[0]).toMatch(/^⚽ .+ \(4-3-3\)$/);
+    expect(lines[1]).toBe('TW Relaxo');
+    expect(lines).toHaveLength(1 + 11 + 1);
+    expect(lines.at(-1)).toMatch(/^https:\/\/elf\.example\/\?/);
+    (window as unknown as { location: unknown }).location = loc;
+  });
+
   it('Rückgängig/Wiederholen: deaktiviert sich der bediente Knopf, wandert der Fokus zum Gegenstück', async () => {
     storeLang('de');
     const { container } = await render(app(h(Builder)));

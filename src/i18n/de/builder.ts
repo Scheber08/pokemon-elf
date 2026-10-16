@@ -23,6 +23,10 @@ const builder = {
   },
   savingImage: 'Erstelle Bild …',
   random: 'Zufällig',
+  copyText: 'Als Text kopieren',
+  textCopied: 'Aufstellung als Text kopiert',
+  textCaptain: ' (K)',
+  textHeader: (name: string, formation: string) => `⚽ ${name || 'Meine Elf'} (${formation})`,
   undo: 'Rückgängig',
   /** Meine Teams: gespeicherte Elfen auf diesem Gerät */
   saved: {
