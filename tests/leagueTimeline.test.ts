@@ -24,6 +24,7 @@ import { biggestUpset, currentRun, biggestWin, goalFest, fastestPicker, longestW
   weightExtremes,
   favouriteFoes,
   expectedCrowd,
+  weatherFor,
 } from '../src/lib/leagueTimeline';
 import { createRng } from '../src/lib/rng';
 import { buildTable, simulateLeague, type LeagueResult, type LeagueTeam } from '../src/lib/season';
@@ -686,5 +687,21 @@ describe('expectedCrowd', () => {
     expect(expectedCrowd(1, 18, 'euphoria')).toBe(40000);
     expect(expectedCrowd(18, 18, 'angry')).toBe(15000);
     expect(expectedCrowd(9, 18, 'happy')).toBe(30000);
+  });
+});
+
+describe('weatherFor', () => {
+  it('deterministisch, Temperatur -2 bis 28 °C, Schnee nur bei Kälte, alle Arten kommen vor', () => {
+    expect(weatherFor(5, 1, 2)).toEqual(weatherFor(5, 1, 2));
+    const kinds = new Set<string>();
+    for (let r = 1; r <= 17; r++)
+      for (let a = 0; a < 18; a++) {
+        const w = weatherFor(r, a, (a + r) % 18);
+        kinds.add(w.kind);
+        expect(w.temp).toBeGreaterThanOrEqual(-2);
+        expect(w.temp).toBeLessThanOrEqual(28);
+        if (w.kind === 'snow') expect(w.temp).toBeLessThanOrEqual(2);
+      }
+    expect([...kinds].sort()).toEqual(['cloud', 'rain', 'snow', 'sun', 'wind']);
   });
 });

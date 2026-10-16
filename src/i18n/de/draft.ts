@@ -723,6 +723,8 @@ const draft = {
     vsTop: (record: string, games: number) => `🔝 Gegen die Top 4: ${record} (S–U–N, ${games === 1 ? '1 Spiel' : `${games} Spiele`})`,
     crowd: (n: string) => `🏟️ Erwartet: ${n} Zuschauer`,
     crowdFull: (n: string) => `🏟️ Ausverkauft: ${n} Zuschauer!`,
+    weather: (kind: string, temp: number) => `Wetter: ${kind}, ${temp} °C`,
+    weatherKinds: { sun: '☀️ sonnig', cloud: '⛅ bewölkt', rain: '🌧️ Regen', wind: '🌬️ windig', snow: '❄️ Schnee' },
     winRun: (n: number, left: number) => `🏅 ${n} Siege in Folge – noch ${left} bis zum Erfolg „Siegesserie“`,
     linesTitle: 'Tore nach Mannschaftsteil',
     distinctScorers: (n: number) => `👥 ${n} verschiedene Torschützen`,

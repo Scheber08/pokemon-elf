@@ -4,7 +4,7 @@ import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
 import { loadTips, MATCH_TIPS, saveTip, tipScore } from '../lib/managerTips';
-import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance, goalMilestones, scoringRuns, goalsByLine, GOAL_LINES, distinctScorers, bestGoalPhase, fanMood, winRun, attackDefenseRanks, expectedCrowd, STADIUM_CAPACITY } from '../lib/leagueTimeline';
+import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance, goalMilestones, scoringRuns, goalsByLine, GOAL_LINES, distinctScorers, bestGoalPhase, fanMood, winRun, attackDefenseRanks, expectedCrowd, STADIUM_CAPACITY, weatherFor } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -644,6 +644,11 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
               <FormDots form={recentForm(shown.matches, rival, m.played)} />
             </p>
           )}
+          {(() => {
+            // 🌦️ Wetter-Vorhersage (nur Deko, deterministisch aus Spieltag und Paarung)
+            const w = weatherFor(nextNo, myNext.home, myNext.away);
+            return <p className="small muted manager__weather">{tx.weather(tx.weatherKinds[w.kind], w.temp)}</p>;
+          })()}
           {you != null && myNext.home === you && m.played > 0 && (() => {
             // 🏟️ Erwartete Zuschauer beim Heimspiel (Tabellenplatz + Fan-Stimmung)
             const place = shown.table.findIndex((r) => r.team === you) + 1;

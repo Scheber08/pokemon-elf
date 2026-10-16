@@ -1428,3 +1428,19 @@ export function expectedCrowd(place: number, teams: number, mood: FanMood | null
   const raw = 18_000 + share * 18_000 + moodBonus;
   return Math.min(STADIUM_CAPACITY, Math.max(0, Math.round(raw / 500) * 500));
 }
+
+export type Weather = 'sun' | 'cloud' | 'rain' | 'wind' | 'snow';
+
+/**
+ * 🌦️ Wetter fürs Spiel (nur Deko, beeinflusst nichts): deterministisch aus Spieltag und Paarung
+ * – gleiche Paarung am gleichen Spieltag, gleiches Wetter auf allen Geräten. Schnee nur bei Kälte.
+ */
+export function weatherFor(round: number, home: number, away: number): { kind: Weather; temp: number } {
+  let h = (round * 2654435761 + home * 40503 + away * 97) >>> 0;
+  h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0;
+  h = (h ^ (h >>> 13)) >>> 0;
+  const temp = -2 + (h % 31);
+  const roll = (h >>> 8) % 100;
+  const kind: Weather = temp <= 2 && roll < 50 ? 'snow' : roll < 40 ? 'sun' : roll < 70 ? 'cloud' : roll < 88 ? 'rain' : 'wind';
+  return { kind, temp };
+}

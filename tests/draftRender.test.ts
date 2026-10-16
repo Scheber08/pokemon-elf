@@ -2118,6 +2118,13 @@ describe('ManagerSeason', () => {
     const f = container.querySelector('.manager__rival-formation');
     if (lineup) expect(f!.textContent!.trimEnd()).toBe(` · spielt ${lineup.formation}`);
     else expect(f).toBeNull();
+    // 🌦️ Wetter-Vorhersage fürs nächste Spiel
+    {
+      const { weatherFor } = await import('../src/lib/leagueTimeline');
+      const w = weatherFor(s.manager!.played + 1, home, away);
+      const kinds = { sun: '☀️ sonnig', cloud: '⛅ bewölkt', rain: '🌧️ Regen', wind: '🌬️ windig', snow: '❄️ Schnee' };
+      expect(container.querySelector('.manager__weather')!.textContent).toBe(`Wetter: ${kinds[w.kind]}, ${w.temp} °C`);
+    }
     // 🏟️ Erwartete Zuschauer nur beim eigenen Heimspiel
     {
       const { expectedCrowd, fanMood, recentForm } = await import('../src/lib/leagueTimeline');

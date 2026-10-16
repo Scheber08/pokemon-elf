@@ -657,6 +657,8 @@ const draft: Messages['draft'] = {
     vsTop: (record, games) => `🔝 Against the top 4: ${record} (W–D–L, ${games === 1 ? '1 game' : `${games} games`})`,
     crowd: (n) => `🏟️ Expected crowd: ${n}`,
     crowdFull: (n) => `🏟️ Sold out: ${n} fans!`,
+    weather: (kind, temp) => `Weather: ${kind}, ${temp} °C`,
+    weatherKinds: { sun: '☀️ sunny', cloud: '⛅ cloudy', rain: '🌧️ rain', wind: '🌬️ windy', snow: '❄️ snow' },
     winRun: (n, left) => `🏅 ${n} wins in a row – ${left} more for the “Winning run” achievement`,
     linesTitle: 'Goals by unit',
     distinctScorers: (n) => `👥 ${n} different scorers`,
