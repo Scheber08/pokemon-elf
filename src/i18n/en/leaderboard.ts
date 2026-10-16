@@ -114,6 +114,7 @@ const leaderboard: Messages['leaderboard'] = {
     friendlyTeamScorers: (team, names) => `${team}: ${names}`,
     friendlyOdds: (w, d, l) => `📈 Forecast from 100 friendlies: ${w}% win · ${d}% draw · ${l}% loss`,
     friendlyGoals: (gf, ga) => ` · ⚽ goals ${gf}:${ga}`,
+    friendlyWinRate: (rate, forecast) => ` · win rate ${rate}% (forecast ${forecast}%)`,
     friendlyBigWin: (gf, ga) => ` · 💥 biggest win ${gf}:${ga}`,
     friendlyTally: (n, w, d, l) => `📊 Record over ${n} friendlies: ${w} W · ${d} D · ${l} L`,
     friendlyStar: (name, team, goals) => `⭐ Player of the tie: ${name} (${team}) – ${goals} goals`,

@@ -93,6 +93,15 @@ describe('Testspiel mit gespeicherter Elf', () => {
     // 💥 Höchster Sieg: größte Tordifferenz unter den Siegen (bei Gleichstand mehr eigene Tore), ohne Sieg keiner
     const wins = seen.filter(([a, b]) => a > b).sort((x, y) => y[0] - y[1] - (x[0] - x[1]) || y[0] - x[0]);
     expect(m[6] ? [Number(m[7]), Number(m[8])] : null).toEqual(wins[0] ?? null);
+    // Siegquote gegen die Prognose erst ab fünf Testspielen
+    expect(container.querySelector('.friendly__rate')).toBeNull();
+    await act(async () => again().dispatchEvent(new MiniEvent('click', { bubbles: true })));
+    seen.push(aggregate());
+    await act(async () => again().dispatchEvent(new MiniEvent('click', { bubbles: true })));
+    seen.push(aggregate());
+    const forecast = Number(odds()!.match(/(\d+) % Sieg/)![1]);
+    const rate = Math.round((seen.filter(([a, b]) => a > b).length / 5) * 100);
+    expect(container.querySelector('.friendly__rate')!.textContent).toBe(` · Siegquote ${rate} % (Prognose ${forecast} %)`);
     expect(odds()).toBe(before);
     await act(async () => {
       select.value = '1';

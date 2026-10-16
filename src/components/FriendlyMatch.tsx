@@ -170,6 +170,10 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
           {tr.friendlyTally(outcomes.length, tally(1), tally(0), tally(-1))}
           {tr.friendlyGoals(goalsFor, goalsAgainst)}
           {bigWin && <span className="friendly__bigwin">{tr.friendlyBigWin(bigWin[0], bigWin[1])}</span>}
+          {/* Ab fünf Testspielen: tatsächliche Siegquote gegen die Prognose */}
+          {odds && outcomes.length >= 5 && (
+            <span className="friendly__rate">{tr.friendlyWinRate(Math.round((tally(1) / outcomes.length) * 100), odds.win)}</span>
+          )}
         </p>
       )}
       <p className="muted small">{tr.friendlyNote}</p>

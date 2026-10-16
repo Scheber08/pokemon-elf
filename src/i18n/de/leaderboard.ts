@@ -122,6 +122,8 @@ const leaderboard = {
     /** Torverhältnis aller Testspiele (hängt an friendlyTally) */
     friendlyGoals: (gf: number, ga: number) => ` · ⚽ Tore ${gf}:${ga}`,
     /** Bilanz: höchster Sieg (eigene Tore zuerst) */
+    /** Bilanz ab fünf Testspielen: Siegquote gegen die Prognose (Prozent) */
+    friendlyWinRate: (rate: number, forecast: number) => ` · Siegquote ${rate} % (Prognose ${forecast} %)`,
     friendlyBigWin: (gf: number, ga: number) => ` · 💥 Höchster Sieg ${gf}:${ga}`,
     friendlyTally: (n: number, w: number, d: number, l: number) => `📊 Bilanz aus ${n} Testspielen: ${w} S · ${d} U · ${l} N`,
     friendlyStar: (name: string, team: string, goals: number) => `⭐ Mann des Spiels: ${name} (${team}) – ${goals} Tore`,
