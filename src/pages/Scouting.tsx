@@ -1,6 +1,6 @@
 import { scrollBehavior } from '../lib/motion';
 import { useMemo, useRef, useState } from 'react';
-import { TypeBadge } from '../components/Badges';
+import { TypeBadge, TypeBadges } from '../components/Badges';
 import { LevelIcon } from '../components/LevelIcon';
 import { Sprite } from '../components/Sprite';
 import { compositeScore, profileFit } from '../lib/fit';
@@ -103,7 +103,10 @@ function WherePlays({ query, setQuery }: { query: string; setQuery: (q: string) 
       {hit && (
         <div className="scouting__where-hit" aria-live="polite">
           <p className="scouting__where-name">
-            <Sprite pokemon={hit} style={sprite} className="scouting__top-sprite" decorative /> <strong>{t.game.pokemon(hit)}</strong>
+            <Sprite pokemon={hit} style={sprite} className="scouting__top-sprite" decorative /> <strong>{t.game.pokemon(hit)}</strong>{' '}
+            <span className="scouting__where-types">
+              <TypeBadges types={hit.types} small />
+            </span>
           </p>
           {rank != null && <p className="muted small scouting__where-rank">{s.whereRank(rank, data.list.length, t.game.profileTitle[best[0].key])}</p>}
           <ol className="scouting__top-mons">

@@ -87,7 +87,7 @@ tests/                     Unit-Tests: Fit, Team-Score, Saison, Engine, Server/A
 
 Routen: `/` Builder · `/challenge` 34–0 · `/taeglich` Tägliche Elf · `/151` 151 Challenge & Retro 34–0 ·
 `/draft` Fantasy-Draft (lokal + online) · `/draft/:code` Online-Liga · `/rangliste` (Deep-Link
-`?c=daily&p=today|week|all`) · `/spieler/:id` Spielerprofil · `/scouting` (Scouting-Guide mit „🏅 Top 3 je Position“, Legendäre per Schalter, und „🔍 Wo spielt …?“: Pokémon suchen oder in der Top-3-Liste antippen, fünf beste Positionen mit Fit und „🏅 Nr. n von 1.025“ auf der besten) · `/ueber` (mit „Was ist neu?“, DE/EN gleich lang – `tests/infoNews.test.ts`) · `/datenschutz`
+`?c=daily&p=today|week|all`) · `/spieler/:id` Spielerprofil · `/scouting` (Scouting-Guide mit „🏅 Top 3 je Position“, Legendäre per Schalter, und „🔍 Wo spielt …?“: Pokémon suchen oder in der Top-3-Liste antippen, Typen neben dem Namen, fünf beste Positionen mit Fit und „🏅 Nr. n von 1.025“ auf der besten) · `/ueber` (mit „Was ist neu?“, DE/EN gleich lang – `tests/infoNews.test.ts`) · `/datenschutz`
 
 ## Bewertung in Kürze
 

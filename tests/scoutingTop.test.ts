@@ -71,6 +71,8 @@ describe('Scouting: Top 3 je Position', () => {
       });
     await type('charizard');
     expect(container.querySelector('.scouting__where-name strong')!.textContent).toBe('Glurak');
+    // Typen neben dem Namen
+    expect(container.querySelector('.scouting__where-types')!.textContent).toBe('FeuerFlug');
     const fits = container.querySelectorAll('.scouting__where .scouting__top-fit').map((f) => Number(f.textContent));
     expect(fits).toHaveLength(5);
     expect([...fits].sort((a, b) => b - a)).toEqual(fits);
