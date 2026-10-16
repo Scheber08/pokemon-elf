@@ -6,6 +6,7 @@ const common = {
   randomName: 'Zufälliger Vereinsname',
   randomFormation: 'Zufällige Formation',
   randomFormationTitle: 'Eine andere Formation auswürfeln',
+  backToTop: 'Nach oben',
   settings: 'Einstellungen',
   copyLink: 'Link kopieren',
   linkCopied: 'Link kopiert!',

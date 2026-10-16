@@ -1,3 +1,4 @@
+import { BackToTop } from './components/BackToTop';
 import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AchievementWatcher } from './components/AchievementWatcher';
@@ -105,6 +106,7 @@ export function App() {
             </PokemonDataProvider>
           </main>
           <Footer />
+          <BackToTop />
         </ToastProvider>
       </SettingsProvider>
     </BrowserRouter>
