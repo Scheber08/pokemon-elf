@@ -483,6 +483,18 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(container.querySelector('.draft__odds')!.textContent).toMatch(
       /^Favorit: Mein Team \(Team-Score \d+\) · Team-Score-Platz – Mein Team: 1\., Zweites Team: 3\.$/,
     );
+    // Ohne Kapitän: allgemeine Erklärung; mit Kapitän dazu die Wirkung auf den Team-Score (wie online)
+    const notes = () => container.querySelectorAll('.draft__roster').map((r) => r.querySelectorAll('p.muted.small').map((p) => p.textContent).find((x) => x?.includes('doppelt')) ?? '');
+    expect(notes()[0]).not.toContain('Wirkung');
+    const { bestCaptain, evaluateTeam } = await import('../src/lib/teamScore');
+    const { buildScale } = await import('../src/lib/fit');
+    const sc = buildScale(ALL, 'all');
+    const players = teams[0].slots.map((id) => ALL.find((p) => p.id === id));
+    const cap = bestCaptain(f, players, sc)!;
+    const best = [...container.querySelectorAll('.draft__roster')[0].querySelectorAll('button')].find((b) => b.textContent === 'Beste Wahl')!;
+    await act(async () => (best as MiniElement).click());
+    const diff = evaluateTeam(f, players, sc, cap).exact - evaluateTeam(f, players, sc, null).exact;
+    expect(notes()[0]).toMatch(new RegExp(`Wirkung auf den Team-Score: \\${diff >= 0 ? '+' : '−'}${Math.abs(diff).toFixed(1).replace('.', '\\.')}$`));
     localStorage.removeItem('pokemon-elf:draft');
   });
 

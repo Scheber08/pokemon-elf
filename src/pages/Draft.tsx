@@ -1001,6 +1001,16 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   slots={tm.slots}
                   captain={tm.captain ?? null}
                   onChange={(captain) => setState((s) => ({ ...s, teams: s.teams.map((x, j) => (j === i ? { ...x, captain } : x)) }))}
+                  hint={(() => {
+                    // Wirkung des Kapitäns auf den Team-Score (mit Shiny-Bonus wie in der Saison) – wie online vor dem Anpfiff
+                    if (tm.captain == null) return undefined;
+                    const players = tm.slots.map((id) => (id != null ? byId.get(id) : undefined));
+                    const shinies = state.shinies?.length ? new Set(state.shinies) : undefined;
+                    const bonus = shinies ? (id: number) => (shinies.has(id) ? SHINY_FIT_BONUS : 0) : undefined;
+                    const sc = scale('all');
+                    const diff = evaluateTeam(tm.formation, players, sc, tm.captain, bonus).exact - evaluateTeam(tm.formation, players, sc, null, bonus).exact;
+                    return `${t.captain.note} ${t.captain.effect(`${diff >= 0 ? '+' : '−'}${Math.abs(diff).toFixed(1)}`)}`;
+                  })()}
                 />
               </div>
             ),
