@@ -1,9 +1,9 @@
 /**
- * Seitlich scrollende Tabellen (.table-scroll) per Tastatur erreichbar machen: Läuft der Inhalt über,
+ * Seitlich scrollende Tabellen (.table-scroll) und das Draft-Board (.draft__board, online und lokal) per Tastatur erreichbar machen: Läuft der Inhalt über,
  * bekommt der Container tabindex="0" (Pfeiltasten scrollen ihn), sonst nicht – keine leeren Tab-Stopps.
  * Einmal an der App-Wurzel installiert, gilt es für alle Seiten (auch später gerenderte Tabellen).
  */
-const SELECTOR = '.table-scroll';
+export const SCROLL_SELECTOR = '.table-scroll, .draft__board';
 
 /** Tab-Stopp passend zum Überlauf setzen oder entfernen */
 export function syncScrollFocus(el: HTMLElement): void {
@@ -15,18 +15,18 @@ export function syncScrollFocus(el: HTMLElement): void {
   }
 }
 
-/** Beobachtet root auf .table-scroll-Container und deren Größe; liefert die Aufräumfunktion. */
+/** Beobachtet root auf scrollbare Container (SCROLL_SELECTOR) und deren Größe; liefert die Aufräumfunktion. */
 export function installScrollFocus(root: HTMLElement): () => void {
   if (typeof ResizeObserver === 'undefined' || typeof MutationObserver === 'undefined') return () => {};
   const seen = new WeakSet<Element>();
   const resize = new ResizeObserver((entries) => {
     for (const e of entries) {
-      const box = (e.target as HTMLElement).closest<HTMLElement>(SELECTOR);
+      const box = (e.target as HTMLElement).closest<HTMLElement>(SCROLL_SELECTOR);
       if (box) syncScrollFocus(box);
     }
   });
   const scan = () => {
-    root.querySelectorAll<HTMLElement>(SELECTOR).forEach((el) => {
+    root.querySelectorAll<HTMLElement>(SCROLL_SELECTOR).forEach((el) => {
       if (seen.has(el)) return;
       seen.add(el);
       resize.observe(el);
