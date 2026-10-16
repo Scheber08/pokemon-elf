@@ -127,6 +127,10 @@ export function Profile() {
                     {c.place != null && !!c.players && (
                       <span className="profile__place" title={tp.placeTitle}>
                         {tp.place(c.place, c.players)}
+                        {/* Top n % wie in der Täglichen Elf – erst ab 10 Spielern aussagekräftig */}
+                        {c.players >= 10 && c.place <= c.players && (
+                          <small className="profile__top-pct"> · {t.daily.topPercent(Math.max(1, Math.ceil((c.place / c.players) * 100)))}</small>
+                        )}
                       </span>
                     )}
                   </td>

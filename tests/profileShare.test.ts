@@ -60,6 +60,8 @@ describe('Spielerprofil', () => {
     );
     for (let i = 0; i < 5; i++) await act(async () => new Promise((r) => setTimeout(r, 0)));
     expect(text(container)).toContain('Platz 4 von 57');
+    // Top n % (ab 10 Spielern, aufgerundet): 4 von 57 → Top 8 %
+    expect(container.querySelector('.profile__top-pct')!.textContent).toBe(' · Top 8 %');
     // „zuletzt aktiv …“ aus dem neuesten Run
     {
       const { ago } = await import('../src/lib/ago');
