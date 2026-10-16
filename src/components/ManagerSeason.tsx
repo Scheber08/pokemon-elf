@@ -600,6 +600,16 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             const r = currentRun(shown.matches, rival);
             return r && <SeriesLine run={r} />;
           })()}
+          {(() => {
+            // ⏮️ Letztes Spiel des Gegners (Ergebnis aus seiner Sicht)
+            const last = shown.matches.filter((x) => x.home === rival || x.away === rival).sort((a, b) => b.round - a.round)[0];
+            if (!last) return null;
+            const home = last.home === rival;
+            const gf = home ? last.hg : last.ag;
+            const ga = home ? last.ag : last.hg;
+            const kind = gf > ga ? 'w' : gf < ga ? 'l' : 'd';
+            return <p className="small manager__rival-last">{tx.rivalLast(kind, `${gf}:${ga}`, nameOf(home ? last.away : last.home))}</p>;
+          })()}
           {s.teams[rival] && m.lineups[s.teams[rival].id] && (() => {
             // 🎯 Schwachpunkt des Gegners: Starter mit dem niedrigsten Fit (mit Tagesform), wie die eigene Schwachstelle
             const l = m.lineups[s.teams[rival].id];

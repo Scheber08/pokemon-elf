@@ -1928,6 +1928,13 @@ describe('ManagerSeason', () => {
     const f = container.querySelector('.manager__rival-formation');
     if (lineup) expect(f!.textContent!.trimEnd()).toBe(` · spielt ${lineup.formation}`);
     else expect(f).toBeNull();
+    // ⏮️ Letztes Spiel des Gegners
+    const lastM = league.matches.filter((x) => x.home === rival || x.away === rival).sort((a, b) => b.round - a.round)[0];
+    const lgf = lastM.home === rival ? lastM.hg : lastM.ag;
+    const lga = lastM.home === rival ? lastM.ag : lastM.hg;
+    expect(container.querySelector('.manager__rival-last')!.textContent).toMatch(
+      new RegExp(`^⏮️ Zuletzt: ${lgf}:${lga}-${lgf > lga ? 'Sieg' : lgf < lga ? 'Niederlage' : 'Remis'} gegen .+$`),
+    );
     // 🎯 Schwachpunkt des Gegners: Starter mit dem niedrigsten Fit (mit Tagesform)
     const weakEl = container.querySelector('.manager__rival-weak');
     if (!lineup) expect(weakEl).toBeNull();
