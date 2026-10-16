@@ -99,6 +99,8 @@ const builder = {
     avgFit: (n: number) => `Ø Fit ${n}`,
     fit: (n: number) => `Fit ${n}`,
     /** Eindeutig schwächster Fit der vollen Elf */
+    /** Eindeutig stärkster Fit der vollen Elf */
+    strongest: 'Stärkster Fit der Elf',
     weakest: 'Schwächster Fit der Elf – hier lohnt ein Tausch',
   },
   picker: {

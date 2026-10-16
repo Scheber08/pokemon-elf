@@ -137,7 +137,7 @@ describe('Builder auf Englisch', () => {
       const { buildScale, positionFit } = await import('../src/lib/fit');
       const fits = container.querySelectorAll('.sheet__fit').map((f) => f.textContent);
       expect(fits.length).toBeGreaterThanOrEqual(11);
-      for (const f of fits) expect(f).toMatch(/^ · Fit \d+( 🔻)?$/);
+      for (const f of fits) expect(f).toMatch(/^ · Fit \d+( 🔻| 🔝)?$/);
       expect(fits[0]).toBe(` · Fit ${Math.round(positionFit(ALL.find((p) => p.id === 143)!, 'TW', buildScale(ALL, 'all')))}`);
       // Ø Fit der Feldspieler im Kopf (ohne Standardschützen)
       const { FORMATIONS } = await import('../src/config/formations');
@@ -153,6 +153,14 @@ describe('Builder auf Englisch', () => {
       if (weak.length) {
         expect(weak[0].getAttribute('aria-label')).toBe('Weakest fit in the XI – the best place for a swap');
         expect(weak[0].parentNode!.textContent).toContain(`Fit ${min}`);
+      }
+      // 🔝 am eindeutig stärksten Fit
+      const max = Math.max(...fitsAll);
+      const strong = container.querySelectorAll('.sheet__strongest');
+      expect(strong).toHaveLength(fitsAll.filter((f) => f === max).length === 1 ? 1 : 0);
+      if (strong.length) {
+        expect(strong[0].getAttribute('aria-label')).toBe('Strongest fit in the XI');
+        expect(strong[0].parentNode!.textContent).toContain(`Fit ${max}`);
       }
     }
     // Typ-Chips wie auf dem Draft-Board (Standard-Elf)
