@@ -9,7 +9,7 @@ import { DraftPickFeed, DraftTypeChip, KindMarks, RoundBest } from '../component
 import type { FeedItem } from '../state/useDraftRoom';
 import { PoolStars, poolStars, scarceFor, StarsLanded } from '../components/PoolStars';
 import { LeagueNumbers } from '../components/LeagueNumbers';
-import { dreamDuo, formatDuration } from '../lib/leagueTimeline';
+import { attackDefenseRanks, dreamDuo, formatDuration } from '../lib/leagueTimeline';
 import { TypeGoals } from '../components/TypeGoals';
 import { DraftProgress } from '../components/DraftProgress';
 import { Confetti } from '../components/Confetti';
@@ -986,6 +986,11 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                       {t.draft.results.expectation(expected, gap.place, gap.delta)}
                     </small>
                   );
+                })()}
+                {(() => {
+                  // ⚽/🧱 Angriff und Abwehr mit Rang (wie online)
+                  const ranks = attackDefenseRanks(league.table, r.team);
+                  return ranks && <small className="draft__ranks">{t.draft.results.attackDefense(ranks.gf, ranks.gfRank, ranks.ga, ranks.gaRank)}</small>;
                 })()}
               </p>
             ) : null,

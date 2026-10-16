@@ -1389,6 +1389,7 @@ describe('/draft an einem Gerät auf Englisch', () => {
     const ownAt = container.querySelectorAll('.league-table tbody tr').findIndex((r) => r.textContent?.includes('My Team'));
     expect(container.querySelector('.draft__you')!.textContent).toMatch(new RegExp(`^Your team: place ${ownAt + 1} · \\d+ pts`));
     expect(container.querySelector('.draft__you .draft__expect')).not.toBeNull();
+    expect(container.querySelector('.draft__you .draft__ranks')!.textContent).toMatch(/^⚽ Attack: \d+ goals \(place \d\) · 🧱 Defence: \d+ conceded \(place \d\)$/);
     // Saisonverlauf des eigenen Teams (Platzkurve)
     const chart = container.querySelectorAll('section').find((sec) => sec.querySelector('h2')?.textContent === 'Your season');
     expect(chart).toBeTruthy();
