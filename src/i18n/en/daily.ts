@@ -41,6 +41,7 @@ const daily: Messages['daily'] = {
   archive: 'Your recent days',
   archiveNote: 'Saved on this device.',
   archiveRow: (n) => `#${n}`,
+  archiveTrend: (diff) => `${diff > 0 ? '+' : '−'}${Math.abs(diff)} points vs. the previous day`,
   archivePlace: (n) => `${ordinal(n)} place`,
   factRank: 'Position',
   factRecord: 'Record',

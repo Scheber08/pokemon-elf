@@ -281,6 +281,52 @@
   align-items: baseline;
   font-variant-numeric: tabular-nums;
 }
+.daily-streak__archive li > strong,
+.daily-streak__pts {
+  white-space: nowrap;
+}
+.daily-streak__place {
+  white-space: nowrap;
+}
+/* Schmal: zwei Zeilen je Tag – oben Datum und Platz, darunter Bilanz und Punkte */
+@media (max-width: 420px) {
+  .daily-streak__archive li {
+    grid-template-columns: 3em 1fr auto;
+    grid-template-areas:
+      'no day place'
+      'no rec score';
+    gap: 0 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .daily-streak__no {
+    grid-area: no;
+  }
+  .daily-streak__day {
+    grid-area: day;
+  }
+  .daily-streak__place {
+    grid-area: place;
+    text-align: right;
+  }
+  .daily-streak__rec {
+    grid-area: rec;
+  }
+  .daily-streak__score {
+    grid-area: score;
+    text-align: right;
+  }
+}
+.daily-streak__trend {
+  font-size: 12px;
+  white-space: nowrap;
+}
+.daily-streak__trend.is-up {
+  color: var(--green);
+}
+.daily-streak__trend.is-down {
+  color: var(--red);
+}
 .daily-streak__no {
   color: var(--yellow);
   font-family: var(--font-head);

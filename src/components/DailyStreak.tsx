@@ -57,17 +57,40 @@ export function DailyStreak() {
       <details className="daily-streak__archive">
         <summary>{td.archive}</summary>
         <ol>
-          {history.slice(0, ARCHIVE_DAYS).map((d) => (
-            <li key={d.day}>
-              <span className="daily-streak__no">{td.archiveRow(dailyNumber(d.day))}</span>
-              <span className="muted">{t.game.day(d.day)}</span>
-              <strong>{formatRecord(d.record)}</strong>
-              <span>
-                {d.points} {t.draft.col.pts}
-              </span>
-              <span className="muted">{td.archivePlace(d.position)}</span>
-            </li>
-          ))}
+          {(() => {
+            // 🏅 an den Tagen mit den meisten Punkten; ▲/▼ gegenüber dem vorherigen gespielten Tag
+            const top = Math.max(...history.map((d) => d.points));
+            return history.slice(0, ARCHIVE_DAYS).map((d, i) => {
+              const prev = history[i + 1];
+              const diff = prev ? d.points - prev.points : 0;
+              return (
+                <li key={d.day}>
+                  <span className="daily-streak__no">{td.archiveRow(dailyNumber(d.day))}</span>
+                  <span className="muted daily-streak__day">{t.game.day(d.day)}</span>
+                  <strong className="daily-streak__rec">{formatRecord(d.record)}</strong>
+                  <span className="daily-streak__score">
+                    <span className="daily-streak__pts">
+                      {d.points} {t.draft.col.pts}
+                    </span>
+                    {diff !== 0 && (
+                      <small className={`daily-streak__trend ${diff > 0 ? 'is-up' : 'is-down'}`} title={td.archiveTrend(diff)}>
+                        {' '}
+                        {diff > 0 ? '▲' : '▼'}
+                        {Math.abs(diff)}
+                      </small>
+                    )}
+                    {history.length > 1 && d.points === top && (
+                      <span className="daily-streak__top" title={td.bestDay}>
+                        {' '}
+                        🏅
+                      </span>
+                    )}
+                  </span>
+                  <span className="muted daily-streak__place">{td.archivePlace(d.position)}</span>
+                </li>
+              );
+            });
+          })()}
         </ol>
         <p className="muted small">{td.archiveNote}</p>
       </details>

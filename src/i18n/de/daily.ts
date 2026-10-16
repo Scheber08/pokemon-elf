@@ -36,6 +36,7 @@ const daily = {
   archive: 'Deine letzten Tage',
   archiveNote: 'Gespeichert auf diesem Gerät.',
   archiveRow: (n: number) => `#${n}`,
+  archiveTrend: (diff: number) => `${diff > 0 ? '+' : '−'}${Math.abs(diff)} Punkte gegenüber dem vorherigen Tag`,
   archivePlace: (n: number) => `Platz ${n}`,
   factRank: 'Platz',
   factRecord: 'Bilanz',

@@ -985,6 +985,11 @@ describe('DraftLive', () => {
     expect(card.querySelector('.statcard__value')!.textContent).toBe('92 Pkt');
     expect(card.querySelector('.statcard__sub')!.textContent).toBe('Ø 81');
     expect(card.getAttribute('title')).toBe(`Meiste Punkte an einem Tag (Tägliche Elf #${dailyNumber('2026-10-11')}) – im Schnitt 81 Punkte`);
+    // Archiv (neuester zuerst): ▼12 / ▲22 / ohne Vortag nichts; 🏅 am besten Tag
+    const rows = container.querySelectorAll('.daily-streak__archive li');
+    expect(rows.map((r) => r.querySelector('.daily-streak__trend')?.textContent ?? null)).toEqual([' ▼12', ' ▲22', null]);
+    expect(rows.map((r) => !!r.querySelector('.daily-streak__top'))).toEqual([false, true, false]);
+    expect(rows[0].querySelector('.daily-streak__trend')!.getAttribute('title')).toBe('−12 Punkte gegenüber dem vorherigen Tag');
     localStorage.clear();
   });
 
