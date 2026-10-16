@@ -2515,6 +2515,30 @@ describe('ManagerSeason', () => {
     );
   });
 
+  it('Manager: Startelf „Als Text kopieren“ (Teamname, Formation, Positionen, Kapitän)', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason } = await import('../src/lib/manager');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    const writes: string[] = [];
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (x: string) => void writes.push(x) }, configurable: true });
+    const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    const btn = container.querySelector('.manager__copy')!;
+    expect(btn.textContent).toBe('Als Text kopieren');
+    await act(async () => btn.click());
+    await settle();
+    const me = s.teams.find((t) => t.id === 'h')!;
+    const l = s.manager!.lineups.h;
+    const lines = writes[0].split('\n');
+    expect(lines[0]).toBe(`⚽ ${me.name} (${l.formation})`);
+    // Elf Feldspieler (dazu ggf. der Standardschütze), Kapitän markiert
+    expect(lines.length).toBeGreaterThanOrEqual(12);
+    const cap = ALL.find((p) => p.id === me.captain);
+    if (cap && l.slots.includes(cap.id)) expect(lines.some((x) => x.endsWith(`${cap.de} (K)`))).toBe(true);
+  });
+
   it('Manager: 🔋 Dauerbrenner (jedes Spiel von Beginn an) erst ab dem 5. Spieltag', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');

@@ -34,6 +34,9 @@ import { CrestEditor } from './CrestEditor';
 import { cleanCrest, type Crest as CrestData } from '../lib/crest';
 import { absentAt, CUP_MATCHDAYS, type ManagerAbsence } from '../lib/manager';
 import { Crest } from './Crest';
+import { copyText } from '../lib/exportImage';
+import { lineupText } from '../lib/lineupText';
+import { useToast } from '../state/Toast';
 
 /** Auswahl beim Tauschen: ein Feld-/SS-Platz oder ein Bankspieler */
 type Selection = { kind: 'slot'; index: number } | { kind: 'bench'; id: number } | null;
@@ -1179,6 +1182,7 @@ function LineupEditor({
   const sc = scale('all');
   const [pick, setPick] = useState<Selection>(null);
   const [sortBy, setSortBy] = useState<SquadSort | null>(null);
+  const toast = useToast();
   const formOf = (id: number) => form[id] ?? 0;
   const defs = FORMATIONS[lineup.formation].slots;
   const inLineup = new Set([...lineup.slots, ...(lineup.ss != null ? [lineup.ss] : [])]);
@@ -1352,6 +1356,17 @@ function LineupEditor({
           }}
         >
           {tx.best}
+        </button>
+        <button
+          type="button"
+          className="btn btn--small btn--ghost manager__copy"
+          onClick={async () => {
+            // Startelf als Text (wie im Builder und im Draft-Ergebnis)
+            const text = lineupText(t, { teamName: team.name, formation: lineup.formation, slots: lineup.slots, ss: setPiece ? lineup.ss : null, captain: team.captain ?? null }, byId);
+            toast((await copyText(text)) ? t.builder.textCopied : t.common.copyFailed);
+          }}
+        >
+          {t.builder.copyText}
         </button>
       </div>
       <p className="muted small">{lineup.auto ? tx.autoNote : tx.manualNote}</p>
