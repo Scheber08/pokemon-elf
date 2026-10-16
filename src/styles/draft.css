@@ -216,10 +216,16 @@
   flex-wrap: wrap;
   gap: 4px 10px;
   font-size: 13px;
+  /* Trenner am Zeilenanfang (nach einem Umbruch) liegen links außerhalb und werden abgeschnitten */
+  overflow: hidden;
 }
-.draft-lobbies__facts span + span::before {
+/* Trenner in der Lücke vor jedem Eintrag – nie verwaist am Anfang einer umbrochenen Zeile */
+.draft-lobbies__facts > span::before {
   content: '·';
-  margin-right: 10px;
+  display: inline-block;
+  width: 10px;
+  margin-left: -10px;
+  text-align: center;
   color: var(--text-dim);
 }
 .draft-offline p {
