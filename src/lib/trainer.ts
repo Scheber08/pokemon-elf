@@ -77,6 +77,8 @@ const POKEDAY = ['02-20', '02-27', '🎮'] as const;
 const OCEANS = ['06-05', '06-11', '🌊'] as const;
 /** Weltbienentag (20. Mai) */
 const BEES = ['05-17', '05-23', '🐝'] as const;
+/** Tag des Baumes (25. April) */
+const TREES = ['04-25', '04-30', '🌳'] as const;
 /** Valentinstag */
 const VALENTINE = ['02-07', '02-14', '💘'] as const;
 
@@ -183,6 +185,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('hat', 'propeller', 250), ...CHILDREN),
   seasonal(item('hat', 'pikaears', 300), ...POKEDAY),
   seasonal(item('hat', 'antennae', 200), ...BEES),
+  seasonal(item('hat', 'birdnest', 250), ...TREES),
   // Accessoire
   item('accessory', 'none', 0),
   item('accessory', 'freckles', 0),
@@ -266,6 +269,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('companion', '26', 450), ...POKEDAY),
   seasonal(item('companion', '226', 400), ...OCEANS),
   seasonal(item('companion', '415', 300), ...BEES),
+  seasonal(item('companion', '185', 400), ...TREES),
   item('companion', '6', 600),
   item('companion', '149', 600),
   item('companion', '448', 600),

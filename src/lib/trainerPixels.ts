@@ -473,6 +473,14 @@ function hat(c: Canvas, id: string, cloth: string) {
         c.fill((x, y) => ellipse(cx, 4, 2.4, 2.1)(x, y) && y === 5, '#26282e', null);
       }
       break;
+    case 'birdnest':
+      // Vogelnest (Tag des Baumes): geflochtenes Nest mit abstehenden Zweigen und drei hellblauen Eiern
+      for (const [cx, cy] of [[12.5, 5], [15.5, 4.2], [18.5, 5]] as const) c.fill(ellipse(cx, cy, 1.8, 2.3), '#a8e4f2', '#3f7f94');
+      c.dots([[12, 4], [15, 3], [18, 4]], '#e6f8fc');
+      c.fill((x, y) => y >= 6 && y <= 10 && Math.abs(x - 15.5) <= 8.5 - (y - 6) * 0.8, '#c08a4a', '#4a2f14');
+      c.dots([[6, 5], [7, 6], [25, 5], [24, 6], [9, 8], [13, 7], [17, 8], [21, 7], [11, 9], [19, 9]], '#6b4420');
+      c.dots([[10, 7], [15, 7], [20, 8], [14, 9], [22, 7]], '#e0b070');
+      break;
     case 'wizard':
       c.fill((x, y) => y <= 9 && y >= 0 && Math.abs(x - 15.5) <= 1 + y * 0.9, '#5b3fb0');
       c.rect(6, 9, 20, 2, '#4a3191');
