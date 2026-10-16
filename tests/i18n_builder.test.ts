@@ -123,6 +123,8 @@ describe('Builder auf Englisch', () => {
     expect(all).toContain('Set-piece taker');
     expect(all).toContain('#0143');
     expect(germanLeft(container)).toEqual([]);
+    // Ohne Teamnamen: unsichtbare Hauptüberschrift für Screenreader
+    expect(container.querySelectorAll('h1').map((x) => [x.getAttribute('class'), x.textContent])).toEqual([['sr-only', 'Lineup builder']]);
     // Kapitänswahl: jede Option mit Fit auf der eigenen Position
     const capOptions = container.querySelector('.captain-picker select')!.querySelectorAll('option').map((o) => o.textContent);
     expect(capOptions[0]).toBe('No captain');

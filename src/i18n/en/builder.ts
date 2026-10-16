@@ -12,6 +12,7 @@ const builder: Messages['builder'] = {
   hintFine: 'Click a player to replace them, or hover over them to see their stats. Drag a player onto another to swap places.',
   hintCoarse: 'Tap a player to replace them, or press and hold to see their stats.',
   pitchAria: (formation) => `Pitch, formation ${formation}`,
+  pageTitle: 'Lineup builder',
   actions: 'Actions',
   saveImage: 'Save image',
   jerseys: {

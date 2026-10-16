@@ -7,6 +7,7 @@ const builder = {
     'Klicke auf einen Spieler, um ihn auszutauschen, oder fahre darüber für seine Werte. Zieh einen Spieler auf einen anderen, um die Plätze zu tauschen.',
   hintCoarse: 'Tippe auf einen Spieler, um ihn auszutauschen, oder halte gedrückt für seine Werte.',
   pitchAria: (formation: string) => `Spielfeld, Formation ${formation}`,
+  pageTitle: 'Lineup-Builder',
   actions: 'Aktionen',
   saveImage: 'Bild speichern',
   jerseys: {

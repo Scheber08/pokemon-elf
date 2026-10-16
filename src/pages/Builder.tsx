@@ -310,6 +310,8 @@ export function Builder() {
           <span className="only-fine">{t.builder.hintFine}</span>
           <span className="only-coarse">{t.builder.hintCoarse}</span>
         </p>
+        {/* Ohne Teamnamen trotzdem eine Hauptüberschrift (für Screenreader) */}
+        {!(state.teamName || state.crest) && <h1 className="sr-only">{t.builder.pageTitle}</h1>}
         {(state.teamName || state.crest) && (
           <h1 className="team-title">
             {state.crest && (
