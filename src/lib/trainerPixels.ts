@@ -519,6 +519,14 @@ function hat(c: Canvas, id: string, cloth: string) {
       c.dots([[12, 5]], '#26282e');
       c.fill(ellipse(15.5, 0.8, 1.6, 1.2), '#f2c230', '#9a7410');
       break;
+    case 'chef':
+      // Kochmütze (Tag der Familie): hohe weiße Haube mit Bauschen über einem schmalen Band
+      c.fill(ellipse(12, 3.5, 3.2, 2.8), '#f7f7f2', '#a9a9a0');
+      c.fill(ellipse(15.5, 2.5, 3.4, 3), '#f7f7f2', '#a9a9a0');
+      c.fill(ellipse(19, 3.5, 3.2, 2.8), '#f7f7f2', '#a9a9a0');
+      c.fill((x, y) => y >= 5 && y <= 8 && x >= 10 && x <= 21, '#f7f7f2', '#a9a9a0');
+      c.rect(10, 8, 12, 1, '#d8d8cf');
+      break;
     case 'catears':
       // Katzenohren (Weltkatzentag): schwarzer Haarreif mit zwei spitzen Ohren, innen rosa
       c.fill((x, y) => y === 9 && head(x, y), '#26282e', null);

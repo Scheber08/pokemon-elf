@@ -95,6 +95,8 @@ const ENVIRONMENT = ['06-01', '06-05', '🌱'] as const;
 const BOOKS = ['04-20', '04-26', '📚'] as const;
 /** Weltspartag (30. Oktober) */
 const SAVINGS = ['10-25', '10-31', '🐷'] as const;
+/** Internationaler Tag der Familie (15. Mai) */
+const FAMILY = ['05-15', '05-21', '👨‍👩‍👧'] as const;
 /** Valentinstag */
 const VALENTINE = ['02-07', '02-14', '💘'] as const;
 
@@ -222,6 +224,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('hat', 'sprout', 200), ...ENVIRONMENT),
   seasonal(item('hat', 'book', 200), ...BOOKS),
   seasonal(item('hat', 'piggy', 200), ...SAVINGS),
+  seasonal(item('hat', 'chef', 200), ...FAMILY),
   // Accessoire
   item('accessory', 'none', 0),
   item('accessory', 'freckles', 0),
@@ -315,6 +318,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('companion', '568', 350), ...ENVIRONMENT),
   seasonal(item('companion', '201', 350), ...BOOKS),
   seasonal(item('companion', '999', 400), ...SAVINGS),
+  seasonal(item('companion', '924', 350), ...FAMILY),
   item('companion', '6', 600),
   item('companion', '149', 600),
   item('companion', '448', 600),

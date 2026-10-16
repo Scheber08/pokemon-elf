@@ -134,6 +134,7 @@ const trainer = {
       sprout: 'Keimling',
       book: 'Offenes Buch',
       piggy: 'Sparschwein',
+      chef: 'Kochmütze',
       catears: 'Katzenohren',
       flowercrown: 'Blumenkranz',
       antennae: 'Bienen-Fühler',

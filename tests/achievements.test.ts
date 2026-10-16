@@ -435,6 +435,10 @@ describe('Saisonartikel', () => {
     expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '🐷').map((i) => `${i.slot}:${i.id}`)).toEqual(['hat:piggy', 'companion:999']);
     const piggy = TRAINER_ITEMS.find((i) => i.id === 'piggy')!;
     expect([at('2026-10-24'), at('2026-10-25'), at('2026-10-31'), at('2026-11-01')].map((d) => itemOnSale(piggy, d))).toEqual([false, true, true, false]);
+    // 👨‍👩‍👧 Tag der Familie: Kochmütze und Famieps vom 15. bis 21. Mai
+    expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '👨‍👩‍👧').map((i) => `${i.slot}:${i.id}`)).toEqual(['hat:chef', 'companion:924']);
+    const chef = TRAINER_ITEMS.find((i) => i.id === 'chef')!;
+    expect([at('2027-05-14'), at('2027-05-15'), at('2027-05-21'), at('2027-05-22')].map((d) => itemOnSale(chef, d))).toEqual([false, true, true, false]);
   });
 
   it('Kauf nur in der Saison (400 not_on_sale), danach bleibt er tragbar', async () => {
