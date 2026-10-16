@@ -651,6 +651,7 @@ const draft: Messages['draft'] = {
     routDone: (score, opp) => `💥 Goal fest: ${score} against ${opp} – the achievement arrives at season end`,
     cleanNear: (n, left) => `🧱 ${n} clean sheets – ${left} more for “Fortress”`,
     goalsNear: (n, left) => `🏭 ${n} goals – ${left} more for “Goal factory”`,
+    goalGap: (pts) => (pts === 0 ? ' (level on points)' : ` (${pts} ${pts === 1 ? 'point' : 'points'} behind)`),
     winRun: (n, left) => `🏅 ${n} wins in a row – ${left} more for the “Winning run” achievement`,
     linesTitle: 'Goals by unit',
     distinctScorers: (n) => `👥 ${n} different scorers`,

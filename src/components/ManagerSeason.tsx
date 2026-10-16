@@ -309,7 +309,16 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
                 <span className="manager__goal">
                   {' · 🎯 '}
                   {t.online.goal[s.teams[you].goal!]}
-                  {goalReached(s.teams[you].goal!, at + 1, shown.table.length) ? ' ✓' : ''}
+                  {goalReached(s.teams[you].goal!, at + 1, shown.table.length)
+                    ? ' ✓'
+                    : (() => {
+                        // Punkte Rückstand auf den Zielplatz (Platz 1, 3, obere Hälfte bzw. letzter Nicht-Abstiegsplatz)
+                        const n = shown.table.length;
+                        const goal = s.teams[you].goal!;
+                        const target = goal === 'title' ? 1 : goal === 'top3' ? 3 : goal === 'upper' ? Math.ceil(n / 2) : n - 3;
+                        const gap = (shown.table[target - 1]?.pts ?? 0) - shown.table[at].pts;
+                        return m.played > 0 && gap >= 0 ? <span className="muted manager__goalgap">{tx.goalGap(gap)}</span> : null;
+                      })()}
                 </span>
               )}
             </p>

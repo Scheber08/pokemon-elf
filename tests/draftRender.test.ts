@@ -1784,6 +1784,20 @@ describe('ManagerSeason', () => {
     expect(container.querySelector('.manager__shiny')!.textContent).toContain(ALL.find((p) => p.id === inn)!.de);
     expect(container.querySelector('.manager__place')!.textContent).toMatch(/^Dein Team: Platz \d+ · \d+ Pkt.* · (\d+ Pkt (Vorsprung|hinter Platz 1)|punktgleich)/);
     expect(container.querySelector('.manager__goal')!.textContent).toContain('🎯 Nicht auf den letzten 3 Plätzen');
+    // Saisonziel „Titel“: erreicht ✓ oder Punkterückstand auf Platz 1
+    {
+      const { storedLeague } = await import('../src/lib/leagueTimeline');
+      const table = storedLeague(st.league, st.teams.length)!.table;
+      const meIdx = st.teams.findIndex((t) => t.id === 'h');
+      const at = table.findIndex((r) => r.team === meIdx);
+      const title = { ...st, teams: st.teams.map((t) => (t.id === 'h' ? { ...t, goal: 'title' as const } : t)) };
+      const r = await render(app(h(ManagerSeason, { room: fakeRoom(snap(title, 'h')), readOnly: false })));
+      await settle();
+      const text = r.container.querySelector('.manager__goal')!.textContent!;
+      const gap = table[0].pts - table[at].pts;
+      if (at === 0) expect(text.endsWith(' ✓')).toBe(true);
+      else expect(text.endsWith(gap === 0 ? ' (punktgleich)' : ` (${gap} ${gap === 1 ? 'Punkt' : 'Punkte'} Rückstand)`)).toBe(true);
+    }
     // Ø Tagesform der Startelf neben der Stärke
     {
       const ids = st.manager!.lineups['h'].slots.filter((x): x is number => x != null);

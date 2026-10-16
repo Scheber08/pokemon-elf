@@ -717,6 +717,7 @@ const draft = {
     routDone: (score: string, opp: string) => `💥 Schützenfest: ${score} gegen ${opp} – der Erfolg kommt zum Saisonende`,
     cleanNear: (n: number, left: number) => `🧱 ${n} Spiele ohne Gegentor – noch ${left} bis „Bollwerk“`,
     goalsNear: (n: number, left: number) => `🏭 ${n} Tore – noch ${left} bis „Torfabrik“`,
+    goalGap: (pts: number) => (pts === 0 ? ' (punktgleich)' : ` (${pts} ${pts === 1 ? 'Punkt' : 'Punkte'} Rückstand)`),
     winRun: (n: number, left: number) => `🏅 ${n} Siege in Folge – noch ${left} bis zum Erfolg „Siegesserie“`,
     linesTitle: 'Tore nach Mannschaftsteil',
     distinctScorers: (n: number) => `👥 ${n} verschiedene Torschützen`,
