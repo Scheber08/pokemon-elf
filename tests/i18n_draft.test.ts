@@ -494,7 +494,7 @@ describe('/draft an einem Gerät auf Englisch', () => {
     const best = [...container.querySelectorAll('.draft__roster')[0].querySelectorAll('button')].find((b) => b.textContent === 'Beste Wahl')!;
     await act(async () => (best as MiniElement).click());
     const diff = evaluateTeam(f, players, sc, cap).exact - evaluateTeam(f, players, sc, null).exact;
-    expect(notes()[0]).toMatch(new RegExp(`Wirkung auf den Team-Score: \\${diff >= 0 ? '+' : '−'}${Math.abs(diff).toFixed(1).replace('.', '\\.')}$`));
+    expect(notes()[0]).toMatch(new RegExp(`Wirkung auf den Team-Score: \\${diff >= 0 ? '+' : '−'}${Math.abs(diff).toFixed(1).replace('.', ',')}$`));
     localStorage.removeItem('pokemon-elf:draft');
   });
 

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useT } from '../i18n';
+import { fmtNumber, useLang, useT } from '../i18n';
 import { playerTallies, teamTallies } from '../lib/leagueTimeline';
 import type { LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -24,6 +24,9 @@ interface Props {
 /** Statistiken einer Saison: Torjäger, Vorlagen, Scorerpunkte und Teamwerte (Schüsse, xG, Ballbesitz). */
 export function SeasonStats({ league, you, nameOf, tabs = ['goals', 'assists', 'points', 'teams'], limit = 10, captains }: Props) {
   const t = useT();
+  const lang = useLang();
+  /** Dezimalzahl im Format der Sprache (de: 1,5 · en: 1.5) */
+  const dec = (n: number) => fmtNumber(n, 1, lang);
   const tx = t.draft.stats;
   const { byId } = usePokemonData();
   const { sprite } = useSettings();
@@ -85,13 +88,13 @@ export function SeasonStats({ league, you, nameOf, tabs = ['goals', 'assists', '
                 .map((r) => (
                   <tr key={r.team} className={r.team === you ? 'is-user' : ''}>
                     <td className="left">{nameOf(r.team)}</td>
-                    <td>{(r.shots / r.games).toFixed(1)}</td>
-                    <td>{(r.onTarget / r.games).toFixed(1)}</td>
+                    <td>{dec(r.shots / r.games)}</td>
+                    <td>{dec(r.onTarget / r.games)}</td>
                     <td>
-                      {r.xg.toFixed(1)} <small className="muted">({r.goals})</small>
+                      {dec(r.xg)} <small className="muted">({r.goals})</small>
                     </td>
                     <td>
-                      {r.xga.toFixed(1)} <small className="muted">({r.against})</small>
+                      {dec(r.xga)} <small className="muted">({r.against})</small>
                     </td>
                     <td>{r.cleanSheets}</td>
                     <td>{r.possession} %</td>

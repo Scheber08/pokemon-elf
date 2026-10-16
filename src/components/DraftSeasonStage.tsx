@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useT } from '../i18n';
+import { fmtNumber, useLang, useT } from '../i18n';
 import { ApiRequestError } from '../lib/api/client';
 import { requestRematch } from '../lib/api/draftClient';
 import { draftSeason, groupEntries } from '../lib/draftEngine';
@@ -41,6 +41,7 @@ import { SHINY_FIT_BONUS } from '../lib/shiny';
  */
 export function DraftSeasonStage({ room }: { room: DraftRoom }) {
   const t = useT();
+  const lang = useLang();
   const { byId, scale } = usePokemonData();
   const { sprite, notify } = useSettings();
   const s = room.state!;
@@ -122,7 +123,7 @@ export function DraftSeasonStage({ room }: { room: DraftRoom }) {
               const bonus = s.shinies?.length ? (id: number) => (s.shinies!.includes(id) ? SHINY_FIT_BONUS : 0) : undefined;
               const sc = scale('all');
               const diff = tm.captain != null ? evaluateTeam(tm.formation, players, sc, tm.captain, bonus).exact - evaluateTeam(tm.formation, players, sc, null, bonus).exact : 0;
-              return tm.captain != null ? `${t.captain.windowNote} ${t.captain.effect(`${diff >= 0 ? '+' : '−'}${Math.abs(diff).toFixed(1)}`)}` : t.captain.windowNote;
+              return tm.captain != null ? `${t.captain.windowNote} ${t.captain.effect(`${diff >= 0 ? '+' : '−'}${fmtNumber(Math.abs(diff), 1, lang)}`)}` : t.captain.windowNote;
             })()}
           />
           {league && ratings.length > 1 && (() => {

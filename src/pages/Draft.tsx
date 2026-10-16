@@ -27,7 +27,7 @@ import { Pitch, type SlotState } from '../components/Pitch';
 import { PokemonGrid } from '../components/PokemonGrid';
 import { Segmented } from '../components/Segmented';
 import { Sprite } from '../components/Sprite';
-import { useT } from '../i18n';
+import { fmtNumber, useLang, useT } from '../i18n';
 import { draftsSupported } from '../lib/api/draftClient';
 import { rainbowGain, typeElevenGain } from '../config/pokemonTypes';
 import { BULLSEYE_FIT, fitImpact, positionFit, roundBestPicks, soleTopIndex } from '../lib/fit';
@@ -204,6 +204,7 @@ interface LocalChampion {
 /** Hot-Seat-Draft an einem Gerät (Modus „An einem Gerät"). */
 function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
   const t = useT();
+  const lang = useLang();
   const tx = t.draft.local;
   const { all, byId, scale } = usePokemonData();
   const toast = useToast();
@@ -1009,7 +1010,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     const bonus = shinies ? (id: number) => (shinies.has(id) ? SHINY_FIT_BONUS : 0) : undefined;
                     const sc = scale('all');
                     const diff = evaluateTeam(tm.formation, players, sc, tm.captain, bonus).exact - evaluateTeam(tm.formation, players, sc, null, bonus).exact;
-                    return `${t.captain.note} ${t.captain.effect(`${diff >= 0 ? '+' : '−'}${Math.abs(diff).toFixed(1)}`)}`;
+                    return `${t.captain.note} ${t.captain.effect(`${diff >= 0 ? '+' : '−'}${fmtNumber(Math.abs(diff), 1, lang)}`)}`;
                   })()}
                 />
               </div>

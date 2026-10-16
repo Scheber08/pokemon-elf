@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react';
-import { useT } from '../i18n';
+import { fmtNumber, useLang, useT } from '../i18n';
 import { formatMinute, type Goal, type Match } from '../lib/season';
 import { lineupNumbers, type ReplayLineup } from '../lib/matchReplay';
 import { MatchPitch } from './MatchPitch';
@@ -127,6 +127,7 @@ function ReportBody({
   lineups,
 }: Pick<Props, 'match' | 'nameOf' | 'pokemonName'> & { lineups: [ReplayLineup | null, ReplayLineup | null] }) {
   const t = useT();
+  const lang = useLang();
   const tx = t.draft.report;
   // Trikotnummern je Seite (nur mit bekannter Aufstellung)
   const numbers = useMemo(() => lineups.map((l) => (l ? lineupNumbers(l) : null)), [lineups]);
@@ -171,7 +172,7 @@ function ReportBody({
         { label: tx.possession, home: st.possession, away: 100 - st.possession, text: (v) => `${v} %` },
         { label: tx.shots, home: st.shots[0], away: st.shots[1] },
         { label: tx.onTarget, home: st.onTarget[0], away: st.onTarget[1] },
-        { label: tx.xg, home: st.xg[0], away: st.xg[1], text: (v) => v.toFixed(1) },
+        { label: tx.xg, home: st.xg[0], away: st.xg[1], text: (v) => fmtNumber(v, 1, lang) },
       ]
     : [];
   return (

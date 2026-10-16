@@ -3431,7 +3431,8 @@ describe('ManagerSeason', () => {
     await settle();
     const card = a.container.querySelector('.draft-captain-window')!;
     expect(card.textContent).toMatch(/Kapitän wählen – noch \d+ s bis zum Anpfiff/);
-    expect(card.textContent).toMatch(/Wirkung auf den Team-Score: [+−]\d+\.\d/);
+    // Dezimalzahl im deutschen Format (Komma)
+    expect(card.textContent).toMatch(/Wirkung auf den Team-Score: [+−]\d+,\d/);
     // Favorit und eigener Rang nach Team-Score (alle Teams der Liga)
     const ratings = s.league!.teams.map((x) => x.rating);
     const me = s.teams.findIndex((x) => x.id === 'h');
