@@ -275,6 +275,9 @@ describe('Builder auf Englisch', () => {
     await settle();
     expect(container.textContent).toContain('Bild speichern');
     const toggle = container.querySelector('button.lang-toggle')!;
+    // Beschriftung in der Zielsprache, mit passendem lang-Attribut
+    expect(toggle.getAttribute('aria-label')).toBe('Switch to English');
+    expect(toggle.getAttribute('lang')).toBe('en');
     await act(async () => toggle.click());
     await settle();
     const all = texts(container).join(' | ');
@@ -283,6 +286,7 @@ describe('Builder auf Englisch', () => {
     expect(all).toContain('Goalkeeper: Snorlax – replace');
     expect(germanLeft(container)).toEqual([]);
     expect(JSON.parse(localStorage.getItem('pokemon-elf:settings')!).lang).toBe('en');
+    expect(container.querySelector('button.lang-toggle')!.getAttribute('lang')).toBe('de');
     await act(async () => container.querySelector('button.lang-toggle')!.click());
     await settle();
     expect(container.textContent).toContain('Bild speichern');

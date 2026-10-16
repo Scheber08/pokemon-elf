@@ -45,6 +45,8 @@ export function Header() {
             type="button"
             className="icon-btn lang-toggle"
             onClick={() => setLang(lang === 'de' ? 'en' : 'de')}
+            // Beschriftung steht in der Zielsprache – Screenreader sprechen sie so richtig aus
+            lang={lang === 'de' ? 'en' : 'de'}
             aria-label={t.nav.langSwitchTo}
             title={t.nav.langSwitchTo}
           >

@@ -132,7 +132,7 @@ Alle Zahlen sind in `src/config/` änderbar – die Tests prüfen Eigenschaften,
   Spielerprofil.
 
 Im Draft zeigt ein Hover über eine Position, welche Werte dort zählen (Schlüssel/Hilft/Kleiner Anteil,
-Typ-Bonus, Gewicht im Team-Score). Die Oberfläche gibt es auf Deutsch und Englisch (Umschalter im Kopf,
+Typ-Bonus, Gewicht im Team-Score). Die Oberfläche gibt es auf Deutsch und Englisch (Umschalter im Kopf, beschriftet in der Zielsprache mit passendem `lang`,
 `src/i18n/`; Texte je Bereich in `de/*.ts`, `en/*.ts` ist dagegen typgeprüft).
 
 Nach jedem Challenge-Run läuft die Saison im **Live-Ticker** ab (Spieltag für Spieltag, Pause, 1×/2×/4×,
