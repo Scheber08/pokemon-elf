@@ -23,6 +23,7 @@ const result: Messages['result'] = {
   rankAllTime: (n) => `${ordinal(n)} all-time`,
   rejected: 'The server didn’t rank this run.',
   notRanked: 'Not ranked',
+  shareNewBest: ' 🏅 New personal best!',
   shareText: (record, score, place, points, challenge) => `My Pokémon XI went ${record} – ${ordinal(place)} place with ${points} points (${challenge})! Score ${score}`,
   imageSaved: 'Image saved, text copied to clipboard',
   shareFailed: 'Couldn’t share',

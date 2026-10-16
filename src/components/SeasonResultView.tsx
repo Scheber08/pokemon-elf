@@ -208,11 +208,18 @@ export function SeasonResultView({
       },
     });
 
+  // 🏅 Gehört der letzte gespeicherte Run zu diesem Ergebnis und schlug er den bisherigen Bestwert? (nicht beim ersten Run)
+  const newBest = (() => {
+    const last = stats?.last;
+    if (!last || last.prevBest == null || last.score !== evaluation.score || last.score <= last.prevBest) return null;
+    return { plus: last.score - last.prevBest, before: last.prevBest };
+  })();
+
   const onShare = async () => {
     setBusy(true);
     try {
       const blob = await makeImage();
-      const text = tr.shareText(record, evaluation.score, season.position, season.points, t.game.challenge[challenge]);
+      const text = tr.shareText(record, evaluation.score, season.position, season.points, t.game.challenge[challenge]) + (newBest ? tr.shareNewBest : '');
       // Link direkt zur Challenge (statt nur zur Startseite)
       const path = CHALLENGE_PATH[challenge] ?? '';
       const how = await shareImage(blob, `${slugify(teamName)}-${record}.png`, `${text} ${window.location.origin}${path}`);
@@ -338,12 +345,7 @@ export function SeasonResultView({
             </dl>
             <p className="result-hero__verdict">{verdict(season, tr.verdict)}</p>
             {/* 🏅 Neuer persönlicher Bestwert (Score) – nicht beim ersten Run */}
-            {(() => {
-              // Gehört der letzte gespeicherte Run zu diesem Ergebnis und schlug er den bisherigen Bestwert?
-              const last = stats?.last;
-              if (!last || last.prevBest == null || last.score !== evaluation.score || last.score <= last.prevBest) return null;
-              return <p className="result-hero__best">{tr.newBest(last.score - last.prevBest, last.prevBest)}</p>;
-            })()}
+            {newBest && <p className="result-hero__best">{tr.newBest(newBest.plus, newBest.before)}</p>}
             {(() => {
               // Tore des Kapitäns (alle Positionen, an denen er getroffen hat)
               const c = input.captain;

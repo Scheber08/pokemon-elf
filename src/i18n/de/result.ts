@@ -21,6 +21,8 @@ const result = {
   rankAllTime: (n: number) => `Platz ${n} allzeit`,
   rejected: 'Der Server hat diesen Run nicht gewertet.',
   notRanked: 'Nicht gewertet',
+  /** Anhang an den Teilen-Text bei neuem persönlichem Bestwert */
+  shareNewBest: ' 🏅 Neuer Bestwert!',
   shareText: (record: string, score: number, place: number, points: number, challenge: string) =>
     `Ich bin mit meiner Pokémon-Elf ${record} gegangen – Platz ${place} mit ${points} Punkten (${challenge})! Score ${score}`,
   imageSaved: 'Bild gespeichert, Text in die Zwischenablage kopiert',
