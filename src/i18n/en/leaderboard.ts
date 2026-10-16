@@ -30,6 +30,7 @@ const leaderboard: Messages['leaderboard'] = {
   yourRank: 'Your position',
   entryTime: (d) => d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
   gapToNext: (pts, rank) => `${pts} pts behind ${ordinal(rank)} place`,
+  leadOver: (pts) => `🥇 ${plural(pts, 'pt', 'pts')} ahead of 2nd place`,
   gapToFirst: (pts) => `${pts} pts behind 1st place`,
   yourRankGap: (pts, top) => `${pts} pts short of the top ${top}`,
   playNow: 'Play now',

@@ -181,6 +181,10 @@ function BoardTable({ rows, mine, onReload, focusPlayer = null }: BoardTableProp
           // (nur, wenn Platz 1 mit angezeigt wird)
           const top = rows[0];
           const idx = rows.indexOf(r);
+          if (r.me && idx === 0 && r.rank === 1 && rows[1] && r.points > rows[1].points) {
+            // 🥇 Selbst auf Platz 1: Vorsprung auf den Zweiten
+            return <small className="lb-me__gap lb-me__lead">{t.leaderboard.leadOver(r.points - rows[1].points)}</small>;
+          }
           if (!r.me || !top || idx <= 0) return null;
           const parts: string[] = [];
           const above = rows

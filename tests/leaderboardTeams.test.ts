@@ -488,6 +488,26 @@ describe('Rangliste: Team ansehen (online)', () => {
     }
   });
 
+  it('eigene Zeile auf Platz 1: Vorsprung auf Platz 2 (nicht bei Gleichstand)', async () => {
+    storeSettings('de');
+    const saved = BOARD.rows;
+    BOARD.rows = [{ ...saved[0], me: true }, { ...saved[1], points: 85 }];
+    try {
+      await stubServer();
+      const c = await render(app());
+      await settle();
+      expect(c.querySelectorAll('.lb-me__lead').map((g) => g.textContent)).toEqual(['🥇 7 Pkt Vorsprung auf Platz 2']);
+      BOARD.rows = [{ ...saved[0], me: true }, { ...saved[1], points: saved[0].points }];
+      const tie = await render(app());
+      await settle();
+      expect(tie.querySelector('.lb-me__lead')).toBeNull();
+      const en = (await import('../src/i18n/en/leaderboard')).default;
+      expect([1, 7].map((n) => en.leadOver(n))).toEqual(['🥇 1 pt ahead of 2nd place', '🥇 7 pts ahead of 2nd place']);
+    } finally {
+      BOARD.rows = saved;
+    }
+  });
+
   it('eigene Zeile: Abstand zum nächstbesseren Platz (Gleichstand übersprungen) und zu Platz 1', async () => {
     storeSettings('de');
     const saved = BOARD.rows;
