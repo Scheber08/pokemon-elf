@@ -122,6 +122,7 @@ const trainer: Messages['trainer'] = {
       snowcap: 'Snowflake beanie',
       advent: 'Advent wreath',
       propeller: 'Propeller cap',
+      pikaears: 'Pikachu ears',
       jester: 'Jester cap',
       tyrolean: 'Tyrolean hat',
       leaves: 'Autumn wreath',

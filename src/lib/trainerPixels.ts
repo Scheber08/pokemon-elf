@@ -455,6 +455,15 @@ function hat(c: Canvas, id: string, cloth: string) {
       c.rect(17, 1, 5, 1, '#3fb8e6');
       c.rect(15, 1, 2, 1, '#f2c230');
       break;
+    case 'pikaears':
+      // Pikachu-Ohren (Pokémon Day): Haarreif mit zwei langen, schräg abstehenden gelben Ohren und schwarzen Spitzen
+      c.fill((x, y) => y === 9 && head(x, y), '#26282e', null);
+      for (const side of [-1, 1] as const) {
+        const ear: Mask = (x, y) => y >= 0 && y <= 9 && Math.abs(x - (15.5 + side * (4 + (9 - y) * 0.7))) <= 0.7 + y * 0.22;
+        c.fill(ear, '#f7d02c', '#8a6d08');
+        c.fill((x, y) => ear(x, y) && y <= 2, '#26282e', null);
+      }
+      break;
     case 'wizard':
       c.fill((x, y) => y <= 9 && y >= 0 && Math.abs(x - 15.5) <= 1 + y * 0.9, '#5b3fb0');
       c.rect(6, 9, 20, 2, '#4a3191');

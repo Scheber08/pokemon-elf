@@ -71,6 +71,8 @@ const ADVENT = ['11-20', '11-30', '🕯️'] as const;
 const CHILDREN = ['09-16', '09-22', '🎈'] as const;
 /** Tag der Erde (22. April) */
 const EARTH = ['04-18', '04-24', '🌍'] as const;
+/** Pokémon Day (27. Februar, Jahrestag der ersten Spiele) */
+const POKEDAY = ['02-20', '02-27', '🎮'] as const;
 /** Valentinstag */
 const VALENTINE = ['02-07', '02-14', '💘'] as const;
 
@@ -175,6 +177,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('hat', 'snowcap', 250), ...WINTER),
   seasonal(item('hat', 'advent', 300), ...ADVENT),
   seasonal(item('hat', 'propeller', 250), ...CHILDREN),
+  seasonal(item('hat', 'pikaears', 300), ...POKEDAY),
   // Accessoire
   item('accessory', 'none', 0),
   item('accessory', 'freckles', 0),
@@ -254,6 +257,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('companion', '607', 350), ...ADVENT),
   seasonal(item('companion', '172', 350), ...CHILDREN),
   seasonal(item('companion', '389', 500), ...EARTH),
+  seasonal(item('companion', '26', 450), ...POKEDAY),
   item('companion', '6', 600),
   item('companion', '149', 600),
   item('companion', '448', 600),
