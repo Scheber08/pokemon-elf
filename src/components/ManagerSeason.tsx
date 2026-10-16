@@ -972,7 +972,7 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
 
 /** Eigene Aufstellung: tauschen (Feld, Standardschütze, Bank), Formation, automatisch, Kader mit Tagesform. */
 /** Saisontore je Pokémon eines Liga-Teams (gespielte Spiele) */
-type SquadSort = 'fit' | 'form' | 'goals' | 'assists' | 'points';
+type SquadSort = 'fit' | 'form' | 'goals' | 'assists' | 'points' | 'starts';
 
 /** Saisonvorlagen je Pokémon eines Liga-Teams */
 function assistsOf(league: LeagueResult | null | undefined, team: number): Map<number, number> {
@@ -1167,7 +1167,9 @@ function LineupEditor({
           ? (goals?.get(r.p.id) ?? 0)
           : sortBy === 'assists'
             ? (assists?.get(r.p.id) ?? 0)
-            : (goals?.get(r.p.id) ?? 0) + (assists?.get(r.p.id) ?? 0);
+            : sortBy === 'starts'
+              ? (starts?.get(r.p.id) ?? 0)
+              : (goals?.get(r.p.id) ?? 0) + (assists?.get(r.p.id) ?? 0);
   const sorted = sortBy ? [...rows].sort((a, b) => sortVal(b) - sortVal(a)) : rows;
   const sortHead = (key: SquadSort, label: string, title?: string) => (
     <th scope="col" title={title} aria-sort={sortBy === key ? 'descending' : undefined}>
@@ -1377,6 +1379,7 @@ function LineupEditor({
               {sortHead('goals', tx.colGoals, tx.goalsTitle)}
               {sortHead('assists', tx.colAssists, tx.assistsTitle)}
               {sortHead('points', tx.colPoints, tx.pointsTitle)}
+              {sortHead('starts', tx.colStarts, tx.startsTitle)}
             </tr>
           </thead>
           <tbody>
@@ -1428,6 +1431,7 @@ function LineupEditor({
                 <td>{goals?.get(r.p.id) || '–'}</td>
                 <td>{assists?.get(r.p.id) || '–'}</td>
                 <td>{(goals?.get(r.p.id) ?? 0) + (assists?.get(r.p.id) ?? 0) || '–'}</td>
+                <td className="manager__starts">{starts?.get(r.p.id) || '–'}</td>
               </tr>
             ))}
           </tbody>

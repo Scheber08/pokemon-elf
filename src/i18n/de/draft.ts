@@ -731,6 +731,8 @@ const draft = {
     tipStreak: (n: number) => `${n} in Folge`,
     colPoints: 'Sc.',
     pointsTitle: 'Scorerpunkte (Tore + Vorlagen) in dieser Saison',
+    colStarts: 'Sp.',
+    startsTitle: 'Spiele von Beginn an (Startelf) in dieser Saison',
     goalsTitle: 'Tore in dieser Saison',
     formTitle: (n: number) => (n > 0 ? `Tagesform +${n}` : n < 0 ? `Tagesform ${n}` : 'Tagesform normal'),
     formNote: (fit: number) => `Jede Formstufe verschiebt den Fit um ${fit} Punkte. Die Form gilt für den nächsten Spieltag.`,

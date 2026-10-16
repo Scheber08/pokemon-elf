@@ -2108,6 +2108,13 @@ describe('ManagerSeason', () => {
     const el = container.querySelector('.manager__ironmen');
     expect(iron.length).toBeGreaterThan(0);
     expect(el!.textContent).toBe(`🔋 Dauerbrenner (alle 5 Spiele von Beginn an): ${iron.join(', ')}`);
+    // Spalte „Sp.“ der Kader-Tabelle: dieselben Einsätze je Pokémon
+    const cells = container.querySelectorAll('.manager__squad tbody tr').map((tr) => {
+      const name = tr.querySelector('td')!.textContent!.trim();
+      const id = ALL.find((p) => name.startsWith(p.de))!.id;
+      return [tr.querySelector('.manager__starts')!.textContent, String(counts.get(id) ?? '–')];
+    });
+    for (const [shown, expected] of cells) expect(shown).toBe(expected);
   });
 
   it('Manager: 🏅 Siege in Folge auf dem Weg zum Erfolg „Siegesserie“ (3 bis 6)', async () => {

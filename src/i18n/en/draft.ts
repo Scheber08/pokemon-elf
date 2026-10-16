@@ -664,6 +664,8 @@ const draft: Messages['draft'] = {
     tipStreak: (n) => `${n} in a row`,
     colPoints: 'Pts',
     pointsTitle: 'Goal involvements (goals + assists) this season',
+    colStarts: 'GS',
+    startsTitle: 'Games started this season',
     goalsTitle: 'Goals this season',
     formTitle: (n) => (n > 0 ? `Daily form +${n}` : n < 0 ? `Daily form ${n}` : 'Daily form normal'),
     formNote: (fit) => `Each form step shifts the fit by ${fit} points. The form applies to the next matchday.`,
