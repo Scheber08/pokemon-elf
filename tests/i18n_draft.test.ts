@@ -771,6 +771,8 @@ describe('/draft an einem Gerät auf Englisch', () => {
       const el = r.container.querySelector('.draft-records__leaky');
       expect(el!.textContent).toMatch(/^🥅 Leakiest defence.+ – \d+ goals? conceded$/);
     }
+    // 🪫 Bluntest attack record (English)
+    expect(r.container.querySelector('.draft-records__blunt')!.textContent).toMatch(/^🪫 Bluntest attack.+ – \d+ goals?$/);
     // 1️⃣ First pick with its season record (English): pick #1 went to My Team
     expect(r.container.querySelector('.draft-results__first')!.textContent).toMatch(/^1️⃣ First pick: .+ \(My Team\) – \d+ goals?, \d+ assists?$/);
     // Expectation vs. result under the human team's place (English)

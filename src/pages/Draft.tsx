@@ -1370,6 +1370,16 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     </div>
                   ) : null;
                 })()}
+                {(() => {
+                  // 🪫 Harmloseste Offensive (wie online)
+                  const blunt = tb.reduce((a, b) => (b.gf <= a.gf ? b : a));
+                  return blunt.team !== attack.team ? (
+                    <div className="draft-records__blunt">
+                      <dt>{r.recordBlunt}</dt>
+                      <dd>{r.recordGoals(nameOf(blunt.team), blunt.gf)}</dd>
+                    </div>
+                  ) : null;
+                })()}
                 {draws.d >= 4 && (
                   <div>
                     <dt>{r.recordDraws}</dt>
