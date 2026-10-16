@@ -63,9 +63,9 @@ const DATA = engine.createEngineData(ALL);
 const SCALE = buildScale(ALL, 'all');
 
 /** Spielt einen Run automatisch: erster wählbarer Kandidat, erster freier Slot. */
-function autoPlay(config: import('../src/lib/challengeEngine').RunConfig) {
+function autoPlay(config: import('../src/lib/challengeEngine').RunConfig, stopAtRound = Infinity) {
   let s = engine.startRun(config, DATA);
-  while (!engine.isComplete(s)) {
+  while (!engine.isComplete(s) && s.round < stopAtRound) {
     const pick =
       engine.MODE_RULES[config.challenge].roll === 'pokemon'
         ? DATA.byId.get(s.roll!.pokemonId!)!
@@ -428,6 +428,34 @@ describe('34–0 Challenge auf Deutsch (unverändert)', () => {
     expect(text).toContain('Wähle ein Pokémon, das zu Region und Typ passt. Festgelegte Spieler bleiben stehen.');
     await click(el.querySelectorAll('button.pcard')[0]);
     expect(el.textContent).toContain(' gewählt. Klicke auf einen freien Platz auf dem Feld, um ihn festzulegen.');
+  });
+});
+
+describe('Challenge-Run: letzte Runde', () => {
+  it('🏁 Letzte Runde nur in der letzten Runde', async () => {
+    storeLang('de');
+    storeNames('c340');
+    stubFetch();
+    const config = { challenge: 'c340' as const, formation: '4-3-3' as const, ssEnabled: false, seed: 7 };
+    const play = async (engineState: unknown) => {
+      localStorage.setItem(
+        'pokemon-elf:run:c340',
+        JSON.stringify({ v: 2, phase: 'play', setup: { ...config, teamName: 'Pallet Power' }, engine: engineState, token: null, day: null, online: false, result: null }),
+      );
+      const el = await render(app(h(Challenge340)));
+      await settle();
+      return allText(el);
+    };
+    const total = engine.totalRounds(config);
+    let text = await play(autoPlay(config, total - 1));
+    expect(text).toContain(`Runde ${total - 1}/${total}`);
+    expect(text).not.toContain('🏁 Letzte Runde');
+    text = await play(autoPlay(config, total));
+    expect(text).toContain(`Runde ${total}/${total}`);
+    expect(text).toContain('🏁 Letzte Runde');
+    // Fertige Elf: keine Ansage mehr
+    text = await play(autoPlay(config));
+    expect(text).not.toContain('🏁 Letzte Runde');
   });
 });
 

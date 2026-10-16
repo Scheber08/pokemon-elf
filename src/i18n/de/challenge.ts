@@ -51,6 +51,8 @@ const challenge = {
   allPlaced: 'Alle Plätze belegt',
   round: 'Runde',
   original151: 'Original 151',
+  /** Statuszeile: die letzte Runde des Runs */
+  lastRound: '🏁 Letzte Runde',
   legends: 'Legendäre',
   rerolls: 'Neu würfeln:',
   region: 'Region',

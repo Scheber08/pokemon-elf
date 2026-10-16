@@ -48,6 +48,7 @@ const challenge: Messages['challenge'] = {
   allPlaced: 'All spots filled',
   round: 'Round',
   original151: 'Original 151',
+  lastRound: '🏁 Final round',
   legends: 'Legendaries',
   rerolls: 'Rerolls:',
   region: 'Region',

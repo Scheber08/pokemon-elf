@@ -198,6 +198,8 @@ export function RunBoard({
       </>
     ),
   ];
+  // 🏁 Letzte Runde (wie im Draft)
+  if (!complete && total > 1 && state.round === total) status.push(<span className="statusline__last">{tc.lastRound}</span>);
   if (challenge === 'c151') status.push(<>{tc.original151}</>);
   if (challenge === 'retro340') status.push(<>{t.game.challenge.retro340}</>);
   if (rules.maxLegends != null) {
