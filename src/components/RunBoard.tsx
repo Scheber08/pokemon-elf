@@ -19,6 +19,7 @@ import {
   type RunState,
 } from '../lib/challengeEngine';
 import { createClickGuard } from '../lib/clickGuard';
+import { BULLSEYE_FIT, positionFit } from '../lib/fit';
 import type { Pokemon, SpriteStyle } from '../types';
 import { TypeBadges } from './Badges';
 import { RollCard, StatusLine, useRolling } from './ChallengeParts';
@@ -374,22 +375,45 @@ export function RunBoard({
         />
       </div>
       {state.picks.length > 0 && (
-        // 📜 Verlauf: je Runde Pokémon, Position und benutzte Rerolls
+        // 📜 Verlauf: je Runde Pokémon, Position, Fit und benutzte Rerolls
         <details className="run-log">
-          <summary>{tc.logTitle(state.picks.length)}</summary>
-          <ol>
-            {state.picks.map((pk, i) => {
+          {(() => {
+            // Fit jedes Picks auf seiner Position (Skala der Challenge), Ø in der Überschrift
+            const sc = scale(rules.scale);
+            const rows = state.picks.map((pk) => {
               const p = data.byId.get(pk.pokemonId);
-              const pos = pk.slot < 11 ? FORMATIONS[formation].slots[pk.slot]?.pos : 'SS';
-              return (
-                <li key={i}>
-                  <span className="muted">{tc.logRound(i + 1)}</span> {p ? t.game.pokemon(p) : `#${pk.pokemonId}`}
-                  {pos && <span className="muted"> → {t.game.posShort[pos]}</span>}
-                  {pk.rerolls.length > 0 && <span className="muted"> · 🎲 {pk.rerolls.map((k) => tc.logReroll[k]).join(', ')}</span>}
-                </li>
-              );
-            })}
-          </ol>
+              const pos = pk.slot < 11 ? FORMATIONS[formation].slots[pk.slot]?.pos : ('SS' as const);
+              return { pk, p, pos, fit: p && pos ? Math.round(positionFit(p, pos, sc)) : null };
+            });
+            const fits = rows.flatMap((r) => (r.fit != null ? [r.fit] : []));
+            const avg = fits.length ? Math.round(fits.reduce((a, b) => a + b, 0) / fits.length) : null;
+            return (
+              <>
+                <summary>
+                  {tc.logTitle(state.picks.length)}
+                  {avg != null && <span className="run-log__avg"> · {tc.logAvgFit(avg)}</span>}
+                </summary>
+                <ol>
+                  {rows.map(({ pk, p, pos, fit }, i) => {
+                    return (
+                      <li key={i}>
+                        <span className="muted">{tc.logRound(i + 1)}</span> {p ? t.game.pokemon(p) : `#${pk.pokemonId}`}
+                        {pos && <span className="muted"> → {t.game.posShort[pos]}</span>}
+                        {fit != null && (
+                          <span className={`run-log__fit ${fit >= BULLSEYE_FIT ? 'is-bullseye' : ''}`}>
+                            {' '}
+                            · {tc.logFit(fit)}
+                            {fit >= BULLSEYE_FIT ? ' 💯' : ''}
+                          </span>
+                        )}
+                        {pk.rerolls.length > 0 && <span className="muted"> · 🎲 {pk.rerolls.map((k) => tc.logReroll[k]).join(', ')}</span>}
+                      </li>
+                    );
+                  })}
+                </ol>
+              </>
+            );
+          })()}
         </details>
       )}
       <KitPicker kit={kit} onChange={setKit} cheer={cheer} onCheer={setCheer} />

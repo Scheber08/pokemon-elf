@@ -51,6 +51,8 @@ const challenge: Messages['challenge'] = {
   region: 'Region',
   type: 'Type',
   logTitle: (n) => `📜 Your rounds (${n})`,
+  logFit: (n) => `Fit ${n}`,
+  logAvgFit: (n) => `avg fit ${n}`,
   logRound: (n) => `R${n}`,
   logReroll: { type: 'Type', region: 'Region', pokemon: 'Pokémon' },
   rerollType: (left) => `Reroll type ${left}`,

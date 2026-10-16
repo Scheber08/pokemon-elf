@@ -339,10 +339,15 @@ describe('34–0 Challenge auf Englisch', () => {
     // 📜 Verlauf der Runden: 12 Runden (11 + Standardschütze), Format „R1 Name → POS“
     {
       const log = el.querySelector('.run-log')!;
-      expect(log.querySelector('summary')!.textContent).toBe(`📜 Your rounds (${engineState.picks.length})`);
+      // Fit je Pick auf seiner Position (Skala der Challenge), Ø in der Überschrift
+      const fits = log.querySelectorAll('.run-log__fit').map((f) => Number(f.textContent!.match(/fit (\d+)/i)![1]));
+      expect(fits).toHaveLength(engineState.picks.length);
+      const avg = Math.round(fits.reduce((a, b) => a + b, 0) / fits.length);
+      expect(log.querySelector('summary')!.textContent).toBe(`📜 Your rounds (${engineState.picks.length}) · avg fit ${avg}`);
       const items = log.querySelectorAll('li').map((li) => li.textContent);
       expect(items).toHaveLength(engineState.picks.length);
-      expect(items[0]).toMatch(/^R1 .+ → [A-Z]{2,3}( · 🎲 .+)?$/);
+      expect(items[0]).toMatch(/^R1 .+ → [A-Z]{2,3} · Fit \d+( 💯)?( · 🎲 .+)?$/);
+      for (const f of log.querySelectorAll('.run-log__fit')) expect(f.className.includes('is-bullseye')).toBe(f.textContent!.includes('💯'));
     }
 
     await click(button(el, 'See result'));

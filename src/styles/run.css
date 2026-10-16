@@ -144,3 +144,8 @@
   display: grid;
   gap: 2px;
 }
+
+.run-log__fit.is-bullseye {
+  color: var(--green-text);
+  font-weight: 700;
+}

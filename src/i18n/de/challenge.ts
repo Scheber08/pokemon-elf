@@ -53,6 +53,8 @@ const challenge = {
   region: 'Region',
   type: 'Typ',
   logTitle: (n: number) => `📜 Deine Runden (${n})`,
+  logFit: (n: number) => `Fit ${n}`,
+  logAvgFit: (n: number) => `Ø Fit ${n}`,
   logRound: (n: number) => `R${n}`,
   logReroll: { type: 'Typ', region: 'Region', pokemon: 'Pokémon' } as Record<'type' | 'region' | 'pokemon', string>,
   rerollType: (left: string) => `Typ neu würfeln ${left}`,
