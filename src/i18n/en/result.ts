@@ -50,6 +50,8 @@ const result: Messages['result'] = {
   ordinal,
   weakSpots: 'Weak spots according to scouting: ',
   venueRecords: (home, away) => `🏠 Home ${home} · ✈️ Away ${away} (W–D–L)`,
+  clinched: (team, round, left, you) =>
+    `🏁 ${you ? 'You had' : `${team} had`} the title sewn up on matchday ${round} – ${left === 1 ? '1 matchday' : `${left} matchdays`} to spare`,
   runWins: (n) => `🔥 Longest winning run: ${n} games`,
   runUnbeaten: (n) => `🛡️ Longest unbeaten run: ${n} games`,
   weakSpotsNote: ' (marked on the pitch)',

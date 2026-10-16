@@ -377,6 +377,11 @@ describe('34–0 Challenge auf Englisch', () => {
     // 💥 Höchster Sieg / höchste Niederlage (Englisch)
     expect(el.querySelector('.result-extremes')!.textContent).toMatch(/^(Your biggest win: \d+:\d+ against .+?)?( · )?(Your heaviest defeat: \d+:\d+ against .+)?$/);
     // 😊 / 😖 Lieblings- und Angstgegner der Saison (Englisch)
+    // 🏁 Meister rechnerisch fest (nur, wenn vor dem letzten Spieltag; Englisch)
+    {
+      const c = el.querySelector('.result-clinched');
+      if (c) expect(c.textContent).toMatch(/^🏁 (You had|.+ had) the title sewn up on matchday \d+ – \d+ matchdays? to spare$/);
+    }
     expect(el.querySelector('.result-foes')!.textContent).toMatch(/^😊 Favourite opponent: .+ \(\d+ points?, \d+:\d+\) · 😖 Bogey team: .+ \(\d+ points?, \d+:\d+\)$/);
   });
 });

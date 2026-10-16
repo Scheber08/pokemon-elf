@@ -66,3 +66,33 @@ export function venueRecords(matches: readonly { isHome: boolean; outcome: 'S' |
   }
   return out;
 }
+
+/**
+ * 🏁 Ab wann stand der Meister rechnerisch fest? Erster Spieltag, nach dem ein Team mehr Punkte hat, als
+ * jedes andere mit Siegen in all seinen restlichen Spielen noch erreichen kann (Punktgleichheit zählt nicht
+ * als sicher). null, wenn das erst am letzten Spieltag (oder nie eindeutig) feststand.
+ */
+export function titleClinched(
+  matches: readonly Pick<Match, 'round' | 'home' | 'away' | 'hg' | 'ag'>[],
+  teams: number,
+): { team: number; round: number; left: number } | null {
+  const rounds = [...new Set(matches.map((m) => m.round))].sort((a, b) => a - b);
+  const pts = new Array<number>(teams).fill(0);
+  const left = new Array<number>(teams).fill(0);
+  for (const m of matches) {
+    left[m.home]++;
+    left[m.away]++;
+  }
+  for (let i = 0; i < rounds.length - 1; i++) {
+    for (const m of matches) {
+      if (m.round !== rounds[i]) continue;
+      left[m.home]--;
+      left[m.away]--;
+      pts[m.home] += m.hg > m.ag ? 3 : m.hg === m.ag ? 1 : 0;
+      pts[m.away] += m.ag > m.hg ? 3 : m.hg === m.ag ? 1 : 0;
+    }
+    const lead = pts.indexOf(Math.max(...pts));
+    if (pts.every((p, t) => t === lead || p + 3 * left[t] < pts[lead])) return { team: lead, round: rounds[i], left: rounds.length - 1 - i };
+  }
+  return null;
+}

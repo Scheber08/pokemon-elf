@@ -17,7 +17,7 @@ import {
   type RunRanking,
 } from '../lib/runFinish';
 import { formatRecord, type SeasonResult } from '../lib/season';
-import { favouriteFoes, longestRuns, venueRecords } from '../lib/foes';
+import { favouriteFoes, longestRuns, titleClinched, venueRecords } from '../lib/foes';
 import { scorerSummary } from '../lib/seasonTimeline';
 import { usePokemonData, type ScaleKind } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
@@ -484,6 +484,13 @@ export function SeasonResultView({
         </div>
 
         <section className="card result-facts">
+        {(() => {
+          // 🏁 Meister rechnerisch fest – nur, wenn das vor dem letzten Spieltag war
+          const c = titleClinched(season.league.matches, season.league.teams.length);
+          if (!c) return null;
+          const name = c.team === 0 ? teamName : t.game.club(season.league.teams[c.team]?.name ?? '');
+          return <p className="small muted result-clinched">{tr.clinched(name, c.round, c.left, c.team === 0)}</p>;
+        })()}
         {(() => {
           // 😊 Lieblingsgegner und 😖 Angstgegner der Saison (wie im Draft-Ergebnis; eigenes Team = Index 0)
           const foes = favouriteFoes(season.league.matches, 0);
