@@ -147,6 +147,8 @@ const leaderboard = {
     best: 'Bester Run',
     showTeam: 'Team ansehen',
     /** Letzte Runs: Saison ohne Niederlage */
+    /** Run mit perfekter Saison (nur Siege) */
+    perfectRunTitle: 'Perfekte Saison – nur Siege',
     unbeatenTitle: 'Ungeschlagen – keine Niederlage in der Saison',
     bestRunTitle: 'Bestwert dieser Wertung',
     recentFilter: 'Letzte Runs nach Wertung filtern',

@@ -136,6 +136,7 @@ const leaderboard: Messages['leaderboard'] = {
     perfectTitle: (n) => (n === 1 ? 'One perfect season (wins only)' : `${n} perfect seasons (wins only)`),
     best: 'Best run',
     showTeam: 'View team',
+    perfectRunTitle: 'Perfect season – wins only',
     unbeatenTitle: 'Unbeaten – no defeat all season',
     bestRunTitle: 'Personal best in this mode',
     recentFilter: 'Filter recent runs by mode',

@@ -74,6 +74,8 @@ describe('Spielerprofil', () => {
     const unbeaten = container.querySelectorAll('.profile__unbeaten');
     expect(unbeaten.length).toBe(1);
     expect(unbeaten[0].getAttribute('aria-label')).toBe('Ungeschlagen – keine Niederlage in der Saison');
+    // 🏆 statt 🛡️ bei einer perfekten Saison (nur Siege) – im Fixture keine
+    expect(container.querySelector('.profile__perfect-run')).toBeNull();
     // Filter „Letzte Runs“ nach Wertung (Runs aus zwei Wertungen)
     const chips = container.querySelectorAll('.profile__filter button');
     expect(chips.map((b) => b.textContent)).toEqual(['Alle', '151 Challenge', '34–0 Challenge']);
@@ -93,6 +95,26 @@ describe('Spielerprofil', () => {
     for (let i = 0; i < 3; i++) await act(async () => new Promise((r) => setTimeout(r, 0)));
     expect(written).toEqual(['https://elf.example/spieler/abc']);
     expect(text(doc.body)).toContain('Link zum Profil kopiert');
+    await act(async () => root.unmount());
+  });
+
+  it('🏆 an Runs mit perfekter Saison (statt 🛡️)', async () => {
+    const recent = [
+      { ...PROFILE.recent[0], record: { w: 34, d: 0, l: 0 }, points: 102 },
+      { ...PROFILE.recent[2], record: { w: 18, d: 16, l: 0 } },
+    ];
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ ...PROFILE, recent }), { status: 200, headers: { 'Content-Type': 'application/json' } })));
+    const container = doc.createElement('div');
+    doc.body.appendChild(container);
+    const root = createRoot(container as unknown as Element);
+    await act(async () =>
+      root.render(h(ToastProvider, null, h(MemoryRouter, { initialEntries: ['/spieler/abc'] }, h(Routes, null, h(Route, { path: '/spieler/:entryId', element: h(Profile) }))))),
+    );
+    for (let i = 0; i < 5; i++) await act(async () => new Promise((r) => setTimeout(r, 0)));
+    const perfect = container.querySelectorAll('.profile__perfect-run');
+    expect(perfect).toHaveLength(1);
+    expect(perfect[0].getAttribute('aria-label')).toBe('Perfekte Saison – nur Siege');
+    expect(container.querySelectorAll('.profile__unbeaten')).toHaveLength(1);
     await act(async () => root.unmount());
   });
 
