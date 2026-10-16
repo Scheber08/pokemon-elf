@@ -41,6 +41,8 @@
         // Ohne gespeicherte Wahl: helles Design, wenn das Gerät hell eingestellt ist
         if (s.theme) document.documentElement.dataset.theme = s.theme;
         else if (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches) document.documentElement.dataset.theme = 'light';
+        // Browserleiste passend zum Design (wie später in Settings)
+        if (document.documentElement.dataset.theme === 'light') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f3f6f9');
         if (s.lang) document.documentElement.lang = s.lang;
       } catch (e) {}
     </script>

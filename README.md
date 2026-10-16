@@ -142,7 +142,7 @@ Nach jedem Challenge-Run läuft die Saison im **Live-Ticker** ab (Spieltag für 
 
 Alles liegt im `localStorage` (Präfix `pokemon-elf:`): Aufstellung, Einstellungen, laufende Runs,
 Bestwerte pro Challenge und die lokale Rangliste. Ohne gespeicherte Wahl folgen Sprache und Design (hell/dunkel,
-`detectTheme`, auch schon im Inline-Skript von `index.html` gegen Aufflackern) dem Gerät. Ein geteilter Link (`?elf=…`) enthält Formation,
+`detectTheme`, auch schon im Inline-Skript von `index.html` samt Farbe der Browserleiste gegen Aufflackern) dem Gerät. Ein geteilter Link (`?elf=…`) enthält Formation,
 11 IDs + Standardschütze, Region/Legendäre/Sprite-Stil und den Teamnamen – Base64url, ~36 Zeichen.
 
 ## Online-Rangliste (Cloudflare)
