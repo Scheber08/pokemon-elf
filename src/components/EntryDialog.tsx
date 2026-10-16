@@ -1,3 +1,6 @@
+import { lineupText } from '../lib/lineupText';
+import { copyText } from '../lib/exportImage';
+import { useToast } from '../state/Toast';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useT } from '../i18n';
@@ -73,6 +76,7 @@ export function EntryDialog({ source, onClose, onReloadBoard }: Props) {
   const tr = t.leaderboard.entry;
   const { sprite } = useSettings();
   const { byId, scale } = usePokemonData();
+  const toast = useToast();
   const bodyRef = useRef<HTMLDivElement>(null);
   const [attempt, setAttempt] = useState(0);
   const [friendly, setFriendly] = useState(false);
@@ -190,6 +194,21 @@ export function EntryDialog({ source, onClose, onReloadBoard }: Props) {
           <span id="entry-builder-hint" className="muted small entry__hint">
             {tr.openInBuilderHint}
           </span>
+          <button
+            type="button"
+            className="btn"
+            onClick={async () => {
+              // Wie im Builder: Aufstellung als Text, mit Link zum Builder
+              const u = new URL(window.location.href);
+              u.pathname = import.meta.env.BASE_URL || '/';
+              u.search = builderSearch(detail, sprite, byId);
+              u.hash = '';
+              const text = lineupText(t, { teamName: detail.teamName || info.player, formation: detail.formation, slots: detail.slots, ss: detail.ssEnabled ? detail.ss : null, captain: detail.captain ?? null }, byId, u.toString());
+              toast((await copyText(text)) ? t.builder.textCopied : t.common.copyFailed);
+            }}
+          >
+            {t.builder.copyText}
+          </button>
           {!friendly && (
             <button type="button" className="btn" onClick={() => setFriendly(true)}>
               {tr.friendly}

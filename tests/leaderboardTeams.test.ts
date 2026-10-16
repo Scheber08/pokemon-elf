@@ -446,6 +446,33 @@ describe('Rangliste: Team ansehen (online)', () => {
     }
   });
 
+  it('„Team ansehen“: „Als Text kopieren“ mit Teamname, Spielern, Kapitän und Builder-Link', async () => {
+    storeSettings('de');
+    const writes: string[] = [];
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (x: string) => void writes.push(x) }, configurable: true });
+    const loc = (window as unknown as { location?: unknown }).location;
+    (window as unknown as { location: unknown }).location = { href: 'https://elf.example/rangliste' };
+    try {
+      await stubServer();
+      const c = await render(app());
+      await settle();
+      await act(async () => teamButtons(c)[0].click());
+      await settle();
+      const btn = doc.body.querySelectorAll('[role="dialog"] button').find((b) => b.textContent === 'Als Text kopieren')!;
+      await act(async () => btn.click());
+      await settle();
+      const lines = writes[0].split('\n');
+      expect(lines[0]).toBe('⚽ Pallet Power (4-3-3)');
+      expect(lines[1]).toBe(`TW ${mon(ELF[0]).de}`);
+      // 11 Feldspieler + Standardschütze + Link
+      expect(lines).toHaveLength(1 + 11 + 1 + 1);
+      expect(lines[12]).toBe(`SS ${mon(SS).de}`);
+      expect(lines[13]).toMatch(/^https:\/\/elf\.example\/\?/);
+    } finally {
+      (window as unknown as { location: unknown }).location = loc;
+    }
+  });
+
   it('eigene Zeile in der Top-Liste: Abstand zu Platz 1', async () => {
     storeSettings('de');
     const saved = BOARD.rows;
