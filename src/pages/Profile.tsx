@@ -199,6 +199,21 @@ export function Profile() {
             </p>
           );
         })()}
+        {(() => {
+          // Ø Punkte der gezeigten Runs (ab zwei), dazu der Trend: die neuesten drei gegen die älteren (ab sechs)
+          const rows = p.recent.filter((r) => !only || r.challenge === only);
+          if (rows.length < 2) return null;
+          const avg = (xs: typeof rows) => xs.reduce((n, r) => n + r.points, 0) / xs.length;
+          const trend = rows.length >= 6 ? Math.round(avg(rows.slice(0, 3)) - avg(rows.slice(3))) : 0;
+          return (
+            <p className="small profile__avg">
+              {tp.recentAvg(Math.round(avg(rows)), rows.length)}
+              {trend !== 0 && (
+                <span className={`profile__trend ${trend > 0 ? 'is-up' : 'is-down'}`}> · {tp.recentTrend(trend)}</span>
+              )}
+            </p>
+          );
+        })()}
         <div className="table-scroll">
           <table className="league-table">
             <tbody>

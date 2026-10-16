@@ -130,6 +130,8 @@ const leaderboard: Messages['leaderboard'] = {
     bestRunTitle: 'Personal best in this mode',
     recentFilter: 'Filter recent runs by mode',
     recentAll: 'All',
+    recentAvg: (avg, n) => `Avg ${avg} pts over ${n} runs`,
+    recentTrend: (diff) => `${diff > 0 ? '▲ +' : '▼ −'}${Math.abs(diff)} pts in the last 3 runs vs. before`,
     recent: 'Recent runs',
     loading: 'Loading profile …',
     gone: 'This profile isn’t available (any more) – the entry is no longer on the leaderboard.',

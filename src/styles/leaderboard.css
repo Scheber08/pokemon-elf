@@ -212,3 +212,12 @@
   gap: 6px;
   margin: 0 0 10px;
 }
+.profile__avg {
+  margin: 0 0 8px;
+}
+.profile__trend.is-up {
+  color: var(--green-text);
+}
+.profile__trend.is-down {
+  color: var(--red-text);
+}

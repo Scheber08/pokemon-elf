@@ -69,8 +69,13 @@ describe('Spielerprofil', () => {
     expect(chips.map((b) => b.textContent)).toEqual(['Alle', '151 Challenge', '34–0 Challenge']);
     const recentRows = () => container.querySelectorAll('section')[1].querySelectorAll('tr').length;
     expect(recentRows()).toBe(3);
-    await act(async () => chips[2].click());
+    // Ø Punkte der gezeigten Runs (ab zwei; Trend erst ab sechs)
+    expect(container.querySelector('.profile__avg')!.textContent).toBe('Ø 71 Pkt aus 3 Runs');
+    await act(async () => chips[1].click());
+    expect(container.querySelector('.profile__avg')!.textContent).toBe('Ø 77 Pkt aus 2 Runs');
+    await act(async () => container.querySelectorAll('.profile__filter button')[2].click());
     expect(recentRows()).toBe(1);
+    expect(container.querySelector('.profile__avg')).toBeNull();
     await act(async () => container.querySelectorAll('.profile__filter button')[0].click());
     expect(recentRows()).toBe(3);
     const btn = container.querySelectorAll('button').find((b) => b.textContent === 'Profil teilen')!;
@@ -78,6 +83,22 @@ describe('Spielerprofil', () => {
     for (let i = 0; i < 3; i++) await act(async () => new Promise((r) => setTimeout(r, 0)));
     expect(written).toEqual(['https://elf.example/spieler/abc']);
     expect(text(doc.body)).toContain('Link zum Profil kopiert');
+    await act(async () => root.unmount());
+  });
+
+  it('Trend der letzten 3 Runs gegenüber den älteren (ab sechs Runs)', async () => {
+    const run = (points: number, i: number) => ({ ...PROFILE.recent[0], day: `2026-10-0${9 - i}`, createdAt: `2026-10-0${9 - i}T10:00:00.000Z`, points });
+    const recent = [90, 80, 70, 60, 50, 40].map(run);
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ ...PROFILE, recent }), { status: 200, headers: { 'Content-Type': 'application/json' } })));
+    const container = doc.createElement('div');
+    doc.body.appendChild(container);
+    const root = createRoot(container as unknown as Element);
+    await act(async () =>
+      root.render(h(ToastProvider, null, h(MemoryRouter, { initialEntries: ['/spieler/abc'] }, h(Routes, null, h(Route, { path: '/spieler/:entryId', element: h(Profile) }))))),
+    );
+    for (let i = 0; i < 5; i++) await act(async () => new Promise((r) => setTimeout(r, 0)));
+    expect(container.querySelector('.profile__avg')!.textContent).toBe('Ø 65 Pkt aus 6 Runs · ▲ +30 Pkt in den letzten 3 Runs gegenüber davor');
+    expect(container.querySelector('.profile__trend')!.className).toContain('is-up');
     await act(async () => root.unmount());
   });
 });
