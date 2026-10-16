@@ -99,6 +99,8 @@ const builder = {
   },
   picker: {
     title: 'Wähle ein Pokémon',
+    /** Wer gerade auf der Position steht – mit Fit zum Vergleich */
+    current: (name: string, fit: number) => `Aktuell hier: ${name} (Fit ${fit})`,
     swapHint: 'Wählst du jemanden, der schon auf dem Feld steht, tauschen die beiden die Plätze.',
     emptySlot: 'Leerer Slot',
     onField: (pos: string) => `auf dem Feld: ${pos}`,

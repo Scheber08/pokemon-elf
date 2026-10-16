@@ -94,6 +94,7 @@ const builder: Messages['builder'] = {
   },
   picker: {
     title: 'Pick a Pokémon',
+    current: (name, fit) => `Currently here: ${name} (fit ${fit})`,
     swapHint: 'Pick someone who’s already on the pitch and the two swap places.',
     emptySlot: 'Empty slot',
     onField: (pos) => `on the pitch: ${pos}`,

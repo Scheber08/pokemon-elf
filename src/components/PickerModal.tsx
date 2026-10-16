@@ -32,7 +32,7 @@ interface Props {
 export function PickerModal({ pos, pool, initialRegion, sprite, currentId, onField, onPick, onClose, disabledReason }: Props) {
   const t = useT();
   const [filters, setFilters] = useState<PokemonFilters>({ query: '', type: null, region: initialRegion });
-  const { scale } = usePokemonData();
+  const { scale, byId } = usePokemonData();
   // Sortierung merken: nach Nummer oder „Beste für diese Position zuerst"
   const [sort, setSort] = useState<SortMode>(() => (load<string>(SORT_KEY, 'dex') === 'fit' ? 'fit' : 'dex'));
   // Fit je Pokémon für diese Position (nur bei Fit-Sortierung: sortiert und als Notiz auf den Karten)
@@ -96,6 +96,11 @@ export function PickerModal({ pos, pool, initialRegion, sprite, currentId, onFie
             { value: 'fit', label: t.builder.picker.sortFit },
           ]}
         />
+        {(() => {
+          // Wer steht gerade auf dieser Position – mit Fit zum Vergleichen
+          const cur = currentId != null ? byId.get(currentId) : undefined;
+          return cur && <p className="hint hint--small picker__current">{t.builder.picker.current(t.game.pokemon(cur), Math.round(positionFit(cur, pos, scale('all'))))}</p>;
+        })()}
         <p className="hint hint--small">{t.builder.picker.swapHint}</p>
         <PokemonGrid
           items={items}

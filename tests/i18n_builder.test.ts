@@ -235,6 +235,12 @@ describe('Builder auf Englisch', () => {
     expect(all).toContain('Unova');
     expect(all).toMatch(/on the pitch: (CB|LB|RB|DM|CM)/);
     expect(all).toMatch(/\d+ results/);
+    // Wer gerade im Tor steht, mit Fit zum Vergleich
+    {
+      const { buildScale, positionFit } = await import('../src/lib/fit');
+      const fit = Math.round(positionFit(ALL.find((p) => p.id === 143)!, 'TW', buildScale(ALL, 'all')));
+      expect(dialog.querySelector('.picker__current')!.textContent).toBe(`Currently here: Snorlax (fit ${fit})`);
+    }
     expect(germanLeft(dialog)).toEqual([]);
     expect(germanLeft()).toEqual([]);
     // Sortierung „Best for the position“: Fit-Notiz auf den Karten, absteigend
