@@ -119,7 +119,8 @@ function DraftRollBar({ room, readOnly }: { room: DraftRoom; readOnly: boolean }
           aria-describedby={reason ? id : undefined}
           onClick={() => !busy && !reason && room.reroll(kind)}
         >
-          {kind === 'type' ? t.online.rerollType(left) : t.online.rerollRegion(left)}
+          {/* Während ein Wurf unterwegs ist: sichtbare Rückmeldung an den nutzbaren Knöpfen statt des alten Zählers */}
+          {room.busy.reroll && !reason ? t.online.rerolling : kind === 'type' ? t.online.rerollType(left) : t.online.rerollRegion(left)}
         </button>
         {reason && (
           <small id={id} className="draft-roll__why">

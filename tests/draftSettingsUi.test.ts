@@ -748,6 +748,7 @@ describe('DraftLive im Zufallsmodus', () => {
     expect(container.querySelector('.draft-roll__own')!.textContent).toBe('eigener Wurf');
     const [type, region] = container.querySelectorAll('.draft-roll__reroll');
     expect(type.textContent).toBe('Typ neu würfeln (0×)');
+    expect(region.textContent).toBe('Wird gewürfelt …');
     // Gesperrt, aber fokussierbar – der Grund steht sichtbar daneben (nicht nur im Tooltip)
     expect(type.hasAttribute('disabled')).toBe(false);
     expect(type.getAttribute('aria-disabled')).toBe('true');
@@ -805,6 +806,10 @@ describe('DraftLive im Zufallsmodus', () => {
       busy: { pick: false, 'auto-pick': false, start: false, join: false, 'add-cpu': false, settings: false, reroll: true },
     });
     const { container: c2 } = await renderLive(rerolling);
+    // Während der Wurf unterwegs ist, sagen die nutzbaren Reroll-Knöpfe das (gesperrte behalten Zähler und Grund)
+    const labels = c2.querySelectorAll('.draft-roll__reroll').map((b) => b.textContent);
+    expect(labels.length).toBeGreaterThan(0);
+    expect(labels.every((l) => l === 'Wird gewürfelt …')).toBe(true);
     await click(c2.querySelectorAll('button.pcard')[0]);
     expect(c2.querySelectorAll('.slot--target')).toHaveLength(0);
     await click(c2.querySelectorAll('button.slot.slot--empty')[0]);
