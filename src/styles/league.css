@@ -1031,6 +1031,19 @@
 :root[data-theme='light'] .place-chart__dot {
   fill: #b45309;
 }
+.place-chart__peak {
+  fill: none;
+  stroke-width: 2.5;
+}
+.place-chart__peak--best {
+  stroke: #3fbf6f;
+}
+.place-chart__peak--worst {
+  stroke: #e05a5a;
+}
+.place-chart__span {
+  display: block;
+}
 .place-chart__label {
   fill: var(--text-dim);
   /* SVG-Einheiten: skaliert mit der Breite (Handy ~10 px, breit ~15 px) */

@@ -343,6 +343,7 @@ const draft: Messages['draft'] = {
     placeChart: 'Your season',
     placeChartAria: (days, best, last, running = false) => `League position over ${days} matchdays – best ${best}, ${running ? 'now' : 'final'} ${last}`,
     placeChartCaption: (best, last, running = false) => `Best position: ${best} · ${running ? 'now' : 'final'}: ${last}`,
+    placeChartSpan: (bestDay, worst, worstDay) => `🟢 Best position first reached on matchday ${bestDay} · 🔴 lowest: ${worst} (matchday ${worstDay})`,
     records: 'Season records',
     recordAttack: 'Best attack',
     recordDefense: 'Best defence',

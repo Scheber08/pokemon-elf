@@ -22,6 +22,9 @@ export function PlaceChart({ places, teams, running = false }: Props) {
   const points = places.map((p, i) => `${x(i).toFixed(1)},${y(p).toFixed(1)}`).join(' ');
   const best = Math.min(...places);
   const last = places[places.length - 1];
+  const worst = Math.max(...places);
+  const bestAt = places.indexOf(best);
+  const worstAt = places.indexOf(worst);
   const ticks = [1, Math.ceil(teams / 2), teams];
   return (
     <figure className="place-chart">
@@ -45,9 +48,19 @@ export function PlaceChart({ places, teams, running = false }: Props) {
           {places.length}
         </text>
         <polyline points={points} className="place-chart__line" />
+        {worst > best && (
+          <>
+            <circle cx={x(bestAt)} cy={y(best)} r={6} className="place-chart__peak place-chart__peak--best" />
+            <circle cx={x(worstAt)} cy={y(worst)} r={6} className="place-chart__peak place-chart__peak--worst" />
+          </>
+        )}
         <circle cx={x(places.length - 1)} cy={y(last)} r={4} className="place-chart__dot" />
       </svg>
-      <figcaption className="muted small">{t.draft.results.placeChartCaption(best, last, running)}</figcaption>
+      <figcaption className="muted small">{t.draft.results.placeChartCaption(best, last, running)}
+        {worst > best && (
+          <span className="place-chart__span">{t.draft.results.placeChartSpan(bestAt + 1, worst, worstAt + 1)}</span>
+        )}
+      </figcaption>
     </figure>
   );
 }

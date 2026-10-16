@@ -378,6 +378,9 @@ const draft = {
     placeChartAria: (days: number, best: number, last: number, running = false) =>
       `Tabellenplatz über ${days} Spieltage – bester Platz ${best}, ${running ? 'aktuell' : 'am Ende'} ${last}`,
     placeChartCaption: (best: number, last: number, running = false) => `Bester Platz: ${best} · ${running ? 'aktuell' : 'am Ende'}: ${last}`,
+    /** Bester Platz (erstmals) und tiefster Platz mit Spieltag */
+    placeChartSpan: (bestDay: number, worst: number, worstDay: number) =>
+      `🟢 Bester Platz erstmals am ${bestDay}. Spieltag · 🔴 tiefster Platz: ${worst} (${worstDay}. Spieltag)`,
     /** Saisonrekorde (Liga) */
     records: 'Saisonrekorde',
     recordAttack: 'Bester Angriff',

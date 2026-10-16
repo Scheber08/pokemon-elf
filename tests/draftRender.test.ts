@@ -435,6 +435,24 @@ describe('useDraftRoom', () => {
 
 // ---------------------------------------------------------------- Pokémon-Raster (CLIENT-1)
 
+describe('PlaceChart', () => {
+  it('markiert besten (erstmals) und tiefsten Platz mit Spieltag', async () => {
+    const { PlaceChart } = await import('../src/components/PlaceChart');
+    const { container } = await render(h(SettingsProvider, null, h(PlaceChart, { places: [5, 9, 3, 2, 2, 4], teams: 10, running: true })));
+    expect(container.querySelectorAll('.place-chart__peak').length).toBe(2);
+    expect(container.querySelector('.place-chart__span')?.textContent).toBe(
+      '🟢 Bester Platz erstmals am 4. Spieltag · 🔴 tiefster Platz: 9 (2. Spieltag)',
+    );
+  });
+
+  it('ohne Schwankung keine Markierung', async () => {
+    const { PlaceChart } = await import('../src/components/PlaceChart');
+    const { container } = await render(h(SettingsProvider, null, h(PlaceChart, { places: [1, 1, 1], teams: 10 })));
+    expect(container.querySelector('.place-chart__peak')).toBeNull();
+    expect(container.querySelector('.place-chart__span')).toBeNull();
+  });
+});
+
 describe('PokemonGrid', () => {
   const items = ALL.slice(0, 300);
   const grid = (list: typeof items, resetKey?: string) =>
