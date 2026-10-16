@@ -443,6 +443,10 @@ describe('Saisonartikel', () => {
     expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '🐧').map((i) => `${i.slot}:${i.id}`)).toEqual(['hat:penguin', 'companion:393']);
     const penguin = TRAINER_ITEMS.find((i) => i.id === 'penguin')!;
     expect([at('2027-04-20'), at('2027-04-21'), at('2027-04-27'), at('2027-04-28')].map((d) => itemOnSale(penguin, d))).toEqual([false, true, true, false]);
+    // 🍫 Tag der Schokolade: Praline und Pokusan vom 4. bis 10. Juli
+    expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '🍫').map((i) => `${i.slot}:${i.id}`)).toEqual(['hat:praline', 'companion:869']);
+    const praline = TRAINER_ITEMS.find((i) => i.id === 'praline')!;
+    expect([at('2027-07-03'), at('2027-07-04'), at('2027-07-10'), at('2027-07-11')].map((d) => itemOnSale(praline, d))).toEqual([false, true, true, false]);
   });
 
   it('Kauf nur in der Saison (400 not_on_sale), danach bleibt er tragbar', async () => {

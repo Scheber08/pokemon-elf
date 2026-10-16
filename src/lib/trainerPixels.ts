@@ -417,6 +417,14 @@ function hat(c: Canvas, id: string, cloth: string) {
       c.dots([[10, 6], [20, 6], [13, 7], [18, 7]], '#ffffff');
       c.fill(ellipse(15.5, 2, 2.6, 2.2), '#ffffff', '#c9d6e3');
       break;
+    case 'praline':
+      // Praline (Tag der Schokolade): Schokokuppel mit heller Glasur-Streifen und einer Kirsche obendrauf
+      c.fill(and(ellipse(15.5, 9.5, 8.5, 6.5), above(10)), '#6b3f22', '#3e2312');
+      c.rect(8, 9, 16, 1, '#4a2a16');
+      c.dots([[10, 6], [12, 5], [14, 6], [16, 5], [18, 6], [20, 5], [22, 6]], '#c8925e');
+      c.fill(ellipse(15.5, 2.3, 1.8, 1.6), '#d0213a', '#7d1020');
+      c.dots([[16, 0]], '#3c7a2e');
+      break;
     case 'penguin':
       // Pinguinmütze (Weltpinguintag): schwarze Strickmütze mit weißem Gesicht, zwei Augen und orangem Schnabel
       c.fill(and(ellipse(15.5, 10, 8.8, 7.5), above(10)), '#26282e', '#111216');

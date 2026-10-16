@@ -138,6 +138,7 @@ const trainer = {
       piggy: 'Sparschwein',
       chef: 'Kochmütze',
       penguin: 'Pinguinmütze',
+      praline: 'Praline',
       catears: 'Katzenohren',
       flowercrown: 'Blumenkranz',
       antennae: 'Bienen-Fühler',

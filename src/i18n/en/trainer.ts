@@ -139,6 +139,7 @@ const trainer: Messages['trainer'] = {
       piggy: 'Piggy bank',
       chef: "Chef's hat",
       penguin: 'Penguin beanie',
+      praline: 'Chocolate praline',
       catears: 'Cat ears',
       flowercrown: 'Flower crown',
       antennae: 'Bee antennae',
