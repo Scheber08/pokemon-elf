@@ -61,6 +61,7 @@ const trainer: Messages['trainer'] = {
     leagues: 'Online leagues',
     titles: 'Titles',
   },
+  collection: (have, total) => `🛍️ Collected: ${have} of ${total} items`,
   seasonNext: (icon, from) =>
     `⏭️ Coming next to the shop: ${icon} from ${new Date(`2000-${from}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })}`,
   seasonNow: (to) => `Seasonal items in the shop – only until ${new Date(`2000-${to}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })}`,

@@ -343,6 +343,14 @@ export const itemKey = (slot: TrainerSlot, id: string): string => `${slot}:${id}
 
 const BY_KEY = new Map(TRAINER_ITEMS.map((i) => [itemKey(i.slot, i.id), i]));
 
+/** Sammelstand im Shop: gekaufte von allen kaufbaren Artikeln (Freies zählt nicht; unbekannte Schlüssel auch nicht) */
+export function shopCollection(owned: Iterable<string>, items: readonly TrainerItem[] = TRAINER_ITEMS): { have: number; total: number } {
+  const paid = new Set(items.filter((i) => i.price > 0).map((i) => itemKey(i.slot, i.id)));
+  let have = 0;
+  for (const k of new Set(owned)) if (paid.has(k)) have++;
+  return { have, total: paid.size };
+}
+
 export function trainerItem(slot: TrainerSlot, id: string): TrainerItem | undefined {
   return BY_KEY.get(itemKey(slot, id));
 }

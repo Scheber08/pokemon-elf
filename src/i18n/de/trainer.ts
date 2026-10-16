@@ -60,6 +60,7 @@ const trainer = {
     leagues: 'Online-Ligen',
     titles: 'Titel',
   },
+  collection: (have: number, total: number) => `🛍️ Gesammelt: ${have} von ${total} Artikeln`,
   seasonNext: (icon: string, from: string) => `⏭️ Als Nächstes im Shop: ${icon} ab ${Number(from.slice(3))}.${Number(from.slice(0, 2))}.`,
   seasonNow: (to: string) => `Saisonartikel im Shop – nur bis ${Number(to.slice(3))}.${Number(to.slice(0, 2))}.`,
   previewing: (name: string) => `Vorschau: ${name}`,

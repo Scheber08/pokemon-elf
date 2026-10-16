@@ -296,3 +296,8 @@
   font-family: var(--font-head);
   font-size: 22px;
 }
+
+/* Sammelstand im Shop */
+.trainer-editor__collection {
+  margin: 0;
+}

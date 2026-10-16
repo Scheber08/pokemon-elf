@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ACHIEVEMENTS, achievementStates, earnedCoins, longestDayStreak, type AchievementStats } from '../src/lib/achievements';
 import type { MeResponse } from '../src/lib/api/contract';
-import { DEFAULT_LOOK, itemOnSale, lockedItem, nextSeason, parseLook, TRAINER_ITEMS, TRAINER_SLOTS } from '../src/lib/trainer';
+import { DEFAULT_LOOK, itemOnSale, lockedItem, nextSeason, parseLook, shopCollection, TRAINER_ITEMS, TRAINER_SLOTS } from '../src/lib/trainer';
 import { achievementStats, saveDraftResults } from '../server/achievements';
 import { handleApi } from '../server/handler';
 import { ensureSchema } from '../server/schema';
@@ -398,6 +398,12 @@ describe('Saisonartikel', () => {
     const items = [it('🎃', '10-01', '11-07'), it('🎄', '12-01', '01-06'), it('🐣', '03-20', '04-30'), { slot: 'hat' as const, id: 'n', price: 0 }];
     expect(nextSeason(items, at('2026-10-16'))).toEqual({ from: '12-01', icon: '🎄' });
     expect(nextSeason(items, at('2026-12-24'))).toEqual({ from: '03-20', icon: '🐣' });
+    // Sammelstand: nur kaufbare Artikel, doppelte/unbekannte/freie Schlüssel zählen nicht
+    const paid = TRAINER_ITEMS.filter((i) => i.price > 0);
+    const free = TRAINER_ITEMS.find((i) => i.price === 0)!;
+    const k = (i: (typeof TRAINER_ITEMS)[number]) => `${i.slot}:${i.id}`;
+    expect(shopCollection([])).toEqual({ have: 0, total: paid.length });
+    expect(shopCollection([k(paid[0]), k(paid[0]), k(paid[1]), k(free), 'hat:gibtsnicht'])).toEqual({ have: 2, total: paid.length });
     expect(nextSeason(items, at('2026-05-01'))).toEqual({ from: '10-01', icon: '🎃' });
     expect(nextSeason([], at('2026-05-01'))).toBeNull();
     // Mit den echten Artikeln gibt es immer eine nächste Saison

@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useT, type Messages } from '../i18n';
 import { ApiRequestError, buyTrainerItem, saveTrainer } from '../lib/api/client';
 import type { MeResponse } from '../lib/api/contract';
-import { itemKey, itemOnSale, itemsOf, lockedItem, nextSeason, TRAINER_ITEMS, TRAINER_SLOTS, type TrainerItem, type TrainerLook, type TrainerSlot } from '../lib/trainer';
+import { itemKey, itemOnSale, itemsOf, lockedItem, nextSeason, shopCollection, TRAINER_ITEMS, TRAINER_SLOTS, type TrainerItem, type TrainerLook, type TrainerSlot } from '../lib/trainer';
 import type { Pokemon } from '../types';
 import { usePokemonData } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
@@ -179,6 +179,14 @@ export function TrainerEditor({ me, onMe }: Props) {
                     {tx.seasonNext(next.icon, next.from)}
                   </p>
                 )}
+                {(() => {
+                  const c = shopCollection(owned);
+                  return (
+                    <p className="trainer-editor__collection muted small">
+                      {tx.collection(c.have, c.total)}
+                    </p>
+                  );
+                })()}
               </>
             );
           })()}
