@@ -427,6 +427,10 @@ describe('Saisonartikel', () => {
     expect(env).toEqual(['hat:sprout', 'companion:568']);
     const sprout = TRAINER_ITEMS.find((i) => i.id === 'sprout')!;
     expect([at('2027-05-31'), at('2027-06-01'), at('2027-06-05'), at('2027-06-06')].map((d) => itemOnSale(sprout, d))).toEqual([false, true, true, false]);
+    // 📚 Welttag des Buches: Offenes Buch und Icognito vom 20. bis 26. April
+    expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '📚').map((i) => `${i.slot}:${i.id}`)).toEqual(['hat:book', 'companion:201']);
+    const book = TRAINER_ITEMS.find((i) => i.id === 'book')!;
+    expect([at('2027-04-19'), at('2027-04-20'), at('2027-04-26'), at('2027-04-27')].map((d) => itemOnSale(book, d))).toEqual([false, true, true, false]);
   });
 
   it('Kauf nur in der Saison (400 not_on_sale), danach bleibt er tragbar', async () => {

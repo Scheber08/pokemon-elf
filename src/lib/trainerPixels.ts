@@ -502,6 +502,13 @@ function hat(c: Canvas, id: string, cloth: string) {
       c.fill(ellipse(20.5, 2.5, 3.4, 1.9), '#6cc04a', '#2f6b2a');
       c.dots([[10, 3], [19, 2]], '#a8e07a');
       break;
+    case 'book':
+      // Offenes Buch (Welttag des Buches): aufgeschlagen wie ein Dach auf dem Kopf, roter Einband, helle Seiten mit Zeilen
+      c.fill((x, y) => y >= 3 && y <= 9 && Math.abs(x - 15.5) <= 2 + (y - 3) * 1.6, '#b8342a', '#6e1c16');
+      c.fill((x, y) => y >= 4 && y <= 8 && Math.abs(x - 15.5) >= 1 && Math.abs(x - 15.5) <= 1 + (y - 3) * 1.6, '#f4ecd8', null);
+      c.dots([[12, 6], [13, 6], [18, 6], [19, 6], [10, 8], [11, 8], [12, 8], [19, 8], [20, 8], [21, 8]], '#9a8f78');
+      c.rect(15, 2, 2, 7, '#6e1c16');
+      break;
     case 'catears':
       // Katzenohren (Weltkatzentag): schwarzer Haarreif mit zwei spitzen Ohren, innen rosa
       c.fill((x, y) => y === 9 && head(x, y), '#26282e', null);
