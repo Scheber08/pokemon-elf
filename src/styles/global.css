@@ -2485,6 +2485,14 @@ button.sheet__row:hover {
   min-width: 0;
   overflow-wrap: anywhere;
 }
+/* Formation und Speicherdatum als eigene Zeile, nicht mitten im Wert umbrechen */
+.saved-teams__name small {
+  display: block;
+}
+.saved-teams__formation,
+.saved-teams__at {
+  white-space: nowrap;
+}
 .saved-teams__remove {
   min-width: 2.2em;
 }

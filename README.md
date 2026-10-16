@@ -115,7 +115,7 @@ Alle Zahlen sind in `src/config/` änderbar – die Tests prüfen Eigenschaften,
 
 ## Spielmodi
 
-- **Builder** – frei aufstellen, Drag & Drop, Bild speichern (1200×1500 PNG), Link teilen, Rückgängig; über dem Feld Typ-Elf- und 🌈 Regenbogen-Chip wie im Draft.
+- **Builder** – frei aufstellen, Drag & Drop, Bild speichern (1200×1500 PNG), Link teilen, Rückgängig; über dem Feld Typ-Elf- und 🌈 Regenbogen-Chip wie im Draft; „Meine Teams“ (bis 5 Elfen auf dem Gerät) mit Formation und Speicherdatum.
   Optional Formen und Megas (mit Mega-Limit); der Auswahl-Dialog sortiert auf Wunsch nach Positions-Fit.
 - **34–0 Challenge** – pro Runde werden Region + Typ gewürfelt (je ein Reroll pro Run), max. 2 Legendäre.
 - **Tägliche Elf** – jeden Tag (Europe/Berlin) dieselben Würfe für alle, Regeln wie 34–0, ein Versuch pro

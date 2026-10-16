@@ -14,6 +14,12 @@ import { cleanCrest } from '../lib/crest';
 /** Testspiel erst beim Öffnen laden – es zieht die Draft-Engine mit, die der Builder sonst nicht braucht */
 const FriendlyMatch = lazy(() => import('./FriendlyMatch').then((m) => ({ default: m.FriendlyMatch })));
 
+/** „2026-10-16" – Kalendertag in der Zeitzone des Geräts */
+function localDay(ms: number): string {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 /** Gespeicherte Elf im Builder (nur dieses Gerät) */
 export interface SavedTeam<T> {
   id: string;
@@ -108,7 +114,12 @@ export function SavedTeams<T extends Playable>({ current, onLoad }: Props<T>) {
           {list.map((x) => (
             <li key={x.id} className="saved-teams__item">
               <span className="saved-teams__name">
-                {x.name} <small className="muted">{x.formation}</small>
+                {x.name}{' '}
+                <small className="muted">
+                  <span className="saved-teams__formation">{x.formation}</span>
+                  {/* Speicherdatum (lokaler Kalendertag) */}
+                  {x.at > 0 && <span className="saved-teams__at"> · {t.game.day(localDay(x.at))}</span>}
+                </small>
               </span>
               <button
                 type="button"

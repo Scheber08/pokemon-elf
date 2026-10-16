@@ -140,6 +140,15 @@ describe('Builder auf Englisch', () => {
     }
   });
 
+  it('Meine Teams: Speicherdatum hinter der Formation', async () => {
+    storeLang('en');
+    const at = new Date(2026, 9, 12, 15, 0).getTime();
+    localStorage.setItem('pokemon-elf:saved-teams', JSON.stringify([{ id: '1', name: 'Kanto XI', formation: '4-3-3', at, state: { teamName: 'Kanto XI', formation: '4-3-3', slots: [] } }]));
+    const { container } = await render(app(h(Builder)));
+    await settle();
+    expect(container.querySelector('.saved-teams__at')!.textContent).toBe(' · Oct 12, 2026');
+  });
+
   it('Auswahl-Dialog (Filter, Raster, Hinweise) ohne deutschen Text', async () => {
     storeLang('en');
     const { container } = await render(app(h(Builder)));
