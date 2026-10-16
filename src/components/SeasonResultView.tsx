@@ -311,7 +311,14 @@ export function SeasonResultView({
             <dl className="facts">
               <div>
                 <dt>{tr.points}</dt>
-                <dd>{season.points}</dd>
+                <dd>
+                  {season.points}
+                  {(() => {
+                    // Punkteschnitt pro Spiel
+                    const games = season.record.w + season.record.d + season.record.l;
+                    return games > 0 && <small className="facts__sub">{tr.perGame(season.points / games)}</small>;
+                  })()}
+                </dd>
               </div>
               <div>
                 <dt>{tr.teamScore}</dt>
@@ -325,6 +332,7 @@ export function SeasonResultView({
                 <dt>{tr.goals}</dt>
                 <dd>
                   {season.goalsFor}:{season.goalsAgainst}
+                  <small className="facts__sub">{tr.goalDiff(season.goalsFor - season.goalsAgainst)}</small>
                 </dd>
               </div>
             </dl>

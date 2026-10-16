@@ -2991,3 +2991,12 @@ button.sheet__row:hover {
 .draft-live:focus {
   outline: none;
 }
+
+/* Fakten: kleine Zusatzzeile unter dem Wert (Punkte pro Spiel, Tordifferenz) */
+.facts__sub {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-dim);
+}

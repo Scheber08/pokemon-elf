@@ -39,6 +39,10 @@ const result = {
   record: 'Bilanz',
   /** Tabellenplatz als Ordnungszahl: „3." */
   ordinal: (n: number) => `${n}.`,
+  /** Unter den Punkten: Schnitt pro Spiel */
+  perGame: (ppg: number) => `Ø ${ppg.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} pro Spiel`,
+  /** Unter den Toren: Tordifferenz mit Vorzeichen */
+  goalDiff: (diff: number) => `Differenz ${diff > 0 ? '+' : diff < 0 ? '−' : '±'}${Math.abs(diff)}`,
   weakSpots: 'Schwachstellen laut Scouting: ',
   venueRecords: (home: string, away: string) => `🏠 Zu Hause ${home} · ✈️ Auswärts ${away} (S–U–N)`,
   fitFacts: (avg: number, bulls: number, best: string, fit: number) =>

@@ -550,6 +550,15 @@ describe('Saisonbilanz und Ticker', () => {
     expect(text).toContain('Best record');
     expect(el.querySelector('.result-hero__record')?.getAttribute('aria-label')).toMatch(/^Record: \d+ wins?, \d+ draws?, \d+ defeats?$/);
     expect(el.querySelectorAll('.match__outcome').every((o) => ['W', 'D', 'L'].includes(o.textContent))).toBe(true);
+    // Zusatzzeilen: Punkte pro Spiel (34 Spiele) und Tordifferenz – passend zu den Werten darüber
+    const subs = el.querySelectorAll('.facts__sub').map((x) => x.textContent!);
+    expect(subs).toHaveLength(2);
+    const dds = el.querySelectorAll('.facts dd').map((d) => d.textContent!);
+    const pts = Number(dds[0].replace(subs[0], ''));
+    expect(subs[0]).toBe(`avg ${(pts / 34).toFixed(2)} per game`);
+    const [gf, ga] = dds[3].replace(subs[1], '').split(':').map(Number);
+    const diff = gf - ga;
+    expect(subs[1]).toBe(`difference ${diff > 0 ? '+' : diff < 0 ? '−' : '±'}${Math.abs(diff)}`);
   });
 
   it('Englisch: ältere gespeicherte Ergebnisse (nur deutsche Meldung, ohne note) zeigen den Hinweis englisch', async () => {
