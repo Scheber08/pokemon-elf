@@ -543,6 +543,8 @@ export interface LobbyFields {
   region: LobbyRegion;
   /** Legendäre oder Mysteriöse im Pool */
   legends: boolean;
+  /** Shiny-Party (10 % Shinys) – steckt als Bit 2 in der Spalte legends (LOBBY_SHINY_PARTY_BIT) */
+  shinyParty: boolean;
   pickSeconds: PickSeconds;
   teams: number;
   maxTeams: number;
@@ -599,6 +601,7 @@ export function lobbyFields(
     hostName: host?.name ?? '',
     region: pool.region,
     legends: pool.legends,
+    shinyParty: s.shinies && s.shinyParty,
     pickSeconds: s.pickSeconds,
     teams: state.teams.length,
     maxTeams: s.maxTeams,
@@ -606,6 +609,13 @@ export function lobbyFields(
     phase: state.phase,
   };
 }
+
+/**
+ * Spalte legends der Lobby-Zeile: Bit 1 = Legendäre/Mysteriöse, Bit 2 = Shiny-Party – so braucht das
+ * Badge keine neue Spalte (Schema nur additiv; alte Zeilen haben 0/1).
+ */
+export const LOBBY_SHINY_PARTY_BIT = 2;
+const legendsColumn = (f: LobbyFields) => (f.legends ? 1 : 0) | (f.shinyParty ? LOBBY_SHINY_PARTY_BIT : 0);
 
 const sameFields = (a: LobbyFields, b: LobbyFields) =>
   (Object.keys(a) as (keyof LobbyFields)[]).every((k) => a[k] === b[k]);
@@ -618,7 +628,7 @@ export async function insertLobby(db: Db, code: string, hostDevice: string, f: L
          max_teams, visibility, phase, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-    .bind(code, hostDevice, f.name, f.hostName, f.region, f.legends ? 1 : 0, f.pickSeconds, f.teams, f.maxTeams, f.visibility, f.phase, now, now)
+    .bind(code, hostDevice, f.name, f.hostName, f.region, legendsColumn(f), f.pickSeconds, f.teams, f.maxTeams, f.visibility, f.phase, now, now)
     .run();
   return res.meta.changes === 1;
 }
@@ -629,7 +639,7 @@ export async function updateLobby(db: Db, code: string, f: LobbyFields, now: num
       `UPDATE draft_lobbies SET name = ?, host_name = ?, region = ?, legends = ?, pick_seconds = ?, teams = ?,
          max_teams = ?, visibility = ?, phase = ?, updated_at = ? WHERE code = ?`,
     )
-    .bind(f.name, f.hostName, f.region, f.legends ? 1 : 0, f.pickSeconds, f.teams, f.maxTeams, f.visibility, f.phase, now, code)
+    .bind(f.name, f.hostName, f.region, legendsColumn(f), f.pickSeconds, f.teams, f.maxTeams, f.visibility, f.phase, now, code)
     .run();
 }
 

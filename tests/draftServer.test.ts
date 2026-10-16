@@ -255,6 +255,13 @@ describe('Online-Draft: HTTP-Endpunkte', () => {
     });
     expect(res.text).not.toMatch(/host_device|deviceId/);
 
+    // Shiny-Party: Bit 2 der Spalte legends, Legendäre bleiben davon unberührt
+    const party = await createLeague(newDevice(), { visibility: 'public', name: 'Party', legends: false, shinies: true, shinyParty: true });
+    const listed = (await call<PublicLobbiesResponse>('GET', '/api/drafts/public')).body.lobbies.find((l) => l.code === party.code)!;
+    expect(listed).toMatchObject({ legends: false, shinyParty: true });
+    expect(db.query<{ legends: number }>('SELECT legends FROM draft_lobbies WHERE code = ?', party.code)[0].legends).toBe(2);
+    db.update('DELETE FROM draft_lobbies WHERE code = ?', party.code);
+
     // Beitritt und CPU werden nachgezogen, gestartete Ligen verschwinden.
     const hostDev = newDevice();
     const started = await createLeague(hostDev, { visibility: 'public', name: 'Start' });

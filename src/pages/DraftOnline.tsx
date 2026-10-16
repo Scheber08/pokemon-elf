@@ -276,6 +276,7 @@ function PublicLobbies() {
                       {l.legends ? t.online.plusLegends : ''}
                     </span>
                     <span>{timerLabel(l.pickSeconds, t)}</span>
+                    {l.shinyParty && <span className="draft-lobbies__party">{t.online.shinyPartyBadge}</span>}
                   </span>
                 </div>
                 <Link className={`btn btn--small ${full ? '' : 'btn--primary'}`} to={`/draft/${l.code}`}>

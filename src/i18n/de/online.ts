@@ -57,6 +57,8 @@ const online = {
   teamsOf: (n: number, max: number) => `${n}/${max} Teams`,
   /** Lobby-Liste: Legendäre und/oder Mysteriöse im Pool (die D1-Spalte unterscheidet sie nicht) */
   plusLegends: ' + Legendäre/Mysteriöse',
+  /** Badge in der Liste öffentlicher Lobbys */
+  shinyPartyBadge: '✨ Shiny-Party',
   /** Pool einer öffentlichen Lobby mit mehreren (nicht allen) Generationen */
   manyGens: 'Mehrere Generationen',
   watch: 'Zuschauen',

@@ -31,6 +31,7 @@ import {
   lobbyPoolFields,
   noteLobbyByIp,
   publicLobbies,
+  LOBBY_SHINY_PARTY_BIT,
   purgeClosedLobbies,
   purgeLobbyIpCounters,
   type LobbyFields,
@@ -152,6 +153,7 @@ export async function createDraftEndpoint(request: Request, env: Env): Promise<R
     hostName: input.teamName,
     // region 0 / 1–9 / 10 (mehrere Generationen), legends = Legendäre oder Mysteriöse – wie im Raum
     ...lobbyPoolFields(s),
+    shinyParty: s.shinies && s.shinyParty,
     pickSeconds: s.pickSeconds,
     teams: 1,
     maxTeams: s.maxTeams,
@@ -273,7 +275,8 @@ export async function publicDraftsEndpoint(env: Env): Promise<Response> {
       maxTeams: r.max_teams,
       // 0 = alle, 1–9 = eine Generation, 10 = mehrere (LOBBY_REGION_MANY)
       region: r.region as LobbyRegion,
-      legends: r.legends === 1,
+      legends: (r.legends & 1) === 1,
+      ...((r.legends & LOBBY_SHINY_PARTY_BIT) !== 0 ? { shinyParty: true as const } : {}),
       pickSeconds: r.pick_seconds as PickSeconds,
       createdAt: r.created_at,
     })),

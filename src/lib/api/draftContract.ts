@@ -516,6 +516,8 @@ export interface PublicLobby {
   region: LobbyRegion;
   /** Legendäre oder Mysteriöse im Pool */
   legends: boolean;
+  /** Shiny-Party (nur gesetzt, wenn an) */
+  shinyParty?: true;
   pickSeconds: PickSeconds;
   createdAt: number;
 }

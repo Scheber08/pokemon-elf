@@ -54,6 +54,7 @@ const online: Messages['online'] = {
   byHost: (host, ago) => `by ${host} · ${ago}`,
   teamsOf: (n, max) => `${n}/${max} teams`,
   plusLegends: ' + legendaries/mythicals',
+  shinyPartyBadge: '✨ Shiny party',
   manyGens: 'Several generations',
   watch: 'Watch',
 
