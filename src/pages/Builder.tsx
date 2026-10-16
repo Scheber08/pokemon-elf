@@ -320,6 +320,8 @@ export function Builder() {
           <span className="only-fine">{t.builder.hintFine}</span>
           <span className="only-coarse">{t.builder.hintCoarse}</span>
         </p>
+        {/* Tastenkürzel – nur mit Maus/Tastatur */}
+        <p className="hint hint--small only-fine builder__keys">{t.builder.keysHint}</p>
         {/* Ohne Teamnamen trotzdem eine Hauptüberschrift (für Screenreader) */}
         {!(state.teamName || state.crest) && <h1 className="sr-only">{t.builder.pageTitle}</h1>}
         {(state.teamName || state.crest) && (

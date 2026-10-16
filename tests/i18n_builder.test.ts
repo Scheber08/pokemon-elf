@@ -122,6 +122,8 @@ describe('Builder auf Englisch', () => {
     expect(all).toContain('Lineup from the first 151 Pokémon, no legendaries.');
     expect(all).toContain('Set-piece taker');
     expect(all).toContain('#0143');
+    // Tastenkürzel-Zeile (nur Maus/Tastatur per CSS)
+    expect(container.querySelector('.builder__keys')!.textContent).toBe('⌨️ Ctrl/Cmd+Z undo · Ctrl+Y redo · in the picker: type to search, ↓ into the grid, Enter picks');
     expect(germanLeft(container)).toEqual([]);
     // Ohne Teamnamen: unsichtbare Hauptüberschrift für Screenreader
     expect(container.querySelectorAll('h1').map((x) => [x.getAttribute('class'), x.textContent])).toEqual([['sr-only', 'Lineup builder']]);

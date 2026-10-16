@@ -5,6 +5,8 @@ const builder = {
   // Builder-Seite
   hintFine:
     'Klicke auf einen Spieler, um ihn auszutauschen, oder fahre darüber für seine Werte. Zieh einen Spieler auf einen anderen, um die Plätze zu tauschen.',
+  /** Tastenkürzel unter dem Hinweis (nur mit Maus/Tastatur) */
+  keysHint: '⌨️ Strg/Cmd+Z rückgängig · Strg+Y wiederholen · im Auswahl-Dialog: tippen sucht, ↓ ins Raster, Enter wählt',
   hintCoarse: 'Tippe auf einen Spieler, um ihn auszutauschen, oder halte gedrückt für seine Werte.',
   pitchAria: (formation: string) => `Spielfeld, Formation ${formation}`,
   pageTitle: 'Lineup-Builder',

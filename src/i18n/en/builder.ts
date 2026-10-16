@@ -5,6 +5,7 @@ import { ordinal } from '../lang';
 
 const builder: Messages['builder'] = {
   hintFine: 'Click a player to replace them, or hover over them to see their stats. Drag a player onto another to swap places.',
+  keysHint: '⌨️ Ctrl/Cmd+Z undo · Ctrl+Y redo · in the picker: type to search, ↓ into the grid, Enter picks',
   hintCoarse: 'Tap a player to replace them, or press and hold to see their stats.',
   pitchAria: (formation) => `Pitch, formation ${formation}`,
   pageTitle: 'Lineup builder',
