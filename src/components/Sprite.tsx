@@ -20,6 +20,8 @@ interface Props {
   loading?: 'lazy' | 'eager';
   /** Vorbereitete Quelle (Data-URL) für den Bild-Export */
   source?: SpriteSource;
+  /** Name steht schon daneben: leerer Alt-Text, damit Screenreader ihn nicht doppelt vorlesen */
+  decorative?: boolean;
 }
 
 /**
@@ -27,7 +29,7 @@ interface Props {
  * Die natürliche Größe landet als --nw/--nh am Element, damit Pixel-Sprites
  * ihre relative Größe behalten (ein Wattzapf bleibt kleiner als ein Wailord).
  */
-export function Sprite({ pokemon, style, className = '', loading = 'lazy', source, shiny = false }: Props) {
+export function Sprite({ pokemon, style, className = '', loading = 'lazy', source, shiny = false, decorative = false }: Props) {
   const t = useT();
   const urls = useMemo(() => spriteUrls(pokemon, style, shiny), [pokemon, style, shiny]);
   const [index, setIndex] = useState(0);
@@ -45,7 +47,7 @@ export function Sprite({ pokemon, style, className = '', loading = 'lazy', sourc
     <img
       className={`sprite sprite--${kind} ${kind === 'art' ? '' : 'sprite--pixel'} ${className}`}
       src={url}
-      alt={t.game.pokemon(pokemon)}
+      alt={decorative ? '' : t.game.pokemon(pokemon)}
       loading={loading}
       decoding="async"
       crossOrigin={source ? undefined : 'anonymous'}

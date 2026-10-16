@@ -142,7 +142,7 @@ export function TransferMarket({
           {shown.map(({ p, pos, fit }) => (
             <li key={p.id} className={claim?.in === p.id ? 'is-claimed' : ''}>
               <span className="manager__free-name">
-                <Sprite pokemon={p} style={sprite} className="manager__free-sprite" /> {t.game.pokemon(p)}
+                <Sprite pokemon={p} style={sprite} className="manager__free-sprite" decorative /> {t.game.pokemon(p)}
               </span>
               <PosBadge pos={pos} />
               <span className="manager__free-fit">{Math.round(fit)}</span>

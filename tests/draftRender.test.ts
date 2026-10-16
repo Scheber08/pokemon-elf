@@ -1753,6 +1753,8 @@ describe('ManagerSeason', () => {
       // Jede Kader-Zeile mit Sprite
       const rows = container.querySelectorAll('.manager__squad tbody tr');
       expect(rows.every((tr) => tr.querySelector('.manager__squad-sprite'))).toBe(true);
+      // Name steht daneben: Sprite ohne Alt-Text (sonst liest der Screenreader ihn doppelt)
+      expect(rows.every((tr) => tr.querySelector('.manager__squad-sprite')!.getAttribute('alt') === '')).toBe(true);
     }
     expect(await text(withCaptain(lineup.slots[0], { [lineup.slots[0]]: { kind: 'red', until: 2, since: 0 } }))).toContain('keinen Kapitänsbonus');
   });
@@ -1799,6 +1801,7 @@ describe('ManagerSeason', () => {
       const items = r.container.querySelectorAll('.manager__free li');
       expect(items.length).toBeGreaterThan(0);
       expect(items.every((li) => li.querySelector('.manager__free-sprite'))).toBe(true);
+      expect(items.every((li) => li.querySelector('.manager__free-sprite')!.getAttribute('alt') === '')).toBe(true);
     }
     // Positionsfilter: nur freie Pokémon mit dieser besten Position
     {
