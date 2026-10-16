@@ -20,7 +20,6 @@ const nav: Messages['nav'] = {
   themeToDark: 'Switch to dark theme',
   themeLight: 'Light theme',
   themeDark: 'Dark theme',
-  langLabel: 'Language',
   langSwitchTo: 'Auf Deutsch umstellen',
   scoutingHint: 'Scouting guide →',
   skip: 'Skip to content',

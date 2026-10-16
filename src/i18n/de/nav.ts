@@ -18,7 +18,6 @@ const nav = {
   themeToDark: 'Dunkles Design aktivieren',
   themeLight: 'Helles Design',
   themeDark: 'Dunkles Design',
-  langLabel: 'Sprache',
   langSwitchTo: 'Switch to English',
   scoutingHint: 'Scouting-Guide →',
   skip: 'Zum Inhalt springen',
