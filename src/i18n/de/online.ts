@@ -238,6 +238,8 @@ const online = {
   legendLast: (name: string, team: string) => `★ Das letzte legendäre Pokémon ist vergeben: ${name} (${team})`,
   favouriteGone: (name: string, team: string) => `${name} ist weg – ${team} war schneller.`,
   /** Ein anderes Team hat ein Pokémon von der eigenen Wunschliste gepickt */
+  /** Ein anderes Team nimmt den bisher besten Freien einer eigenen offenen Position */
+  bestGone: (name: string, pos: string, team: string) => `🧲 ${team} schnappt dir ${name} weg (bester Freier für ${pos}).`,
   wishGone: (name: string, n: number, team: string) => `💔 ${name} (Wunsch ${n}) ist weg – ${team} war schneller.`,
   noSuggestion: 'Kein Vorschlag möglich',
   chooseFirst: 'Wähle zuerst ein Pokémon aus dem Pool.',

@@ -194,6 +194,9 @@ function AutoPickNotice({ room, team, opensAt }: { room: DraftRoom; team: DraftT
   );
 }
 
+/** 🧲-Hinweis nur, wenn der nächstbeste Freie der Position mindestens so viel Fit schwächer ist */
+const SNATCH_GAP = 5;
+
 /** Live-Draft: Wer ist dran, Timer, Pool, eigenes Feld, Board und Verlauf. readOnly: öffentliche Vorschau ohne Live-Verbindung. */
 export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnly?: boolean }) {
   const { all: list, byId, scale } = usePokemonData();
@@ -448,6 +451,27 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
     setSelected(null);
     setSuggestSlot(null);
   }, [myTurn, rollKey, selected]);
+
+  // 🧲 Fremder Pick des bisher besten Freien einer eigenen offenen Position – nur wenn der nächstbeste
+  // mindestens SNATCH_GAP Fit schwächer ist (Wunschliste meldet 💔 selbst)
+  const bestSeen = useRef({ n: s.picks.length, best: bestFree.map((b) => ({ id: b.p.id, pos: b.pos, fit: b.fit })) });
+  useEffect(() => {
+    const before = bestSeen.current;
+    bestSeen.current = { n: s.picks.length, best: bestFree.map((b) => ({ id: b.p.id, pos: b.pos, fit: b.fit })) };
+    if (s.picks.length <= before.n) return;
+    const queue = s.queue ?? [];
+    const hit = s.picks
+      .slice(before.n)
+      .map((p) => ({ p, b: before.best.find((b) => b.id === p.pokemonId) }))
+      .find(({ p, b }) => {
+        if (!b || p.teamId === me?.id || p.pokemonId === selected || queue.includes(p.pokemonId) || wishSeen.current.queue.includes(p.pokemonId)) return false;
+        const next = bestFree.find((x) => x.pos === b.pos);
+        return !next || b.fit - next.fit >= SNATCH_GAP;
+      });
+    const mon = hit && byId.get(hit.p.pokemonId);
+    const team = hit && s.teams.find((x) => x.id === hit.p.teamId);
+    if (hit?.b && mon && team) setInfo(t.online.bestGone(t.game.pokemon(mon), t.game.posShort[hit.b.pos], teamLabel(team, t)));
+  }, [s.picks.length, bestFree]);
 
   // Fremder Pick von der eigenen Wunschliste: kurz bedauern (der Server streicht ihn danach aus der Liste)
   const wishSeen = useRef({ n: s.picks.length, queue: s.queue ?? [] });

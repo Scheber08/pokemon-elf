@@ -689,6 +689,29 @@ describe('DraftLive', () => {
     expect(container.querySelector('.run-notice__text')!.textContent).toBe(`💔 ${name} (Wunsch 2) ist weg – Team 1 war schneller.`);
   });
 
+  it('fremder Pick des besten Freien einer offenen Position: 🧲-Hinweis', async () => {
+    const { positionFit } = await import('../src/lib/fit');
+    const { FORMATIONS } = await import('../src/config/formations');
+    let s = autoPick(drafting());
+    const { container, root } = await renderLive(fakeRoom(snap(s, 'h')));
+    expect(container.querySelector('.run-notice')).toBeNull();
+    // Bester Freier der ersten offenen Host-Position (wie „Beste Freie“)
+    const host = s.teams.find((t) => t.id === 'h')!;
+    const j = host.slots.findIndex((id) => id == null);
+    const pos = FORMATIONS[host.formation].slots[j].pos;
+    const taken = engine.draftedIds(s);
+    const pool = engine.poolOf(s.settings, ALL).filter((p) => !taken.has(p.id));
+    const best = pool.reduce((a, b) => (positionFit(b, pos, SCALE) > positionFit(a, pos, SCALE) ? b : a));
+    const slot = s.teams.find((t) => t.id === 't1')!.slots.findIndex((id) => id == null);
+    s = engine.applyPick(s, 't1', best.id, slot, false, 2000, ALL);
+    await act(async () => root.render(app(h(DraftLive, { room: fakeRoom(snap(s, 'h')) }))));
+    // Nur bei spürbarem Abstand zum nächstbesten Freien dieser Position
+    const rest = pool.filter((p) => p.id !== best.id);
+    const next = rest.reduce((a, b) => (positionFit(b, pos, SCALE) > positionFit(a, pos, SCALE) ? b : a));
+    if (positionFit(best, pos, SCALE) - positionFit(next, pos, SCALE) < 5) return expect(container.querySelector('.run-notice')).toBeNull();
+    expect(container.querySelector('.run-notice__text')!.textContent).toMatch(new RegExp(`^🧲 Team 1 schnappt dir ${best.de} weg \\(bester Freier für \\S+\\)\\.$`));
+  });
+
   it('Wartehinweis nennt die noch offenen Positionen der eigenen Elf', async () => {
     const { FORMATIONS } = await import('../src/config/formations');
     const s = autoPick(drafting());

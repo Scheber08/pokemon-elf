@@ -216,6 +216,7 @@ const online: Messages['online'] = {
   legendFirst: (name, team) => `★ First legendary of the draft: ${name} (${team})`,
   legendLast: (name, team) => `★ The last legendary is gone: ${name} (${team})`,
   favouriteGone: (name, team) => `${name} is gone – ${team} got there first.`,
+  bestGone: (name, pos, team) => `🧲 ${team} snatched ${name} from you (best free ${pos}).`,
   wishGone: (name, n, team) => `💔 ${name} (wish ${n}) is gone – ${team} got there first.`,
   noSuggestion: 'No suggestion available',
   chooseFirst: 'Choose a Pokémon from the pool first.',
