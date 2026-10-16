@@ -586,6 +586,7 @@ const draft: Messages['draft'] = {
     formationTip: (formation, n) => `Tip: with ${formation} a strength of ${n} is possible.`,
     formationTipApply: (formation) => `Switch to ${formation}`,
     benchBest: (pos, fit) => `Best fit: ${pos} (fit ${fit} with daily form)`,
+    benchUnused: (names) => `🪑 Yet to start a match: ${names}`,
     bestStrength: (n) => `best possible ${n}`,
     formAvg: (avg) => `form avg. ${avg > 0 ? '+' : avg < 0 ? '−' : '±'}${Math.abs(avg).toFixed(1)}`,
     formAvgTitle: 'Average day form of the starting eleven for the next matchday (−2 to +2)',

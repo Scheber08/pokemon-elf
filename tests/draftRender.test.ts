@@ -1948,6 +1948,29 @@ describe('ManagerSeason', () => {
     else expect(phaseEl!.textContent).toBe(`⏱️ Stärkste Phase: ${phase.from}.–${phase.to}. Minute (${phase.goals} ${phase.goals === 1 ? 'Tor' : 'Tore'})`);
   });
 
+  it('Manager: 🪑 Bankspieler ohne Einsatz erst ab dem 3. Spieltag', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    for (let i = 0; i < 2; i++) s = playMatchday(s, ALL, SCALE);
+    const r1 = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    expect(r1.container.querySelector('.manager__unused')).toBeNull();
+    s = playMatchday(s, ALL, SCALE);
+    const m = s.manager!;
+    const started = new Set(Object.values(m.playedLineups ?? {}).flatMap((r) => r.h?.slots ?? []).filter((id): id is number => id != null));
+    const team = s.teams.find((t) => t.id === 'h')!;
+    const inLineup = new Set([...m.lineups.h.slots, m.lineups.h.ss].filter((id) => id != null));
+    const unused = engine.rosterOf(team).filter((id) => !inLineup.has(id) && !started.has(id));
+    const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    const el = container.querySelector('.manager__unused');
+    if (!unused.length) return expect(el).toBeNull();
+    expect(el!.textContent).toBe(`🪑 Noch ohne Einsatz von Beginn an: ${unused.map((id) => ALL.find((p) => p.id === id)!.de).join(', ')}`);
+  });
+
   it('Manager: 🏆 rechnerischer Titelkampf erst ab der Saisonhälfte', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');

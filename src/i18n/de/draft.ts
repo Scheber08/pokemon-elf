@@ -647,6 +647,7 @@ const draft = {
     formationTip: (formation: string, n: number) => `Tipp: Mit ${formation} wäre Stärke ${n} möglich.`,
     formationTipApply: (formation: string) => `${formation} übernehmen`,
     benchBest: (pos: string, fit: number) => `Passt am besten als ${pos} (Fit ${fit} mit Tagesform)`,
+    benchUnused: (names: string) => `🪑 Noch ohne Einsatz von Beginn an: ${names}`,
     bestStrength: (n: number) => `bestmöglich ${n}`,
     formAvg: (avg: number) => `Form Ø ${avg > 0 ? '+' : avg < 0 ? '−' : '±'}${Math.abs(avg).toFixed(1).replace('.', ',')}`,
     formAvgTitle: 'Durchschnittliche Tagesform der Startelf zum nächsten Spieltag (−2 bis +2)',
