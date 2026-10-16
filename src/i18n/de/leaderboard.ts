@@ -9,6 +9,7 @@ const leaderboard = {
   colRecord: 'Bilanz',
   colPoints: 'Pkt',
   colScore: 'Score',
+  freshTitle: 'In der letzten Stunde eingetragen',
   yourRank: 'Deine Platzierung',
   yourRankGap: (pts: number, top: number) => `noch ${pts} Pkt bis in die Top ${top}`,
   playNow: 'Jetzt spielen',

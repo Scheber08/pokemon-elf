@@ -46,7 +46,12 @@ interface BoardRow {
   profile?: string;
   /** Online: Trainer des Spielers (falls gestaltet) */
   trainer?: TrainerLook | null;
+  /** Online: Eintrag aus der letzten Stunde (🆕) */
+  fresh?: boolean;
 }
+
+/** So lange gilt ein Ranglisten-Eintrag als neu (🆕) */
+const FRESH_MS = 60 * 60 * 1000;
 
 /** Fehler einer Abfrage: Code der API (falls vorhanden) + deutsche Meldung – übersetzt wird beim Anzeigen. */
 interface LoadError {
@@ -155,6 +160,11 @@ function BoardTable({ rows, mine, onReload, focusPlayer = null }: BoardTableProp
             <path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
+        {r.fresh && (
+          <span className="lb-fresh" role="img" title={t.leaderboard.freshTitle} aria-label={t.leaderboard.freshTitle}>
+            🆕
+          </span>
+        )}
       </td>
       <td className="mono">{formatRecord(r.record)}</td>
       <td>{r.points}</td>
@@ -333,6 +343,7 @@ function OnlineBoard({ challenge, period, reload, onRetry, panelRef }: OnlineBoa
       me: r.me,
       source: { kind: 'online', entryId: r.entryId, summary },
       profile: r.entryId,
+      fresh: Date.now() - Date.parse(r.createdAt) < FRESH_MS,
       trainer: r.trainer ? parseLook(r.trainer) : null,
     };
   };

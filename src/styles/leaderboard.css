@@ -198,3 +198,9 @@
   align-items: center;
   gap: 16px;
 }
+
+/* 🆕 Eintrag aus der letzten Stunde */
+.lb-fresh {
+  margin-left: 4px;
+  font-size: 13px;
+}

@@ -446,6 +446,23 @@ describe('Rangliste: Team ansehen (online)', () => {
     }
   });
 
+  it('🆕 an Einträgen aus der letzten Stunde (neben dem Team-Knopf, nicht darin)', async () => {
+    storeSettings('de');
+    const saved = BOARD.rows;
+    BOARD.rows = [{ ...saved[0], createdAt: new Date(Date.now() - 10 * 60_000).toISOString() }, ...saved.slice(1)];
+    try {
+      await stubServer();
+      const c = await render(app());
+      await settle();
+      const fresh = c.querySelectorAll('.lb-fresh');
+      expect(fresh).toHaveLength(1);
+      expect(fresh[0].getAttribute('aria-label')).toBe('In der letzten Stunde eingetragen');
+      expect(teamButtons(c)[0].textContent).toBe('Pallet Power');
+    } finally {
+      BOARD.rows = saved;
+    }
+  });
+
   it('Klick öffnet den Dialog: erst Laden mit den Daten der Zeile, dann Spielfeld, Teamblatt und Kopfdaten', async () => {
     storeSettings('de');
     let resolve!: (r: Response) => void;

@@ -26,6 +26,7 @@ const leaderboard: Messages['leaderboard'] = {
   colRecord: 'Record',
   colPoints: 'Pts',
   colScore: 'Score',
+  freshTitle: 'Entered in the last hour',
   yourRank: 'Your position',
   yourRankGap: (pts, top) => `${pts} pts short of the top ${top}`,
   playNow: 'Play now',
