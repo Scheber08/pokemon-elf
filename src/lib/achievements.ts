@@ -93,6 +93,7 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'daily_1', category: 'daily', coins: 50, goal: 1, value: (s) => s.dailyDays },
   { id: 'daily_streak_3', category: 'daily', coins: 100, goal: 3, value: (s) => s.dailyStreak },
   { id: 'daily_streak_7', category: 'daily', coins: 250, goal: 7, value: (s) => s.dailyStreak },
+  { id: 'daily_streak_14', category: 'daily', coins: 450, goal: 14, value: (s) => s.dailyStreak },
   { id: 'daily_streak_30', category: 'daily', coins: 800, goal: 30, value: (s) => s.dailyStreak },
   { id: 'daily_win', category: 'daily', coins: 300, goal: 1, value: (s) => s.dailyWins },
   { id: 'daily_win_5', category: 'daily', coins: 600, goal: 5, value: (s) => s.dailyWins },

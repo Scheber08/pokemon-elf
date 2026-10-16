@@ -252,6 +252,7 @@ const trainer = {
     daily_1: { name: 'Guten Morgen', desc: 'Spiele deine erste Tägliche Elf.' },
     daily_streak_3: { name: 'Am Ball', desc: 'Tägliche Elf an 3 Tagen hintereinander.' },
     daily_streak_7: { name: 'Wochenkarte', desc: 'Tägliche Elf an 7 Tagen hintereinander.' },
+    daily_streak_14: { name: 'Zwei-Wochen-Ticket', desc: 'Tägliche Elf an 14 Tagen hintereinander.' },
     daily_streak_30: { name: 'Monatsabo', desc: 'Tägliche Elf an 30 Tagen hintereinander.' },
     daily_win: { name: 'Tagessieger', desc: 'Platz 1 der Tageswertung (abgeschlossener Tag).' },
     daily_win_5: { name: 'Seriensieger', desc: '5 Tagessiege.' },

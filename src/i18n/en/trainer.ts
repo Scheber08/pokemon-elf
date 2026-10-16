@@ -249,6 +249,7 @@ const trainer: Messages['trainer'] = {
     daily_1: { name: 'Good morning', desc: 'Play your first Daily XI.' },
     daily_streak_3: { name: 'On the ball', desc: 'Daily XI on 3 days in a row.' },
     daily_streak_7: { name: 'Season ticket', desc: 'Daily XI on 7 days in a row.' },
+    daily_streak_14: { name: 'Fortnight pass', desc: 'Daily XI on 14 days in a row.' },
     daily_streak_30: { name: 'Monthly pass', desc: 'Daily XI on 30 days in a row.' },
     daily_win: { name: 'Winner of the day', desc: 'First place in a daily ranking (finished day).' },
     daily_win_5: { name: 'Serial winner', desc: '5 daily wins.' },

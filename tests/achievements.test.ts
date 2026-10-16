@@ -73,6 +73,14 @@ describe('Definitionen', () => {
     expect(achievementStates(EMPTY).every((a) => !a.done && a.value === 0)).toBe(true);
   });
 
+  it('Tages-Serie in Stufen 3/7/14/30: 14 Tage erreichen die neue Stufe, 13 noch nicht', () => {
+    const ids = ACHIEVEMENTS.filter((a) => a.id.startsWith('daily_streak_')).map((a) => a.goal);
+    expect(ids).toEqual([3, 7, 14, 30]);
+    const state = (n: number) => achievementStates({ ...EMPTY, dailyStreak: n }).find((a) => a.id === 'daily_streak_14')!;
+    expect(state(13)).toMatchObject({ done: false, value: 13, goal: 14 });
+    expect(state(14).done).toBe(true);
+  });
+
   it('Fortschritt bis zum Ziel, Münzen nur für erreichte', () => {
     const s: AchievementStats = { ...EMPTY, runs: 12, challenges: { c340: { runs: 12, bestWins: 34, perfect: 1 } }, bestPlace: 7 };
     const st = Object.fromEntries(achievementStates(s).map((a) => [a.id, a]));
