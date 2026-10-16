@@ -489,6 +489,12 @@ function hat(c: Canvas, id: string, cloth: string) {
         c.fill(ellipse(cx, 14, 1, 3.6), '#8f5e30', null);
       }
       break;
+    case 'beret':
+      // Baskenmütze (Fête de la Musique): flache, schräg sitzende schwarze Mütze mit kleinem Stiel und Notenanstecker
+      c.fill((x, y) => y >= 4 && y <= 8 && ((x - 14.5) / 9.5) ** 2 + ((y - 7) / 3.2) ** 2 <= 1, '#26282e', '#0d0e11');
+      c.rect(14, 2, 2, 2, '#26282e');
+      c.dots([[20, 6], [20, 5], [21, 4], [19, 7], [20, 7]], '#f2c230');
+      break;
     case 'catears':
       // Katzenohren (Weltkatzentag): schwarzer Haarreif mit zwei spitzen Ohren, innen rosa
       c.fill((x, y) => y === 9 && head(x, y), '#26282e', null);
