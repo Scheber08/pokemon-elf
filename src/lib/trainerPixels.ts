@@ -425,6 +425,12 @@ function hat(c: Canvas, id: string, cloth: string) {
       c.fill(ellipse(15.5, 2.3, 1.8, 1.6), '#d0213a', '#7d1020');
       c.dots([[16, 0]], '#3c7a2e');
       break;
+    case 'crescent':
+      // Mondsichel-Reif (Tag des Mondes): dunkelblauer Haarreif mit goldener Mondsichel und zwei Sternen
+      c.fill(and(ellipse(15.5, 10, 9, 3), (_x, y) => y >= 8), '#2b3a7a', '#18214a');
+      c.fill(and(ellipse(15.5, 4.5, 4, 4), (x, y) => (x - 17.3) ** 2 + (y - 3.6) ** 2 > 10), '#f5d04a', '#b8922a');
+      c.dots([[8, 4], [23, 3], [22, 7]], '#fff4b0');
+      break;
     case 'penguin':
       // Pinguinmütze (Weltpinguintag): schwarze Strickmütze mit weißem Gesicht, zwei Augen und orangem Schnabel
       c.fill(and(ellipse(15.5, 10, 8.8, 7.5), above(10)), '#26282e', '#111216');

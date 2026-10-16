@@ -453,6 +453,10 @@ describe('Saisonartikel', () => {
     expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '🍫').map((i) => `${i.slot}:${i.id}`)).toEqual(['hat:praline', 'companion:869']);
     const praline = TRAINER_ITEMS.find((i) => i.id === 'praline')!;
     expect([at('2027-07-03'), at('2027-07-04'), at('2027-07-10'), at('2027-07-11')].map((d) => itemOnSale(praline, d))).toEqual([false, true, true, false]);
+    // 🌙 Tag des Mondes: Mondsichel-Reif und Lunastein vom 17. bis 23. Juli
+    expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '🌙').map((i) => `${i.slot}:${i.id}`)).toEqual(['hat:crescent', 'companion:337']);
+    const crescent = TRAINER_ITEMS.find((i) => i.id === 'crescent')!;
+    expect([at('2027-07-16'), at('2027-07-17'), at('2027-07-23'), at('2027-07-24')].map((d) => itemOnSale(crescent, d))).toEqual([false, true, true, false]);
   });
 
   it('Kauf nur in der Saison (400 not_on_sale), danach bleibt er tragbar', async () => {
