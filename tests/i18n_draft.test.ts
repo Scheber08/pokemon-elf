@@ -762,6 +762,10 @@ describe('/draft an einem Gerät auf Englisch', () => {
     }
     // ⚽ own picks that scored (English)
     expect(r.container.querySelector('.draft__you .draft__ownscorers')!.textContent).toMatch(/^⚽ \d+ of your 11 picks found the net$/);
+    // 😊 favourite opponent / 😖 bogey team (English)
+    expect(r.container.querySelector('.draft__you .draft__foes')!.textContent).toMatch(
+      /^😊 Favourite opponent: .+ \(\d+ points?, \d+:\d+\) · 😖 Bogey team: .+ \(\d+ points?, \d+:\d+\)$/,
+    );
     // 1️⃣ First pick with its season record (English): pick #1 went to My Team
     expect(r.container.querySelector('.draft-results__first')!.textContent).toMatch(/^1️⃣ First pick: .+ \(My Team\) – \d+ goals?, \d+ assists?$/);
     // Expectation vs. result under the human team's place (English)

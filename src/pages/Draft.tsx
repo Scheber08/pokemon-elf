@@ -9,7 +9,7 @@ import { DraftPickFeed, DraftTypeChip, KindMarks, RoundBest } from '../component
 import type { FeedItem } from '../state/useDraftRoom';
 import { PoolStars, poolStars, scarceFor, StarsLanded } from '../components/PoolStars';
 import { LeagueNumbers } from '../components/LeagueNumbers';
-import { attackDefenseRanks, dreamDuo, formatDuration, playerTallies, weightExtremes } from '../lib/leagueTimeline';
+import { attackDefenseRanks, dreamDuo, favouriteFoes, formatDuration, playerTallies, weightExtremes } from '../lib/leagueTimeline';
 import { TypeGoals } from '../components/TypeGoals';
 import { DraftProgress } from '../components/DraftProgress';
 import { Confetti } from '../components/Confetti';
@@ -1029,6 +1029,17 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   if (!roster.length) return null;
                   const scored = new Set(playerTallies(league).filter((x) => x.teamIndex === r.team && x.goals > 0).map((x) => x.pokemonId));
                   return <small className="draft__ownscorers">{t.draft.results.ownScorers(roster.filter((id) => scored.has(id)).length, roster.length)}</small>;
+                })()}
+                {(() => {
+                  // 😊 Lieblingsgegner und 😖 Angstgegner (wie online)
+                  const foes = favouriteFoes(league.matches, r.team);
+                  if (!foes) return null;
+                  const line = (x: NonNullable<typeof foes>['best']) => t.draft.results.foeLine(teamName(league.teams[x.opp].name), x.pts, `${x.gf}:${x.ga}`);
+                  return (
+                    <small className="draft__foes">
+                      {t.draft.results.foeBest(line(foes.best))} · {t.draft.results.foeWorst(line(foes.worst))}
+                    </small>
+                  );
                 })()}
               </p>
             ) : null,
