@@ -204,3 +204,11 @@
   margin-left: 4px;
   font-size: 13px;
 }
+
+/* Profil: Filter der letzten Runs nach Wertung */
+.profile__filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+}

@@ -130,6 +130,8 @@ const leaderboard = {
     best: 'Bester Run',
     showTeam: 'Team ansehen',
     bestRunTitle: 'Bestwert dieser Wertung',
+    recentFilter: 'Letzte Runs nach Wertung filtern',
+    recentAll: 'Alle',
     recent: 'Letzte Runs',
     loading: 'Profil wird geladen …',
     gone: 'Dieses Profil ist nicht (mehr) erreichbar – der Eintrag steht nicht mehr in der Rangliste.',

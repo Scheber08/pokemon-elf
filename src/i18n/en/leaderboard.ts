@@ -125,6 +125,8 @@ const leaderboard: Messages['leaderboard'] = {
     best: 'Best run',
     showTeam: 'View team',
     bestRunTitle: 'Personal best in this mode',
+    recentFilter: 'Filter recent runs by mode',
+    recentAll: 'All',
     recent: 'Recent runs',
     loading: 'Loading profile …',
     gone: 'This profile isn’t available (any more) – the entry is no longer on the leaderboard.',

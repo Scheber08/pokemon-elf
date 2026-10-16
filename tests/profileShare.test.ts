@@ -27,6 +27,7 @@ const PROFILE: PlayerProfile = {
   recent: [
     { challenge: 'c151', day: '2026-10-02', teamName: 'Kanto', record: { w: 30, d: 2, l: 2 }, points: 92, score: 800, createdAt: '2026-10-02T10:00:00.000Z' },
     { challenge: 'c151', day: '2026-10-01', teamName: 'Kanto', record: { w: 20, d: 2, l: 12 }, points: 62, score: 780, createdAt: '2026-10-01T10:00:00.000Z' },
+    { challenge: 'c340', day: '2026-09-30', teamName: 'Johto', record: { w: 18, d: 4, l: 12 }, points: 58, score: 700, createdAt: '2026-09-30T10:00:00.000Z' },
   ],
 };
 
@@ -63,6 +64,15 @@ describe('Spielerprofil', () => {
     expect(container.querySelector('.profile__fav')!.textContent).toBe('⭐ Lieblings-Challenge: 34–0 Challenge (3 Runs)');
     // 🏅 nur am Run, der der Bestwert seiner Wertung ist
     expect(container.querySelectorAll('.profile__best').length).toBe(1);
+    // Filter „Letzte Runs“ nach Wertung (Runs aus zwei Wertungen)
+    const chips = container.querySelectorAll('.profile__filter button');
+    expect(chips.map((b) => b.textContent)).toEqual(['Alle', '151 Challenge', '34–0 Challenge']);
+    const recentRows = () => container.querySelectorAll('section')[1].querySelectorAll('tr').length;
+    expect(recentRows()).toBe(3);
+    await act(async () => chips[2].click());
+    expect(recentRows()).toBe(1);
+    await act(async () => container.querySelectorAll('.profile__filter button')[0].click());
+    expect(recentRows()).toBe(3);
     const btn = container.querySelectorAll('button').find((b) => b.textContent === 'Profil teilen')!;
     await act(async () => btn.click());
     for (let i = 0; i < 3; i++) await act(async () => new Promise((r) => setTimeout(r, 0)));

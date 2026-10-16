@@ -9,6 +9,7 @@ import { formatRecord } from '../lib/season';
 import { useToast } from '../state/Toast';
 import { TrainerAvatar } from '../components/TrainerAvatar';
 import { parseLook } from '../lib/trainer';
+import type { ChallengeKey } from '../types';
 import '../styles/leaderboard.css';
 
 type Status = { status: 'loading' } | { status: 'ready'; profile: PlayerProfile } | { status: 'gone' } | { status: 'error'; message: string };
@@ -20,6 +21,8 @@ export function Profile() {
   const tp = t.leaderboard.profile;
   const [state, setState] = useState<Status>({ status: 'loading' });
   const [open, setOpen] = useState<EntrySource | null>(null);
+  /** „Letzte Runs“ nur einer Wertung (null = alle) */
+  const [only, setOnly] = useState<ChallengeKey | null>(null);
   const toast = useToast();
 
   useEffect(() => {
@@ -182,10 +185,24 @@ export function Profile() {
         <h2 id="profile-recent" className="section-title">
           {tp.recent}
         </h2>
+        {(() => {
+          // Filter nach Wertung – nur, wenn die letzten Runs aus mehreren stammen
+          const keys = [...new Set(p.recent.map((r) => r.challenge))];
+          if (keys.length < 2) return null;
+          return (
+            <p className="profile__filter" role="group" aria-label={tp.recentFilter}>
+              {([null, ...keys] as (ChallengeKey | null)[]).map((k) => (
+                <button key={k ?? 'all'} type="button" className={`chip ${only === k ? 'is-active' : ''}`} aria-pressed={only === k} onClick={() => setOnly(k)}>
+                  {k ? t.game.challenge[k] : tp.recentAll}
+                </button>
+              ))}
+            </p>
+          );
+        })()}
         <div className="table-scroll">
           <table className="league-table">
             <tbody>
-              {p.recent.map((r, i) => (
+              {p.recent.filter((r) => !only || r.challenge === only).map((r, i) => (
                 <tr key={`${r.createdAt}-${i}`}>
                   <td className="left muted">{date(r.createdAt)}</td>
                   <td className="left">{t.game.challenge[r.challenge]}</td>
