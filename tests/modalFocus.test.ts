@@ -43,4 +43,16 @@ describe('Modal-Fokusfalle', () => {
     expect(dialog.contains(doc.activeElement) && doc.activeElement !== dialog).toBe(true);
     await act(async () => root.unmount());
   });
+
+  it('Kopf und Fuß sind keine Landmarks (header/footer im Portal wären zweites banner/contentinfo)', async () => {
+    const container = doc.createElement('div');
+    doc.body.appendChild(container);
+    const root = createRoot(container as never);
+    await act(async () => root.render(h(Modal, { title: 'Test', onClose: () => {}, footer: h('button', null, 'OK'), children: h('p', null, 'x') })));
+    expect(doc.body.querySelectorAll('header').length).toBe(0);
+    expect(doc.body.querySelectorAll('footer').length).toBe(0);
+    expect(doc.body.querySelector('.modal__head')).not.toBeNull();
+    expect(doc.body.querySelector('.modal__foot')).not.toBeNull();
+    await act(async () => root.unmount());
+  });
 });

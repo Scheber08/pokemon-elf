@@ -70,16 +70,17 @@ export function Modal({ title, onClose, children, footer, className = '', labelI
         aria-labelledby={labelId}
         tabIndex={-1}
       >
-        <header className="modal__head">
+        {/* div statt header/footer: im Portal unter body wären das zweite banner-/contentinfo-Landmarks */}
+        <div className="modal__head">
           <h2 id={labelId} className="modal__title">
             {title}
           </h2>
           <button type="button" className="icon-btn" onClick={onClose} aria-label={t.common.close}>
             ✕
           </button>
-        </header>
+        </div>
         <div className="modal__body">{children}</div>
-        {footer && <footer className="modal__foot">{footer}</footer>}
+        {footer && <div className="modal__foot">{footer}</div>}
       </div>
     </div>,
     document.body,
