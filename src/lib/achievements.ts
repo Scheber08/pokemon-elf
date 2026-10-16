@@ -51,6 +51,8 @@ export interface AchievementStats {
     duo?: number;
     /** Längste Siegesserie in einer Liga */
     winStreak?: number;
+    /** Höchster Sieg (Tordifferenz) in einer Online-Liga bzw. Manager-Saison */
+    bigWin?: number;
     /** Erreichte Saisonziele in Online-Ligen */
     goalsReached?: number;
   };
@@ -117,6 +119,7 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'hattrick_1', category: 'draft', coins: 150, goal: 1, value: (s) => s.draft.hatTricks ?? 0 },
   { id: 'duo_5', category: 'draft', coins: 200, goal: 5, value: (s) => s.draft.duo ?? 0 },
   { id: 'streak_7', category: 'draft', coins: 300, goal: 7, value: (s) => s.draft.winStreak ?? 0 },
+  { id: 'rout_5', category: 'draft', coins: 200, goal: 5, value: (s) => s.draft.bigWin ?? 0 },
   { id: 'goal_reached', category: 'draft', coins: 150, goal: 1, value: (s) => s.draft.goalsReached ?? 0 },
   { id: 'manager_5', category: 'draft', coins: 400, goal: 5, value: (s) => s.draft.seasons ?? 0 },
   { id: 'draft_manager', category: 'draft', coins: 400, goal: 1, value: (s) => s.draft.manager },

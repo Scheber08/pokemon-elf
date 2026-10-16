@@ -39,7 +39,7 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
       .bind(deviceId, today),
     db
       .prepare(
-        `SELECT SUM(CASE WHEN format NOT IN ('manager_cup', 'shiny', 'captain', 'goal', 'blitz', 'clean', 'goals', 'hattrick', 'duo', 'streak') THEN 1 ELSE 0 END) AS leagues,
+        `SELECT SUM(CASE WHEN format NOT IN ('manager_cup', 'shiny', 'captain', 'goal', 'blitz', 'clean', 'goals', 'hattrick', 'duo', 'streak', 'rout') THEN 1 ELSE 0 END) AS leagues,
            SUM(CASE WHEN format = 'shiny' THEN rank ELSE 0 END) AS shinies,
            MAX(CASE WHEN format = 'captain' THEN rank ELSE 0 END) AS captain_goals,
            MAX(CASE WHEN format = 'blitz' THEN rank ELSE 0 END) AS blitz,
@@ -48,15 +48,16 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
            SUM(CASE WHEN format = 'hattrick' THEN rank ELSE 0 END) AS hat_tricks,
            MAX(CASE WHEN format = 'duo' THEN rank ELSE 0 END) AS duo,
            MAX(CASE WHEN format = 'streak' THEN rank ELSE 0 END) AS streak,
+           MAX(CASE WHEN format = 'rout' THEN rank ELSE 0 END) AS rout,
            SUM(CASE WHEN format = 'goal' THEN 1 ELSE 0 END) AS goals_reached,
            SUM(CASE WHEN rank = 1 AND format = 'league' THEN 1 ELSE 0 END) AS titles,
            SUM(CASE WHEN rank = 1 AND format = 'manager_cup' THEN 1 ELSE 0 END) AS manager_cups,
            SUM(CASE WHEN rank = 1 AND format = 'cup' THEN 1 ELSE 0 END) AS cups,
            SUM(CASE WHEN rank = 1 AND format = 'manager' THEN 1 ELSE 0 END) AS manager,
-           SUM(CASE WHEN rank <= 3 AND format NOT IN ('manager_cup', 'shiny', 'captain', 'goal', 'blitz', 'clean', 'goals', 'hattrick', 'duo', 'streak') THEN 1 ELSE 0 END) AS podiums,
+           SUM(CASE WHEN rank <= 3 AND format NOT IN ('manager_cup', 'shiny', 'captain', 'goal', 'blitz', 'clean', 'goals', 'hattrick', 'duo', 'streak', 'rout') THEN 1 ELSE 0 END) AS podiums,
            SUM(CASE WHEN format = 'manager' THEN 1 ELSE 0 END) AS seasons,
            SUM(CASE WHEN format = 'manager' AND rank <= 3 THEN 1 ELSE 0 END) AS manager_podiums,
-           SUM(CASE WHEN losses = 0 AND format NOT IN ('cup', 'manager_cup', 'shiny', 'captain', 'goal', 'blitz', 'clean', 'goals', 'hattrick', 'duo', 'streak') AND wins + draws > 0 THEN 1 ELSE 0 END) AS unbeaten
+           SUM(CASE WHEN losses = 0 AND format NOT IN ('cup', 'manager_cup', 'shiny', 'captain', 'goal', 'blitz', 'clean', 'goals', 'hattrick', 'duo', 'streak', 'rout') AND wins + draws > 0 THEN 1 ELSE 0 END) AS unbeaten
          FROM draft_results WHERE device_id = ?`,
       )
       .bind(deviceId),
@@ -100,6 +101,7 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
       hatTricks: num(d.hat_tricks),
       duo: num(d.duo),
       winStreak: num(d.streak),
+      bigWin: num(d.rout),
       goalsReached: num(d.goals_reached),
     },
   };
@@ -358,6 +360,26 @@ export async function saveDraftResults(
            ON CONFLICT (code, device_id) DO UPDATE SET rank = excluded.rank`,
         )
         .bind(`${state.code}#streak`, device, best, now),
+    );
+  });
+  // Höchster Sieg je Mensch (eigene Zeile „…#rout“, rank = Tordifferenz) – nur für den Erfolg „Schützenfest“
+  state.teams.forEach((team, idx) => {
+    const device = !team.cpu ? state.owners[team.id] : undefined;
+    if (!device) return;
+    let best = 0;
+    for (const m of league.matches) {
+      if (m.home === idx) best = Math.max(best, m.hg - m.ag);
+      else if (m.away === idx) best = Math.max(best, m.ag - m.hg);
+    }
+    if (best < 3) return;
+    stmts.push(
+      db
+        .prepare(
+          `INSERT INTO draft_results (code, device_id, format, rank, teams, wins, draws, losses, points, finished_at)
+           VALUES (?, ?, 'rout', ?, 0, 0, 0, 0, 0, ?)
+           ON CONFLICT (code, device_id) DO UPDATE SET rank = excluded.rank`,
+        )
+        .bind(`${state.code}#rout`, device, best, now),
     );
   });
   // Eigene Tore je Mensch (eigene Zeile „…#goals“, rank = Tore) – zählt nur für den Erfolg „Torfabrik“

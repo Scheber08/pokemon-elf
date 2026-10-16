@@ -246,6 +246,7 @@ const trainer = {
     clean_10: { name: 'Bollwerk', desc: '10 Spiele ohne Gegentor in einer Online-Liga oder Manager-Saison.' },
     goals_80: { name: 'Torfabrik', desc: 'Erziele 80 Tore in einer Online-Liga oder Manager-Saison.' },
     duo_5: { name: 'Traumduo', desc: 'Ein Pokémon deines Teams legt in einer Online-Liga oder Manager-Saison demselben Mitspieler fünf Tore auf.' },
+    rout_5: { name: 'Schützenfest', desc: 'Gewinne in einer Online-Liga oder Manager-Saison ein Spiel mit fünf Toren Unterschied.' },
     streak_7: { name: 'Siegesserie', desc: 'Gewinne in einer Online-Liga oder Manager-Saison sieben Spiele in Folge.' },
     hattrick_1: { name: 'Hattrick-Held', desc: 'Ein Pokémon deines Teams trifft in einem Spiel einer Online-Liga oder Manager-Saison dreimal.' },
     goal_reached: { name: 'Plan erfüllt', desc: 'Erreiche dein Saisonziel in einer Online-Liga oder Manager-Saison.' },
