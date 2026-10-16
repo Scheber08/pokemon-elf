@@ -987,6 +987,15 @@ export function headToHead(league: Pick<LeagueResult, 'matches' | 'table'>, team
   return league.table.flatMap((r) => byOpp.get(r.team) ?? []);
 }
 
+export type FanMood = 'euphoria' | 'happy' | 'calm' | 'angry';
+
+/** Fan-Stimmung aus den letzten (bis zu) fünf Spielen: Punkte je Spiel – ab drei Spielen, sonst null */
+export function fanMood(form: readonly ('S' | 'U' | 'N')[]): FanMood | null {
+  if (form.length < 3) return null;
+  const ppg = form.reduce((a, r) => a + (r === 'S' ? 3 : r === 'U' ? 1 : 0), 0) / form.length;
+  return ppg >= 2.4 ? 'euphoria' : ppg >= 1.6 ? 'happy' : ppg >= 0.9 ? 'calm' : 'angry';
+}
+
 /**
  * Aktuelle Serie eines Teams (vom letzten Spiel rückwärts): Spiele ohne Niederlage bzw. ohne Sieg.
  * Liefert die Serie ab `min` Spielen – ungeschlagen hat Vorrang – sonst null.

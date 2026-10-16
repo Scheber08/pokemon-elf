@@ -4,7 +4,7 @@ import { localeOf, useLang, useT } from '../i18n';
 import type { DraftSnapshot, DraftTeam, ManagerSnapshot, ManagerLineup, ManagerOffer, ManagerTransfer } from '../lib/api/draftContract';
 import { goalReached, rosterOf } from '../lib/draftEngine';
 import { loadTips, MATCH_TIPS, saveTip, tipScore } from '../lib/managerTips';
-import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance, goalMilestones, scoringRuns, goalsByLine, GOAL_LINES, distinctScorers, bestGoalPhase } from '../lib/leagueTimeline';
+import { currentRun, hatTricks, TABLE_BOTTOM_MIN, TABLE_BOTTOM_ZONE, leagueTimeline, matchFor, playerOfRound, recentForm, storedLeague, tableRowClass, tableZone, leaderSince, lateWinner, biggestUpset, routOf, comebackOf, titleChance, goalMilestones, scoringRuns, goalsByLine, GOAL_LINES, distinctScorers, bestGoalPhase, fanMood } from '../lib/leagueTimeline';
 import { liveDuration, liveMinute, partialMatch } from '../lib/liveMatchday';
 import { showNotify } from '../lib/notify';
 import { shinyTeamBoost } from '../lib/shiny';
@@ -332,6 +332,11 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
               )}
             </p>
           );
+        })()}
+        {you != null && (() => {
+          // 📣 Fan-Stimmung aus den letzten fünf Spielen
+          const mood = fanMood(recentForm(shown.matches, you, m.played));
+          return mood && <p className={`small manager__mood manager__mood--${mood}`}>{tx.fanMood[mood]}</p>;
         })()}
         {you != null && m.played >= 1 && (() => {
           // Tore nach Mannschaftsteil: gestapelter Balken in den Farben der Positions-Badges (ab drei Toren)

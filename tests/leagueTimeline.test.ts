@@ -567,6 +567,17 @@ describe('Stärkste Torphase', () => {
   });
 });
 
+describe('Fan-Stimmung', () => {
+  it('Punkte je Spiel der letzten Spiele, erst ab drei Spielen', async () => {
+    const { fanMood } = await import('../src/lib/leagueTimeline');
+    expect(fanMood(['S', 'S'])).toBeNull();
+    expect(fanMood(['S', 'S', 'S', 'U', 'S'])).toBe('euphoria');
+    expect(fanMood(['S', 'U', 'N', 'S'])).toBe('happy');
+    expect(fanMood(['U', 'N', 'S', 'N'])).toBe('calm');
+    expect(fanMood(['N', 'N', 'U'])).toBe('angry');
+  });
+});
+
 describe('Tore nach Typ', () => {
   it('Doppeltypen zählen für beide, absteigend, höchstens drei', async () => {
     const { goalsByType } = await import('../src/lib/leagueTimeline');

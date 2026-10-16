@@ -1960,6 +1960,12 @@ describe('ManagerSeason', () => {
     const total = GOAL_LINES.reduce((a, k) => a + lines[k], 0);
     const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
     await settle();
+    // 📣 Fan-Stimmung aus den letzten fünf Spielen
+    const { fanMood, recentForm } = await import('../src/lib/leagueTimeline');
+    const mood = fanMood(recentForm(storedLeague(s.league, s.teams.length)!.matches, me, 6));
+    const moods = { euphoria: '😍 Die Fans sind in Euphorie', happy: '🙂 Die Fans sind zufrieden', calm: '😐 Die Fans warten ab', angry: '😠 Unruhe auf den Rängen' } as const;
+    expect(mood).not.toBeNull();
+    expect(container.querySelector('.manager__mood')!.textContent).toBe(moods[mood!]);
     const el = container.querySelector('.manager__lines');
     if (total < 3) return expect(el).toBeNull();
     const names = { att: 'Angriff', mid: 'Mittelfeld', def: 'Abwehr', gk: 'Tor' } as const;

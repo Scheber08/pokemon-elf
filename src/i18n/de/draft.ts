@@ -690,6 +690,8 @@ const draft = {
     raceOpen: (max: number, top: number) => `Platz 1 noch möglich: höchstens ${max} Pkt drin (Spitze: ${top})`,
     goalMilestone: (pokemon: string, mark: number) => `${pokemon} knackt die ${mark}-Tore-Marke!`,
     scoringRun: (pokemon: string, games: number) => `${pokemon} trifft im ${games}. Spiel in Folge!`,
+    /** Fan-Stimmung (letzte fünf Spiele) */
+    fanMood: { euphoria: '😍 Die Fans sind in Euphorie', happy: '🙂 Die Fans sind zufrieden', calm: '😐 Die Fans warten ab', angry: '😠 Unruhe auf den Rängen' },
     linesTitle: 'Tore nach Mannschaftsteil',
     distinctScorers: (n: number) => `👥 ${n} verschiedene Torschützen`,
     distinctScorersBest: ' – Ligabestwert',
