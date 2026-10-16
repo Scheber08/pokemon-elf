@@ -124,6 +124,11 @@ export function TrainerEditor({ me, onMe }: Props) {
             <span className="muted small">
               {tx.progress(me.achievements.filter((a) => a.done).length, me.achievements.length)}
             </span>
+            {(() => {
+              // Gesammelte Shop-Artikel (auch auf dem gespeicherten Bild)
+              const have = shopCollection(owned).have;
+              return have > 0 && <span className="muted small trainer-card__items">{tx.cardItems(have)}</span>;
+            })()}
           </div>
           <SaveImageButton target={cardRef} filename="pokemon-elf-trainer.png" label={tx.cardImage} aria={tx.cardImageAria} />
           {lockedNow.map((it) => {
