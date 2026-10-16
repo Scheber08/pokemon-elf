@@ -2278,6 +2278,26 @@ describe('ManagerSeason', () => {
     expect(r2[1].textContent).toBe('Viertelfinale 2:2 (i. E. 3:4) gegen T1 ❌ausgeschieden');
   });
 
+  it('Manager: „Beste Elf aufstellen“ gibt den Fokus an die Formationswahl weiter (der Knopf deaktiviert sich danach)', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason } = await import('../src/lib/manager');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    // Eigene Elf absichtlich schwächer: Torwart und Mittelstürmer vertauscht, Automatik aus
+    const cur = s.manager!.lineups.h;
+    const slots = [...cur.slots];
+    [slots[0], slots[10]] = [slots[10], slots[0]];
+    s = { ...s, manager: { ...s.manager!, lineups: { ...s.manager!.lineups, h: { ...cur, slots, auto: false } } } };
+    const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    const best = container.querySelectorAll('.manager__controls button').find((b) => b.textContent === 'Beste Elf aufstellen')!;
+    expect(best.hasAttribute('disabled')).toBe(false);
+    await act(async () => best.click());
+    await settle();
+    expect(document.activeElement).toBe(container.querySelector('.manager__formation select'));
+  });
+
   it('Manager: Tabellenausschnitt um das eigene Team mit Punkteabstand', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');

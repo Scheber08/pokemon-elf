@@ -1188,6 +1188,8 @@ function LineupEditor({
       const p = byId.get(id);
       return p ? [{ p, pos: FORMATIONS[l.formation].slots[i].pos }] : [];
     });
+  /** Nach „Beste Aufstellung“ ist der Knopf deaktiviert – Fokus dann zur Formationswahl daneben */
+  const formationRef = useRef<HTMLSelectElement>(null);
   const shinySet = useMemo(() => (shinies?.length ? new Set(shinies) : undefined), [shinies]);
   const strength = lineupScore(squadOf(lineup), sc, formOf, team.captain, shinySet);
   const absent = absentAt({ out }, next);
@@ -1313,6 +1315,7 @@ function LineupEditor({
         <label className="field manager__formation">
           <span className="field__label">{tx.formation}</span>
           <select
+            ref={formationRef}
             className="input"
             value={lineup.formation}
             onChange={(e) => {
@@ -1339,7 +1342,15 @@ function LineupEditor({
           />{' '}
           {tx.auto}
         </label>
-        <button type="button" className="btn btn--small" disabled={bestStrength <= strength} onClick={() => manual(best)}>
+        <button
+          type="button"
+          className="btn btn--small"
+          disabled={bestStrength <= strength}
+          onClick={() => {
+            manual(best);
+            window.setTimeout(() => formationRef.current?.focus(), 0);
+          }}
+        >
           {tx.best}
         </button>
       </div>
