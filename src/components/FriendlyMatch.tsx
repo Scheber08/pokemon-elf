@@ -55,7 +55,8 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
   }, [byId, tr.friendlyYou]);
   const [choice, setChoice] = useState(0);
   /** Bisherige Testspiele dieser Paarung (vor dem aktuellen): 1 Sieg, 0 Remis, -1 Niederlage */
-  const [history, setHistory] = useState<number[]>([]);
+  // Frühere Testspiele dieser Paarung: Tore [eigene, gegnerische]
+  const [history, setHistory] = useState<[number, number][]>([]);
   const own = sides[Math.min(choice, sides.length - 1)] ?? null;
   const result = useMemo(() => (own ? friendlyMatch(own, opponent, byId, scale('all'), seed) : null), [own, opponent, byId, scale, seed]);
   const odds = useMemo(() => (own ? friendlyOdds(own, opponent, byId, scale('all')) : null), [own, opponent, byId, scale]);
@@ -96,8 +97,11 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
   const [gf, ga] = result.aggregate;
   const verdict = gf > ga ? tr.friendlyWin : gf < ga ? tr.friendlyLoss : tr.friendlyDraw;
   // Bilanz aller Testspiele dieser Paarung samt dem aktuellen (erst ab dem zweiten)
-  const outcomes = [...history, Math.sign(gf - ga)];
+  const games: [number, number][] = [...history, [gf, ga]];
+  const outcomes = games.map(([a, b]) => Math.sign(a - b));
   const tally = (v: number) => outcomes.filter((o) => o === v).length;
+  const goalsFor = games.reduce((n, [a]) => n + a, 0);
+  const goalsAgainst = games.reduce((n, [, b]) => n + b, 0);
   return (
     <section className="card friendly" aria-labelledby="friendly-title" aria-live="polite">
       <h3 id="friendly-title" className="section-title">
@@ -154,7 +158,10 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
         return star && p && <p className="friendly__star small">{tr.friendlyStar(t.game.pokemon(p), star.team === 0 ? own.name : opponent.name, star.goals)}</p>;
       })()}
       {outcomes.length > 1 && (
-        <p className="friendly__tally small">{tr.friendlyTally(outcomes.length, tally(1), tally(0), tally(-1))}</p>
+        <p className="friendly__tally small">
+          {tr.friendlyTally(outcomes.length, tally(1), tally(0), tally(-1))}
+          {tr.friendlyGoals(goalsFor, goalsAgainst)}
+        </p>
       )}
       <p className="muted small">{tr.friendlyNote}</p>
       <ReplayToggle />
@@ -163,7 +170,7 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
         type="button"
         className="btn btn--small"
         onClick={() => {
-          setHistory((h) => [...h, Math.sign(gf - ga)]);
+          setHistory((h) => [...h, [gf, ga]]);
           setSeed(newSeed());
         }}
       >

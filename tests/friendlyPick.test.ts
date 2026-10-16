@@ -79,11 +79,17 @@ describe('Testspiel mit gespeicherter Elf', () => {
     const tally = () => container.querySelector('.friendly__tally')?.textContent ?? null;
     expect(tally()).toBeNull();
     const again = () => container.querySelectorAll('button').find((b) => b.textContent === 'Nochmal spielen')!;
+    // Gesamtergebnis jedes Testspiels (eigene Tore zuerst) – fürs Torverhältnis der Bilanz
+    const aggregate = () => container.querySelector('.friendly__verdict')!.textContent!.match(/(\d+):(\d+)/)!.slice(1).map(Number);
+    const seen = [aggregate()];
     await act(async () => again().dispatchEvent(new MiniEvent('click', { bubbles: true })));
+    seen.push(aggregate());
     await act(async () => again().dispatchEvent(new MiniEvent('click', { bubbles: true })));
-    const m = tally()!.match(/Bilanz aus 3 Testspielen: (\d+) S · (\d+) U · (\d+) N/)!;
+    seen.push(aggregate());
+    const m = tally()!.match(/Bilanz aus 3 Testspielen: (\d+) S · (\d+) U · (\d+) N · ⚽ Tore (\d+):(\d+)$/)!;
     expect(m).not.toBeNull();
     expect(Number(m[1]) + Number(m[2]) + Number(m[3])).toBe(3);
+    expect([Number(m[4]), Number(m[5])]).toEqual([seen.reduce((n, g) => n + g[0], 0), seen.reduce((n, g) => n + g[1], 0)]);
     expect(odds()).toBe(before);
     await act(async () => {
       select.value = '1';
