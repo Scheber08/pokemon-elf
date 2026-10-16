@@ -7,7 +7,7 @@ import { CLUB_NAMES } from '../config/season';
 import { PosBadge } from '../components/Badges';
 import { DraftPickFeed, DraftTypeChip, KindMarks, RoundBest } from '../components/DraftBoard';
 import type { FeedItem } from '../state/useDraftRoom';
-import { PoolStars, poolStars, StarsLanded } from '../components/PoolStars';
+import { PoolStars, poolStars, scarceFor, StarsLanded } from '../components/PoolStars';
 import { TypeGoals } from '../components/TypeGoals';
 import { DraftProgress } from '../components/DraftProgress';
 import { Confetti } from '../components/Confetti';
@@ -323,6 +323,18 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     [all, state.region, state.legends, state.forms, megas, megaRoom, drafted],
   );
   const filtered = useFilteredPokemon(pool, filters);
+  // ⚠️ Wird knapp (wie online): offene Plätze aller Teams gegen starke Freie – nur Positionen, die das menschliche Team am Zug noch braucht
+  const liveScarce = useMemo(() => {
+    if (!team || team.cpu || state.phase !== 'drafting') return [];
+    const need = new Map<PosCode, number>();
+    for (const tm of state.teams)
+      FORMATIONS[tm.formation].slots.forEach((d, j) => {
+        if (tm.slots[j] == null) need.set(d.pos, (need.get(d.pos) ?? 0) + 1);
+      });
+    const mine = new Set(FORMATIONS[team.formation].slots.filter((_, j) => team.slots[j] == null).map((d) => d.pos));
+    for (const pos of [...need.keys()]) if (!mine.has(pos)) need.delete(pos);
+    return scarceFor(pool, scale('all'), need);
+  }, [pool, state.teams, state.phase, currentTeam]);
   /** Beste Freie: für jede noch offene Position des Teams am Zug das passendste Pokémon im Pool */
   const bestFree = useMemo(() => {
     if (!team || team.cpu || state.phase !== 'drafting') return [];
@@ -1889,6 +1901,11 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               {state.pick + 1 < totalPicks && teamForPick(state.pick + 1, n) === currentTeam && (
                 // Snake-Wende: dasselbe Team ist gleich noch einmal dran (wie online)
                 <p className="small draft-double">🐍 {t.online.doublePick}</p>
+              )}
+              {liveScarce.length > 0 && (
+                <p className="small draft-scarce" title={t.online.liveScarceTitle}>
+                  {t.online.liveScarce(liveScarce.map((x) => `${t.game.posShort[x.pos]} ${x.strong}/${x.need}`).join(' · '))}
+                </p>
               )}
               <div className="draft-pooltools">
                 <button

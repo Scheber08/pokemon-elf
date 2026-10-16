@@ -768,6 +768,28 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(marked[0].textContent).toMatch(/^#\d+ · R1 Mewtwo ★Legendary\/mythical → /);
   });
 
+  it('⚠️ Running short (lokal): offene Plätze aller Teams gegen starke Freie, nur eigene Positionen', async () => {
+    storeLang('en');
+    const f0 = FORMATION_IDS[0];
+    // Acht Teams nur aus Kanto, ich zuerst am Zug
+    const teams = Array.from({ length: 8 }, (_, i) => ({ name: i === 0 ? 'Mein Team' : CLUB_NAMES[i], cpu: i !== 0, formation: f0, slots: emptySlots(f0) }));
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: false, pick: 0, selected: null, seed: null, log: [] }));
+    const { scarceFor } = await import('../src/components/PoolStars');
+    const { FORMATIONS } = await import('../src/config/formations');
+    const { messages } = await import('../src/i18n');
+    const need = new Map<string, number>();
+    for (const d of FORMATIONS[f0].slots) need.set(d.pos, (need.get(d.pos) ?? 0) + 8);
+    const pool = ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth);
+    const expected = scarceFor(pool, SCALE, need as never);
+    expect(expected.length).toBeGreaterThan(0);
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const short = messages().game.posShort;
+    expect(container.querySelector('.draft-scarce')!.textContent).toBe(
+      `⚠️ Running short: ${expected.map((x) => `${short[x.pos]} ${x.strong}/${x.need}`).join(' · ')}`,
+    );
+  });
+
   it('CPU am Zug: „Faster until the next turn“ verkürzt die Bedenkzeit bis zum eigenen Zug', async () => {
     storeLang('en');
     const f0 = FORMATION_IDS[0];
