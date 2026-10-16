@@ -41,6 +41,8 @@ const builder = {
     unnamed: (n: number) => `Elf ${n}`,
     saved: (name: string) => `„${name}" gespeichert`,
     updated: (name: string) => `„${name}" aktualisiert`,
+    /** Volle Liste: diese Elf fällt beim Speichern weg */
+    full: (name: string) => `Liste voll – beim Speichern fällt die älteste weg: „${name}“`,
     current: '✓ aktuell',
     score: (n: number) => `Score ${n}`,
     /** Eindeutig stärkste gespeicherte Elf (höchster Team-Score) */

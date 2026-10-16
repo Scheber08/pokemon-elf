@@ -39,6 +39,7 @@ const builder: Messages['builder'] = {
     unnamed: (n) => `XI ${n}`,
     saved: (name) => `“${name}” saved`,
     updated: (name) => `“${name}” updated`,
+    full: (name) => `List full – saving drops the oldest: “${name}”`,
     current: '✓ current',
     score: (n) => `Score ${n}`,
     strongest: 'Your strongest saved XI',

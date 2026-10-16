@@ -63,6 +63,14 @@ export function withSavedTeam<T>(list: SavedTeam<T>[], entry: SavedTeam<T>): Sav
   return [entry, ...rest].slice(0, SAVED_TEAMS_MAX);
 }
 
+/** Welche gespeicherte Elf fällt weg, wenn unter `name` gespeichert wird? (nur bei voller Liste und neuem Namen) */
+export function droppedBy<T>(list: SavedTeam<T>[], name: string): SavedTeam<T> | null {
+  if (list.length < SAVED_TEAMS_MAX) return null;
+  const key = name.trim().toLowerCase();
+  if (key && list.some((x) => x.name.trim().toLowerCase() === key)) return null;
+  return list[list.length - 1];
+}
+
 /** Felder, die ein Testspiel braucht (siehe Builder-Zustand) */
 interface Playable {
   teamName: string;
@@ -231,6 +239,11 @@ export function SavedTeams<T extends Playable>({ current, onLoad }: Props<T>) {
       <button type="button" className="btn btn--small" onClick={store}>
         {tx.save}
       </button>
+      {(() => {
+        // Volle Liste: vorher sagen, welche Elf beim Speichern wegfällt
+        const gone = droppedBy(list, current.teamName);
+        return gone && <p className="muted small saved-teams__full">{tx.full(gone.name)}</p>;
+      })()}
     </div>
   );
 }
