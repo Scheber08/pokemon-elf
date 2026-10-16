@@ -354,6 +354,11 @@ describe('34–0 Challenge auf Englisch', () => {
     }
     expect(text).toMatch(/Positions by weight: GK 1\.6 · ST 1\.4 · CB\/AM 1\.2 · DM 1\.1 · others 1\.0/);
     expect(text).toMatch(/Season details – all 34 matches/);
+    // 🔥 / 🛡️ Serien der Saison (ab 3 Spielen, Englisch)
+    {
+      const runs = el.querySelector('.result-runs');
+      if (runs) expect(runs.textContent).toMatch(/^(🔥 Longest winning run: \d+ games)?( · )?(🛡️ Longest unbeaten run: \d+ games)?$/);
+    }
     // 💥 Höchster Sieg / höchste Niederlage (Englisch)
     expect(el.querySelector('.result-extremes')!.textContent).toMatch(/^(Your biggest win: \d+:\d+ against .+?)?( · )?(Your heaviest defeat: \d+:\d+ against .+)?$/);
     // 😊 / 😖 Lieblings- und Angstgegner der Saison (Englisch)

@@ -39,6 +39,8 @@ const result = {
   /** Tabellenplatz als Ordnungszahl: „3." */
   ordinal: (n: number) => `${n}.`,
   weakSpots: 'Schwachstellen laut Scouting: ',
+  runWins: (n: number) => `🔥 Längste Siegesserie: ${n} Spiele`,
+  runUnbeaten: (n: number) => `🛡️ Längste Serie ohne Niederlage: ${n} Spiele`,
   weakSpotsNote: ' (auf dem Feld markiert)',
   share: 'Teilen',
   saveImage: 'Bild speichern',

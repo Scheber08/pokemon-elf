@@ -49,6 +49,8 @@ const result: Messages['result'] = {
   record: 'Record',
   ordinal,
   weakSpots: 'Weak spots according to scouting: ',
+  runWins: (n) => `🔥 Longest winning run: ${n} games`,
+  runUnbeaten: (n) => `🛡️ Longest unbeaten run: ${n} games`,
   weakSpotsNote: ' (marked on the pitch)',
   share: 'Share',
   saveImage: 'Save image',

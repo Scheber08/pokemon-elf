@@ -17,7 +17,7 @@ import {
   type RunRanking,
 } from '../lib/runFinish';
 import { formatRecord, type SeasonResult } from '../lib/season';
-import { favouriteFoes } from '../lib/foes';
+import { favouriteFoes, longestRuns } from '../lib/foes';
 import { scorerSummary } from '../lib/seasonTimeline';
 import { usePokemonData, type ScaleKind } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
@@ -489,6 +489,12 @@ export function SeasonResultView({
               {t.draft.results.foeBest(line(foes.best))} · {t.draft.results.foeWorst(line(foes.worst))}
             </p>
           );
+        })()}
+        {(() => {
+          // 🔥 Längste Siegesserie und 🛡️ längste Serie ohne Niederlage der Saison (ab 3 Spielen)
+          const { wins: bestWin, unbeaten: bestUnbeaten } = longestRuns(season.userMatches.map((m) => m.outcome));
+          const parts = [bestWin >= 3 ? tr.runWins(bestWin) : null, bestUnbeaten >= 3 && bestUnbeaten > bestWin ? tr.runUnbeaten(bestUnbeaten) : null].filter(Boolean);
+          return parts.length > 0 && <p className="card small muted result-runs">{parts.join(' · ')}</p>;
         })()}
         {(() => {
           // 💥 Höchster Sieg und höchste Niederlage der Saison (größte Tordifferenz, bei Gleichstand der frühere)

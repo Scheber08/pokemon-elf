@@ -39,3 +39,18 @@ export interface FoeRecord {
   gf: number;
   ga: number;
 }
+
+/** 🔥 Längste Siegesserie und 🛡️ längste Serie ohne Niederlage aus den Ergebnissen in Spielreihenfolge */
+export function longestRuns(outcomes: readonly ('S' | 'U' | 'N')[]): { wins: number; unbeaten: number } {
+  let win = 0;
+  let unbeaten = 0;
+  let wins = 0;
+  let best = 0;
+  for (const o of outcomes) {
+    win = o === 'S' ? win + 1 : 0;
+    unbeaten = o === 'N' ? 0 : unbeaten + 1;
+    wins = Math.max(wins, win);
+    best = Math.max(best, unbeaten);
+  }
+  return { wins, unbeaten: best };
+}
