@@ -330,6 +330,12 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
   const { me } = room;
   // Host-Werkzeuge nur mit Live-Verbindung (die Vorschau kennt die eigene Rolle nicht)
   const isHost = room.isHost && !readOnly;
+  // 🏆 Titelverteidiger: Meister der letzten Liga der Revanche-Kette (Name wie in der Teamliste)
+  const lastLeague = s.history?.length ? s.history[s.history.length - 1] : null;
+  const champRow = lastLeague?.rows.find((r) => r.rank === 1) ?? null;
+  const defending = champRow?.teamId ?? null;
+  const champTeam = defending ? s.teams.find((tm) => tm.id === defending) : undefined;
+  const defendingName = champRow ? (champTeam ? teamLabel(champTeam, t) : champRow.cpu ? t.game.club(champRow.name) : champRow.name) : null;
   const blocker = startBlocker(s, list, t);
   /** Liganame tippt der Host lokal; gesendet wird kurz nach der letzten Taste */
   const [leagueName, setLeagueName] = useState<string | null>(null);
@@ -422,6 +428,7 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
               ({s.teams.length}/{s.settings.maxTeams})
             </span>
           </h2>
+          {defendingName && <p className="small draft-lobby__defending-line">{t.online.defending(defendingName)}</p>}
           <ol className="draft-lobby__teams">
             {s.teams.map((team, i) => {
               // Vereinsnamen der CPU-Teams erst bei der Anzeige übersetzen
@@ -433,7 +440,16 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
                     {team.trainer && <TrainerAvatar look={parseLook(team.trainer)} size={36} companion={false} />}
                     {cleanCrest(team.crest) && <Crest crest={cleanCrest(team.crest)!} size={24} />}
                     <span className="draft-lobby__name">
-                      <strong>{name}</strong>
+                      <strong>
+                        {name}
+                        {team.id === defending && (
+                          <span className="draft-lobby__defending" title={t.online.defendingTitle}>
+                            {' '}
+                            <span aria-hidden="true">🏆</span>
+                            <span className="sr-only">{t.online.defendingTitle}</span>
+                          </span>
+                        )}
+                      </strong>
                       <small>
                         {team.formation}
                         {team.cpu && s.settings.cpuLevel && s.settings.cpuLevel !== 'normal' && (

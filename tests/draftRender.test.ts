@@ -1084,6 +1084,20 @@ describe('DraftLobby', () => {
     }
   });
 
+  it('🏆 Lobby einer Revanche: Titelverteidiger als Zeile und am Team', async () => {
+    const row = (teamId: string, name: string, rank: number) => ({ teamId, name, cpu: false, rank, played: 6, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 });
+    const st = { ...lobby(2), history: [{ code: 'OLD234', name: 'Alt', finishedAt: 0, rows: [row('t1', 'Team 1', 1), row('h', 'Host FC', 2)] }] };
+    const { container } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) })));
+    await settle();
+    expect(container.querySelector('.draft-lobby__defending-line')!.textContent).toBe('🏆 Titelverteidiger: Team 1');
+    const marked = container.querySelectorAll('.draft-lobby__team').filter((li) => li.querySelector('.draft-lobby__defending'));
+    expect(marked.map((li) => li.querySelector('.draft-lobby__name strong')!.textContent)).toEqual(['Team 1 🏆Titelverteidiger (Meister der letzten Liga)']);
+    // Ohne Vorgänger-Liga: nichts
+    const r2 = await render(app(h(DraftLobby, { room: fakeRoom(snap(lobby(2), 'h')) })));
+    await settle();
+    expect(r2.container.querySelector('.draft-lobby__defending-line')).toBeNull();
+  });
+
   it('🧩 Lobby: Formations-Mix aller Teams, Hinweis bei eigener Einzel-Formation', async () => {
     const st = lobby(3, { region: 1, maxTeams: 4 });
     const { container } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) })));

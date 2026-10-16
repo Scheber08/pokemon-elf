@@ -170,6 +170,9 @@ const online = {
   readyOff: 'Ich bin bereit',
   readyOn: '✓ Bereit – zurücknehmen',
   readyMark: 'bereit',
+  /** Revanche: Meister der letzten Liga */
+  defending: (team: string) => `🏆 Titelverteidiger: ${team}`,
+  defendingTitle: 'Titelverteidiger (Meister der letzten Liga)',
   /** Formations-Mix aller Teams in der Lobby */
   lobbyFormations: (list: string) => `🧩 Formationen: ${list}`,
   lobbyFormationSolo: ' – deine spielt sonst keiner',
