@@ -18,6 +18,7 @@ const leaderboard = {
   week: 'Diese Woche',
   /** „Diese Woche · KW 42" */
   weekOf: (n: number) => `Diese Woche · KW ${n}`,
+  weekLeft: (days: number) => (days === 1 ? 'endet heute' : `noch ${days} Tage`),
   /** „Heute · 12.10.2026" */
   todayOn: (date: string) => `Heute · ${date}`,
   topFormation: (formation: string, n: number, total: number) => `Lieblingsformation der Top ${total}: ${formation} (${n}×)`,

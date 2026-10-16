@@ -676,6 +676,18 @@ describe('Rangliste: Team ansehen (online)', () => {
     expect(c.querySelector('.lb-meta')!.textContent).toContain('Lieblingsformation der Top 3: 4-3-3 (2×)');
   });
 
+  it('Wochenwertung: Kopfzeile nennt die Resttage bis Sonntag', async () => {
+    storeSettings('de');
+    await stubServer();
+    const c = await render(app());
+    await settle();
+    const week = c.querySelectorAll('[role="radio"]').find((b) => b.textContent === 'Diese Woche')!;
+    await click(week);
+    await settle();
+    const wd = new Date(`${dayKey()}T12:00:00Z`).getUTCDay();
+    expect(c.querySelector('.lb-meta')!.textContent).toContain(wd === 0 ? 'endet heute' : `noch ${8 - wd} Tage`);
+  });
+
   it('Sprites folgen der Einstellung des Nutzers – im Dialog und im Builder-Link', async () => {
     storeSettings('de', 'artwork');
     await stubServer();

@@ -310,6 +310,11 @@ function OnlineBoard({ challenge, period, reload, onRetry, panelRef }: OnlineBoa
     onRetry();
   };
   const meta = [periodText(t, period, day)];
+  if (period === 'week') {
+    // Wochenwertung läuft bis Sonntag (Tag aus der Antwort, Europe/Berlin): noch n Tage inkl. heute
+    const weekday = new Date(`${day}T12:00:00Z`).getUTCDay(); // 0 = Sonntag
+    meta.push(t.leaderboard.weekLeft(weekday === 0 ? 1 : 8 - weekday));
+  }
   if (players) meta.push(t.leaderboard.players(players));
   // Beliebteste Formation unter den gezeigten Einträgen (ab 3, nur bei eindeutigem Spitzenreiter)
   const shownRows = current?.data?.rows ?? [];
