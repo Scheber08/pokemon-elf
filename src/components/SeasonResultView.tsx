@@ -490,6 +490,23 @@ export function SeasonResultView({
             </p>
           );
         })()}
+        {(() => {
+          // 💥 Höchster Sieg und höchste Niederlage der Saison (größte Tordifferenz, bei Gleichstand der frühere)
+          const pick = (win: boolean) =>
+            season.userMatches
+              .filter((m) => (win ? m.gf > m.ga : m.gf < m.ga))
+              .reduce<(typeof season.userMatches)[number] | null>((a, m) => (!a || Math.abs(m.gf - m.ga) > Math.abs(a.gf - a.ga) ? m : a), null);
+          const best = pick(true);
+          const worst = pick(false);
+          if (!best && !worst) return null;
+          return (
+            <p className="card small muted result-extremes">
+              {best && t.draft.results.ownBest(`${best.gf}:${best.ga}`, t.game.club(best.opponent))}
+              {best && worst && ' · '}
+              {worst && t.draft.results.ownWorst(`${worst.gf}:${worst.ga}`, t.game.club(worst.opponent))}
+            </p>
+          );
+        })()}
 
         <details className="card details">
           <summary>{tr.details(season.userMatches.length)}</summary>
