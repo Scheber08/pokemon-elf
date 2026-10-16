@@ -351,6 +351,11 @@
   gap: 18px;
   min-width: 0;
 }
+/* Grid-Kinder dürfen schmaler als ihr Inhalt werden – breite Tabellen (ewige Tabelle) scrollen in .table-scroll */
+.draft-lobby__main > *,
+.draft-lobby__side > * {
+  min-width: 0;
+}
 .draft-code {
   display: grid;
   gap: 8px;
