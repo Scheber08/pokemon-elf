@@ -69,6 +69,11 @@ describe('Testspiel mit gespeicherter Elf', () => {
       const opp = li.querySelector('.friendly__scorers--opp');
       expect(!!opp).toBe(oppGoals > 0);
       if (opp) expect(opp.textContent).toMatch(/^ · Gegner: .+/);
+      // Eigene Torschützen genauso unter dem Teamnamen
+      const ownGoals = Number(m[1] ?? m[4]);
+      const own = li.querySelectorAll('.friendly__scorers').find((x) => !x.className.includes('--opp'));
+      expect(!!own).toBe(ownGoals > 0);
+      if (own) expect(own.textContent).toMatch(/^ · Builder-Elf: .+/);
     }
     // Bilanz erst ab dem zweiten Testspiel; „Nochmal spielen" zählt weiter
     const tally = () => container.querySelector('.friendly__tally')?.textContent ?? null;

@@ -131,8 +131,8 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
             <li key={i}>
               <strong>{i === 0 ? tr.friendlyFirst : tr.friendlySecond}:</strong>{' '}
               {ownHome ? `${own.name} ${ownGoals}:${oppGoals} ${opponent.name}` : `${opponent.name} ${oppGoals}:${ownGoals} ${own.name}`}
-              {ownScorers && <small className="muted friendly__scorers"> · {tr.friendlyScorers(ownScorers)}</small>}
-              {oppScorers && <small className="muted friendly__scorers friendly__scorers--opp"> · {tr.friendlyOppScorers(opponent.name, oppScorers)}</small>}
+              {ownScorers && <small className="muted friendly__scorers"> · {tr.friendlyTeamScorers(own.name, ownScorers)}</small>}
+              {oppScorers && <small className="muted friendly__scorers friendly__scorers--opp"> · {tr.friendlyTeamScorers(opponent.name, oppScorers)}</small>}
               {report.open && (
                 <button type="button" className="btn btn--small btn--ghost friendly__report" onClick={() => report.open?.(m)}>
                   {t.draft.report.title}
