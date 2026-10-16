@@ -26,7 +26,7 @@ import { Sprite } from '../components/Sprite';
 import { useT } from '../i18n';
 import { draftsSupported } from '../lib/api/draftClient';
 import { rainbowGain, typeElevenGain } from '../config/pokemonTypes';
-import { fitImpact, positionFit, roundBestPicks, soleTopIndex } from '../lib/fit';
+import { BULLSEYE_FIT, fitImpact, positionFit, roundBestPicks, soleTopIndex } from '../lib/fit';
 import { rankingNames } from '../lib/rankingNames';
 import { emptySlots } from '../lib/formation';
 import { biggestWin, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, hatTricks, localShareText, mostCleanSheets, draftSteal, goalFest, headToHead, leagueTimeline, recentForm, longestWinStreak, seasonEleven, seasonSwings, tableRowClass } from '../lib/leagueTimeline';
@@ -282,7 +282,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     const mon = byId.get(last.id);
     if (!tm || tm.cpu || !pos || !mon) return;
     const fit = Math.round(positionFit(mon, pos, scale('all')));
-    if (fit >= 95) toast(t.online.bullseyePick(t.game.pokemon(mon), fit, t.game.posName[pos]));
+    if (fit >= BULLSEYE_FIT) toast(t.online.bullseyePick(t.game.pokemon(mon), fit, t.game.posName[pos]));
   }, [state.pick]);
 
   // ★ Erstes legendäres Pokémon des Drafts und das letzte freie (wie online; nur beim Vorwärtsdraften)
@@ -1779,6 +1779,32 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   return p ? [`${t.game.pokemon(p)} +${shinyTeamBoost(p)}`] : [];
                 });
                 return <p className="small">✨ {parts.join(', ')}</p>;
+              })()}
+              {(() => {
+                // 🗺️ Regionen-Mix, 💯 Volltreffer und 📏/⚖️ Größe und Gewicht (wie online)
+                const mons = tm.slots.flatMap((id) => (id != null && byId.has(id) ? [byId.get(id)!] : []));
+                if (!mons.length) return null;
+                const gens = new Map<number, number>();
+                for (const p of mons) gens.set(p.gen, (gens.get(p.gen) ?? 0) + 1);
+                const sc = scale('all');
+                const bulls = FORMATIONS[tm.formation].slots.filter((d, j) => {
+                  const p = tm.slots[j] != null ? byId.get(tm.slots[j]!) : undefined;
+                  return p != null && Math.round(positionFit(p, d.pos, sc)) >= BULLSEYE_FIT;
+                }).length;
+                const r = t.draft.results;
+                return (
+                  <>
+                    {gens.size > 1 && (
+                      <p className="small draft-results__roster-regions" title={r.regionsTitle}>
+                        🗺️ {[...gens].sort((a, b) => b[1] - a[1] || a[0] - b[0]).map(([g, n]) => `${t.game.region[g] ?? g} ${n}`).join(' · ')}
+                      </p>
+                    )}
+                    {bulls > 0 && <p className="small draft-results__roster-bullseye">{r.bullseyes(bulls, BULLSEYE_FIT)}</p>}
+                    <p className="small draft-results__roster-size">
+                      {r.rosterSize(mons.reduce((sum, p) => sum + p.h, 0) / mons.length, mons.reduce((sum, p) => sum + p.w, 0))}
+                    </p>
+                  </>
+                );
               })()}
               {!tm.cpu && (
                 <button

@@ -792,6 +792,14 @@ describe('/draft an einem Gerät auf Englisch', () => {
     }
     // 🪫 Bluntest attack record (English)
     expect(r.container.querySelector('.draft-records__blunt')!.textContent).toMatch(/^🪫 Bluntest attack.+ – \d+ goals?$/);
+    // Kader-Karten wie online: 📏/⚖️ je Team, 🗺️ und 💯 im richtigen Format
+    {
+      const cards = r.container.querySelectorAll('.draft__roster');
+      expect(cards.length).toBeGreaterThanOrEqual(2);
+      for (const card of cards) expect(card.querySelector('.draft-results__roster-size')!.textContent).toMatch(/^📏 avg \d+\.\d m · ⚖️ [\d,.]+ kg$/);
+      for (const el of r.container.querySelectorAll('.draft__roster .draft-results__roster-regions')) expect(el.textContent).toMatch(/^🗺️ .+ \d+( · .+ \d+)+$/);
+      for (const el of r.container.querySelectorAll('.draft__roster .draft-results__roster-bullseye')) expect(el.textContent).toMatch(/95/);
+    }
     // 🎯 Most clinical side (English) – only from 15 shots on target, so short test leagues may not show it
     {
       const el = r.container.querySelector('.draft-records__sharp');

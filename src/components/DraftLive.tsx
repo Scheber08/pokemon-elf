@@ -28,7 +28,7 @@ import {
   rounds as engineRounds,
   teamIndexForPick,
 } from '../lib/draftEngine';
-import { fitImpact, positionFit } from '../lib/fit';
+import { fitImpact, positionFit, BULLSEYE_FIT } from '../lib/fit';
 import { rainbowGain, typeElevenGain } from '../config/pokemonTypes';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
@@ -200,7 +200,6 @@ const SNATCH_GAP = 5;
 
 /** Live-Draft: Wer ist dran, Timer, Pool, eigenes Feld, Board und Verlauf. readOnly: öffentliche Vorschau ohne Live-Verbindung. */
 /** 💯 Volltreffer ab diesem Positions-Fit (wie in den Kader-Karten des Ergebnisses) */
-const BULLSEYE_FIT = 95;
 
 export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnly?: boolean }) {
   const { all: list, byId, scale } = usePokemonData();

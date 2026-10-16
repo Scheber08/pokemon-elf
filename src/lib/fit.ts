@@ -212,3 +212,6 @@ export function fitImpact(
   const b: { pos: PosCode; fit: number } = best;
   return { pos: b.pos, fit: Math.round(b.fit), before: n ? Math.round(sum / n) : null, after: Math.round((sum + b.fit) / (n + 1)) };
 }
+
+/** 💯 Volltreffer: ab diesem (gerundeten) Positions-Fit */
+export const BULLSEYE_FIT = 95;

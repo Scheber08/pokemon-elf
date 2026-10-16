@@ -34,10 +34,9 @@ import { cleanCrest } from '../lib/crest';
 import { Crest } from './Crest';
 import { shinyTeamBoost } from '../lib/shiny';
 import { FORMATIONS } from '../config/formations';
-import { positionFit, roundBestPicks } from '../lib/fit';
+import { positionFit, roundBestPicks, BULLSEYE_FIT } from '../lib/fit';
 
 /** Ab diesem Positions-Fit zählt ein Pick als Volltreffer (Kader-Karten im Ergebnis) */
-const BULLSEYE_FIT = 95;
 import { fastPickCounts, goalReached, limitKindsOf, poolOf, rosterOf } from '../lib/draftEngine';
 import { KindMarks, RoundBest } from './DraftBoard';
 
