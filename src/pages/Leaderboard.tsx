@@ -255,6 +255,8 @@ function OnlineBoard({ challenge, period, reload, onRetry, panelRef }: OnlineBoa
   const [loaded, setLoaded] = useState<Loaded<LeaderboardResponse> | null>(null);
   /** Neuladen aus dem Dialog: Spieler, dessen Team-Knopf danach den Fokus bekommt; `from` = alter Schlüssel */
   const [refocus, setRefocus] = useState<{ player: string; from: string } | null>(null);
+  /** Formations-Filter (gilt nur für die Wertung, in der er gesetzt wurde) */
+  const [formationFilter, setFormationFilter] = useState<{ key: string; formation: string } | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -370,7 +372,23 @@ function OnlineBoard({ challenge, period, reload, onRetry, panelRef }: OnlineBoa
   } else {
     const { rows, mine } = current.data;
     const outside = mine && !rows.some((r) => r.me) ? toRow(mine) : null;
-    body = <BoardTable rows={rows.map(toRow)} mine={outside} onReload={reloadFromDialog} focusPlayer={focusPlayer} />;
+    // Filter nach Formation (ab zwei verschiedenen unter mindestens drei Einträgen); Plätze bleiben die der Wertung
+    const counts = [...rows.reduce((m, r) => m.set(r.formation, (m.get(r.formation) ?? 0) + 1), new Map<string, number>())].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    const only = formationFilter?.key === key && counts.some(([f]) => f === formationFilter.formation) ? formationFilter.formation : null;
+    body = (
+      <>
+        {rows.length >= 3 && counts.length >= 2 && (
+          <p className="profile__filter lb-formations" role="group" aria-label={t.leaderboard.formationFilter}>
+            {([null, ...counts.map(([f]) => f)] as (string | null)[]).map((f) => (
+              <button key={f ?? 'all'} type="button" className={`chip ${only === f ? 'is-active' : ''}`} aria-pressed={only === f} onClick={() => setFormationFilter(f ? { key, formation: f } : null)}>
+                {f ? `${f} (${counts.find(([x]) => x === f)![1]})` : t.leaderboard.formationAll}
+              </button>
+            ))}
+          </p>
+        )}
+        <BoardTable rows={rows.filter((r) => !only || r.formation === only).map(toRow)} mine={outside} onReload={reloadFromDialog} focusPlayer={focusPlayer} />
+      </>
+    );
   }
 
   return (

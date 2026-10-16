@@ -446,6 +446,27 @@ describe('Rangliste: Team ansehen (online)', () => {
     }
   });
 
+  it('Formations-Filter: Chips ab zwei Formationen unter drei Einträgen, Plätze bleiben', async () => {
+    storeSettings('de');
+    const saved = BOARD.rows;
+    BOARD.rows = [...saved, row({ rank: 3, entryId: ID3, player: 'Misty', teamName: 'Cerulean' })];
+    try {
+      await stubServer();
+      const c = await render(app());
+      await settle();
+      const chips = () => c.querySelectorAll('.lb-formations button');
+      expect(chips().map((b) => b.textContent)).toEqual(['Alle Formationen', '4-3-3 (2)', '4-4-2 (1)']);
+      await act(async () => chips()[2].click());
+      // Nur Brock (ohne Teamnamen) bleibt, dazu die eigene Zeile außerhalb der Liste
+      expect(teamButtons(c).map((b) => b.textContent)).toEqual(['Team ansehen', 'Cerulean']);
+      expect(chips()[2].getAttribute('aria-pressed')).toBe('true');
+      await act(async () => chips()[0].click());
+      expect(teamButtons(c).map((b) => b.textContent)).toContain('Pallet Power');
+    } finally {
+      BOARD.rows = saved;
+    }
+  });
+
   it('🆕 an Einträgen aus der letzten Stunde (neben dem Team-Knopf, nicht darin)', async () => {
     storeSettings('de');
     const saved = BOARD.rows;

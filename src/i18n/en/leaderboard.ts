@@ -36,6 +36,8 @@ const leaderboard: Messages['leaderboard'] = {
   weekOf: (n) => `This week · Week ${n}`,
   weekLeft: (days) => (days === 1 ? 'ends today' : `${days} days left`),
   todayOn: (date) => `Today · ${date}`,
+  formationFilter: 'Filter leaderboard by formation',
+  formationAll: 'All formations',
   topFormation: (formation, n, total) => `Favourite formation of the top ${total}: ${formation} (${n}×)`,
   players: (n) => `${fmtNumber(n, 0, 'en')} ${n === 1 ? 'player' : 'players'}`,
   loading: 'Loading …',

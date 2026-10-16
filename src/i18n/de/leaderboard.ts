@@ -21,6 +21,8 @@ const leaderboard = {
   weekLeft: (days: number) => (days === 1 ? 'endet heute' : `noch ${days} Tage`),
   /** „Heute · 12.10.2026" */
   todayOn: (date: string) => `Heute · ${date}`,
+  formationFilter: 'Rangliste nach Formation filtern',
+  formationAll: 'Alle Formationen',
   topFormation: (formation: string, n: number, total: number) => `Lieblingsformation der Top ${total}: ${formation} (${n}×)`,
   players: (n: number) => `${fmtNumber(n, 0, 'de')} Spieler`,
   loading: 'Lade …',
