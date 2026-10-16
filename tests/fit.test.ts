@@ -216,3 +216,15 @@ describe('typeElevenGain', () => {
     expect(typeElevenGain(four, mk('water'))).toBeNull();
   });
 });
+
+describe('rainbowGain', () => {
+  it('meldet nur das erstmalige Erreichen des Typen-Regenbogens', async () => {
+    const { rainbowGain, RAINBOW_TYPES } = await import('../src/config/pokemonTypes');
+    const mk = (...types: TypeKey[]) => ({ types });
+    const nine = TYPE_KEYS.slice(0, RAINBOW_TYPES - 1).map((ty) => mk(ty));
+    expect(rainbowGain(nine, mk(TYPE_KEYS[RAINBOW_TYPES - 1], TYPE_KEYS[RAINBOW_TYPES]))).toBe(RAINBOW_TYPES + 1);
+    expect(rainbowGain(nine, mk(TYPE_KEYS[0]))).toBeNull();
+    const ten = [...nine, mk(TYPE_KEYS[RAINBOW_TYPES - 1])];
+    expect(rainbowGain(ten, mk(TYPE_KEYS[RAINBOW_TYPES + 1]))).toBeNull();
+  });
+});

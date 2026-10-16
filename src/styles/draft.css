@@ -1758,6 +1758,10 @@ button.draft-bench__slot {
   font-weight: 600;
   white-space: nowrap;
 }
+.draft-hint__typeelf {
+  display: block;
+  white-space: normal;
+}
 
 /* Manager-Saison: Tore nach Mannschaftsteil (Farben wie die Positions-Badges) */
 .manager__lines {

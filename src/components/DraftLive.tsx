@@ -28,7 +28,7 @@ import {
   teamIndexForPick,
 } from '../lib/draftEngine';
 import { fitImpact, positionFit } from '../lib/fit';
-import { typeElevenGain } from '../config/pokemonTypes';
+import { rainbowGain, typeElevenGain } from '../config/pokemonTypes';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import {
@@ -560,11 +560,14 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   const impact = (() => {
     const x = me && selectedMon ? fitImpact(selectedMon, FORMATIONS[me.formation].slots, me.slots, byId, scale('all')) : null;
     if (!x || !me || !selectedMon) return null;
-    const gain = typeElevenGain(me.slots.flatMap((id) => (id != null && byId.get(id) ? [byId.get(id)!] : [])), selectedMon);
+    const mons = me.slots.flatMap((id) => (id != null && byId.get(id) ? [byId.get(id)!] : []));
+    const gain = typeElevenGain(mons, selectedMon);
+    const rainbow = rainbowGain(mons, selectedMon);
     return (
       <span className="draft-hint__impact">
         {t.online.hintImpact(t.game.posShort[x.pos], x.fit, x.before, x.after)}
         {gain && <strong className="draft-hint__typeelf">{t.online.hintTypeEleven(t.game.type[gain.type], gain.n)}</strong>}
+        {rainbow != null && <strong className="draft-hint__typeelf">{t.online.hintRainbow(rainbow)}</strong>}
       </span>
     );
   })();

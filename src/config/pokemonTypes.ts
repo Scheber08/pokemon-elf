@@ -52,3 +52,10 @@ export function typeElevenGain(team: { types: TypeKey[] }[], add: { types: TypeK
   const before = dominantType(team);
   return before && before.type === after.type && before.n >= after.n ? null : after;
 }
+
+/** Erreicht die Gruppe mit `add` erstmals RAINBOW_TYPES verschiedene Typen? Dann die neue Zahl, sonst null */
+export function rainbowGain(team: { types: TypeKey[] }[], add: { types: TypeKey[] }): number | null {
+  const before = typeVariety(team);
+  const after = typeVariety([...team, add]);
+  return before < RAINBOW_TYPES && after >= RAINBOW_TYPES ? after : null;
+}
