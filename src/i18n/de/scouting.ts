@@ -117,6 +117,10 @@ const scouting = {
       a: '⚡ im Pick-Verlauf: ein Blitz-Pick – selbst gewählt, höchstens 5 Sekunden nach dem vorigen Pick (fünf davon in einer Online-Liga bringen den Erfolg „Blitzdrafter“). 🏅: der Pick mit dem bisher besten Positions-Fit des Drafts. ★, UB und M hinter einem Namen im Pick-Verlauf: Legendäres/Mysteriöses, Ultrabestie, Mega. 👑 auf dem Board: das Team mit dem besten Ø Fit; ein farbiger Chip wie „Feuer ×4“ zeigt eine Typ-Elf, „🌈 10“ einen Typen-Regenbogen (zehn oder mehr verschiedene Typen). 💔: ein anderes Team hat ein Pokémon von deiner Wunschliste geschnappt. „🎲 Zufall“ merkt ein zufälliges passendes Pokémon vor. 🐍 heißt: Snake-Wende, du bist gleich noch einmal dran; 🏁 markiert die letzte Draft-Runde.',
     },
     {
+      q: 'Was bedeuten 🏁, 🏅, 💯, 🛡️ und 🏆 in den Challenges?',
+      a: '🏁 in der Statuszeile: die letzte Runde des Runs. 💯 im Rundenverlauf: ein Volltreffer – Fit 95 oder mehr auf der Position. 🏅 im Ergebnis: neuer Bestwert, mehr Score als dein bisher bester Run dieser Challenge (auch an „Letzter Run“ und im Profil). 🛡️ im Profil: ungeschlagene Saison ohne Niederlage. 🏆 in der Rangliste: perfekte Saisons – nur Siege – unter den gezeigten Einträgen.',
+    },
+    {
       q: 'Gibt es Tastenkürzel im Draft?',
       a: '„/“ springt in die Pokémon-Suche, „W“ setzt das ausgewählte Pokémon auf deine Wunschliste (oder nimmt es herunter), „V“ holt einen Vorschlag, „R“ merkt per 🎲 ein zufälliges Pokémon vor, im Draft an einem Gerät nimmt „Z“ den letzten Pick zurück; „?“ zeigt alle Kürzel. Mit den Pfeiltasten geht es durchs Raster, Enter wählt ein Pokémon aus. Beim Tippen in einem Feld greifen die Kürzel nicht.',
     },

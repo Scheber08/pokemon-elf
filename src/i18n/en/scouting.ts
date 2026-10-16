@@ -98,6 +98,10 @@ const scouting: Messages['scouting'] = {
       a: '⚡ in the pick log: a lightning pick – your own pick within 5 seconds of the previous one (five in one online league earn the “Lightning drafter” achievement). 🏅: the pick with the best positional fit of the draft so far. ★, UB and M after a name in the pick log: legendary/mythical, Ultra Beast, Mega. 👑 on the board: the team with the best average fit; a coloured chip like “Fire ×4” marks a type squad, “🌈 10” a type rainbow (ten or more different types). 💔: another team took a Pokémon from your wishlist. “🎲 Random” pre-selects a random fitting Pokémon. 🐍 means a snake turn – you pick again right after; 🏁 marks the final draft round.',
     },
     {
+      q: 'What do 🏁, 🏅, 💯, 🛡️ and 🏆 mean in the challenges?',
+      a: '🏁 in the status line: the final round of the run. 💯 in the round log: a direct hit – fit 95 or more at the position. 🏅 in the result: a new personal best, a higher score than your best run of this challenge so far (also on “Last run” and on profiles). 🛡️ on profiles: an unbeaten season without a defeat. 🏆 on the leaderboard: perfect seasons – wins only – among the entries shown.',
+    },
+    {
       q: 'Are there keyboard shortcuts in the draft?',
       a: '“/” jumps to the Pokémon search, “W” puts the selected Pokémon on your wishlist (or takes it off), “V” fetches a suggestion, “R” pre-selects a random Pokémon (🎲), and in the one-device draft “Z” takes back the last pick; “?” lists all shortcuts. Arrow keys move through the grid, Enter selects a Pokémon. While typing in a field, the shortcuts are off.',
     },
