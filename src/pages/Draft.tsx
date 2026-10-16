@@ -791,6 +791,22 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 {tx.randomCpuFormations}
               </button>
             )}
+            {state.teams.some((tm) => tm.cpu) && (
+              <button
+                type="button"
+                className="btn btn--small draft__cpunames"
+                // 🎲 Neue Namen für alle CPU-Teams (ohne Dopplung mit den menschlichen Teams)
+                onClick={() =>
+                  setState((s) => {
+                    const free = cpuNames(s.teams.filter((tm) => !tm.cpu).map((tm) => tm.name));
+                    let k = 0;
+                    return { ...s, teams: s.teams.map((tm) => (tm.cpu && k < free.length ? { ...tm, name: free[k++] } : tm)) };
+                  })
+                }
+              >
+                {tx.randomCpuNames}
+              </button>
+            )}
             {/* Pick-Nummern der menschlichen Teams (Reihenfolge der Liste, Snake) */}
             {state.teams.some((tm) => !tm.cpu) && (
               <ul className="small draft__teampicks">

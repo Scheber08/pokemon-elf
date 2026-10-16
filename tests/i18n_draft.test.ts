@@ -336,6 +336,25 @@ describe('/draft an einem Gerät auf Englisch', () => {
     });
   });
 
+  it('Aufbau: „🎲 Roll CPU names“ benennt nur die CPU-Teams neu (Ranglisten-Namen, keiner doppelt)', async () => {
+    storeLang('en');
+    const pool = ['Team Rocket', 'Ashs Elf', 'Misty United', 'Rocko 1899', 'Gary Galaxy', 'Elite Vier'];
+    localStorage.setItem('pokemon-elf:ranking-names', JSON.stringify({ at: Date.now(), names: pool }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const before = JSON.parse(localStorage.getItem('pokemon-elf:draft')!).teams as { cpu: boolean; name: string }[];
+    expect(before.some((tm) => tm.cpu)).toBe(true);
+    const btn = container.querySelectorAll('button').find((b) => b.textContent === '🎲 Roll CPU names') as MiniElement;
+    await act(async () => btn.click());
+    const after = JSON.parse(localStorage.getItem('pokemon-elf:draft')!).teams as { cpu: boolean; name: string }[];
+    after.forEach((tm, i) => {
+      if (tm.cpu) expect(pool).toContain(tm.name);
+      else expect(tm.name).toBe(before[i].name);
+    });
+    expect(new Set(after.map((tm) => tm.name)).size).toBe(after.length);
+    localStorage.removeItem('pokemon-elf:ranking-names');
+  });
+
   it('Aufbau: „Shuffle order“ mischt die Teamliste (= Draft-Reihenfolge)', async () => {
     storeLang('en');
     const { container } = await render(app(h(Draft)));
