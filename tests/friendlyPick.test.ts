@@ -86,10 +86,13 @@ describe('Testspiel mit gespeicherter Elf', () => {
     seen.push(aggregate());
     await act(async () => again().dispatchEvent(new MiniEvent('click', { bubbles: true })));
     seen.push(aggregate());
-    const m = tally()!.match(/Bilanz aus 3 Testspielen: (\d+) S · (\d+) U · (\d+) N · ⚽ Tore (\d+):(\d+)$/)!;
+    const m = tally()!.match(/Bilanz aus 3 Testspielen: (\d+) S · (\d+) U · (\d+) N · ⚽ Tore (\d+):(\d+)( · 💥 Höchster Sieg (\d+):(\d+))?$/)!;
     expect(m).not.toBeNull();
     expect(Number(m[1]) + Number(m[2]) + Number(m[3])).toBe(3);
     expect([Number(m[4]), Number(m[5])]).toEqual([seen.reduce((n, g) => n + g[0], 0), seen.reduce((n, g) => n + g[1], 0)]);
+    // 💥 Höchster Sieg: größte Tordifferenz unter den Siegen (bei Gleichstand mehr eigene Tore), ohne Sieg keiner
+    const wins = seen.filter(([a, b]) => a > b).sort((x, y) => y[0] - y[1] - (x[0] - x[1]) || y[0] - x[0]);
+    expect(m[6] ? [Number(m[7]), Number(m[8])] : null).toEqual(wins[0] ?? null);
     expect(odds()).toBe(before);
     await act(async () => {
       select.value = '1';
@@ -99,5 +102,17 @@ describe('Testspiel mit gespeicherter Elf', () => {
     // Andere Elf: Bilanz beginnt neu
     expect(tally()).toBeNull();
     await act(async () => root.unmount());
+  });
+});
+
+describe('Testspiel-Bilanz: höchster Sieg', () => {
+  it('größte Tordifferenz, bei Gleichstand mehr eigene Tore; ohne Sieg keiner', async () => {
+    const { biggestWin } = await import('../src/components/FriendlyMatch');
+    expect(biggestWin([[2, 2], [1, 3]])).toBeNull();
+    expect(biggestWin([[2, 1], [4, 1], [3, 0], [1, 1]])).toEqual([4, 1]);
+    expect(biggestWin([[3, 0], [2, 0]])).toEqual([3, 0]);
+    const { messages } = await import('../src/i18n');
+    expect(messages('de').leaderboard.entry.friendlyBigWin(4, 1)).toBe(' · 💥 Höchster Sieg 4:1');
+    expect(messages('en').leaderboard.entry.friendlyBigWin(4, 1)).toBe(' · 💥 biggest win 4:1');
   });
 });

@@ -33,6 +33,13 @@ type Side = FriendlySide & { jerseys?: Jerseys; kit?: Kit | null; cheer?: string
 
 const newSeed = () => Math.floor(Math.random() * 0x7fffffff);
 
+/** 💥 Höchster Sieg einer Testspiel-Bilanz (eigene Tore zuerst): größte Tordifferenz, bei Gleichstand mehr eigene Tore; ohne Sieg null */
+export function biggestWin(games: [number, number][]): [number, number] | null {
+  return games
+    .filter(([a, b]) => a > b)
+    .reduce<[number, number] | null>((best, g) => (!best || g[0] - g[1] > best[0] - best[1] || (g[0] - g[1] === best[0] - best[1] && g[0] > best[0]) ? g : best), null);
+}
+
 /** Testspiel der eigenen Builder-Elf gegen ein Ranglisten-Team (Hin- und Rückspiel). */
 export function FriendlyMatch({ opponent }: { opponent: Side }) {
   const t = useT();
@@ -102,6 +109,7 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
   const tally = (v: number) => outcomes.filter((o) => o === v).length;
   const goalsFor = games.reduce((n, [a]) => n + a, 0);
   const goalsAgainst = games.reduce((n, [, b]) => n + b, 0);
+  const bigWin = biggestWin(games);
   return (
     <section className="card friendly" aria-labelledby="friendly-title" aria-live="polite">
       <h3 id="friendly-title" className="section-title">
@@ -161,6 +169,7 @@ export function FriendlyMatch({ opponent }: { opponent: Side }) {
         <p className="friendly__tally small">
           {tr.friendlyTally(outcomes.length, tally(1), tally(0), tally(-1))}
           {tr.friendlyGoals(goalsFor, goalsAgainst)}
+          {bigWin && <span className="friendly__bigwin">{tr.friendlyBigWin(bigWin[0], bigWin[1])}</span>}
         </p>
       )}
       <p className="muted small">{tr.friendlyNote}</p>

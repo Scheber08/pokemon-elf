@@ -121,6 +121,8 @@ const leaderboard = {
     friendlyOdds: (w: number, d: number, l: number) => `📈 Prognose aus 100 Testspielen: ${w} % Sieg · ${d} % Remis · ${l} % Niederlage`,
     /** Torverhältnis aller Testspiele (hängt an friendlyTally) */
     friendlyGoals: (gf: number, ga: number) => ` · ⚽ Tore ${gf}:${ga}`,
+    /** Bilanz: höchster Sieg (eigene Tore zuerst) */
+    friendlyBigWin: (gf: number, ga: number) => ` · 💥 Höchster Sieg ${gf}:${ga}`,
     friendlyTally: (n: number, w: number, d: number, l: number) => `📊 Bilanz aus ${n} Testspielen: ${w} S · ${d} U · ${l} N`,
     friendlyStar: (name: string, team: string, goals: number) => `⭐ Mann des Spiels: ${name} (${team}) – ${goals} Tore`,
     friendlyNote: 'Nur zum Spaß – zählt für keine Rangliste. Bewertet über alle 1.025 Pokémon.',
