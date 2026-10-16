@@ -155,6 +155,8 @@ const online: Messages['online'] = {
   readyOff: 'I’m ready',
   readyOn: '✓ Ready – undo',
   readyMark: 'ready',
+  chainNo: (n) => `🔁 League no. ${n} of this group`,
+  recordChamp: (team, n) => `Record champion: ${team} (${n}×)`,
   defending: (team) => `🏆 Defending champion: ${team}`,
   lastPlace: (rank) => `last time #${rank}`,
   defendingTitle: 'Defending champion (won the last league)',

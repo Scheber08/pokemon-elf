@@ -171,6 +171,8 @@ const online = {
   readyOn: '✓ Bereit – zurücknehmen',
   readyMark: 'bereit',
   /** Revanche: Meister der letzten Liga */
+  chainNo: (n: number) => `🔁 ${n}. Liga dieser Gruppe`,
+  recordChamp: (team: string, n: number) => `Rekordmeister: ${team} (${n}×)`,
   defending: (team: string) => `🏆 Titelverteidiger: ${team}`,
   lastPlace: (rank: number) => `zuletzt Platz ${rank}`,
   defendingTitle: 'Titelverteidiger (Meister der letzten Liga)',

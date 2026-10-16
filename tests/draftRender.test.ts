@@ -1173,6 +1173,15 @@ describe('DraftLobby', () => {
     expect(container.querySelector('.draft-lobby__defending-line')!.textContent).toBe('🏆 Titelverteidiger: Team 1');
     const marked = container.querySelectorAll('.draft-lobby__team').filter((li) => li.querySelector('.draft-lobby__defending'));
     expect(marked.map((li) => li.querySelector('.draft-lobby__name strong')!.textContent)).toEqual(['Team 1 🏆Titelverteidiger (Meister der letzten Liga)']);
+    // 🔁 Zweite Liga der Gruppe, noch kein Rekordmeister (erst ab zwei Titeln)
+    expect(container.querySelector('.draft-lobby__chain')!.textContent).toBe('🔁 2. Liga dieser Gruppe');
+    {
+      const h2 = { code: 'MID234', name: 'Mitte', finishedAt: 1, rows: [row('t1', 'Team 1', 1), row('h', 'Host FC', 2)] };
+      const st3 = { ...st, history: [...st.history, h2] };
+      const r3 = await render(app(h(DraftLobby, { room: fakeRoom(snap(st3, 'h')) })));
+      await settle();
+      expect(r3.container.querySelector('.draft-lobby__chain')!.textContent).toBe('🔁 3. Liga dieser Gruppe · Rekordmeister: Team 1 (2×)');
+    }
     // Platz aus der letzten Liga an jedem Team
     const places = container.querySelectorAll('.draft-lobby__team').map((li) => li.querySelector('.draft-lobby__lastplace')?.textContent ?? null);
     expect(places).toEqual([' · zuletzt Platz 2', ' · zuletzt Platz 1']);
@@ -1181,6 +1190,7 @@ describe('DraftLobby', () => {
     await settle();
     expect(r2.container.querySelector('.draft-lobby__defending-line')).toBeNull();
     expect(r2.container.querySelector('.draft-lobby__lastplace')).toBeNull();
+    expect(r2.container.querySelector('.draft-lobby__chain')).toBeNull();
   });
 
   it('🧩 Lobby: Formations-Mix aller Teams, Hinweis bei eigener Einzel-Formation', async () => {

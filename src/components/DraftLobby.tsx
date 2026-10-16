@@ -429,6 +429,26 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
             </span>
           </h2>
           {defendingName && <p className="small draft-lobby__defending-line">{t.online.defending(defendingName)}</p>}
+          {!!s.history?.length && (() => {
+            // 🔁 Wievielte Liga der Revanche-Kette – und der Rekordmeister ab zwei Titeln
+            const titles = new Map<string, { n: number; name: string; cpu: boolean }>();
+            for (const h of s.history!) {
+              const c = h.rows.find((r) => r.rank === 1);
+              if (c) titles.set(c.teamId, { n: (titles.get(c.teamId)?.n ?? 0) + 1, name: c.name, cpu: c.cpu });
+            }
+            const top = [...titles.entries()].sort((a, b) => b[1].n - a[1].n)[0];
+            const second = [...titles.values()].sort((a, b) => b.n - a.n)[1];
+            const topTeam = top ? s.teams.find((tm) => tm.id === top[0]) : undefined;
+            const record = top && top[1].n >= 2 && (!second || second.n < top[1].n)
+              ? t.online.recordChamp(topTeam ? teamLabel(topTeam, t) : top[1].cpu ? t.game.club(top[1].name) : top[1].name, top[1].n)
+              : null;
+            return (
+              <p className="small muted draft-lobby__chain">
+                {t.online.chainNo(s.history!.length + 1)}
+                {record && ` · ${record}`}
+              </p>
+            );
+          })()}
           <ol className="draft-lobby__teams">
             {s.teams.map((team, i) => {
               // Vereinsnamen der CPU-Teams erst bei der Anzeige übersetzen
