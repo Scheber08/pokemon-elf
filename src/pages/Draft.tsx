@@ -879,6 +879,18 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               options={LOCAL_PICK_SECONDS.map((v) => ({ value: v, label: v ? t.online.timerSeconds(v) : t.common.off }))}
             />
             {poolTooSmall && <p className="notice notice--error">{tx.poolTooSmall(poolSize, n, ROUNDS, n * ROUNDS)}</p>}
+            {!poolTooSmall && (() => {
+              // Pool-Größe und Sonder-Pokémon (wie der Host-Hinweis der Online-Lobby; Megas nur soweit das Limit sie aufnimmt)
+              const k = { legend: 0, ub: 0, mega: 0 };
+              for (const p of all.filter(inPool)) for (const kind of limitKindsOf(p)) k[kind]++;
+              k.mega = megas >= MEGAS_UNLIMITED ? k.mega : Math.min(k.mega, megas * n);
+              return (
+                <p className="hint draft__pool-line">
+                  {t.online.poolLine(poolSize, n * ROUNDS)}
+                  {(k.legend > 0 || k.ub > 0 || k.mega > 0) && <span className="draft__pool-kinds"> {t.online.poolKinds(k.legend, k.ub, k.mega)}</span>}
+                </p>
+              );
+            })()}
             <button type="button" className="btn btn--primary btn--big" onClick={start} disabled={poolTooSmall}>
               {tx.start}
             </button>

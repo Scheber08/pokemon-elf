@@ -272,6 +272,8 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(all).toContain('Draft from all 1,025 Pokémon, without legendaries.');
     expect(all).toContain('Start draft');
     expect(all).toContain('Unova');
+    // Pool-Größe mit Sonder-Pokémon (ohne Legendäre: nur Ultrabestien)
+    expect(container.querySelector('.draft__pool-line')!.textContent).toMatch(/^Pool: \d+ Pokémon for \d+ picks\. Including \d+ Ultra Beasts\.$/);
     expect(germanLeft(container)).toEqual([]);
     // CPU-Stärke: Standard „Normal“, „Hard“ wird gemerkt
     expect(all).toContain('CPU strength');
