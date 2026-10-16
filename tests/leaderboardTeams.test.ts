@@ -779,6 +779,10 @@ describe('Rangliste: Team ansehen (online)', () => {
     const c = await render(app());
     await settle();
     expect(c.querySelector('.lb-meta')!.textContent).toContain('🏆 1× perfekte Saison in den Top 2');
+    // 🏆 auch an der Zeile selbst (nur an der perfekten)
+    const marks = c.querySelectorAll('.lb-perfect');
+    expect(marks).toHaveLength(1);
+    expect(marks[0].getAttribute('aria-label')).toBe('Perfekte Saison – nur Siege');
     const { messages } = await import('../src/i18n');
     expect(messages('en').leaderboard.perfectTop(1, 50)).toBe('🏆 1 perfect season in the top 50');
     expect(messages('en').leaderboard.perfectTop(3, 50)).toBe('🏆 3 perfect seasons in the top 50');

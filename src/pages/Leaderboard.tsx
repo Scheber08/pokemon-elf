@@ -192,7 +192,15 @@ function BoardTable({ rows, mine, onReload, focusPlayer = null }: BoardTableProp
           return parts.length ? <small className="lb-me__gap">{parts.join(' · ')}</small> : null;
         })()}
       </td>
-      <td className="mono">{formatRecord(r.record)}</td>
+      <td className="mono">
+        {formatRecord(r.record)}
+        {/* 🏆 Perfekte Saison (nur Siege) – wie im Profil; unter der Bilanz, damit die Spalte nicht breiter wird */}
+        {r.record.w > 0 && r.record.d === 0 && r.record.l === 0 && (
+          <span className="lb-perfect" role="img" title={t.leaderboard.profile.perfectRunTitle} aria-label={t.leaderboard.profile.perfectRunTitle}>
+            🏆
+          </span>
+        )}
+      </td>
       <td>{r.points}</td>
       <td>
         <strong>{r.score}</strong>

@@ -143,6 +143,12 @@ select {
   font-family: var(--font-head);
   letter-spacing: 0.02em;
 }
+/* Rangliste: 🏆 perfekte Saison klein unter der Bilanz */
+.lb-perfect {
+  display: block;
+  font-size: 12px;
+  line-height: 1.2;
+}
 
 /* ============================================================
    Header & Navigation
