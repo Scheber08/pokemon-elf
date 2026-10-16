@@ -72,7 +72,18 @@ export function DailyStreak() {
               return (
                 <li key={d.day}>
                   <span className="daily-streak__no">{td.archiveRow(dailyNumber(d.day))}</span>
-                  <span className="muted daily-streak__day">{t.game.day(d.day)}</span>
+                  <span className="muted daily-streak__day">
+                    {(() => {
+                      // Wochentag vor dem Datum (passt zu „Dein bester Wochentag“)
+                      const wd = td.weekdays[new Date(`${d.day}T12:00:00Z`).getUTCDay()];
+                      return (
+                        <abbr className="daily-streak__wd" title={wd}>
+                          {wd.slice(0, 2)}
+                        </abbr>
+                      );
+                    })()}{' '}
+                    {t.game.day(d.day)}
+                  </span>
                   <strong className="daily-streak__rec">{formatRecord(d.record)}</strong>
                   <span className="daily-streak__score">
                     <span className="daily-streak__pts">

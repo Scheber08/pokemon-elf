@@ -1028,6 +1028,9 @@ describe('DraftLive', () => {
     const rows = container.querySelectorAll('.daily-streak__archive li');
     expect(rows.map((r) => r.querySelector('.daily-streak__trend')?.textContent ?? null)).toEqual([' ▼12', ' ▲22', null]);
     expect(rows.map((r) => !!r.querySelector('.daily-streak__top'))).toEqual([false, true, false]);
+    // Wochentag vor dem Datum (12.10.2026 = Montag), voller Name als Titel
+    expect(rows.map((r) => r.querySelector('.daily-streak__wd')!.textContent)).toEqual(['Mo', 'So', 'Sa']);
+    expect(rows[0].querySelector('.daily-streak__wd')!.getAttribute('title')).toBe('Montag');
     expect(rows[0].querySelector('.daily-streak__trend')!.getAttribute('title')).toBe('−12 Punkte gegenüber dem vorherigen Tag');
     // 🏆 Meistertitel: kein Tag auf Platz 1 → keine Zeile
     expect(container.querySelector('.daily-streak__titles')).toBeNull();

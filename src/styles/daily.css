@@ -309,6 +309,7 @@
   }
   .daily-streak__day {
     grid-area: day;
+    white-space: nowrap;
   }
   .daily-streak__place {
     grid-area: place;
@@ -358,4 +359,9 @@
 }
 .daily-done__vs.is-down {
   color: var(--red-text);
+}
+
+/* Archiv: Wochentag vor dem Datum */
+.daily-streak__wd {
+  text-decoration: none;
 }
