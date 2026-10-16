@@ -766,6 +766,11 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(r.container.querySelector('.draft__you .draft__foes')!.textContent).toMatch(
       /^😊 Favourite opponent: .+ \(\d+ points?, \d+:\d+\) · 😖 Bogey team: .+ \(\d+ points?, \d+:\d+\)$/,
     );
+    // 🥅 Leakiest defence record (English)
+    {
+      const el = r.container.querySelector('.draft-records__leaky');
+      expect(el!.textContent).toMatch(/^🥅 Leakiest defence.+ – \d+ goals? conceded$/);
+    }
     // 1️⃣ First pick with its season record (English): pick #1 went to My Team
     expect(r.container.querySelector('.draft-results__first')!.textContent).toMatch(/^1️⃣ First pick: .+ \(My Team\) – \d+ goals?, \d+ assists?$/);
     // Expectation vs. result under the human team's place (English)

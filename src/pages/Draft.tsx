@@ -1360,6 +1360,16 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   <dt>{r.recordDefense}</dt>
                   <dd>{r.recordConceded(nameOf(defense.team), defense.ga)}</dd>
                 </div>
+                {(() => {
+                  // 🥅 Schießbude (wie online)
+                  const leaky = tb.reduce((a, b) => (b.ga >= a.ga ? b : a));
+                  return leaky.team !== defense.team ? (
+                    <div className="draft-records__leaky">
+                      <dt>{r.recordLeaky}</dt>
+                      <dd>{r.recordConceded(nameOf(leaky.team), leaky.ga)}</dd>
+                    </div>
+                  ) : null;
+                })()}
                 {draws.d >= 4 && (
                   <div>
                     <dt>{r.recordDraws}</dt>
