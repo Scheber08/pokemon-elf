@@ -3,7 +3,7 @@ import { PROFILES } from '../src/config/positions';
 import { TYPE_KEYS, dominantType } from '../src/config/pokemonTypes';
 import { SCORING } from '../src/config/scoring';
 import { buildScale, cdf, soleTopIndex, roundBestPicks, compositeScore, positionFit, profileFit, typeBonus, weightScore } from '../src/lib/fit';
-import type { ProfileKey } from '../src/types';
+import type { ProfileKey, TypeKey } from '../src/types';
 import { ALL, byName, mon } from './helpers';
 
 const scale = buildScale(ALL, 'all');
@@ -201,5 +201,18 @@ describe('fitImpact', () => {
     expect(one.after).toBe(Math.round((tw + positionFit(p, one.pos, sc)) / 2));
     // Alles voll: null
     expect(fitImpact(p, defs, [a.id, ALL[6].id, ALL[7].id], byId, sc)).toBeNull();
+  });
+});
+
+describe('typeElevenGain', () => {
+  it('meldet eine neue oder wachsende Typ-Elf, nicht bei unverändertem oder fremdem Typ', async () => {
+    const { typeElevenGain } = await import('../src/config/pokemonTypes');
+    const mk = (...types: TypeKey[]) => ({ types });
+    const three = [mk('fire'), mk('fire', 'flying'), mk('fire'), mk('water')];
+    expect(typeElevenGain(three, mk('fire', 'ground'))).toEqual({ type: 'fire', n: 4 });
+    expect(typeElevenGain(three, mk('grass'))).toBeNull();
+    const four = [...three, mk('fire')];
+    expect(typeElevenGain(four, mk('fire'))).toEqual({ type: 'fire', n: 5 });
+    expect(typeElevenGain(four, mk('water'))).toBeNull();
   });
 });

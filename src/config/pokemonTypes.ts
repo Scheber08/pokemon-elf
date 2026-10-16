@@ -44,3 +44,11 @@ export function dominantType(pokemon: { types: TypeKey[] }[], min = 4): { type: 
   if (!best || best[1] < min || (next && next[1] === best[1])) return null;
   return { type: best[0], n: best[1] };
 }
+
+/** Typ-Elf, die erst mit `add` entsteht oder wächst (neuer Typ oder höhere Zahl) – sonst null */
+export function typeElevenGain(team: { types: TypeKey[] }[], add: { types: TypeKey[] }): { type: TypeKey; n: number } | null {
+  const after = dominantType([...team, add]);
+  if (!after || !add.types.includes(after.type)) return null;
+  const before = dominantType(team);
+  return before && before.type === after.type && before.n >= after.n ? null : after;
+}

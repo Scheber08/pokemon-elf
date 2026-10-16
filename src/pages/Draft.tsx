@@ -23,6 +23,7 @@ import { Segmented } from '../components/Segmented';
 import { Sprite } from '../components/Sprite';
 import { useT } from '../i18n';
 import { draftsSupported } from '../lib/api/draftClient';
+import { typeElevenGain } from '../config/pokemonTypes';
 import { fitImpact, positionFit, roundBestPicks, soleTopIndex } from '../lib/fit';
 import { rankingNames } from '../lib/rankingNames';
 import { emptySlots } from '../lib/formation';
@@ -1818,7 +1819,14 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     {team && !team.cpu && (() => {
                       // Bester freier Platz und Ø Fit des Teams am Zug vorher → nachher (wie online)
                       const x = fitImpact(selected, FORMATIONS[team.formation].slots, team.slots, byId, scale('all'));
-                      return x && <span className="draft-hint__impact">{t.online.hintImpact(t.game.posShort[x.pos], x.fit, x.before, x.after)}</span>;
+                      if (!x) return null;
+                      const gain = typeElevenGain(team.slots.flatMap((id) => (id != null && byId.get(id) ? [byId.get(id)!] : [])), selected);
+                      return (
+                        <span className="draft-hint__impact">
+                          {t.online.hintImpact(t.game.posShort[x.pos], x.fit, x.before, x.after)}
+                          {gain && <strong className="draft-hint__typeelf">{t.online.hintTypeEleven(t.game.type[gain.type], gain.n)}</strong>}
+                        </span>
+                      );
                     })()}
                     {team && !team.cpu && (() => {
                       // ☆ Merkliste des Teams am Zug (an/aus)

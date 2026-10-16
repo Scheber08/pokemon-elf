@@ -28,6 +28,7 @@ import {
   teamIndexForPick,
 } from '../lib/draftEngine';
 import { fitImpact, positionFit } from '../lib/fit';
+import { typeElevenGain } from '../config/pokemonTypes';
 import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import {
@@ -558,7 +559,14 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
   // Auswahl: bester freier Feldplatz des Pokémon und was er aus dem Ø Fit der eigenen Elf macht
   const impact = (() => {
     const x = me && selectedMon ? fitImpact(selectedMon, FORMATIONS[me.formation].slots, me.slots, byId, scale('all')) : null;
-    return x && <span className="draft-hint__impact">{t.online.hintImpact(t.game.posShort[x.pos], x.fit, x.before, x.after)}</span>;
+    if (!x || !me || !selectedMon) return null;
+    const gain = typeElevenGain(me.slots.flatMap((id) => (id != null && byId.get(id) ? [byId.get(id)!] : [])), selectedMon);
+    return (
+      <span className="draft-hint__impact">
+        {t.online.hintImpact(t.game.posShort[x.pos], x.fit, x.before, x.after)}
+        {gain && <strong className="draft-hint__typeelf">{t.online.hintTypeEleven(t.game.type[gain.type], gain.n)}</strong>}
+      </span>
+    );
   })();
 
   const hint = !me ? null : myTurn ? (
