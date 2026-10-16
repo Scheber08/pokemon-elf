@@ -1,4 +1,4 @@
-/** Challenge-Statistik auf dem Gerät: Bestwerte, Runs und „Letzter Run“ in den Statistik-Karten. */
+/** Challenge-Statistik auf dem Gerät: Bestwerte, Runs und „Letzter Run“ (mit „vor …“) in den Statistik-Karten. */
 import { afterEach, describe, expect, it } from 'vitest';
 import { installMiniDom } from './miniDom';
 
@@ -14,11 +14,11 @@ afterEach(() => localStorage.clear());
 describe('Challenge-Statistik', () => {
   it('merkt sich den letzten Run neben den Bestwerten', () => {
     expect(loadStats('c340').last).toBeUndefined();
-    recordRun('c340', 731, { w: 30, d: 2, l: 2 });
-    const s = recordRun('c340', 700, { w: 25, d: 4, l: 5 });
+    recordRun('c340', 731, { w: 30, d: 2, l: 2 }, 1_000);
+    const s = recordRun('c340', 700, { w: 25, d: 4, l: 5 }, 2_000);
     expect(s.runs).toBe(2);
     expect(s.bestScore).toBe(731);
-    expect(s.last).toEqual({ score: 700, record: { w: 25, d: 4, l: 5 } });
+    expect(s.last).toEqual({ score: 700, record: { w: 25, d: 4, l: 5 }, at: 2_000 });
     expect(loadStats('c340').last?.score).toBe(700);
     // Ø Score ab zwei gezählten Runs
     expect(averageScore(s)).toBe(716);
@@ -49,6 +49,9 @@ describe('Challenge-Statistik', () => {
     expect(container.querySelectorAll('.statcard')).toHaveLength(4);
     const last = container.querySelector('.statcard--last')!;
     expect(last.textContent).toBe('Letzter Run70025–4–5');
+    // Mit Zeitpunkt: „vor …“ hinter der Bilanz (ältere Daten ohne at bleiben wie oben)
+    await act(async () => root.render(h(StatCards, { stats: { ...stats, last: { ...stats.last, at: Date.now() - 3 * 3_600_000 } }, showLast: true })));
+    expect(container.querySelector('.statcard__ago')!.textContent).toBe(' · vor 3 Std.');
     // Alte Daten ohne letzten Run: weiter drei Karten
     await act(async () => root.render(h(StatCards, { stats: { ...stats, last: undefined }, showLast: true })));
     expect(container.querySelectorAll('.statcard')).toHaveLength(3);

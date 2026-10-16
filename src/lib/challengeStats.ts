@@ -7,7 +7,7 @@ export interface ChallengeStats {
   bestRecord: Record3 | null;
   runs: number;
   /** Zuletzt abgeschlossener Run (fehlt bei Daten von vor dieser Angabe) */
-  last?: { score: number; record: Record3 };
+  last?: { score: number; record: Record3; /** Zeitpunkt (ms; fehlt bei älteren Daten) */ at?: number };
   /** Summe der Scores und Anzahl der dabei gezählten Runs (für Ø – erst seit dieser Angabe gezählt) */
   scoreSum?: number;
   scored?: number;
@@ -20,13 +20,13 @@ export function loadStats(challenge: ChallengeKey): ChallengeStats {
 }
 
 /** Trägt einen abgeschlossenen Run ein und liefert die neuen Werte. */
-export function recordRun(challenge: ChallengeKey, score: number, record: Record3): ChallengeStats {
+export function recordRun(challenge: ChallengeKey, score: number, record: Record3, now = Date.now()): ChallengeStats {
   const prev = loadStats(challenge);
   const next: ChallengeStats = {
     runs: prev.runs + 1,
     bestScore: prev.bestScore == null ? score : Math.max(prev.bestScore, score),
     bestRecord: !prev.bestRecord || compareRecords(record, prev.bestRecord) < 0 ? record : prev.bestRecord,
-    last: { score, record },
+    last: { score, record, at: now },
     scoreSum: (prev.scoreSum ?? 0) + score,
     scored: (prev.scored ?? 0) + 1,
   };

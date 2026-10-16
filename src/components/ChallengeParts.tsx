@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'rea
 import { FORMATION_IDS } from '../config/formations';
 import { useT } from '../i18n';
 import { LIMITS } from '../lib/api/contract';
+import { ago } from '../lib/ago';
 import { averageScore, type ChallengeStats } from '../lib/challengeStats';
 import type { NameField, NameIssues } from '../lib/runFinish';
 import { formatRecord } from '../lib/season';
@@ -36,7 +37,10 @@ export function StatCards({ stats, showLast = false }: { stats: ChallengeStats; 
         <div className="statcard statcard--last">
           <span className="statcard__label">{t.challenge.lastRun}</span>
           <span className="statcard__value">{last.score}</span>
-          <span className="statcard__sub">{formatRecord(last.record)}</span>
+          <span className="statcard__sub">
+            {formatRecord(last.record)}
+            {last.at != null && <span className="statcard__ago"> · {ago(last.at, t)}</span>}
+          </span>
         </div>
       )}
     </div>
