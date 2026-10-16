@@ -17,7 +17,7 @@ import {
   type RunRanking,
 } from '../lib/runFinish';
 import { formatRecord, type SeasonResult } from '../lib/season';
-import { favouriteFoes, longestRuns } from '../lib/foes';
+import { favouriteFoes, longestRuns, venueRecords } from '../lib/foes';
 import { scorerSummary } from '../lib/seasonTimeline';
 import { usePokemonData, type ScaleKind } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
@@ -489,6 +489,11 @@ export function SeasonResultView({
               {t.draft.results.foeBest(line(foes.best))} · {t.draft.results.foeWorst(line(foes.worst))}
             </p>
           );
+        })()}
+        {(() => {
+          // 🏠/✈️ Bilanz zu Hause und auswärts
+          const v = venueRecords(season.userMatches);
+          return <p className="card small muted result-venues">{tr.venueRecords(formatRecord(v.home), formatRecord(v.away))}</p>;
         })()}
         {(() => {
           // 🔥 Längste Siegesserie und 🛡️ längste Serie ohne Niederlage der Saison (ab 3 Spielen)

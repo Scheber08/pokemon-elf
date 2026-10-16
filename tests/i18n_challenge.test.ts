@@ -354,6 +354,13 @@ describe('34–0 Challenge auf Englisch', () => {
     }
     expect(text).toMatch(/Positions by weight: GK 1\.6 · ST 1\.4 · CB\/AM 1\.2 · DM 1\.1 · others 1\.0/);
     expect(text).toMatch(/Season details – all 34 matches/);
+    // 🏠 / ✈️ Bilanz zu Hause und auswärts (Englisch), zusammen 34 Spiele
+    {
+      const txt = el.querySelector('.result-venues')!.textContent!;
+      const m = txt.match(/^🏠 Home (\d+)–(\d+)–(\d+) · ✈️ Away (\d+)–(\d+)–(\d+) \(W–D–L\)$/)!;
+      expect(m).not.toBeNull();
+      expect(m.slice(1).map(Number).reduce((a, b) => a + b, 0)).toBe(34);
+    }
     // 🔥 / 🛡️ Serien der Saison (ab 3 Spielen, Englisch)
     {
       const runs = el.querySelector('.result-runs');

@@ -39,6 +39,7 @@ const result = {
   /** Tabellenplatz als Ordnungszahl: „3." */
   ordinal: (n: number) => `${n}.`,
   weakSpots: 'Schwachstellen laut Scouting: ',
+  venueRecords: (home: string, away: string) => `🏠 Zu Hause ${home} · ✈️ Auswärts ${away} (S–U–N)`,
   runWins: (n: number) => `🔥 Längste Siegesserie: ${n} Spiele`,
   runUnbeaten: (n: number) => `🛡️ Längste Serie ohne Niederlage: ${n} Spiele`,
   weakSpotsNote: ' (auf dem Feld markiert)',

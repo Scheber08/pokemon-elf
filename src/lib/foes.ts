@@ -54,3 +54,15 @@ export function longestRuns(outcomes: readonly ('S' | 'U' | 'N')[]): { wins: num
   }
   return { wins, unbeaten: best };
 }
+
+/** 🏠/✈️ Bilanz (Siege–Remis–Niederlagen) zu Hause und auswärts */
+export function venueRecords(matches: readonly { isHome: boolean; outcome: 'S' | 'U' | 'N' }[]): Record<'home' | 'away', { w: number; d: number; l: number }> {
+  const out = { home: { w: 0, d: 0, l: 0 }, away: { w: 0, d: 0, l: 0 } };
+  for (const m of matches) {
+    const r = out[m.isHome ? 'home' : 'away'];
+    if (m.outcome === 'S') r.w++;
+    else if (m.outcome === 'U') r.d++;
+    else r.l++;
+  }
+  return out;
+}
