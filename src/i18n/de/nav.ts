@@ -26,6 +26,8 @@ const nav = {
     'Kostenloses Fan-Projekt. Nicht verbunden mit oder unterstützt von Nintendo, Game Freak, Creatures oder The Pokémon Company. Pokémon-Namen und -Artwork gehören ihren jeweiligen Eigentümern.',
   footerScouting: 'Scouting-Guide',
   footerAbout: 'Über & Kontakt',
+  /** Fußzeile: Stand der Version (Tag des Builds) */
+  buildDay: (day: string) => `Stand: ${day}`,
   footerPrivacy: 'Datenschutz',
   siteTitle: 'Pokémon Elf – Lineup Builder',
   onlineLeague: 'Online-Liga',

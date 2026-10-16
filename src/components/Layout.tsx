@@ -101,6 +101,8 @@ export function Footer() {
         <span aria-hidden="true"> · </span>
         <Link to="/datenschutz">{t.nav.footerPrivacy}</Link>
       </p>
+      {/* Stand der ausgelieferten Version – zeigt, ob das Neueste geladen ist */}
+      <p className="site-footer__build muted small">{t.nav.buildDay(t.game.day(__BUILD_DAY__))}</p>
     </footer>
   );
 }

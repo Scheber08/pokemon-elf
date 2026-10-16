@@ -28,6 +28,7 @@ const nav: Messages['nav'] = {
     'Free fan project. Not affiliated with or endorsed by Nintendo, Game Freak, Creatures or The Pokémon Company. Pokémon names and artwork belong to their respective owners.',
   footerScouting: 'Scouting guide',
   footerAbout: 'About & contact',
+  buildDay: (day) => `Version of ${day}`,
   footerPrivacy: 'Privacy',
   siteTitle: 'Pokémon Elf – Lineup Builder',
   onlineLeague: 'Online league',
