@@ -87,7 +87,7 @@ tests/                     Unit-Tests: Fit, Team-Score, Saison, Engine, Server/A
 
 Routen: `/` Builder · `/challenge` 34–0 · `/taeglich` Tägliche Elf · `/151` 151 Challenge & Retro 34–0 ·
 `/draft` Fantasy-Draft (lokal + online) · `/draft/:code` Online-Liga · `/rangliste` (Deep-Link
-`?c=daily&p=today|week|all`) · `/spieler/:id` Spielerprofil · `/scouting` (Scouting-Guide mit „🏅 Top 3 je Position“, Legendäre per Schalter, und „🔍 Wo spielt …?“: Pokémon suchen, in der Top-3-Liste antippen oder per „🎲 Zufällig“ würfeln, Typen neben dem Namen, fünf beste Positionen mit Fit und „🏅 Nr. n von 1.025“ auf der besten; FAQ erklärt auch die Symbole von Draft und Challenges, DE/EN gleich lang – `tests/scoutingFaq.test.ts`) · `/ueber` (mit „Was ist neu?“, DE/EN gleich lang – `tests/infoNews.test.ts`, und „⌨️ Tastenkürzel“ aller Modi aus deren eigenen Texten) · `/datenschutz` (nennt alle lokal und auf dem Server gespeicherten Daten, auch Trainer und Shop-Käufe)
+`?c=daily&p=today|week|all`) · `/spieler/:id` Spielerprofil · `/scouting` (Scouting-Guide mit „🏅 Top 3 je Position“ samt „💯 n“ Pokémon mit Fit ≥ 95 je Position, Legendäre per Schalter, und „🔍 Wo spielt …?“: Pokémon suchen, in der Top-3-Liste antippen oder per „🎲 Zufällig“ würfeln, Typen neben dem Namen, fünf beste Positionen mit Fit und „🏅 Nr. n von 1.025“ auf der besten; FAQ erklärt auch die Symbole von Draft und Challenges, DE/EN gleich lang – `tests/scoutingFaq.test.ts`) · `/ueber` (mit „Was ist neu?“, DE/EN gleich lang – `tests/infoNews.test.ts`, und „⌨️ Tastenkürzel“ aller Modi aus deren eigenen Texten) · `/datenschutz` (nennt alle lokal und auf dem Server gespeicherten Daten, auch Trainer und Shop-Käufe)
 
 ## Bewertung in Kürze
 

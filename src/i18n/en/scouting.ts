@@ -19,6 +19,7 @@ const scouting: Messages['scouting'] = {
 
   topTitle: 'Top 3 per position',
   topNote: 'The best-fitting Pokémon for each position out of all 1,025 – number = fit (0–100), ties broken by the uncapped profile score.',
+  topBullseyes: (n) => `${n} Pokémon with fit ≥ 95 in this position`,
   topLegends: 'Include legendary and mythical Pokémon',
   whereTitle: 'Where does … play?',
   wherePlaceholder: 'Search a Pokémon, e.g. Charizard',

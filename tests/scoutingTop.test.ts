@@ -44,6 +44,12 @@ describe('Scouting: Top 3 je Position', () => {
       const fits = r.querySelectorAll('.scouting__top-fit').map((f) => Number(f.textContent));
       expect([...fits].sort((a, b) => b - a)).toEqual(fits);
     }
+    // 💯 Anzahl Pokémon mit Fit ≥ 95 je Position (ohne Legendäre)
+    const bulls = card.querySelectorAll('.scouting__top-bulls');
+    expect(bulls).toHaveLength(keys.length);
+    const n0 = ALL.filter((p) => !p.leg && !p.myth && Math.round(profileFit(p, keys[0], scale)) >= 95).length;
+    expect(bulls[0].getAttribute('title')).toBe(`${n0} Pokémon mit Fit ≥ 95 auf dieser Position`);
+    expect(bulls[0].textContent).toContain(`💯 ${n0}`);
     // ★ Legendäre mitzählen
     const box = card.querySelector('input')!;
     await act(async () => {

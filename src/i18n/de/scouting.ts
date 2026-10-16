@@ -33,6 +33,8 @@ const scouting = {
 
   topTitle: 'Top 3 je Position',
   topNote: 'Die bestpassenden Pokémon jeder Position aus allen 1.025 – Zahl = Fit (0–100), bei Gleichstand entscheidet der ungedeckelte Profilwert.',
+  /** Top 3: Anzahl Pokémon mit Fit ≥ 95 auf der Position */
+  topBullseyes: (n: number) => `${n} Pokémon mit Fit ≥ 95 auf dieser Position`,
   topLegends: 'Legendäre und Mysteriöse mitzählen',
   whereTitle: 'Wo spielt …?',
   wherePlaceholder: 'Pokémon suchen, z. B. Glurak',

@@ -3,7 +3,7 @@ import { useMemo, useRef, useState } from 'react';
 import { TypeBadge, TypeBadges } from '../components/Badges';
 import { LevelIcon } from '../components/LevelIcon';
 import { Sprite } from '../components/Sprite';
-import { compositeScore, profileFit } from '../lib/fit';
+import { BULLSEYE_FIT, compositeScore, profileFit } from '../lib/fit';
 import { downloadBlob, nodeToPng } from '../lib/exportImage';
 import { FACTORS, POSITIONS, PROFILES, PROFILE_GROUPS, type Level } from '../config/positions';
 import { SCORING } from '../config/scoring';
@@ -28,14 +28,18 @@ function TopCandidates({ onPick }: { onPick: (name: string) => void }) {
     const scale = data.scale('all');
     const pool = legends ? data.list : data.list.filter((p) => !p.leg && !p.myth);
     const out = {} as Record<ProfileKey, { p: (typeof data.list)[number]; fit: number }[]>;
+    /** 💯 Wie viele Pokémon des Pools erreichen auf der Position Fit ≥ 95? */
+    const bulls = {} as Record<ProfileKey, number>;
     for (const g of PROFILE_GROUPS)
-      for (const key of g.profiles)
+      for (const key of g.profiles) {
         // Fit ist bei 100 gedeckelt – Gleichstand entscheidet der ungedeckelte Profilwert
-        out[key] = pool
+        const all = pool
           .map((p) => ({ p, fit: profileFit(p, key, scale), raw: compositeScore(p, key, scale) }))
-          .sort((a, b) => b.fit - a.fit || b.raw - a.raw || a.p.id - b.p.id)
-          .slice(0, 3);
-    return out;
+          .sort((a, b) => b.fit - a.fit || b.raw - a.raw || a.p.id - b.p.id);
+        out[key] = all.slice(0, 3);
+        bulls[key] = all.filter((x) => Math.round(x.fit) >= BULLSEYE_FIT).length;
+      }
+    return { out, bulls };
   }, [data, legends]);
   if (!top) return null;
   return (
@@ -52,9 +56,14 @@ function TopCandidates({ onPick }: { onPick: (name: string) => void }) {
           <li key={key}>
             <span className="scouting__top-pos">
               <span className="scout-table__codes">{t.game.profileCodes[key]}</span> {t.game.profileTitle[key]}
+              {/* 💯 Volltreffer-Kandidaten auf dieser Position (knapp = Position früh besetzen) */}
+              <small className="muted scouting__top-bulls" title={s.topBullseyes(top.bulls[key])}>
+                <span aria-hidden="true"> 💯 {top.bulls[key]}</span>
+                <span className="sr-only"> – {s.topBullseyes(top.bulls[key])}</span>
+              </small>
             </span>
             <ol className="scouting__top-mons">
-              {top[key].map(({ p, fit }) => (
+              {top.out[key].map(({ p, fit }) => (
                 <li key={p.id}>
                   <Sprite pokemon={p} style={sprite} className="scouting__top-sprite" />
                   <button type="button" className="scouting__top-name scouting__top-pick" onClick={() => onPick(t.game.pokemon(p))} title={s.whereShow(t.game.pokemon(p))}>
