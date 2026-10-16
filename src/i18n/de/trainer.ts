@@ -146,6 +146,7 @@ const trainer = {
       lantern: 'Laterne',
       sapling: 'Setzling',
       divemask: 'Taucherbrille',
+      clownnose: 'Clownsnase',
       medal: 'Medaille',
     },
     background: {

@@ -79,6 +79,8 @@ const OCEANS = ['06-05', '06-11', '🌊'] as const;
 const BEES = ['05-17', '05-23', '🐝'] as const;
 /** Tag des Baumes (25. April) */
 const TREES = ['04-25', '04-30', '🌳'] as const;
+/** Weltlachtag (erster Sonntag im Mai liegt jedes Jahr darin) */
+const LAUGHTER = ['05-01', '05-07', '😂'] as const;
 /** Valentinstag */
 const VALENTINE = ['02-07', '02-14', '💘'] as const;
 
@@ -204,6 +206,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('accessory', 'lantern', 250), ...MARTIN),
   seasonal(item('accessory', 'sapling', 200), ...EARTH),
   seasonal(item('accessory', 'divemask', 250), ...OCEANS),
+  seasonal(item('accessory', 'clownnose', 150), ...LAUGHTER),
   // Hintergrund
   item('background', 'plain', 0, '#22324a'),
   item('background', 'sky', 0, '#7ec4ef'),
@@ -270,6 +273,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('companion', '226', 400), ...OCEANS),
   seasonal(item('companion', '415', 300), ...BEES),
   seasonal(item('companion', '185', 400), ...TREES),
+  seasonal(item('companion', '272', 400), ...LAUGHTER),
   item('companion', '6', 600),
   item('companion', '149', 600),
   item('companion', '448', 600),

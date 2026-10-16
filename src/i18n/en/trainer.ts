@@ -147,6 +147,7 @@ const trainer: Messages['trainer'] = {
       lantern: 'Lantern',
       sapling: 'Sapling',
       divemask: 'Diving mask',
+      clownnose: 'Clown nose',
       medal: 'Medal',
     },
     background: {

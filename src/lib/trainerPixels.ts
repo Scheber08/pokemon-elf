@@ -555,6 +555,11 @@ function accessory(c: Canvas, id: string, cloth: string) {
       for (const cx of [7.5, 23.5]) c.fill(ellipse(cx, 13, 1.6, 2.6), '#2f62c9', '#1b3a7a');
       c.fill((x, y) => (x === 7 || x === 24) && y >= 5 && y <= 10, '#26282e');
       break;
+    case 'clownnose':
+      // Clownsnase (Weltlachtag): rote Kugel mitten im Gesicht mit hellem Glanzpunkt
+      c.fill(ellipse(15.5, 15.2, 2.1, 1.7), '#e8323a', '#a8202a');
+      c.dots([[14, 14], [15, 14]], '#ffc2c2');
+      break;
     case 'facepaint':
       // Fanschminke: Streifen in Vereinsfarbe und Weiß auf beiden Wangen
       for (const x0 of [9, 20]) {
