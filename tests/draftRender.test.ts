@@ -1928,6 +1928,17 @@ describe('ManagerSeason', () => {
     const f = container.querySelector('.manager__rival-formation');
     if (lineup) expect(f!.textContent!.trimEnd()).toBe(` · spielt ${lineup.formation}`);
     else expect(f).toBeNull();
+    // 🎯 Schwachpunkt des Gegners: Starter mit dem niedrigsten Fit (mit Tagesform)
+    const weakEl = container.querySelector('.manager__rival-weak');
+    if (!lineup) expect(weakEl).toBeNull();
+    else {
+      const { formFit } = await import('../src/lib/manager');
+      const { FORMATIONS } = await import('../src/config/formations');
+      const defs = FORMATIONS[lineup.formation].slots;
+      const fits = lineup.slots.flatMap((id, i) => (id == null ? [] : [{ id, fit: formFit(ALL.find((p) => p.id === id)!, defs[i].pos, SCALE, s.manager!.form[id] ?? 0) }]));
+      const low = fits.reduce((a, b) => (b.fit < a.fit ? b : a));
+      expect(weakEl!.textContent).toMatch(new RegExp(`^🎯 Schwachpunkt des Gegners: \\S+ ${ALL.find((p) => p.id === low.id)!.de} \\(Fit ${Math.round(low.fit)}\\)$`));
+    }
   });
 
   it('Pokal: nächste Runde schon ausgelost, mit eigenem Gegner', async () => {

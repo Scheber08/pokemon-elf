@@ -642,6 +642,7 @@ const draft: Messages['draft'] = {
     goalPhase: (from, to, goals) => `⏱️ Strongest spell: minutes ${from}–${to} (${goals} ${goals === 1 ? 'goal' : 'goals'})`,
     lineNames: { att: 'Attack', mid: 'Midfield', def: 'Defence', gk: 'Keeper' },
     rivalMark: 'Your next opponent',
+    rivalWeak: (pos, pokemon, fit) => `🎯 Opponent's weak spot: ${pos} ${pokemon} (fit ${fit})`,
     weakSpot: (pos, pokemon, fit) => `Weak spot: ${pos} ${pokemon} (fit ${fit})`,
     weakAlt: (pokemon, fit) => `Bench: ${pokemon} fits at ${fit}`,
     weakSwap: 'Bring on',

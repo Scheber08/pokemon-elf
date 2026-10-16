@@ -708,6 +708,7 @@ const draft = {
     goalPhase: (from: number, to: number, goals: number) => `⏱️ Stärkste Phase: ${from}.–${to}. Minute (${goals} ${goals === 1 ? 'Tor' : 'Tore'})`,
     lineNames: { att: 'Angriff', mid: 'Mittelfeld', def: 'Abwehr', gk: 'Tor' },
     rivalMark: 'Dein nächster Gegner',
+    rivalWeak: (pos: string, pokemon: string, fit: number) => `🎯 Schwachpunkt des Gegners: ${pos} ${pokemon} (Fit ${fit})`,
     weakSpot: (pos: string, pokemon: string, fit: number) => `Schwachstelle: ${pos} ${pokemon} (Fit ${fit})`,
     weakAlt: (pokemon: string, fit: number) => `Bank: ${pokemon} passt mit ${fit}`,
     weakSwap: 'Einwechseln',

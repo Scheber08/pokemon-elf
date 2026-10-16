@@ -600,6 +600,21 @@ export function ManagerSeason({ room, readOnly }: { room: DraftRoom; readOnly: b
             const r = currentRun(shown.matches, rival);
             return r && <SeriesLine run={r} />;
           })()}
+          {s.teams[rival] && m.lineups[s.teams[rival].id] && (() => {
+            // 🎯 Schwachpunkt des Gegners: Starter mit dem niedrigsten Fit (mit Tagesform), wie die eigene Schwachstelle
+            const l = m.lineups[s.teams[rival].id];
+            const defs = FORMATIONS[l.formation].slots;
+            const sc = scale('all');
+            let w: { id: number; pos: PosCode; fit: number } | null = null;
+            l.slots.forEach((id, i) => {
+              const p = id != null ? byId.get(id) : undefined;
+              if (!p || !defs[i]) return;
+              const fit = formFit(p, defs[i].pos, sc, m.form[id!] ?? 0);
+              if (!w || fit < w.fit) w = { id: id!, pos: defs[i].pos, fit };
+            });
+            const x = w as { id: number; pos: PosCode; fit: number } | null;
+            return x && <p className="small manager__rival-weak">{tx.rivalWeak(t.game.posShort[x.pos], pokemonName(x.id), Math.round(x.fit))}</p>;
+          })()}
           {s.teams[rival]?.captain != null && (() => {
             // Kapitän des Gegners (zählt doppelt) – mit Sprite
             const cap = s.teams[rival].captain!;
