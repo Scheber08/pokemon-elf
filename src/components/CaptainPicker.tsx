@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, useRef } from 'react';
 import { FORMATIONS } from '../config/formations';
 import { useT } from '../i18n';
 import { positionFit, type Scale } from '../lib/fit';
@@ -27,6 +27,7 @@ export function CaptainPicker({ formation, slots, captain, onChange, disabled = 
   const tx = t.captain;
   const { byId, scale } = usePokemonData();
   const id = useId();
+  const selectRef = useRef<HTMLSelectElement>(null);
   const defs = FORMATIONS[formation].slots;
   const sc = scaleProp ?? scale('all');
   // Mit Fit auf der eigenen Position – der Kapitän zählt doppelt, der Fit hilft bei der Wahl
@@ -50,6 +51,7 @@ export function CaptainPicker({ formation, slots, captain, onChange, disabled = 
         {tx.label}
       </label>
       <select
+        ref={selectRef}
         id={id}
         className="input"
         value={captain != null && players.some((p) => p.id === captain) ? String(captain) : ''}
@@ -64,7 +66,16 @@ export function CaptainPicker({ formation, slots, captain, onChange, disabled = 
         ))}
       </select>
       {best != null && (
-        <button type="button" className="btn btn--small captain-picker__best" disabled={disabled || best === captain} onClick={() => onChange(best)}>
+        <button
+          type="button"
+          className="btn btn--small captain-picker__best"
+          disabled={disabled || best === captain}
+          onClick={() => {
+            onChange(best);
+            // Der Knopf wird gleich deaktiviert (beste Wahl gesetzt) – Fokus zur Auswahl statt an den Seitenanfang
+            selectRef.current?.focus();
+          }}
+        >
           {tx.best}
         </button>
       )}
