@@ -340,10 +340,10 @@
   letter-spacing: 0;
 }
 .ticker-trend--up {
-  color: var(--green);
+  color: var(--green-text);
 }
 .ticker-trend--down {
-  color: var(--red);
+  color: var(--red-text);
 }
 .ticker-trend--same {
   color: var(--text-dim);

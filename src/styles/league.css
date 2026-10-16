@@ -413,10 +413,10 @@
   line-height: 1;
 }
 .league-trend--up {
-  color: var(--green);
+  color: var(--green-text);
 }
 .league-trend--down {
-  color: var(--red);
+  color: var(--red-text);
 }
 .league-trend--same {
   color: var(--text-dim);
@@ -794,10 +794,10 @@
   font-variant-numeric: tabular-nums;
 }
 .draft-results__duels .is-up td:last-child {
-  color: var(--green);
+  color: var(--green-text);
 }
 .draft-results__duels .is-down td:last-child {
-  color: var(--red);
+  color: var(--red-text);
 }
 
 /* Auffüllteam aus der Rangliste: Spielername hinter dem Teamnamen */
@@ -1166,10 +1166,10 @@
   margin: 4px 0 0;
 }
 .league-ticker__series.is-up {
-  color: var(--green);
+  color: var(--green-text);
 }
 .league-ticker__series.is-down {
-  color: var(--red);
+  color: var(--red-text);
 }
 
 /* Wechsel an der Tabellenspitze */

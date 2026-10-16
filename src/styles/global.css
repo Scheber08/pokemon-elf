@@ -18,6 +18,9 @@
   --red: #e3350d;
   --blue: #2f7de1;
   --green: #2e9a44;
+  /* Text in Grün/Rot (AA-Kontrast ≥ 4,5:1 auf allen Flächen); --green/--red bleiben für Flächen und Rahmen */
+  --green-text: #4cc96b;
+  --red-text: #ff8a6e;
   --grass-1: #2e7d32;
   --grass-2: #388e3c;
   --focus: #ffcb05;
@@ -38,6 +41,8 @@
   --line-strong: rgba(13, 27, 42, 0.25);
   --text: #0d1b2a;
   --text-dim: #4b5f73;
+  --green-text: #18702e;
+  --red-text: #b52a0b;
   --focus: #c2410c;
   --shadow: 0 8px 24px rgba(13, 27, 42, 0.12);
   color-scheme: light;
@@ -1446,7 +1451,7 @@ button.sheet__row:hover {
   color: var(--text-dim);
 }
 .pcard__reason {
-  color: var(--red);
+  color: var(--red-text);
   font-weight: 600;
 }
 .pcard--empty {
@@ -2518,7 +2523,7 @@ button.sheet__row:hover {
   display: block;
 }
 .saved-teams__current {
-  color: var(--green);
+  color: var(--green-text);
   white-space: nowrap;
 }
 .saved-teams__formation,
@@ -2753,7 +2758,7 @@ button.sheet__row:hover {
 }
 
 .manager__live {
-  color: var(--red);
+  color: var(--red-text);
   font-weight: 700;
   animation: manager-live 1.2s ease-in-out infinite;
 }
