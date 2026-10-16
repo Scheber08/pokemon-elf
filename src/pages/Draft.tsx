@@ -2060,6 +2060,19 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   {t.online.nextNeeds(teamName(nextTeam.name), [...needs].map(([pos, k]) => (k > 1 ? `${k}× ${pos}` : pos)).join(', '))}
                 </p>
               )}
+              {(() => {
+                // 🤖 Wahrscheinlicher Pick der nächsten CPU (ohne Zufall, wie online) – am eigenen Zug zum Wegschnappen
+                if (!team || team.cpu || !nextTeam?.cpu) return null;
+                const guess = cpuPickChoice(nextTeam, pool, scale('all'), 'hard', () => 0);
+                const mon = guess ? byId.get(guess.id) : undefined;
+                return (
+                  mon && (
+                    <p className="small muted draft__cpuguess" title={t.online.cpuGuessTitle}>
+                      {t.online.cpuGuess(teamName(nextTeam.name), t.game.pokemon(mon))}
+                    </p>
+                  )
+                );
+              })()}
             </>
           );
         })()}

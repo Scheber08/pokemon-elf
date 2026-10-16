@@ -406,6 +406,15 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(container.querySelector('.draft__board h2')!.textContent).toBe('Draft board');
     // Bedarf des nächsten Teams (CPU, noch kein Pick: alle Positionen seiner Formation)
     expect(container.querySelector('.draft__needs')!.textContent).toMatch(new RegExp(`^${clubEn(CLUB_NAMES[0])} still needs: .+$`));
+    // 🤖 Wahrscheinlicher Pick der nächsten CPU (ohne Zufall) – derselbe wie bei „Stark“
+    {
+      const { cpuPickChoice } = await import('../src/lib/localCpu');
+      const { buildScale } = await import('../src/lib/fit');
+      const pool = ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth);
+      const guess = cpuPickChoice(teams[1], pool, buildScale(ALL, 'all'), 'hard', () => 0)!;
+      const name = ALL.find((p) => p.id === guess.id)!.en;
+      expect(container.querySelector('.draft__cpuguess')!.textContent).toBe(`🤖 ${clubEn(CLUB_NAMES[0])} will probably take ${name}`);
+    }
     // Beste Freie: ein Chip je verschiedener Position der Formation, Klick wählt das Pokémon aus
     const { FORMATIONS } = await import('../src/config/formations');
     const chips = container.querySelectorAll('.draft__bestfree button');
