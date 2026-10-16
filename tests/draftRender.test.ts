@@ -2798,6 +2798,19 @@ describe('ManagerSeason', () => {
       if (joker) expect(el!.textContent).toContain(`${ALL.find((p) => p.id === joker.pokemonId)!.de} (erst Pick ${joker.pick + 1}) traf ${joker.goals}-mal`);
       else expect(el).toBeNull();
     }
+    // 😊 Lieblingsgegner / 😖 Angstgegner
+    {
+      const { favouriteFoes } = await import('../src/lib/leagueTimeline');
+      const me = s.teams.findIndex((t) => t.id === 'h');
+      const foes = favouriteFoes(s.league!.matches, me);
+      const el = container.querySelector('.draft-results__foes');
+      if (!foes) expect(el).toBeNull();
+      else {
+        const nm = (i: number) => (i < s.teams.length ? s.teams[i].name : s.league!.teams[i].name);
+        const line = (r: typeof foes.best) => `${nm(r.opp)} (${r.pts} ${r.pts === 1 ? 'Punkt' : 'Punkte'}, ${r.gf}:${r.ga})`;
+        expect(el!.textContent).toBe(`😊 Lieblingsgegner: ${line(foes.best)} · 😖 Angstgegner: ${line(foes.worst)}`);
+      }
+    }
     // ⚽ eigene Picks mit Saisontor
     {
       const { playerTallies } = await import('../src/lib/leagueTimeline');

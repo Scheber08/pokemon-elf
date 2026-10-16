@@ -7,7 +7,7 @@ import { poolStars, StarsLanded } from './PoolStars';
 import { LeagueNumbers } from './LeagueNumbers';
 import { TypeGoals } from './TypeGoals';
 import { copyText, downloadBlob } from '../lib/exportImage';
-import { bestTransfer, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, formatDuration, goalFest, dreamDuo, attackDefenseRanks, weightExtremes, playerTallies, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { bestTransfer, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, formatDuration, goalFest, dreamDuo, attackDefenseRanks, weightExtremes, playerTallies, favouriteFoes, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { buildTable, formatRecord, sideTable, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -410,6 +410,17 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
               {best && tx.ownBest(`${view(best).gf}:${view(best).ga}`, nameOf(view(best).opp))}
               {best && worst && ' · '}
               {worst && tx.ownWorst(`${view(worst).gf}:${view(worst).ga}`, nameOf(view(worst).opp))}
+            </p>
+          );
+        })()}
+        {ownRow && !cup && you != null && (() => {
+          // 😊 Lieblingsgegner und 😖 Angstgegner (Bilanz gegen jeden Gegner)
+          const foes = favouriteFoes(league.matches, you);
+          if (!foes) return null;
+          const line = (r: NonNullable<typeof foes>['best']) => tx.foeLine(nameOf(r.opp), r.pts, `${r.gf}:${r.ga}`);
+          return (
+            <p className="draft-results__foes muted small">
+              {tx.foeBest(line(foes.best))} · {tx.foeWorst(line(foes.worst))}
             </p>
           );
         })()}

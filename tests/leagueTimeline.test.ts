@@ -22,6 +22,7 @@ import { biggestUpset, currentRun, biggestWin, goalFest, fastestPicker, longestW
   secondsToKickoff,
   topScorers,
   weightExtremes,
+  favouriteFoes,
 } from '../src/lib/leagueTimeline';
 import { createRng } from '../src/lib/rng';
 import { buildTable, simulateLeague, type LeagueResult, type LeagueTeam } from '../src/lib/season';
@@ -661,5 +662,18 @@ describe('weightExtremes', () => {
   });
   it('bei Gleichstand das erste Team, unbekannte IDs zählen 0', () => {
     expect(weightExtremes([[2], [2], [99]], w)).toEqual({ heavy: { team: 0, kg: 100 }, light: { team: 2, kg: 0 } });
+  });
+});
+
+describe('favouriteFoes', () => {
+  const m = (home: number, away: number, hg: number, ag: number) => ({ home, away, hg, ag });
+  it('bester und schlechtester Gegner nach Punkten, Tordifferenz, Toren', () => {
+    const r = favouriteFoes([m(0, 1, 3, 0), m(1, 0, 1, 2), m(0, 2, 0, 2), m(2, 0, 1, 1), m(0, 3, 1, 0), m(3, 0, 0, 0)], 0)!;
+    expect(r.best).toEqual({ opp: 1, games: 2, pts: 6, gf: 5, ga: 1 });
+    expect(r.worst).toEqual({ opp: 2, games: 2, pts: 1, gf: 1, ga: 3 });
+  });
+  it('null bei nur einem Gegner oder ohne Unterschied; fremde Spiele zählen nicht', () => {
+    expect(favouriteFoes([m(0, 1, 1, 0)], 0)).toBeNull();
+    expect(favouriteFoes([m(0, 1, 1, 1), m(2, 0, 1, 1), m(1, 2, 5, 0)], 0)).toBeNull();
   });
 });
