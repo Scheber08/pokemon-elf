@@ -144,6 +144,7 @@ const trainer: Messages['trainer'] = {
       locket: 'Heart locket',
       lantern: 'Lantern',
       sapling: 'Sapling',
+      divemask: 'Diving mask',
       medal: 'Medal',
     },
     background: {

@@ -143,6 +143,7 @@ const trainer = {
       locket: 'Herz-Medaillon',
       lantern: 'Laterne',
       sapling: 'Setzling',
+      divemask: 'Taucherbrille',
       medal: 'Medaille',
     },
     background: {

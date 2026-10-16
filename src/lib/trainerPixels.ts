@@ -485,6 +485,17 @@ function accessory(c: Canvas, id: string, cloth: string) {
       }
       c.rect(14, 13, 3, 1, '#26282e');
       break;
+    case 'divemask':
+      // Taucherbrille (Tag der Ozeane): großes blau getöntes Glas mit gelbem Rahmen, Band und Schnorchel rechts
+      c.rect(8, 10, 16, 1, '#26282e');
+      c.rect(9, 11, 14, 5, '#f2c230');
+      c.rect(10, 12, 12, 3, '#7fd0f0');
+      c.dots([[11, 12], [12, 12], [18, 12]], '#d9f3ff');
+      c.rect(15, 12, 2, 3, '#f2c230');
+      c.rect(24, 6, 2, 9, '#ff7a3c');
+      c.rect(23, 15, 2, 2, '#ff7a3c');
+      c.rect(24, 5, 2, 1, '#26282e');
+      break;
     case 'sunglasses':
       c.rect(10, 12, 5, 3, '#111111');
       c.rect(17, 12, 5, 3, '#111111');
