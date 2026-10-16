@@ -9,7 +9,7 @@ import { DraftPickFeed, DraftTypeChip, KindMarks, RoundBest } from '../component
 import type { FeedItem } from '../state/useDraftRoom';
 import { PoolStars, poolStars, scarceFor, StarsLanded } from '../components/PoolStars';
 import { LeagueNumbers } from '../components/LeagueNumbers';
-import { attackDefenseRanks, dreamDuo, favouriteFoes, formatDuration, playerTallies, weightExtremes } from '../lib/leagueTimeline';
+import { attackDefenseRanks, dreamDuo, favouriteFoes, formatDuration, playerTallies, sharpestTeam, weightExtremes } from '../lib/leagueTimeline';
 import { TypeGoals } from '../components/TypeGoals';
 import { DraftProgress } from '../components/DraftProgress';
 import { Confetti } from '../components/Confetti';
@@ -1380,6 +1380,16 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                     <div className="draft-records__blunt">
                       <dt>{r.recordBlunt}</dt>
                       <dd>{r.recordGoals(nameOf(blunt.team), blunt.gf)}</dd>
+                    </div>
+                  ) : null;
+                })()}
+                {(() => {
+                  // 🎯 Kaltschnäuzigste Mannschaft (wie online)
+                  const sharp = sharpestTeam(league.matches, tb.map((x) => x.team));
+                  return sharp ? (
+                    <div className="draft-records__sharp">
+                      <dt>{r.recordSharp}</dt>
+                      <dd>{r.recordSharpLine(nameOf(sharp.team), sharp.pct, sharp.goals, sharp.onTarget)}</dd>
                     </div>
                   ) : null;
                 })()}

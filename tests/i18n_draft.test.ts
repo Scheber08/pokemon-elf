@@ -773,6 +773,11 @@ describe('/draft an einem Gerät auf Englisch', () => {
     }
     // 🪫 Bluntest attack record (English)
     expect(r.container.querySelector('.draft-records__blunt')!.textContent).toMatch(/^🪫 Bluntest attack.+ – \d+ goals?$/);
+    // 🎯 Most clinical side (English) – only from 15 shots on target, so short test leagues may not show it
+    {
+      const el = r.container.querySelector('.draft-records__sharp');
+      if (el) expect(el.textContent).toMatch(/^🎯 Most clinical side.+ – \d+% converted \(\d+ goals? from \d+ shots on target\)$/);
+    }
     // 1️⃣ First pick with its season record (English): pick #1 went to My Team
     expect(r.container.querySelector('.draft-results__first')!.textContent).toMatch(/^1️⃣ First pick: .+ \(My Team\) – \d+ goals?, \d+ assists?$/);
     // Expectation vs. result under the human team's place (English)
