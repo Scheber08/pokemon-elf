@@ -31,12 +31,21 @@ interface SettingsCtx extends GlobalSettings {
 
 const Ctx = createContext<SettingsCtx | null>(null);
 
+/** Design ohne gespeicherte Wahl: wie das Gerät (hell/dunkel), sonst dunkel */
+export function detectTheme(): Theme {
+  try {
+    return typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  } catch {
+    return 'dark';
+  }
+}
+
 function initialSettings(): GlobalSettings {
   const stored = load<Partial<GlobalSettings>>(STORAGE_KEYS.settings, {});
   const settings: GlobalSettings = {
     sprite: 'pixel',
-    theme: 'dark',
     ...stored,
+    theme: stored.theme === 'light' || stored.theme === 'dark' ? stored.theme : detectTheme(),
     sound: stored.sound !== false,
     notify: stored.notify === true,
     replay: isReplayMode(stored.replay) ? stored.replay : 'pitch',

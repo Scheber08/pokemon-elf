@@ -38,7 +38,9 @@
     <script>
       try {
         var s = JSON.parse(localStorage.getItem('pokemon-elf:settings') || '{}');
+        // Ohne gespeicherte Wahl: helles Design, wenn das Gerät hell eingestellt ist
         if (s.theme) document.documentElement.dataset.theme = s.theme;
+        else if (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches) document.documentElement.dataset.theme = 'light';
         if (s.lang) document.documentElement.lang = s.lang;
       } catch (e) {}
     </script>
