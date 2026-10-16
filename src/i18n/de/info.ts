@@ -16,6 +16,7 @@ const info = {
     /** „Was ist neu?" – die wichtigsten Neuerungen, neueste zuerst */
     newsTitle: 'Was ist neu?',
     news: [
+      'Neu: „Als Text kopieren“ in der Manager-Aufstellung, 🎯 nächstes Ziel im Shop, 🔔 Rundenende jetzt auch im Online-Draft, 🤖 CPU-Prognose und Kapitän-Wirkung auch im Draft an einem Gerät, „Wird gewürfelt …“ beim Online-Reroll, 🏅 Neuer Bestwert im Teilen-Text, Challenge-Symbole in der FAQ; Kommazahlen auf Deutsch jetzt mit Komma',
       'Neu: „Aktuell hier“ und ±Fit im Auswahl-Dialog, 🏅 neuer Bestwert im Challenge-Ergebnis, 🏁 letzte Runde im Run, 🔥 Rekordserie in der Täglichen Elf, 🏆 perfekte Saisons in der Rangliste, 💥 höchster Sieg im Testspiel, 🎲 Zufällig in „Wo spielt …?“, „noch n“ bei fast geschafften Erfolgen, Hinweis bei voller „Meine Teams“-Liste, Saison „Tag des Mondes“',
       'Neu: 🔻 schwächster Fit im Teamblatt, 🏆 stärkste Elf unter „Meine Teams“, Ø Punkte pro Spiel und Tordifferenz im Ergebnis, Torverhältnis im Testspiel, Wochentag in der Wochenwertung, „Leistbar (n)“ im Shop, ✅ komplette Erfolgs-Kategorien, Saison „Tag der Schokolade“, Offline-Hinweis und Druckansicht',
       'Neu: Spielbericht mit laufendem Spielstand, 🏆 Siegtor, 🟰 Ausgleich, Doppelpack und Hattrick; 2D-Wiedergabe mit ←/→ (±5 Minuten); Abstand zum Vordermann in der Rangliste',

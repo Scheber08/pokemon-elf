@@ -14,6 +14,7 @@ const info: Messages['info'] = {
     guidePost: '.',
     newsTitle: 'What’s new?',
     news: [
+      'New: “Copy as text” in the manager line-up, 🎯 next goal in the shop, 🔔 end of round now also in the online draft, 🤖 CPU forecast and captain effect also in the single-device draft, “Rolling …” on online rerolls, 🏅 new personal best in the share text, challenge symbols in the FAQ; thousands separators in English counts',
       'New: “Currently here” and ±fit in the picker, 🏅 new personal best in the challenge result, 🏁 final round in the run, 🔥 record streak in the Daily XI, 🏆 perfect seasons on the leaderboard, 💥 biggest win in friendlies, 🎲 random in “Where does … play?”, “n to go” on nearly finished achievements, a notice when “My teams” is full, “Moon Day” season',
       'New: 🔻 weakest fit on the team sheet, 🏆 strongest XI under “My teams”, average points per game and goal difference in the result, goal tally in friendlies, weekday in the weekly ranking, “Affordable (n)” in the shop, ✅ completed achievement categories, “Chocolate Day” season, offline notice and a print view',
       'New: match report with the running score, 🏆 winner, 🟰 equaliser, brace and hat-trick; 2D replay with ←/→ (±5 minutes); gap to the next place on the leaderboard',
