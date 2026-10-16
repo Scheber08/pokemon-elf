@@ -2849,6 +2849,13 @@ describe('ManagerSeason', () => {
     expect(clean).not.toBeNull();
     const cleanName = clean!.team < s.teams.length ? s.teams[clean!.team].name : s.league!.teams[clean!.team].name;
     expect(rec.textContent).toContain(`Weiße Weste${cleanName} – ${clean!.n} Spiele ohne Gegentor`);
+    // 🥅 Schießbude: meiste Gegentore (Gleichstand: schlechter platziert)
+    {
+      const tb = s.league!.table;
+      const leaky = tb.reduce((a, b) => (b.ga >= a.ga ? b : a));
+      const nm = leaky.team < s.teams.length ? s.teams[leaky.team].name : s.league!.teams[leaky.team].name;
+      expect(rec.querySelector('.draft-records__leaky')!.textContent).toBe(`🥅 Schießbude${nm} – ${leaky.ga} Gegentore`);
+    }
     // ⚖️ Schwergewicht / 🪶 Federgewicht: Gesamtgewicht der gedrafteten Kader
     {
       const kg = s.teams.map((tm) => Math.round(tm.slots.reduce<number>((sum, id) => sum + (ALL.find((p) => p.id === id)?.w ?? 0), 0) * 10) / 10);

@@ -389,6 +389,7 @@ const draft = {
     records: 'Saisonrekorde',
     leagueNumbers: (games: number, goals: number, avg: number, draws: number, clean: number) =>
       `📊 Liga in Zahlen: ${games} Spiele · ${goals} Tore (Ø ${avg.toLocaleString('de-DE', { maximumFractionDigits: 1, minimumFractionDigits: 1 })}) · ${draws} Remis · ${clean}× zu null`,
+    recordLeaky: '🥅 Schießbude',
     recordAttack: 'Bester Angriff',
     recordDefense: 'Beste Abwehr',
     recordWin: 'Höchster Sieg',

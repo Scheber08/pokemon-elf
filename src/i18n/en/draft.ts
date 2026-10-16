@@ -350,6 +350,7 @@ const draft: Messages['draft'] = {
     records: 'Season records',
     leagueNumbers: (games, goals, avg, draws, clean) =>
       `📊 League in numbers: ${games} matches · ${goals} goals (avg ${avg.toLocaleString('en-GB', { maximumFractionDigits: 1, minimumFractionDigits: 1 })}) · ${draws} draws · ${clean} clean sheets`,
+    recordLeaky: '🥅 Leakiest defence',
     recordAttack: 'Best attack',
     recordDefense: 'Best defence',
     recordWin: 'Biggest win',

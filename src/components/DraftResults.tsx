@@ -731,6 +731,16 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                       <dt>{tx.recordDefense}</dt>
                       <dd>{tx.recordConceded(nameOf(defense.team), defense.ga)}</dd>
                     </div>
+                    {(() => {
+                      // 🥅 Schießbude: meiste Gegentore (bei Gleichstand das schlechter platzierte Team)
+                      const leaky = table.reduce((a, b) => (b.ga >= a.ga ? b : a));
+                      return leaky.team !== defense.team ? (
+                        <div className="draft-records__leaky">
+                          <dt>{tx.recordLeaky}</dt>
+                          <dd>{tx.recordConceded(nameOf(leaky.team), leaky.ga)}</dd>
+                        </div>
+                      ) : null;
+                    })()}
                     {draws.d >= 4 && (
                       <div>
                         <dt>{tx.recordDraws}</dt>
