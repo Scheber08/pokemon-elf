@@ -14,6 +14,7 @@ const info: Messages['info'] = {
     guidePost: '.',
     newsTitle: 'What’s new?',
     news: [
+      'New: “Currently here” and ±fit in the picker, 🏅 new personal best in the challenge result, 🏁 final round in the run, 🔥 record streak in the Daily XI, 🏆 perfect seasons on the leaderboard, 💥 biggest win in friendlies, 🎲 random in “Where does … play?”, “n to go” on nearly finished achievements, a notice when “My teams” is full, “Moon Day” season',
       'New: 🔻 weakest fit on the team sheet, 🏆 strongest XI under “My teams”, average points per game and goal difference in the result, goal tally in friendlies, weekday in the weekly ranking, “Affordable (n)” in the shop, ✅ completed achievement categories, “Chocolate Day” season, offline notice and a print view',
       'New: match report with the running score, 🏆 winner, 🟰 equaliser, brace and hat-trick; 2D replay with ←/→ (±5 minutes); gap to the next place on the leaderboard',
       'New: Daily XI with ▲/▼ against yesterday, “Last run” with “… ago”, 🛡️ for unbeaten runs on profiles, rank at the best position in “Where does … play?”, “World Penguin Day” season in the shop; plus many keyboard and screen-reader improvements',
