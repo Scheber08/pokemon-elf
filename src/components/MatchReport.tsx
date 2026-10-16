@@ -198,6 +198,7 @@ function ReportBody({
                     {goal.pos === 'SS' && <small className="muted"> ({tx.setPiece})</small>}
                     {goal.assist != null && <small className="muted"> · {tx.assist(who(goal.assist, home))}</small>}
                     {nth && nth[i] >= 2 && <small className="match-report__brace"> · {tx.nthGoal(nth[i])}</small>}
+                    {running && running[i][0] === running[i][1] && <small className="match-report__equalizer"> · {tx.equalizer}</small>}
                     {i === winnerIdx && <small className="match-report__winner"> · {tx.winner}</small>}
                   </>
                 ) : (

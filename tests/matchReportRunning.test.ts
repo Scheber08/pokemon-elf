@@ -1,4 +1,4 @@
-/** Spielbericht: laufender Spielstand nach jedem Tor (nur, wenn alle Tore eine Minute haben) 🏆 Siegtor und Doppelpack/Hattrick. */
+/** Spielbericht: laufender Spielstand nach jedem Tor (nur, wenn alle Tore eine Minute haben) 🏆 Siegtor, 🟰 Ausgleich und Doppelpack/Hattrick. */
 import { afterEach, describe, expect, it } from 'vitest';
 import { installMiniDom } from './miniDom';
 
@@ -41,6 +41,11 @@ describe('Spielbericht: laufender Spielstand', () => {
     const winners = body.querySelectorAll('.match-report__winner');
     expect(winners.length).toBe(1);
     expect(winners[0].parentNode!.parentNode!.textContent).toContain('70');
+    // Ausgleich: das 1:1 in der 40. Minute
+    const eq = body.querySelectorAll('.match-report__equalizer').map((el) => el.parentNode!.parentNode!.textContent);
+    expect(eq.length).toBe(1);
+    expect(eq[0]).toContain("40'");
+    expect(eq[0]).toContain('🟰 Ausgleich');
   });
 
   it('Siegtor beim Auswärtssieg zu null: das erste Tor; bei Remis keins', () => {

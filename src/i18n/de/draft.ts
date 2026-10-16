@@ -643,6 +643,8 @@ const draft = {
     winner: '🏆 Siegtor',
     /** Mehrfachtorschütze: 2. Tor Doppelpack, 3. Hattrick, danach n. Tor */
     nthGoal: (n: number) => (n === 2 ? '⚽⚽ Doppelpack' : n === 3 ? '🎩 Hattrick' : `${n}. Tor`),
+    /** Tor zum Gleichstand */
+    equalizer: '🟰 Ausgleich',
     setPiece: 'Standard',
     stats: 'Statistik',
     halfTime: (home: number, away: number) => `Halbzeit ${home}:${away}`,
