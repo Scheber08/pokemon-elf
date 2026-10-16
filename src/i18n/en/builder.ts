@@ -1,12 +1,7 @@
 /** Texts: builder (English). Must have exactly the keys of ../de/builder.ts (checked by TypeScript). */
 import type { Messages } from '../de';
+import { ordinal } from '../lang';
 
-/** 1st, 2nd, 3rd, 4th … 11th, 12th, 13th, 21st … */
-const ordinal = (n: number) => {
-  const tens = n % 100;
-  const suffix = tens >= 11 && tens <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[n % 10] ?? 'th';
-  return `${n}${suffix}`;
-};
 
 const builder: Messages['builder'] = {
   hintFine: 'Click a player to replace them, or hover over them to see their stats. Drag a player onto another to swap places.',

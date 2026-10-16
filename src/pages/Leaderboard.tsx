@@ -166,11 +166,19 @@ function BoardTable({ rows, mine, onReload, focusPlayer = null }: BoardTableProp
           </span>
         )}
         {(() => {
-          // Eigene Zeile in der Liste: Punkte-Abstand zu Platz 1 (nur, wenn Platz 1 mit angezeigt wird)
+          // Eigene Zeile in der Liste: Punkte-Abstand zum nächstbesseren Platz (Gleichstand übersprungen) und zu Platz 1
+          // (nur, wenn Platz 1 mit angezeigt wird)
           const top = rows[0];
-          if (!r.me || !top || top === r || top.rank !== 1 || !rows.includes(r)) return null;
-          const gap = top.points - r.points;
-          return gap > 0 ? <small className="lb-me__gap">{t.leaderboard.gapToFirst(gap)}</small> : null;
+          const idx = rows.indexOf(r);
+          if (!r.me || !top || idx <= 0) return null;
+          const parts: string[] = [];
+          const above = rows
+            .slice(0, idx)
+            .reverse()
+            .find((x) => x.points > r.points);
+          if (above && above.rank !== 1) parts.push(t.leaderboard.gapToNext(above.points - r.points, above.rank));
+          if (top.rank === 1 && top.points > r.points) parts.push(t.leaderboard.gapToFirst(top.points - r.points));
+          return parts.length ? <small className="lb-me__gap">{parts.join(' · ')}</small> : null;
         })()}
       </td>
       <td className="mono">{formatRecord(r.record)}</td>

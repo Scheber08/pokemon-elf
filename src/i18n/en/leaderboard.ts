@@ -1,6 +1,6 @@
 /** Texts: leaderboard (English). Must have exactly the keys of ../de/leaderboard.ts (checked by TypeScript). */
 import type { Messages } from '../de';
-import { fmtNumber } from '../lang';
+import { fmtNumber, ordinal } from '../lang';
 import errors from './errors';
 
 /**
@@ -28,6 +28,7 @@ const leaderboard: Messages['leaderboard'] = {
   colScore: 'Score',
   freshTitle: 'Entered in the last hour',
   yourRank: 'Your position',
+  gapToNext: (pts, rank) => `${pts} pts behind ${ordinal(rank)} place`,
   gapToFirst: (pts) => `${pts} pts behind 1st place`,
   yourRankGap: (pts, top) => `${pts} pts short of the top ${top}`,
   playNow: 'Play now',

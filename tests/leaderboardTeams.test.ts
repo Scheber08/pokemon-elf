@@ -488,6 +488,29 @@ describe('Rangliste: Team ansehen (online)', () => {
     }
   });
 
+  it('eigene Zeile: Abstand zum nächstbesseren Platz (Gleichstand übersprungen) und zu Platz 1', async () => {
+    storeSettings('de');
+    const saved = BOARD.rows;
+    // Platz 1: 92, Platz 2: 88, Platz 3 (gleichauf mit mir): 80, ich: 80
+    BOARD.rows = [
+      saved[0],
+      { ...saved[1], points: 88 },
+      row({ rank: 3, entryId: ID3, player: 'Misty', teamName: 'Cerulean', points: 80 }),
+      row({ rank: 3, entryId: 'e-me-4', player: 'Ich', teamName: 'Mein Team', points: 80, me: true }),
+    ];
+    try {
+      await stubServer();
+      const c = await render(app());
+      await settle();
+      expect(c.querySelectorAll('.lb-me__gap').map((g) => g.textContent)).toEqual(['noch 8 Pkt bis Platz 2 · noch 12 Pkt bis Platz 1']);
+      // Englisch mit Ordinalzahl (auch 11th–13th, 21st–23rd)
+      const en = (await import('../src/i18n/en/leaderboard')).default;
+      expect([2, 11, 22, 103].map((n) => en.gapToNext(3, n))).toEqual(['3 pts behind 2nd place', '3 pts behind 11th place', '3 pts behind 22nd place', '3 pts behind 103rd place']);
+    } finally {
+      BOARD.rows = saved;
+    }
+  });
+
   it('Formations-Filter: Chips ab zwei Formationen unter drei Einträgen, Plätze bleiben', async () => {
     storeSettings('de');
     const saved = BOARD.rows;

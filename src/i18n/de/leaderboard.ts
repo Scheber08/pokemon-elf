@@ -11,6 +11,8 @@ const leaderboard = {
   colScore: 'Score',
   freshTitle: 'In der letzten Stunde eingetragen',
   yourRank: 'Deine Platzierung',
+  /** Eigene Zeile: Abstand zum nächstbesseren Platz */
+  gapToNext: (pts: number, rank: number) => `noch ${pts} Pkt bis Platz ${rank}`,
   gapToFirst: (pts: number) => `noch ${pts} Pkt bis Platz 1`,
   yourRankGap: (pts: number, top: number) => `noch ${pts} Pkt bis in die Top ${top}`,
   playNow: 'Jetzt spielen',
