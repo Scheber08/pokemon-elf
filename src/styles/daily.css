@@ -348,3 +348,14 @@
   color: var(--text-dim);
   white-space: nowrap;
 }
+
+/* Heute gespielt: Punkte im Vergleich zu gestern */
+.daily-done__vs {
+  margin: 0 0 6px;
+}
+.daily-done__vs.is-up {
+  color: var(--green-text);
+}
+.daily-done__vs.is-down {
+  color: var(--red-text);
+}

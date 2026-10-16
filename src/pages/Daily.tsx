@@ -11,7 +11,7 @@ import { useT } from '../i18n';
 import { MODE_RULES } from '../lib/challengeEngine';
 import { dailyNumber, dayKey, msUntilNextDay } from '../lib/daily';
 import { dailyStreak, loadDailyHistory } from '../lib/dailyHistory';
-import { keepDailyRun } from '../lib/dailyRun';
+import { keepDailyRun, previousDay } from '../lib/dailyRun';
 import { buildDailyShareText, formatCountdown, formatDayLong } from '../lib/dailyShare';
 import { copyText } from '../lib/exportImage';
 import type { ComputedRun, RunRanking } from '../lib/runFinish';
@@ -215,6 +215,8 @@ function PlayedToday({ entry, message }: { entry: TodayEntry; message: string | 
   const t = useT();
   const titleId = useId();
   const { row, players } = entry;
+  // Vergleich mit gestern (lokaler Verlauf dieses Geräts)
+  const yesterday = useMemo(() => loadDailyHistory().find((d) => d.day === previousDay(entry.day)) ?? null, [entry.day]);
   return (
     <section className="card daily-done" aria-labelledby={titleId}>
       <h2 id={titleId} className="section-title">
@@ -246,6 +248,11 @@ function PlayedToday({ entry, message }: { entry: TodayEntry; message: string | 
           <dd>{row.score}</dd>
         </div>
       </dl>
+      {yesterday && (
+        <p className={`small daily-done__vs ${row.points > yesterday.points ? 'is-up' : row.points < yesterday.points ? 'is-down' : ''}`}>
+          {t.daily.vsYesterday(row.points - yesterday.points)}
+        </p>
+      )}
       <p className="muted small">
         {t.daily.playersToday(players)}
         {row.teamName ? t.daily.yourTeam(row.teamName) : ''}

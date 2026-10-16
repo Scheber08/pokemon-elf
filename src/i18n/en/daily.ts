@@ -52,6 +52,7 @@ const daily: Messages['daily'] = {
   factScore: 'Score',
   rankValue: (n) => ordinal(n),
   topPercent: (n) => `top ${n}%`,
+  vsYesterday: (diff) => (diff > 0 ? `▲ ${diff} pts more than yesterday` : diff < 0 ? `▼ ${-diff} pts fewer than yesterday` : '= same points as yesterday'),
   playersToday: (n) => `${fmtNumber(n, 0, 'en')} ${n === 1 ? 'player' : 'players'} today`,
   yourTeam: (name) => ` · your team: ${name}`,
   newDailyReady: (n) => `The new Daily XI #${n} is here!`,

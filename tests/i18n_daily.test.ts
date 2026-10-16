@@ -306,6 +306,23 @@ describe('Tägliche Elf auf Englisch', () => {
     // 3. von 1.234 → Top 1 %
     expect(c.querySelector('.daily-done__top')!.textContent).toBe(' Top 1 %');
   });
+
+  it('heute gespielt: Punkte im Vergleich zu gestern (lokaler Verlauf)', async () => {
+    storeLang('de');
+    const { recordDailyDay } = await import('../src/lib/dailyHistory');
+    const { previousDay } = await import('../src/lib/dailyRun');
+    recordDailyDay({ day: previousDay(dayKey()), record: { w: 25, d: 3, l: 6 }, points: 78, score: 800, position: 2 });
+    stubFetch(() =>
+      json(200, { challenge: 'daily', period: 'today', day: dayKey(), players: 5, rows: [], mine: row({ rank: 2, points: 85, me: true }) }),
+    );
+    const c = await render(app(h(Daily)));
+    await settle();
+    const vs = c.querySelector('.daily-done__vs')!;
+    expect(vs.textContent).toBe('▲ 7 Pkt mehr als gestern');
+    expect(vs.className).toContain('is-up');
+    const en = (await import('../src/i18n/en/daily')).default;
+    expect([-3, 0].map((d) => en.vsYesterday(d))).toEqual(['▼ 3 pts fewer than yesterday', '= same points as yesterday']);
+  });
 });
 
 /** fetch: nur die Pokémon-Daten – das Backend ist nicht erreichbar */

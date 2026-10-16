@@ -48,6 +48,9 @@ const daily = {
   /** Platz in der Tageswertung: „3." */
   rankValue: (n: number) => `${n}.`,
   topPercent: (n: number) => `Top ${n} %`,
+  /** „Heute gespielt“: Punkte im Vergleich zu gestern */
+  vsYesterday: (diff: number) =>
+    diff > 0 ? `▲ ${diff} Pkt mehr als gestern` : diff < 0 ? `▼ ${-diff} Pkt weniger als gestern` : '= genauso viele Punkte wie gestern',
   playersToday: (n: number) => `${fmtNumber(n, 0, 'de')} Spieler heute`,
   /** Anhang hinter „… Spieler heute"; der Teamname ist Nutzereingabe */
   yourTeam: (name: string) => ` · dein Team: ${name}`,
