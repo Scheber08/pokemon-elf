@@ -18,6 +18,9 @@ const SPEED = 2;
 /** Wählbare Tempi (Knopf schaltet weiter) */
 const RATES = [1, 2, 4] as const;
 
+/** Sprungweite der Pfeiltasten in Spielminuten */
+const SEEK_STEP = 5;
+
 /** 2D-Ansicht von oben: das Spiel als Animation – Formationen, Ballwege, Schüsse und die echten Tore. */
 export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
   const t = useT();
@@ -88,8 +91,10 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
 
   // Tastatur: Leertaste = Abspielen/Pause, N = nächstes Tor (nicht in Eingabefeldern bzw. auf Knöpfen,
   // die die Leertaste selbst auslösen)
-  const keys = useRef({ togglePlay, skipToGoal });
-  keys.current = { togglePlay, skipToGoal };
+  /** ←/→: fünf Spielminuten zurück bzw. vor */
+  const seekBy = (delta: number) => setTime((x) => Math.max(0, Math.min(replay.end, x + delta)));
+  const keys = useRef({ togglePlay, skipToGoal, seekBy });
+  keys.current = { togglePlay, skipToGoal, seekBy };
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -99,6 +104,10 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
         keys.current.togglePlay();
       } else if ((e.key === 'n' || e.key === 'N') && tag !== 'INPUT' && tag !== 'TEXTAREA') {
         keys.current.skipToGoal();
+      } else if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+        // Auf dem Schieberegler (INPUT) spult der Browser selbst in kleinen Schritten
+        e.preventDefault();
+        keys.current.seekBy(e.key === 'ArrowLeft' ? -SEEK_STEP : SEEK_STEP);
       }
     };
     window.addEventListener('keydown', onKey);
@@ -252,6 +261,7 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
             step={0.1}
             value={time}
             aria-label={tx.seek}
+            title={tx.seekKeys}
             onChange={(e) => {
               setTime(Number(e.target.value));
             }}

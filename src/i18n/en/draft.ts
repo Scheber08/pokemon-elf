@@ -554,6 +554,7 @@ const draft: Messages['draft'] = {
     pause: 'Pause',
     again: 'Replay',
     seek: 'Match minute',
+    seekKeys: 'Match minute – ← / → jump 5 minutes back or forward',
     nextGoal: 'Jump to the next goal (key N)',
     playKey: 'Play/pause (space bar)',
     halfTime: 'Half-time',
