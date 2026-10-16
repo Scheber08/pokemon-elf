@@ -219,8 +219,16 @@ export function RunBoard({
   const typeLabel = roll?.type ? t.game.type[roll.type] : '';
   const rolled = rules.roll === 'pokemon' ? selected : undefined;
 
+  // Run per Tastatur gestartet: Der Start-Knopf verschwindet – Fokus nicht auf der Seite verlieren, sondern ins Spiel
+  const playRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const active = document.activeElement;
+    // Fokus verloren: auf der Seite selbst, nirgends oder auf einem entfernten Element (dem Start-Knopf)
+    if (active == null || active === document.body || !document.body.contains(active)) playRef.current?.focus({ preventScroll: true });
+  }, []);
+
   return (
-    <div className={`challenge__play ${challenge === 'retro340' ? 'challenge--retro' : ''}`}>
+    <div ref={playRef} tabIndex={-1} aria-label={tc.playAria} className={`challenge__play ${challenge === 'retro340' ? 'challenge--retro' : ''}`}>
       <div className="challenge__controls">
         {notice}
         <StatusLine items={status} />

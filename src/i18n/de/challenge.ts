@@ -78,6 +78,7 @@ const challenge = {
   finishOffline: 'Offline auswerten (ohne Wertung)',
   abortConfirm: 'Run wirklich abbrechen?',
   abort: 'Run abbrechen',
+  playAria: 'Challenge-Run',
   pitchAria: (formation: string) => `Spielfeld, Formation ${formation}`,
   netChecking: 'Verbindung wird geprüft …',
   netOnline: 'Online – deine Runs kommen in die Rangliste',

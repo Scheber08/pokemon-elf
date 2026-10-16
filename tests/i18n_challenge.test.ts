@@ -414,6 +414,9 @@ describe('34–0 Challenge auf Deutsch (unverändert)', () => {
     }
     await click(button(el, 'Run starten'));
     await settle();
+    // Der Start-Knopf ist weg – der Fokus landet im Run statt auf der Seite
+    expect(document.activeElement?.className).toContain('challenge__play');
+    expect((document.activeElement as unknown as { getAttribute: (n: string) => string | null }).getAttribute('aria-label')).toBe('Challenge-Run');
     text = allText(el);
     for (const s of ['Runde 1/11', 'Legendäre 0/2', 'Typ neu würfeln (1×)', 'Region neu würfeln (1×)', 'Run abbrechen']) {
       expect(text).toContain(s);

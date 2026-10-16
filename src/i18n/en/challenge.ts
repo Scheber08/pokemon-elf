@@ -74,6 +74,7 @@ const challenge: Messages['challenge'] = {
   finishOffline: 'Finish offline (unranked)',
   abortConfirm: 'Really abandon this run?',
   abort: 'Abandon run',
+  playAria: 'Challenge run',
   pitchAria: (formation) => `Pitch, formation ${formation}`,
   netChecking: 'Checking connection …',
   netOnline: 'Online – your runs go on the leaderboard',
