@@ -35,6 +35,11 @@ import { cleanCrest } from '../lib/crest';
 import { pickNumbersLabel, poolOf, rosterOf, rounds as draftRounds } from '../lib/draftEngine';
 import { Crest } from './Crest';
 import { PoolStars } from './PoolStars';
+import { FilterBar, useFilteredPokemon, type PokemonFilters } from './FilterBar';
+import { PokemonGrid } from './PokemonGrid';
+import { positionFit, type Scale } from '../lib/fit';
+import { POSITIONS } from '../config/positions';
+import type { Pokemon, PosCode } from '../types';
 
 /** QR-Code des Liga-Links – zum Scannen, wenn alle im selben Raum sitzen. */
 function DraftQr({ link }: { link: string }) {
@@ -75,6 +80,42 @@ function DraftQr({ link }: { link: string }) {
         </div>
       )}
     </>
+  );
+}
+
+/** 🔍 Ganzen Pool vor dem Draft ansehen (Suche/Filter); Antippen nennt die beste Position. */
+function LobbyPool({ pool, scale }: { pool: Pokemon[]; scale: Scale }) {
+  const t = useT();
+  const toast = useToast();
+  const { sprite } = useSettings();
+  const [open, setOpen] = useState(false);
+  const [filters, setFilters] = useState<PokemonFilters>({ query: '', type: null, region: 0 });
+  const filtered = useFilteredPokemon(pool, filters);
+  const regions = new Set(pool.map((p) => p.gen)).size;
+  return (
+    <details className="card details lobby-pool" onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}>
+      <summary>🔍 {t.online.poolBrowse(pool.length)}</summary>
+      {open && (
+        <>
+          <FilterBar filters={filters} onChange={setFilters} showRegion={regions > 1} resultCount={filtered.length} />
+          <PokemonGrid
+            items={filtered}
+            sprite={sprite}
+            selectedId={null}
+            onPick={(p) => {
+              let best: { pos: PosCode; fit: number } | null = null;
+              for (const pos of Object.keys(POSITIONS) as PosCode[]) {
+                if (pos === 'SS') continue;
+                const fit = positionFit(p, pos, scale);
+                if (!best || fit > best.fit) best = { pos, fit };
+              }
+              if (best) toast(t.online.poolBrowseBest(t.game.pokemon(p), t.game.posName[best.pos], Math.round(best.fit)));
+            }}
+            className="pgrid-wrap--compact pgrid-wrap--scroll"
+          />
+        </>
+      )}
+    </details>
   );
 }
 
@@ -545,6 +586,7 @@ export function DraftLobby({ room, readOnly = false }: { room: DraftRoom; readOn
           )}
         </section>
         {pool.length > 0 && <PoolStars pool={pool} scale={scale('all')} formations={s.teams.map((tm) => tm.formation)} />}
+        {pool.length > 0 && <LobbyPool pool={pool} scale={scale('all')} />}
         {isHost && (
           <section className="card draft-start">
             <button

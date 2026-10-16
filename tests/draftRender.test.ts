@@ -1048,6 +1048,23 @@ describe('DraftLobby', () => {
     }
   });
 
+  it('🔍 Lobby: ganzen Pool ansehen, Antippen nennt die beste Position', async () => {
+    const st = lobby(2, { region: 1, maxTeams: 4 });
+    const { container } = await render(app(h(DraftLobby, { room: fakeRoom(snap(st, 'h')) })));
+    await settle();
+    const det = container.querySelector('.lobby-pool') as MiniElement;
+    expect(det.querySelector('summary')!.textContent).toMatch(/^🔍 Ganzen Pool ansehen \(\d+\)$/);
+    expect(det.querySelector('.pgrid')).toBeNull();
+    const { MiniEvent } = await import('./miniDom');
+    (det as unknown as { open: boolean }).open = true;
+    await act(async () => void det.dispatchEvent(new MiniEvent('toggle')));
+    const cards = det.querySelectorAll('.pcard').filter((c) => c.querySelector('.pcard__name'));
+    expect(cards.length).toBeGreaterThan(0);
+    await act(async () => (cards[0] as MiniElement).click());
+    const toasts = container.querySelectorAll('.toast').map((e) => e.textContent!);
+    expect(toasts.some((x) => /^.+: beste Position .+ \(Fit \d+\)$/.test(x))).toBe(true);
+  });
+
   it('📋 Einladung kopieren: Liganame, Regeln, Code und Link', async () => {
     const st = lobby(2, { region: 1, maxTeams: 6, pickSeconds: 60, name: 'Montagsliga' });
     const writes: string[] = [];

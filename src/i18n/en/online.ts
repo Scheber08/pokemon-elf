@@ -113,6 +113,8 @@ const online: Messages['online'] = {
   endsAtNoTimer: (season) => `If started now: season over ~${season} at the earliest (depending on draft pace).`,
   queueFill: (n) => (n === 1 ? 'Add best free pick' : `Add ${n} best free picks`),
   queueFillTitle: 'Append the best-fitting free Pokémon for each open position to your wishlist',
+  poolBrowse: (n) => `Browse the whole pool (${n})`,
+  poolBrowseBest: (name, pos, fit) => `${name}: best position ${pos} (fit ${fit})`,
   linkCopied: 'Link copied',
   copyFailed: 'Couldn’t copy',
   copyLink: 'Copy link',

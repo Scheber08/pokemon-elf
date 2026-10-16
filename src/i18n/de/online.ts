@@ -120,6 +120,8 @@ const online = {
   endsAtNoTimer: (season: string) => `Bei Start jetzt: Saisonende frühestens ~${season} Uhr (je nach Draft-Tempo).`,
   queueFill: (n: number) => (n === 1 ? 'Besten Freien übernehmen' : `${n} beste Freie übernehmen`),
   queueFillTitle: 'Je offener Position das passendste freie Pokémon hinten an die Wunschliste hängen',
+  poolBrowse: (n: number) => `Ganzen Pool ansehen (${n})`,
+  poolBrowseBest: (name: string, pos: string, fit: number) => `${name}: beste Position ${pos} (Fit ${fit})`,
   linkCopied: 'Link kopiert',
   copyFailed: 'Kopieren hat nicht geklappt',
   copyLink: 'Link kopieren',
