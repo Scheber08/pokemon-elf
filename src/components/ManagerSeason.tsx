@@ -1383,7 +1383,7 @@ function LineupEditor({
             {sorted.map((r) => (
               <tr key={r.p.id} className={r.role ? '' : 'is-bench'}>
                 <td className="left">
-                  {t.game.pokemon(r.p)}
+                  <Sprite pokemon={r.p} style={sprite} className="manager__squad-sprite" shiny={shinySet?.has(r.p.id)} /> {t.game.pokemon(r.p)}
                   {team.captain === r.p.id && (
                     <>
                       {' '}

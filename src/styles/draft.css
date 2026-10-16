@@ -1267,6 +1267,13 @@ button.draft-bench__slot {
 .manager__free li.is-claimed {
   border-color: var(--yellow);
 }
+.manager__squad-sprite {
+  width: 24px;
+  height: 24px;
+  margin: -4px 0;
+  object-fit: contain;
+  vertical-align: middle;
+}
 .manager__free-sprite {
   width: 22px;
   height: 22px;

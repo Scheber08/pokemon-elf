@@ -1546,6 +1546,9 @@ describe('ManagerSeason', () => {
       expect(chosen?.getAttribute('value')).toBe(String(benchId));
       expect(chosen?.textContent).toMatch(/^BK · /);
       expect(container.querySelectorAll('.manager__squad .manager__captain')).toHaveLength(1);
+      // Jede Kader-Zeile mit Sprite
+      const rows = container.querySelectorAll('.manager__squad tbody tr');
+      expect(rows.every((tr) => tr.querySelector('.manager__squad-sprite'))).toBe(true);
     }
     expect(await text(withCaptain(lineup.slots[0], { [lineup.slots[0]]: { kind: 'red', until: 2, since: 0 } }))).toContain('keinen Kapitänsbonus');
   });
