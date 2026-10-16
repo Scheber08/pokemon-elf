@@ -2442,6 +2442,20 @@ button.sheet__row:hover {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.scouting__top-pick {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
 .scouting__top-fit {
   font-variant-numeric: tabular-nums;
   font-weight: 700;

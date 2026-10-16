@@ -36,6 +36,7 @@ const scouting = {
   topLegends: 'Legendäre und Mysteriöse mitzählen',
   whereTitle: 'Wo spielt …?',
   wherePlaceholder: 'Pokémon suchen, z. B. Glurak',
+  whereShow: (name: string) => `Wo spielt ${name} sonst noch?`,
   whereNone: 'Kein Pokémon gefunden.',
   howTitle: 'Wie ein Team bewertet wird',
   howWeights: (w: ScoutingWeights) =>

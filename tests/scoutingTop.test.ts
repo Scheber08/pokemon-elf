@@ -78,6 +78,11 @@ describe('Scouting: Top 3 je Position', () => {
     const scale = buildScale(ALL, 'all');
     const keys = PROFILE_GROUPS.flatMap((g) => g.profiles);
     expect(fits[0]).toBe(Math.round(Math.max(...keys.map((k) => profileFit(glurak, k, scale)))));
+    // Tipp auf ein Pokémon in „Top 3 je Position“ füllt die Suche
+    const pick = container.querySelector('.scouting__top-pick')!;
+    await act(async () => pick.click());
+    expect(container.querySelector('.scouting__where-name strong')!.textContent).toBe(pick.textContent);
+    expect(pick.getAttribute('title')).toBe(`Wo spielt ${pick.textContent} sonst noch?`);
     await type('xyzxyz');
     expect(container.querySelector('.scouting__where-hit')).toBeNull();
     expect(container.querySelector('.scouting__where')!.textContent).toContain('Kein Pokémon gefunden.');

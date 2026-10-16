@@ -22,6 +22,7 @@ const scouting: Messages['scouting'] = {
   topLegends: 'Include legendary and mythical Pokémon',
   whereTitle: 'Where does … play?',
   wherePlaceholder: 'Search a Pokémon, e.g. Charizard',
+  whereShow: (name) => `Where else does ${name} play?`,
   whereNone: 'No Pokémon found.',
   howTitle: 'How a team is rated',
   howWeights: (w) =>

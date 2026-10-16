@@ -16,7 +16,7 @@ import type { ProfileKey } from '../types';
 const LEVELS: Level[] = [3, 2, 1, 0];
 
 /** Die drei bestpassenden Pokémon (aus den 1.025, Skala „alle“) je Profil – zeigt, wonach das Scouting sucht */
-function TopCandidates() {
+function TopCandidates({ onPick }: { onPick: (name: string) => void }) {
   const t = useT();
   const s = t.scouting;
   const data = useOptionalPokemonData();
@@ -56,7 +56,9 @@ function TopCandidates() {
               {top[key].map(({ p, fit }) => (
                 <li key={p.id}>
                   <Sprite pokemon={p} style={sprite} className="scouting__top-sprite" />
-                  <span className="scouting__top-name">{t.game.pokemon(p)}</span>
+                  <button type="button" className="scouting__top-name scouting__top-pick" onClick={() => onPick(t.game.pokemon(p))} title={s.whereShow(t.game.pokemon(p))}>
+                    {t.game.pokemon(p)}
+                  </button>
                   <span className="scouting__top-fit">{Math.round(fit)}</span>
                 </li>
               ))}
@@ -69,12 +71,11 @@ function TopCandidates() {
 }
 
 /** 🔍 Wo spielt …? – ein Pokémon suchen, seine fünf besten Positionen mit Fit (Skala „alle“) */
-function WherePlays() {
+function WherePlays({ query, setQuery }: { query: string; setQuery: (q: string) => void }) {
   const t = useT();
   const s = t.scouting;
   const data = useOptionalPokemonData();
   const { sprite } = useSettings();
-  const [query, setQuery] = useState('');
   const hit = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!data || q.length < 2) return null;
@@ -94,7 +95,7 @@ function WherePlays() {
       <h2 id="scouting-where" className="section-title">
         🔍 {s.whereTitle}
       </h2>
-      <input className="input scouting__where-input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={s.wherePlaceholder} aria-label={s.whereTitle} />
+      <input id="scouting-where-input" className="input scouting__where-input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={s.wherePlaceholder} aria-label={s.whereTitle} />
       {query.trim().length >= 2 && !hit && <p className="muted small">{s.whereNone}</p>}
       {hit && (
         <div className="scouting__where-hit" aria-live="polite">
@@ -124,6 +125,8 @@ export function Scouting() {
   const tableRef = useRef<HTMLDivElement>(null);
   const toast = useToast();
   const [busy, setBusy] = useState(false);
+  /** Suche „Wo spielt …?" – auch per Tipp auf ein Pokémon in „Top 3 je Position" gefüllt */
+  const [where, setWhere] = useState('');
 
   const saveTable = async () => {
     if (!tableRef.current) return;
@@ -215,8 +218,14 @@ export function Scouting() {
         </button>
       </div>
 
-      <TopCandidates />
-      <WherePlays />
+      <TopCandidates
+        onPick={(name) => {
+          setWhere(name);
+          // Zur Suche springen, damit man das Ergebnis sieht
+          document.getElementById('scouting-where-input')?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+        }}
+      />
+      <WherePlays query={where} setQuery={setWhere} />
 
       <div className="prose-grid">
         <section className="card prose">
