@@ -1,12 +1,6 @@
 /** Texts: result (English). Must have exactly the keys of ../de/result.ts (checked by TypeScript). */
 import type { Messages } from '../de';
-
-/** 1st, 2nd, 3rd, 4th … 11th, 12th, 13th, 21st … */
-function ordinal(n: number): string {
-  const rem100 = n % 100;
-  if (rem100 >= 11 && rem100 <= 13) return `${n}th`;
-  return `${n}${['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'}`;
-}
+import { ordinal } from '../lang';
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 

@@ -1,13 +1,6 @@
 /** Texts: daily (English). Must have exactly the keys of ../de/daily.ts (checked by TypeScript). */
 import type { Messages } from '../de';
-import { fmtNumber } from '../lang';
-
-/** 1 → „1st", 2 → „2nd", 11 → „11th", 23 → „23rd" */
-function ordinal(n: number): string {
-  const tens = n % 100;
-  const suffix = tens >= 11 && tens <= 13 ? 'th' : (['th', 'st', 'nd', 'rd'][n % 10] ?? 'th');
-  return `${n}${suffix}`;
-}
+import { fmtNumber, ordinal } from '../lang';
 
 const daily: Messages['daily'] = {
   weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
