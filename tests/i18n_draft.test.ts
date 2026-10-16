@@ -1362,7 +1362,14 @@ describe('/draft an einem Gerät auf Englisch', () => {
       await settle();
       const el = container.querySelector('.draft-pool__legends');
       if (!withLegends) expect(el).toBeNull();
-      else expect(el!.textContent).toBe(`★ ${legends.length - 1} legendaries/mythicals still available`);
+      else {
+        expect(el!.textContent).toBe(`★ ${legends.length - 1} legendaries/mythicals still available`);
+        // Antippen: Raster nur noch mit den freien Legendären
+        await act(async () => (el as MiniElement).click());
+        expect(el!.getAttribute('aria-pressed')).toBe('true');
+        const names = container.querySelectorAll('.pcard .pcard__name').map((e) => e.textContent);
+        expect(names.sort()).toEqual(legends.slice(1).map((p) => p.en).sort());
+      }
     }
   });
 

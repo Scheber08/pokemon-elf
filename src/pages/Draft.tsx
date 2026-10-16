@@ -334,6 +334,9 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     [all, state.region, state.legends, state.forms, megas, megaRoom, drafted],
   );
   const filtered = useFilteredPokemon(pool, filters);
+  // „★ … noch frei“ als Umschalter: nur Legendäre/Mysteriöse im Raster (wie online)
+  const [legendsOnly, setLegendsOnly] = useState(false);
+  const shownPool = useMemo(() => (legendsOnly && state.legends ? filtered.filter((p) => p.leg || p.myth) : filtered), [filtered, legendsOnly, state.legends]);
   // ⚠️ Wird knapp (wie online): offene Plätze aller Teams gegen starke Freie – nur Positionen, die das menschliche Team am Zug noch braucht
   const liveScarce = useMemo(() => {
     if (!team || team.cpu || state.phase !== 'drafting') return [];
@@ -2107,14 +2110,22 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                 </p>
               )}
               {state.legends && (
-                // Noch freie Legendäre/Mysteriöse (wie im Pool-Kopf des Online-Drafts)
-                <p className="small muted draft-pool__legends">
-                  ★ {t.online.legendsFreeTitle(pool.filter((p) => p.leg || p.myth).length)}
+                // Noch freie Legendäre/Mysteriöse (wie im Pool-Kopf des Online-Drafts) – antippen filtert das Raster darauf
+                <p className="small">
+                  <button
+                    type="button"
+                    className={`draft-pool__legends ${legendsOnly ? 'is-on' : 'muted'}`}
+                    aria-pressed={legendsOnly}
+                    title={t.online.legendsOnlyTitle}
+                    onClick={() => setLegendsOnly((v) => !v)}
+                  >
+                    ★ {t.online.legendsFreeTitle(pool.filter((p) => p.leg || p.myth).length)}
+                  </button>
                 </p>
               )}
-              <FilterBar filters={filters} onChange={setFilters} showRegion={state.region === 0} resultCount={filtered.length} slashFocus />
+              <FilterBar filters={filters} onChange={setFilters} showRegion={state.region === 0} resultCount={shownPool.length} slashFocus />
               <PokemonGrid
-                items={filtered}
+                items={shownPool}
                 sprite={sprite}
                 selectedId={state.selected}
                 onPick={(p: Pokemon) => {
