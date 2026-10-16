@@ -2856,6 +2856,13 @@ describe('ManagerSeason', () => {
       const nm = leaky.team < s.teams.length ? s.teams[leaky.team].name : s.league!.teams[leaky.team].name;
       expect(rec.querySelector('.draft-records__leaky')!.textContent).toBe(`🥅 Schießbude${nm} – ${leaky.ga} Gegentore`);
     }
+    // 🪫 Harmloseste Offensive: wenigste Tore (Gleichstand: schlechter platziert)
+    {
+      const tb = s.league!.table;
+      const blunt = tb.reduce((a, b) => (b.gf <= a.gf ? b : a));
+      const nm = blunt.team < s.teams.length ? s.teams[blunt.team].name : s.league!.teams[blunt.team].name;
+      expect(rec.querySelector('.draft-records__blunt')!.textContent).toBe(`🪫 Harmloseste Offensive${nm} – ${blunt.gf} Tore`);
+    }
     // ⚖️ Schwergewicht / 🪶 Federgewicht: Gesamtgewicht der gedrafteten Kader
     {
       const kg = s.teams.map((tm) => Math.round(tm.slots.reduce<number>((sum, id) => sum + (ALL.find((p) => p.id === id)?.w ?? 0), 0) * 10) / 10);

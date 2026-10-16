@@ -351,6 +351,7 @@ const draft: Messages['draft'] = {
     leagueNumbers: (games, goals, avg, draws, clean) =>
       `📊 League in numbers: ${games} matches · ${goals} goals (avg ${avg.toLocaleString('en-GB', { maximumFractionDigits: 1, minimumFractionDigits: 1 })}) · ${draws} draws · ${clean} clean sheets`,
     recordLeaky: '🥅 Leakiest defence',
+    recordBlunt: '🪫 Bluntest attack',
     recordAttack: 'Best attack',
     recordDefense: 'Best defence',
     recordWin: 'Biggest win',
@@ -386,7 +387,7 @@ const draft: Messages['draft'] = {
     attackDefense: (gf, gfRank, ga, gaRank) => `⚽ Attack: ${gf} goals (place ${gfRank}) · 🧱 Defence: ${ga} conceded (place ${gaRank})`,
     recordDuoLine: (assist, scorer, team, goals) => `🤝 ${assist} → ${scorer} (${team}) – ${goals} goals together`,
     recordDurationLine: (time, picks) => `${time} min for ${picks} picks`,
-    recordGoals: (team, n) => `${team} – ${n} goals`,
+    recordGoals: (team, n) => `${team} – ${n === 1 ? '1 goal' : `${n} goals`}`,
     recordConceded: (team, n) => `${team} – ${n === 1 ? '1 goal conceded' : `${n} goals conceded`}`,
     recordWinLine: (home, score, away, round) => `${home} ${score} ${away} (matchday ${round})`,
     streak: (team, n, from, to) => `${team}, ${n} wins in a row (matchdays ${from}–${to})`,

@@ -741,6 +741,16 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                         </div>
                       ) : null;
                     })()}
+                    {(() => {
+                      // 🪫 Harmloseste Offensive: wenigste Tore (bei Gleichstand das schlechter platzierte Team)
+                      const blunt = table.reduce((a, b) => (b.gf <= a.gf ? b : a));
+                      return blunt.team !== attack.team ? (
+                        <div className="draft-records__blunt">
+                          <dt>{tx.recordBlunt}</dt>
+                          <dd>{tx.recordGoals(nameOf(blunt.team), blunt.gf)}</dd>
+                        </div>
+                      ) : null;
+                    })()}
                     {draws.d >= 4 && (
                       <div>
                         <dt>{tx.recordDraws}</dt>

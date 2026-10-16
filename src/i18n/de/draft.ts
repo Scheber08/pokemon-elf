@@ -390,6 +390,7 @@ const draft = {
     leagueNumbers: (games: number, goals: number, avg: number, draws: number, clean: number) =>
       `📊 Liga in Zahlen: ${games} Spiele · ${goals} Tore (Ø ${avg.toLocaleString('de-DE', { maximumFractionDigits: 1, minimumFractionDigits: 1 })}) · ${draws} Remis · ${clean}× zu null`,
     recordLeaky: '🥅 Schießbude',
+    recordBlunt: '🪫 Harmloseste Offensive',
     recordAttack: 'Bester Angriff',
     recordDefense: 'Beste Abwehr',
     recordWin: 'Höchster Sieg',
@@ -427,7 +428,7 @@ const draft = {
     attackDefense: (gf: number, gfRank: number, ga: number, gaRank: number) => `⚽ Angriff: ${gf} Tore (Platz ${gfRank}) · 🧱 Abwehr: ${ga} Gegentore (Platz ${gaRank})`,
     recordDuoLine: (assist: string, scorer: string, team: string, goals: number) => `🤝 ${assist} → ${scorer} (${team}) – ${goals} Tore zusammen`,
     recordDurationLine: (time: string, picks: number) => `${time} Min. für ${picks} Picks`,
-    recordGoals: (team: string, n: number) => `${team} – ${n} Tore`,
+    recordGoals: (team: string, n: number) => `${team} – ${n === 1 ? '1 Tor' : `${n} Tore`}`,
     recordConceded: (team: string, n: number) => `${team} – ${n === 1 ? '1 Gegentor' : `${n} Gegentore`}`,
     recordWinLine: (home: string, score: string, away: string, round: number) => `${home} ${score} ${away} (${round}. Spieltag)`,
     streak: (team: string, n: number, from: number, to: number) => `${team}, ${n} Siege am Stück (${from}.–${to}. Spieltag)`,
