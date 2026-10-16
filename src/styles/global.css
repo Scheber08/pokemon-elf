@@ -2517,6 +2517,10 @@ button.sheet__row:hover {
 .saved-teams__name small {
   display: block;
 }
+.saved-teams__current {
+  color: var(--green);
+  white-space: nowrap;
+}
 .saved-teams__formation,
 .saved-teams__at {
   white-space: nowrap;

@@ -36,6 +36,7 @@ const builder: Messages['builder'] = {
     unnamed: (n) => `XI ${n}`,
     saved: (name) => `“${name}” saved`,
     updated: (name) => `“${name}” updated`,
+    current: '✓ current',
     loaded: (name) => `“${name}” loaded`,
     friendly: 'Friendly',
     link: 'Link',

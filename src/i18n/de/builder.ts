@@ -32,6 +32,7 @@ const builder = {
     unnamed: (n: number) => `Elf ${n}`,
     saved: (name: string) => `„${name}" gespeichert`,
     updated: (name: string) => `„${name}" aktualisiert`,
+    current: '✓ aktuell',
     loaded: (name: string) => `„${name}" geladen`,
     friendly: 'Testspiel',
     link: 'Link',

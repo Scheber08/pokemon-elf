@@ -119,6 +119,10 @@ export function SavedTeams<T extends Playable>({ current, onLoad }: Props<T>) {
                   <span className="saved-teams__formation">{x.formation}</span>
                   {/* Speicherdatum (lokaler Kalendertag) */}
                   {x.at > 0 && <span className="saved-teams__at"> · {t.game.day(localDay(x.at))}</span>}
+                  {/* Steht genau diese Elf gerade im Builder? (Formation und Aufstellung – ohne Namen speichert der Builder „Team n“) */}
+                  {x.formation === current.formation && JSON.stringify(x.state.slots ?? []) === JSON.stringify(current.slots ?? []) && (
+                    <span className="saved-teams__current"> · {tx.current}</span>
+                  )}
                 </small>
               </span>
               <button

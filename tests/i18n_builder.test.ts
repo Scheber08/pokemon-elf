@@ -153,6 +153,12 @@ describe('Builder auf Englisch', () => {
     const { container } = await render(app(h(Builder)));
     await settle();
     expect(container.querySelector('.saved-teams__at')!.textContent).toBe(' · Oct 12, 2026');
+    // Gespeicherte Elf ≠ aktuelle Builder-Elf: kein „✓ current“
+    expect(container.querySelector('.saved-teams__current')).toBeNull();
+    // Aktuelle Elf speichern: der neue Eintrag ist „✓ current“
+    const saveBtn = container.querySelectorAll('button').find((b) => b.textContent === en.builder.saved.save)!;
+    await act(async () => saveBtn.click());
+    expect(container.querySelectorAll('.saved-teams__current').map((e) => e.textContent)).toEqual([' · ✓ current']);
   });
 
   it('Auswahl-Dialog (Filter, Raster, Hinweise) ohne deutschen Text', async () => {
