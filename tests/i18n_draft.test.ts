@@ -1344,12 +1344,14 @@ describe('/draft an einem Gerät auf Englisch', () => {
     });
     localStorage.setItem(
       'pokemon-elf:draft',
-      JSON.stringify({ phase: 'league', teams, region: 0, legends: false, pick: 33, selected: null, seed: 7 }),
+      JSON.stringify({ phase: 'league', teams, region: 0, legends: false, pick: 33, selected: null, seed: 7, draftMs: 272_400 }),
     );
     const { container } = await render(app(h(Draft)));
     await settle();
     const all = texts(container).join(' | ');
     expect(all).toContain('Draft league');
+    // ⏱️ Draft-Dauer (ohne Verlauf zählt pick)
+    expect(container.querySelector('.draft__duration')!.textContent).toBe('⏱️ Draft time: 4:32 min for 33 picks');
     expect(all).toContain('Everyone plays everyone, home and away – 6 matches.');
     expect(all).toContain('Top scorers');
     expect(all).toContain('My Team');

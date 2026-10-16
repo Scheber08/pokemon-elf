@@ -114,8 +114,21 @@ interface DraftState {
   pickSeconds?: number;
   /** Merkliste je Team (Index → Pokémon-IDs) – nur Anzeige auf den Karten */
   marks?: Record<number, number[]>;
+  /** Start des Drafts (Uhrzeit) – für die Draft-Dauer im Ergebnis */
+  startedAt?: number;
+  /** Dauer des Drafts in ms (gesetzt beim letzten Pick) */
+  draftMs?: number;
 }
 
+
+/** Dauer als „m:ss“ (ab einer Stunde „h:mm:ss“) */
+function formatDuration(ms: number): string {
+  const sec = Math.round(ms / 1000);
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const ss = String(sec % 60).padStart(2, '0');
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
+}
 
 /**
  * Namen für CPU-Teams: zuerst Teams aus den Online-Ranglisten (sofern geladen), dann Vereinsnamen –
@@ -373,6 +386,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
         phase: pick >= s.teams.length * ROUNDS ? (s.teams.some((x) => !x.cpu) ? 'captains' : 'league') : 'drafting',
         seed: pick >= s.teams.length * ROUNDS ? randomSeed() : s.seed,
         ...(pick >= s.teams.length * ROUNDS ? { model: 'draft' as const, cpuCaptains: true as const } : {}),
+        ...(pick >= s.teams.length * ROUNDS && s.startedAt != null ? { draftMs: Math.max(0, Date.now() - s.startedAt) } : {}),
       };
     });
 
@@ -520,6 +534,8 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
       shinies: [],
       log: [],
       marks: undefined,
+      startedAt: Date.now(),
+      draftMs: undefined,
       teams: s.teams.map((tm) => ({ ...tm, slots: emptySlots(tm.formation) })),
     }));
     setFilters({ query: '', type: null, region: state.region });
@@ -920,6 +936,9 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               {t.draft.results.championLabel}
               <strong>{teamName(champion.name)}</strong> · {t.draft.results.heroLine(champion, champion.rating)}
             </p>
+          )}
+          {state.draftMs != null && (
+            <p className="muted small draft__duration">{tx.draftDuration(formatDuration(state.draftMs), state.log?.length ?? state.pick)}</p>
           )}
           {/* Platz jedes menschlichen Teams (Hot-Seat: auch mehrere) */}
           {league.table.map((r, i) =>
