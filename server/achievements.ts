@@ -39,22 +39,23 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
       .bind(deviceId, today),
     db
       .prepare(
-        `SELECT SUM(CASE WHEN format NOT IN ('manager_cup', 'shiny', 'captain', 'goal', 'blitz', 'clean', 'goals', 'hattrick') THEN 1 ELSE 0 END) AS leagues,
+        `SELECT SUM(CASE WHEN format NOT IN ('manager_cup', 'shiny', 'captain', 'goal', 'blitz', 'clean', 'goals', 'hattrick', 'duo') THEN 1 ELSE 0 END) AS leagues,
            SUM(CASE WHEN format = 'shiny' THEN rank ELSE 0 END) AS shinies,
            MAX(CASE WHEN format = 'captain' THEN rank ELSE 0 END) AS captain_goals,
            MAX(CASE WHEN format = 'blitz' THEN rank ELSE 0 END) AS blitz,
            MAX(CASE WHEN format = 'clean' THEN rank ELSE 0 END) AS clean_sheets,
            MAX(CASE WHEN format = 'goals' THEN rank ELSE 0 END) AS most_goals,
            SUM(CASE WHEN format = 'hattrick' THEN rank ELSE 0 END) AS hat_tricks,
+           MAX(CASE WHEN format = 'duo' THEN rank ELSE 0 END) AS duo,
            SUM(CASE WHEN format = 'goal' THEN 1 ELSE 0 END) AS goals_reached,
            SUM(CASE WHEN rank = 1 AND format = 'league' THEN 1 ELSE 0 END) AS titles,
            SUM(CASE WHEN rank = 1 AND format = 'manager_cup' THEN 1 ELSE 0 END) AS manager_cups,
            SUM(CASE WHEN rank = 1 AND format = 'cup' THEN 1 ELSE 0 END) AS cups,
            SUM(CASE WHEN rank = 1 AND format = 'manager' THEN 1 ELSE 0 END) AS manager,
-           SUM(CASE WHEN rank <= 3 AND format NOT IN ('manager_cup', 'shiny', 'captain', 'goal', 'blitz', 'clean', 'goals', 'hattrick') THEN 1 ELSE 0 END) AS podiums,
+           SUM(CASE WHEN rank <= 3 AND format NOT IN ('manager_cup', 'shiny', 'captain', 'goal', 'blitz', 'clean', 'goals', 'hattrick', 'duo') THEN 1 ELSE 0 END) AS podiums,
            SUM(CASE WHEN format = 'manager' THEN 1 ELSE 0 END) AS seasons,
            SUM(CASE WHEN format = 'manager' AND rank <= 3 THEN 1 ELSE 0 END) AS manager_podiums,
-           SUM(CASE WHEN losses = 0 AND format NOT IN ('cup', 'manager_cup', 'shiny', 'captain', 'goal', 'blitz', 'clean', 'goals', 'hattrick') AND wins + draws > 0 THEN 1 ELSE 0 END) AS unbeaten
+           SUM(CASE WHEN losses = 0 AND format NOT IN ('cup', 'manager_cup', 'shiny', 'captain', 'goal', 'blitz', 'clean', 'goals', 'hattrick', 'duo') AND wins + draws > 0 THEN 1 ELSE 0 END) AS unbeaten
          FROM draft_results WHERE device_id = ?`,
       )
       .bind(deviceId),
@@ -96,6 +97,7 @@ export async function achievementStats(db: Db, deviceId: string, today: string):
       cleanSheets: num(d.clean_sheets),
       mostGoals: num(d.most_goals),
       hatTricks: num(d.hat_tricks),
+      duo: num(d.duo),
       goalsReached: num(d.goals_reached),
     },
   };
@@ -307,6 +309,31 @@ export async function saveDraftResults(
            ON CONFLICT (code, device_id) DO UPDATE SET rank = excluded.rank`,
         )
         .bind(`${state.code}#hattrick`, device, hats, now),
+    );
+  });
+  // Bestes Vorlage → Tor-Paar je Mensch (eigene Zeile „…#duo“, rank = gemeinsame Tore) – nur für den Erfolg „Traumduo“
+  state.teams.forEach((team, idx) => {
+    const device = !team.cpu ? state.owners[team.id] : undefined;
+    if (!device) return;
+    const pairs = new Map<string, number>();
+    for (const m of league.matches) {
+      const scorers = m.home === idx ? m.homeScorers : m.away === idx ? m.awayScorers : [];
+      for (const g of scorers ?? []) {
+        if (g.assist == null || g.assist === g.pokemonId) continue;
+        const key = `${g.assist}>${g.pokemonId}`;
+        pairs.set(key, (pairs.get(key) ?? 0) + 1);
+      }
+    }
+    const best = Math.max(0, ...pairs.values());
+    if (!best) return;
+    stmts.push(
+      db
+        .prepare(
+          `INSERT INTO draft_results (code, device_id, format, rank, teams, wins, draws, losses, points, finished_at)
+           VALUES (?, ?, 'duo', ?, 0, 0, 0, 0, 0, ?)
+           ON CONFLICT (code, device_id) DO UPDATE SET rank = excluded.rank`,
+        )
+        .bind(`${state.code}#duo`, device, best, now),
     );
   });
   // Eigene Tore je Mensch (eigene Zeile „…#goals“, rank = Tore) – zählt nur für den Erfolg „Torfabrik“

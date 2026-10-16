@@ -130,7 +130,7 @@ describe('Kennzahlen und /api/me', () => {
     expect(s.dailyStreak).toBe(3);
     expect(s.dailyWins).toBe(1);
     expect(s.bestPlace).toBe(1);
-    expect(s.draft).toEqual({ leagues: 1, titles: 0, cups: 1, manager: 0, podiums: 1, unbeaten: 0, seasons: 0, managerPodiums: 0, managerCups: 0, shinies: 0, captainGoals: 0, blitz: 0, cleanSheets: 0, mostGoals: 8, hatTricks: 0, goalsReached: 0 });
+    expect(s.draft).toEqual({ leagues: 1, titles: 0, cups: 1, manager: 0, podiums: 1, unbeaten: 0, seasons: 0, managerPodiums: 0, managerCups: 0, shinies: 0, captainGoals: 0, blitz: 0, cleanSheets: 0, mostGoals: 8, hatTricks: 0, goalsReached: 0, duo: 0 });
     // Doppelt gespeichert (Neuversuch) zählt nicht doppelt
     // (Liga-Zeile plus Zusatzzeile „#goals“ für die Torfabrik)
     expect(db.query('SELECT code FROM draft_results ORDER BY code').map((r) => (r as { code: string }).code)).toEqual(['ABC234', 'ABC234#goals']);
@@ -200,7 +200,8 @@ describe('Kennzahlen und /api/me', () => {
     const collector = achievementStates(sh).find((a) => a.id === 'shiny_5');
     expect(collector).toMatchObject({ done: false, value: 1, goal: 5 });
     // Kapitänstore: eigene Zeile (Maximum über die Ligen), zählt nicht als Liga
-    const goal = (n: number) => Array.from({ length: n }, () => ({ pokemonId: 129, pos: 'ST', minute: 10 }));
+    // Die ersten drei Tore jedes Spiels legt Pokémon 1 auf (Traumduo 1 → 129: 6 gemeinsame Tore)
+    const goal = (n: number) => Array.from({ length: n }, (_, k) => ({ pokemonId: 129, pos: 'ST', minute: 10, ...(k < 3 ? { assist: 1 } : {}) }));
     await saveDraftResults(
       db,
       {
@@ -235,6 +236,9 @@ describe('Kennzahlen und /api/me', () => {
     // Hattrick-Held: der Kapitän trifft in beiden Spielen mindestens dreimal (6 bzw. 5 Tore) → zwei Hattricks
     expect(cap.draft.hatTricks).toBe(2);
     expect(achievementStates(cap).find((a) => a.id === 'hattrick_1')?.done).toBe(true);
+    // Traumduo: 6 Tore derselben Vorlage-Kombination (zählt nicht als Liga)
+    expect(cap.draft.duo).toBe(6);
+    expect(achievementStates(cap).find((a) => a.id === 'duo_5')?.done).toBe(true);
     // Bollwerk: 10 Spiele ohne Gegentor in einer Liga
     await saveDraftResults(
       db,
