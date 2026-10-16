@@ -47,6 +47,7 @@ const daily: Messages['daily'] = {
   factPoints: 'Points',
   factScore: 'Score',
   rankValue: (n) => ordinal(n),
+  topPercent: (n) => `top ${n}%`,
   playersToday: (n) => `${fmtNumber(n, 0, 'en')} ${n === 1 ? 'player' : 'players'} today`,
   yourTeam: (name) => ` · your team: ${name}`,
   newDailyReady: (n) => `The new Daily XI #${n} is here!`,

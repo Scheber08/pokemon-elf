@@ -288,3 +288,12 @@
 :root[data-theme='light'] .daily-streak__no {
   color: #b45309;
 }
+
+/* „Top n %" neben dem Platz: klein und gedämpft, nicht in Zahlen-Größe */
+.daily-done__top {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dim);
+  white-space: nowrap;
+}

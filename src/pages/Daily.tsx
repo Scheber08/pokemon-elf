@@ -224,7 +224,13 @@ function PlayedToday({ entry, message }: { entry: TodayEntry; message: string | 
       <dl className="facts daily-done__facts">
         <div>
           <dt>{t.daily.factRank}</dt>
-          <dd>{t.daily.rankValue(row.rank)}</dd>
+          <dd>
+            {t.daily.rankValue(row.rank)}
+            {/* Top n %: erst ab 10 Spielern aussagekräftig */}
+            {players >= 10 && row.rank <= players && (
+              <small className="daily-done__top"> {t.daily.topPercent(Math.max(1, Math.ceil((row.rank / players) * 100)))}</small>
+            )}
+          </dd>
         </div>
         <div>
           <dt>{t.daily.factRecord}</dt>

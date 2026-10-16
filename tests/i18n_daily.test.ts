@@ -271,6 +271,8 @@ describe('Tägliche Elf auf Englisch', () => {
     expect(head).toContain('New XI in');
     expect(mine).toContain('Already played today');
     expect(mine).toContain('3rd');
+    // Ein einziger Spieler: kein „top n%"
+    expect(c.querySelector('.daily-done__top')).toBeNull();
     expect(mine).toContain('1 player today · your team: Cerulean');
     expect(mine).toContain('Today’s leaderboard');
     expect(mine.match(GERMAN)?.[0] ?? null, mine).toBeNull();
@@ -301,6 +303,8 @@ describe('Tägliche Elf auf Englisch', () => {
     expect(text).toContain('Morgen gibt es neue Würfe – wieder für alle dieselben.');
     expect(text).toContain('1.234 Spieler heute · dein Team: Cerulean');
     expect(c.querySelector('.daily-done__facts')!.textContent).toContain('Platz3.');
+    // 3. von 1.234 → Top 1 %
+    expect(c.querySelector('.daily-done__top')!.textContent).toBe(' Top 1 %');
   });
 });
 

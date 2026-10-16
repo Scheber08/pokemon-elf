@@ -43,6 +43,7 @@ const daily = {
   factScore: 'Score',
   /** Platz in der Tageswertung: „3." */
   rankValue: (n: number) => `${n}.`,
+  topPercent: (n: number) => `Top ${n} %`,
   playersToday: (n: number) => `${fmtNumber(n, 0, 'de')} Spieler heute`,
   /** Anhang hinter „… Spieler heute"; der Teamname ist Nutzereingabe */
   yourTeam: (name: string) => ` · dein Team: ${name}`,
