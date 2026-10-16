@@ -1,5 +1,6 @@
 /** Texts: trainer page – achievements, coins (English). */
 import type { Messages } from '../de';
+import { plural } from '../lang';
 
 const trainer: Messages['trainer'] = {
   kicker: 'Your trainer',
@@ -68,6 +69,7 @@ const trainer: Messages['trainer'] = {
     podiums: 'Podium finishes',
     perfect: 'Perfect seasons',
   },
+  nextGoal: (name, missing) => `🎯 Next goal: ${name} – ${plural(missing, 'coin', 'coins')} to go`,
   collection: (have, total) => `🛍️ Collected: ${have} of ${total} items`,
   seasonNext: (icon, from) =>
     `⏭️ Coming next to the shop: ${icon} from ${new Date(`2000-${from}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })}`,

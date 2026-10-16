@@ -389,6 +389,17 @@ export function affordableCount(owned: Iterable<string>, balance: number, now: n
   return items.filter((i) => i.price > 0 && i.price <= balance && !have.has(itemKey(i.slot, i.id)) && itemOnSale(i, now)).length;
 }
 
+/** 🎯 Nächstes Ziel im Shop: der günstigste noch nicht leistbare, nicht gekaufte Artikel im Verkauf (bei gleichem Preis der erste im Katalog) */
+export function nextGoal(owned: Iterable<string>, balance: number, now: number, items: readonly TrainerItem[] = TRAINER_ITEMS): TrainerItem | null {
+  const have = new Set(owned);
+  let best: TrainerItem | null = null;
+  for (const i of items) {
+    if (i.price <= balance || have.has(itemKey(i.slot, i.id)) || !itemOnSale(i, now)) continue;
+    if (!best || i.price < best.price) best = i;
+  }
+  return best;
+}
+
 export function trainerItem(slot: TrainerSlot, id: string): TrainerItem | undefined {
   return BY_KEY.get(itemKey(slot, id));
 }

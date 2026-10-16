@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ACHIEVEMENTS, achievementStates, earnedCoins, longestDayStreak, type AchievementStats } from '../src/lib/achievements';
 import type { MeResponse } from '../src/lib/api/contract';
-import { affordableCount, DEFAULT_LOOK, itemOnSale, lockedItem, nextSeason, parseLook, shopCollection, TRAINER_ITEMS, TRAINER_SLOTS } from '../src/lib/trainer';
+import { affordableCount, DEFAULT_LOOK, nextGoal, itemOnSale, lockedItem, nextSeason, parseLook, shopCollection, TRAINER_ITEMS, TRAINER_SLOTS } from '../src/lib/trainer';
 import { achievementStats, saveDraftResults } from '../server/achievements';
 import { handleApi } from '../server/handler';
 import { ensureSchema } from '../server/schema';
@@ -410,6 +410,11 @@ describe('Saisonartikel', () => {
     expect(affordableCount(['hat:a'], 400, at('2026-10-16'), shop)).toBe(2);
     expect(affordableCount([], 150, at('2026-10-16'), shop)).toBe(2); // 🎃 (1 Münze) und a (100)
     expect(affordableCount([], 0, at('2026-10-16'), shop)).toBe(0);
+    // 🎯 Nächstes Ziel: günstigster nicht leistbarer, nicht gekaufter Artikel im Verkauf
+    expect(nextGoal([], 150, at('2026-10-16'), shop)?.id).toBe('b');
+    expect(nextGoal([], 50, at('2026-10-16'), shop)?.id).toBe('a');
+    expect(nextGoal(['hat:b'], 150, at('2026-10-16'), shop)).toBeNull(); // 🎄 nicht im Verkauf
+    expect(nextGoal([], 400, at('2026-10-16'), shop)).toBeNull();
     expect(nextSeason(items, at('2026-05-01'))).toEqual({ from: '10-01', icon: '🎃' });
     expect(nextSeason([], at('2026-05-01'))).toBeNull();
     // Mit den echten Artikeln gibt es immer eine nächste Saison

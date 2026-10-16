@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useT, type Messages } from '../i18n';
 import { ApiRequestError, buyTrainerItem, saveTrainer } from '../lib/api/client';
 import type { MeResponse } from '../lib/api/contract';
-import { affordableCount, itemKey, itemOnSale, itemsOf, lockedItem, nextSeason, shopCollection, TRAINER_ITEMS, TRAINER_SLOTS, type TrainerItem, type TrainerLook, type TrainerSlot } from '../lib/trainer';
+import { affordableCount, itemKey, nextGoal, itemOnSale, itemsOf, lockedItem, nextSeason, shopCollection, TRAINER_ITEMS, TRAINER_SLOTS, type TrainerItem, type TrainerLook, type TrainerSlot } from '../lib/trainer';
 import type { Pokemon } from '../types';
 import { usePokemonData } from '../state/PokemonData';
 import { useToast } from '../state/Toast';
@@ -195,6 +195,15 @@ export function TrainerEditor({ me, onMe }: Props) {
                     <p className="trainer-editor__collection muted small">
                       {tx.collection(c.have, c.total)}
                     </p>
+                  );
+                })()}
+                {(() => {
+                  // 🎯 Günstigster Artikel, für den die Münzen noch nicht reichen
+                  const goal = nextGoal(owned, me.coins.balance, now);
+                  return (
+                    goal && (
+                      <p className="trainer-editor__goal muted small">{tx.nextGoal(trainerItemName(t, goal, byId), goal.price - me.coins.balance)}</p>
+                    )
                   );
                 })()}
               </>
