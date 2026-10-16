@@ -130,7 +130,7 @@ describe('Kennzahlen und /api/me', () => {
     expect(s.dailyStreak).toBe(3);
     expect(s.dailyWins).toBe(1);
     expect(s.bestPlace).toBe(1);
-    expect(s.draft).toEqual({ leagues: 1, titles: 0, cups: 1, manager: 0, podiums: 1, unbeaten: 0, seasons: 0, managerPodiums: 0, managerCups: 0, shinies: 0, captainGoals: 0, blitz: 0, cleanSheets: 0, mostGoals: 8, hatTricks: 0, goalsReached: 0, duo: 0 });
+    expect(s.draft).toEqual({ leagues: 1, titles: 0, cups: 1, manager: 0, podiums: 1, unbeaten: 0, seasons: 0, managerPodiums: 0, managerCups: 0, shinies: 0, captainGoals: 0, blitz: 0, cleanSheets: 0, mostGoals: 8, hatTricks: 0, goalsReached: 0, duo: 0, winStreak: 0 });
     // Doppelt gespeichert (Neuversuch) zählt nicht doppelt
     // (Liga-Zeile plus Zusatzzeile „#goals“ für die Torfabrik)
     expect(db.query('SELECT code FROM draft_results ORDER BY code').map((r) => (r as { code: string }).code)).toEqual(['ABC234', 'ABC234#goals']);
@@ -239,6 +239,9 @@ describe('Kennzahlen und /api/me', () => {
     // Traumduo: 6 Tore derselben Vorlage-Kombination (zählt nicht als Liga)
     expect(cap.draft.duo).toBe(6);
     expect(achievementStates(cap).find((a) => a.id === 'duo_5')?.done).toBe(true);
+    // Siegesserie: zwei Siege in Folge (Ziel 7)
+    expect(cap.draft.winStreak).toBe(2);
+    expect(achievementStates(cap).find((a) => a.id === 'streak_7')).toMatchObject({ done: false, value: 2, goal: 7 });
     // Bollwerk: 10 Spiele ohne Gegentor in einer Liga
     await saveDraftResults(
       db,
