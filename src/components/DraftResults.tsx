@@ -34,6 +34,9 @@ import { Crest } from './Crest';
 import { shinyTeamBoost } from '../lib/shiny';
 import { FORMATIONS } from '../config/formations';
 import { positionFit, roundBestPicks } from '../lib/fit';
+
+/** Ab diesem Positions-Fit zählt ein Pick als Volltreffer (Kader-Karten im Ergebnis) */
+const BULLSEYE_FIT = 95;
 import { fastPickCounts, goalReached, limitKindsOf, poolOf, rosterOf } from '../lib/draftEngine';
 import { KindMarks, RoundBest } from './DraftBoard';
 
@@ -915,6 +918,15 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                       🗺️ {list.join(' · ')}
                     </p>
                   );
+                })()}
+                {(() => {
+                  // 💯 Volltreffer: Feldspieler mit Positions-Fit ab BULLSEYE_FIT
+                  const sc = scale('all');
+                  const n = FORMATIONS[team.formation].slots.filter((d, j) => {
+                    const p = team.slots[j] != null ? byId.get(team.slots[j]!) : undefined;
+                    return p != null && Math.round(positionFit(p, d.pos, sc)) >= BULLSEYE_FIT;
+                  }).length;
+                  return n > 0 && <p className="draft-results__roster-meta small draft-results__roster-bullseye">{tx.bullseyes(n, BULLSEYE_FIT)}</p>;
                 })()}
                 {teamTopScorer.has(r.team) && (
                   <p className="draft-results__roster-meta small">

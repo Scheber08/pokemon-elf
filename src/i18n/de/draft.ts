@@ -418,6 +418,7 @@ const draft = {
     topCaptain: (pokemon: string, team: string, goals: number) =>
       `Bester Kapitän: ${pokemon} (${team}) mit ${goals === 1 ? '1 Tor' : `${goals} Toren`}`,
     regionsTitle: 'Aus welchen Regionen die Elf stammt',
+    bullseyes: (n: number, fit: number) => `💯 ${n} Volltreffer (Fit ≥ ${fit})`,
     typeGoals: 'Treffsicherste Typen:',
     missed: (pick: number, name: string, fit: number, pos: string, alt: string, altFit: number) =>
       `Verpasste Chance: Pick ${pick} ${name} (Fit ${fit}) – als ${pos} war noch ${alt} frei (Fit ${altFit})`,

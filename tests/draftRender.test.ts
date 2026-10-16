@@ -2354,6 +2354,13 @@ describe('ManagerSeason', () => {
     const mixed = s.teams.filter((tm) => new Set(tm.slots.map((id) => ALL.find((p) => p.id === id)!.gen)).size > 1);
     expect(lines).toHaveLength(mixed.length);
     for (const line of lines) expect(line).toMatch(/^🗺️ (Kanto|Johto) \d+ · (Kanto|Johto) \d+$/);
+    // 💯 Volltreffer (Fit ≥ 95) je Kader-Karte, nur bei mindestens einem
+    const { positionFit } = await import('../src/lib/fit');
+    const { FORMATIONS } = await import('../src/config/formations');
+    const counts = s.teams.map((tm) => FORMATIONS[tm.formation].slots.filter((d, j) => Math.round(positionFit(ALL.find((p) => p.id === tm.slots[j])!, d.pos, SCALE)) >= 95).length);
+    const bulls = container.querySelectorAll('.draft-results__roster-bullseye').map((e) => e.textContent);
+    expect(bulls).toHaveLength(counts.filter((n) => n > 0).length);
+    for (const b of bulls) expect(b).toMatch(/^💯 \d+ Volltreffer \(Fit ≥ 95\)$/);
   });
 
   it('Saisonende: Saisonrekorde mit Angriff, Abwehr und ggf. Remis-König', async () => {
