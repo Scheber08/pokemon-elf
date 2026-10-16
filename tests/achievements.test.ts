@@ -470,6 +470,10 @@ describe('Saisonartikel', () => {
     expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '🌙').map((i) => `${i.slot}:${i.id}`)).toEqual(['hat:crescent', 'companion:337']);
     const crescent = TRAINER_ITEMS.find((i) => i.id === 'crescent')!;
     expect([at('2027-07-16'), at('2027-07-17'), at('2027-07-23'), at('2027-07-24')].map((d) => itemOnSale(crescent, d))).toEqual([false, true, true, false]);
+    // 🩺 Weltgesundheitstag: Schwesternhaube und Ohrdoch vom 4. bis 10. April
+    expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '🩺').map((i) => `${i.slot}:${i.id}`)).toEqual(['hat:nursecap', 'companion:531']);
+    const nursecap = TRAINER_ITEMS.find((i) => i.id === 'nursecap')!;
+    expect([at('2027-04-03'), at('2027-04-04'), at('2027-04-10'), at('2027-04-11')].map((d) => itemOnSale(nursecap, d))).toEqual([false, true, true, false]);
   });
 
   it('Kauf nur in der Saison (400 not_on_sale), danach bleibt er tragbar', async () => {

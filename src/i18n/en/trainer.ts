@@ -145,6 +145,7 @@ const trainer: Messages['trainer'] = {
       chef: "Chef's hat",
       penguin: 'Penguin beanie',
       praline: 'Chocolate praline',
+      nursecap: 'Nurse cap',
       crescent: 'Crescent moon headband',
       catears: 'Cat ears',
       flowercrown: 'Flower crown',

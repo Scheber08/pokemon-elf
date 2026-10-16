@@ -148,6 +148,7 @@ const trainer = {
       chef: 'Kochmütze',
       penguin: 'Pinguinmütze',
       praline: 'Praline',
+      nursecap: 'Schwesternhaube',
       crescent: 'Mondsichel-Reif',
       catears: 'Katzenohren',
       flowercrown: 'Blumenkranz',

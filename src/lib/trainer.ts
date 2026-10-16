@@ -103,6 +103,8 @@ const PENGUINS = ['04-21', '04-27', '🐧'] as const;
 const CHOCOLATE = ['07-04', '07-10', '🍫'] as const;
 /** Tag des Mondes (20. Juli, erste Mondlandung) */
 const MOON = ['07-17', '07-23', '🌙'] as const;
+/** Weltgesundheitstag (7. April) */
+const HEALTH = ['04-04', '04-10', '🩺'] as const;
 /** Valentinstag */
 const VALENTINE = ['02-07', '02-14', '💘'] as const;
 
@@ -234,6 +236,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('hat', 'penguin', 200), ...PENGUINS),
   seasonal(item('hat', 'praline', 200), ...CHOCOLATE),
   seasonal(item('hat', 'crescent', 200), ...MOON),
+  seasonal(item('hat', 'nursecap', 200), ...HEALTH),
   // Accessoire
   item('accessory', 'none', 0),
   item('accessory', 'freckles', 0),
@@ -331,6 +334,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('companion', '393', 350), ...PENGUINS),
   seasonal(item('companion', '869', 350), ...CHOCOLATE),
   seasonal(item('companion', '337', 350), ...MOON),
+  seasonal(item('companion', '531', 350), ...HEALTH),
   item('companion', '6', 600),
   item('companion', '149', 600),
   item('companion', '448', 600),

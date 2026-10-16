@@ -425,6 +425,13 @@ function hat(c: Canvas, id: string, cloth: string) {
       c.fill(ellipse(15.5, 2.3, 1.8, 1.6), '#d0213a', '#7d1020');
       c.dots([[16, 0]], '#3c7a2e');
       break;
+    case 'nursecap':
+      // Schwesternhaube (Weltgesundheitstag): weiße Haube mit grauem Saum und rotem Kreuz
+      c.fill(and(ellipse(15.5, 9.5, 7.5, 5), above(10)), '#ffffff', '#b9c2cc');
+      c.rect(8, 9, 16, 1, '#d6dde4');
+      c.rect(15, 4, 2, 5, '#d8342a');
+      c.rect(13, 5, 6, 2, '#d8342a');
+      break;
     case 'crescent':
       // Mondsichel-Reif (Tag des Mondes): dunkelblauer Haarreif mit goldener Mondsichel und zwei Sternen
       c.fill(and(ellipse(15.5, 10, 9, 3), (_x, y) => y >= 8), '#2b3a7a', '#18214a');
