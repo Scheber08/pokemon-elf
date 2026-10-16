@@ -21,7 +21,8 @@ const result = {
   rankAllTime: (n: number) => `Platz ${n} allzeit`,
   rejected: 'Der Server hat diesen Run nicht gewertet.',
   notRanked: 'Nicht gewertet',
-  shareText: (record: string, score: number) => `Ich bin mit meiner Pokémon-Elf ${record} gegangen! Score ${score}`,
+  shareText: (record: string, score: number, place: number, points: number, challenge: string) =>
+    `Ich bin mit meiner Pokémon-Elf ${record} gegangen – Platz ${place} mit ${points} Punkten (${challenge})! Score ${score}`,
   imageSaved: 'Bild gespeichert, Text in die Zwischenablage kopiert',
   shareFailed: 'Teilen nicht möglich',
   imageFailed: 'Bild konnte nicht erstellt werden',

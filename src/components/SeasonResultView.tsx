@@ -114,6 +114,9 @@ function RankingNote({ ranking, challenge }: { ranking: RunRanking; challenge: C
   return <p className="result-ranking muted small">{note ?? t.result.notRanked}</p>;
 }
 
+
+/** Seite je Wertung – für den Link im Teilen-Text */
+const CHALLENGE_PATH: Partial<Record<ChallengeKey, string>> = { c340: '/challenge', daily: '/taeglich', c151: '/151', retro340: '/151' };
 export function SeasonResultView({
   challenge,
   input,
@@ -208,8 +211,10 @@ export function SeasonResultView({
     setBusy(true);
     try {
       const blob = await makeImage();
-      const text = tr.shareText(record, evaluation.score);
-      const how = await shareImage(blob, `${slugify(teamName)}-${record}.png`, `${text} ${window.location.origin}`);
+      const text = tr.shareText(record, evaluation.score, season.position, season.points, t.game.challenge[challenge]);
+      // Link direkt zur Challenge (statt nur zur Startseite)
+      const path = CHALLENGE_PATH[challenge] ?? '';
+      const how = await shareImage(blob, `${slugify(teamName)}-${record}.png`, `${text} ${window.location.origin}${path}`);
       if (how === 'downloaded') toast(tr.imageSaved);
     } catch (e) {
       console.error(e);
