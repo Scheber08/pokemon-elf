@@ -137,6 +137,12 @@ describe('Builder auf Englisch', () => {
         if (dom) expect(el!.textContent).toContain(`×${dom.n}`);
       }
       expect(v).toBeGreaterThanOrEqual(RAINBOW_TYPES);
+      // 📏 Ø Größe · ⚖️ Gesamtgewicht der vollen Elf
+      const h = mons.reduce((s, p) => s + p.h, 0) / mons.length;
+      const w = mons.reduce((s, p) => s + p.w, 0);
+      expect(container.querySelector('.builder__size')!.textContent).toBe(
+        `📏 avg ${h.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} m · ⚖️ ${w.toLocaleString('en-US', { maximumFractionDigits: 1 })} kg`,
+      );
     }
   });
 

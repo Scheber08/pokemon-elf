@@ -712,6 +712,10 @@ select {
   gap: 6px;
   margin: 0 0 8px;
 }
+.builder__size {
+  background: var(--surface-2);
+  font-weight: 500;
+}
 .builder__type {
   white-space: nowrap;
   border-radius: 4px;

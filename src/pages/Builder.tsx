@@ -320,7 +320,7 @@ export function Builder() {
             {state.teamName}
           </h1>
         )}
-        <TypeChips pokemon={state.slots.flatMap((id) => (id != null && byId.has(id) ? [byId.get(id)!] : []))} />
+        <TypeChips pokemon={state.slots.flatMap((id) => (id != null && byId.has(id) ? [byId.get(id)!] : []))} size />
         <Pitch
           formation={state.formation}
           slots={state.slots}
