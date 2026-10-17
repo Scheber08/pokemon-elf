@@ -1665,6 +1665,10 @@ button.sheet__row:hover {
   font-size: 13px;
   opacity: 0.85;
 }
+/* Auf der Typfarbe (gelandeter Wurf) volle Deckkraft – sonst knapp unter AA (Kampf, Gift) */
+.rollcard[style] .rollcard__label {
+  opacity: 1;
+}
 .rollcard__value {
   font-family: var(--font-head);
   font-weight: 700;

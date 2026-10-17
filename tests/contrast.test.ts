@@ -35,6 +35,12 @@ describe('Kontrast der Textfarben', () => {
         }
     });
   }
+  it('Typ-Würfelkarte: Schrift auf jeder Typfarbe ≥ 4,5:1, Beschriftung dort ohne Abdunklung', async () => {
+    const { TYPES, TYPE_KEYS } = await import('../src/config/pokemonTypes');
+    for (const k of TYPE_KEYS) expect(ratio(TYPES[k].text, TYPES[k].color), k).toBeGreaterThanOrEqual(4.5);
+    // .rollcard__label hat opacity 0.85 – auf der Typfarbe (Inline-Stil) muss sie 1 sein
+    expect(css).toMatch(/\.rollcard\[style\] \.rollcard__label \{\s*opacity: 1;/);
+  });
   it('weiße Schrift auf den Grundfarben (Positions- und Ergebnis-Abzeichen)', () => {
     for (const c of ['green', 'blue', 'red']) expect(ratio('#ffffff', dark[c]), c).toBeGreaterThanOrEqual(4.5);
   });
