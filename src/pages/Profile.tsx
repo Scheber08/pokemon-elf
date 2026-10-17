@@ -235,7 +235,7 @@ export function Profile() {
                       const b = p.challenges.find((c) => c.challenge === r.challenge)?.best;
                       const isBest = b && b.day === r.day && b.teamName === r.teamName && b.points === r.points && b.score === r.score;
                       return isBest ? (
-                        <span className="profile__best" title={tp.bestRunTitle}>
+                        <span className="profile__best" role="img" title={tp.bestRunTitle} aria-label={tp.bestRunTitle}>
                           {' '}
                           🏅
                         </span>

@@ -72,6 +72,9 @@ describe('Spielerprofil', () => {
     expect(container.querySelector('.profile__fav')!.textContent).toBe('⭐ Lieblings-Challenge: 34–0 Challenge (3 Runs)');
     // 🏅 nur am Run, der der Bestwert seiner Wertung ist
     expect(container.querySelectorAll('.profile__best').length).toBe(1);
+    // … auch für Screenreader benannt (wie 🏆/🛡️)
+    expect(container.querySelector('.profile__best')!.getAttribute('role')).toBe('img');
+    expect(container.querySelector('.profile__best')!.getAttribute('aria-label')).toBe('Bestwert dieser Wertung');
     // 🛡️ an Runs ohne Niederlage
     const unbeaten = container.querySelectorAll('.profile__unbeaten');
     expect(unbeaten.length).toBe(1);
