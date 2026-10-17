@@ -229,6 +229,34 @@ describe('Builder auf Englisch', () => {
     expect(again.container.querySelectorAll('.saved-teams__best')).toHaveLength(0);
   });
 
+  it('Meine Teams: ✏️ benennt eine gespeicherte Elf um', async () => {
+    storeLang('en');
+    const team = (id: string, name: string) => ({ id, name, formation: '4-3-3', at: 0, state: { teamName: name, formation: '4-3-3', slots: [143] } });
+    localStorage.setItem('pokemon-elf:saved-teams', JSON.stringify([team('1', 'Old name'), team('2', 'Other')]));
+    const w = window as unknown as { prompt?: unknown };
+    const before = w.prompt;
+    w.prompt = vi.fn(() => 'New name');
+    try {
+      const { container } = await render(app(h(Builder)));
+      await settle();
+      const btn = container.querySelectorAll('.saved-teams__rename')[0] as MiniElement;
+      expect(btn.getAttribute('aria-label')).toBe('Rename Old name');
+      await act(async () => btn.click());
+      const saved = JSON.parse(localStorage.getItem('pokemon-elf:saved-teams')!);
+      expect(saved.map((x: { name: string; state: { teamName: string } }) => [x.name, x.state.teamName])).toEqual([
+        ['New name', 'New name'],
+        ['Other', 'Other'],
+      ]);
+      expect(container.querySelectorAll('.saved-teams__name')[0].textContent).toContain('New name');
+      // Schon vergebener Name: nichts ändert sich
+      w.prompt = vi.fn(() => 'other');
+      await act(async () => (container.querySelectorAll('.saved-teams__rename')[0] as MiniElement).click());
+      expect(JSON.parse(localStorage.getItem('pokemon-elf:saved-teams')!)[0].name).toBe('New name');
+    } finally {
+      w.prompt = before;
+    }
+  });
+
   it('Auswahl-Dialog (Filter, Raster, Hinweise) ohne deutschen Text', async () => {
     storeLang('en');
     const { container } = await render(app(h(Builder)));

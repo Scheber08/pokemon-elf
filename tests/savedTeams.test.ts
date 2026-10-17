@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { installMiniDom } from './miniDom';
 
 installMiniDom();
-const { droppedBy, loadSavedTeams, SAVED_TEAMS_MAX, withSavedTeam } = await import('../src/components/SavedTeams');
+const { droppedBy, loadSavedTeams, renameSavedTeam, SAVED_TEAMS_MAX, withSavedTeam } = await import('../src/components/SavedTeams');
 const { save, STORAGE_KEYS } = await import('../src/lib/storage');
 
 const entry = (name: string, at = 1) => ({ id: `${name}-${at}`, name, formation: '4-3-3', at, state: { teamName: name, formation: '4-3-3' } });
@@ -36,5 +36,20 @@ describe('Meine Teams', () => {
     expect(loadSavedTeams().map((x) => x.name)).toEqual(['Gut']);
     save(STORAGE_KEYS.savedTeams, { kaputt: true });
     expect(loadSavedTeams()).toEqual([]);
+  });
+
+  it('Umbenennen: Name und Teamname im Zustand, kein Doppel, leer/gleich ändert nichts', () => {
+    const list = [entry('A'), entry('B')];
+    const next = renameSavedTeam(list, 'A-1', '  Rot-Weiß  ');
+    expect(next).not.toBe('taken');
+    expect((next as typeof list).map((x) => [x.name, x.state.teamName])).toEqual([
+      ['Rot-Weiß', 'Rot-Weiß'],
+      ['B', 'B'],
+    ]);
+    expect(renameSavedTeam(list, 'A-1', 'b')).toBe('taken');
+    expect(renameSavedTeam(list, 'A-1', '   ')).toBeNull();
+    expect(renameSavedTeam(list, 'A-1', 'A')).toBeNull();
+    expect(renameSavedTeam(list, 'gibt-es-nicht', 'C')).toBeNull();
+    expect((renameSavedTeam(list, 'A-1', 'x'.repeat(50)) as typeof list)[0].name).toHaveLength(32);
   });
 });

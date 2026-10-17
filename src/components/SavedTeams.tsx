@@ -71,6 +71,20 @@ export function droppedBy<T>(list: SavedTeam<T>[], name: string): SavedTeam<T> |
   return list[list.length - 1];
 }
 
+/**
+ * Gespeicherte Elf umbenennen (auch der Teamname im gespeicherten Zustand). Liefert die neue Liste,
+ * `'taken'` bei einem schon vergebenen Namen (ohne Groß/klein) oder null bei leerem/gleichem Namen.
+ */
+export function renameSavedTeam<T>(list: SavedTeam<T>[], id: string, name: string): SavedTeam<T>[] | 'taken' | null {
+  const next = name.trim().slice(0, 32);
+  const entry = list.find((x) => x.id === id);
+  if (!entry || !next || next === entry.name) return null;
+  if (list.some((x) => x.id !== id && x.name.trim().toLowerCase() === next.toLowerCase())) return 'taken';
+  return list.map((x) =>
+    x.id === id ? { ...x, name: next, state: x.state && typeof x.state === 'object' ? { ...x.state, teamName: next } : x.state } : x,
+  );
+}
+
 /** Felder, die ein Testspiel braucht (siehe Builder-Zustand) */
 interface Playable {
   teamName: string;
@@ -200,6 +214,24 @@ export function SavedTeams<T extends Playable>({ current, onLoad }: Props<T>) {
                 onClick={() => setVs((v) => (v === x.id ? null : x.id))}
               >
                 {tx.friendly}
+              </button>
+              <button
+                type="button"
+                className="btn btn--small btn--ghost saved-teams__rename"
+                aria-label={tx.renameAria(x.name)}
+                title={tx.rename}
+                onClick={() => {
+                  const name = window.prompt(tx.renamePrompt(x.name), x.name);
+                  if (name == null) return;
+                  const next = renameSavedTeam(list, x.id, name);
+                  if (next === 'taken') toast(tx.renameTaken(name.trim()));
+                  else if (next) {
+                    persist(next);
+                    toast(tx.renamed(name.trim().slice(0, 32)));
+                  }
+                }}
+              >
+                <span aria-hidden="true">✏️</span>
               </button>
               <button
                 type="button"
