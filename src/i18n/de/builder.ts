@@ -116,6 +116,7 @@ const builder = {
     sort: 'Sortierung',
     sortDex: 'Nummer',
     sortFit: 'Beste für die Position',
+    hideOnField: 'Aufgestellte ausblenden',
     /** Fit auf der Position, dazu (falls belegt) die Differenz zum aktuellen Spieler */
     fitNote: (fit: number, diff: number | null = null) => (diff ? `Fit ${fit} · ${diff > 0 ? '+' : '−'}${Math.abs(diff)}` : `Fit ${fit}`),
   },

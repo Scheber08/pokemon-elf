@@ -42,7 +42,10 @@ export function PickerModal({ pos, pool, initialRegion, sprite, currentId, onFie
     return new Map(pool.map((p) => [p.id, positionFit(p, pos, sc)]));
   }, [pool, sort, pos, scale]);
   const sorted = useMemo(() => (fits ? [...pool].sort((a, b) => fits.get(b.id)! - fits.get(a.id)! || a.id - b.id) : pool), [pool, fits]);
-  const items = useFilteredPokemon(sorted, filters);
+  // „Aufgestellte ausblenden“: wer schon auf einer anderen Position steht, fällt aus dem Raster (der aktuelle bleibt)
+  const [hideOnField, setHideOnField] = useState(false);
+  const shown = useMemo(() => (hideOnField ? sorted.filter((p) => !onField.has(p.id) || p.id === currentId) : sorted), [sorted, hideOnField, onField, currentId]);
+  const items = useFilteredPokemon(shown, filters);
   const searchRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
 
@@ -96,6 +99,11 @@ export function PickerModal({ pos, pool, initialRegion, sprite, currentId, onFie
             { value: 'fit', label: t.builder.picker.sortFit },
           ]}
         />
+        {onField.size > (currentId != null && onField.has(currentId) ? 1 : 0) && (
+          <label className="draft-check picker__hide">
+            <input type="checkbox" checked={hideOnField} onChange={(e) => setHideOnField(e.target.checked)} /> {t.builder.picker.hideOnField}
+          </label>
+        )}
         {(() => {
           // Wer steht gerade auf dieser Position – mit Fit zum Vergleichen
           const cur = currentId != null ? byId.get(currentId) : undefined;

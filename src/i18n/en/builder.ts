@@ -106,6 +106,7 @@ const builder: Messages['builder'] = {
     megaLimit: (max) => (max === 1 ? 'Limit: one Mega' : `Limit: ${max} Megas`),
     sort: 'Sort by',
     sortDex: 'Number',
+    hideOnField: 'Hide players in the XI',
     sortFit: 'Best for the position',
     fitNote: (fit, diff = null) => (diff ? `Fit ${fit} · ${diff > 0 ? '+' : '−'}${Math.abs(diff)}` : `Fit ${fit}`),
   },

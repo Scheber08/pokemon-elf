@@ -275,6 +275,18 @@ describe('Builder auf Englisch', () => {
       expect(Number(m[3]) * (m[2] === '+' ? 1 : -1)).toBe(f - cur);
     }
     expect(notes.some((n) => / · \+\d+$/.test(n))).toBe(true);
+    // „Hide players in the XI“: wer schon auf einer anderen Position steht, fällt aus der Trefferzahl (der aktuelle Torwart bleibt)
+    expect(notes.some((n) => n.startsWith('on the pitch'))).toBe(true);
+    const hide = dialog.querySelector('.picker__hide input')!;
+    expect(dialog.querySelector('.picker__hide')!.textContent).toContain('Hide players in the XI');
+    const count = () => Number(/\d+/.exec(dialog.querySelector('.filterbar__count')!.textContent!)![0]);
+    const before = count();
+    (hide as unknown as { checked: boolean }).checked = true;
+    await act(async () => hide.click());
+    expect(count()).toBeLessThan(before);
+    (hide as unknown as { checked: boolean }).checked = false;
+    await act(async () => hide.click());
+    expect(count()).toBe(before);
   });
 
   it('Umschalten DE → EN im Kopf übersetzt die Seite sofort (und zurück)', async () => {
