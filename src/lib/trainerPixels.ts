@@ -685,6 +685,14 @@ function accessory(c: Canvas, id: string, cloth: string) {
       c.dots([[22, 25], [23, 24], [24, 23], [25, 23]], '#c98a3c');
       c.dots([[25, 22]], '#d63c4a');
       break;
+    case 'bottle':
+      // Trinkflasche (Weltwassertag): blaue Flasche mit weißem Deckel, Wasserstand und Lichtreflex
+      c.rect(24, 21, 2, 1, '#f4f6f8');
+      c.rect(23, 22, 4, 7, '#3d8fd6');
+      c.rect(23, 22, 4, 2, '#9fd2f5');
+      c.dots([[24, 25], [24, 26]], '#cfeaff');
+      c.rect(23, 29, 4, 1, '#2a6aa8');
+      break;
     case 'lantern':
       // Laterne am Stab: dunkler Stab über der Schulter, leuchtend orange Laterne mit Rahmen
       c.dots([[20, 23], [21, 22], [22, 21], [23, 20], [24, 20], [25, 21]], '#b07a3e');

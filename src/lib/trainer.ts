@@ -109,6 +109,8 @@ const HEALTH = ['04-04', '04-10', '🩺'] as const;
 const COFFEE = ['09-28', '10-04', '☕'] as const;
 /** π-Tag (14. März) */
 const PI = ['03-11', '03-17', '🥧'] as const;
+/** Weltwassertag (22. März) */
+const WATER = ['03-19', '03-25', '💧'] as const;
 /** Valentinstag */
 const VALENTINE = ['02-07', '02-14', '💘'] as const;
 
@@ -262,6 +264,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('accessory', 'clownnose', 150), ...LAUGHTER),
   seasonal(item('accessory', 'coffee', 150), ...COFFEE),
   seasonal(item('accessory', 'pie', 150), ...PI),
+  seasonal(item('accessory', 'bottle', 150), ...WATER),
   // Hintergrund
   item('background', 'plain', 0, '#22324a'),
   item('background', 'sky', 0, '#7ec4ef'),
@@ -343,6 +346,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('companion', '531', 350), ...HEALTH),
   seasonal(item('companion', '926', 300), ...COFFEE),
   seasonal(item('companion', '137', 350), ...PI),
+  seasonal(item('companion', '184', 350), ...WATER),
   item('companion', '6', 600),
   item('companion', '149', 600),
   item('companion', '448', 600),

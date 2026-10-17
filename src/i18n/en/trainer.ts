@@ -171,6 +171,7 @@ const trainer: Messages['trainer'] = {
       locket: 'Heart locket',
       coffee: 'Coffee cup',
       pie: 'Slice of pie',
+      bottle: 'Water bottle',
       lantern: 'Lantern',
       sapling: 'Sapling',
       divemask: 'Diving mask',

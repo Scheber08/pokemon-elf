@@ -174,6 +174,7 @@ const trainer = {
       locket: 'Herz-Medaillon',
       coffee: 'Kaffeebecher',
       pie: 'Stück Kuchen',
+      bottle: 'Trinkflasche',
       lantern: 'Laterne',
       sapling: 'Setzling',
       divemask: 'Taucherbrille',

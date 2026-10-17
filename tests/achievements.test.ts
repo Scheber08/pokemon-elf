@@ -482,6 +482,10 @@ describe('Saisonartikel', () => {
     expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '🥧').map((i) => `${i.slot}:${i.id}`)).toEqual(['accessory:pie', 'companion:137']);
     const pie = TRAINER_ITEMS.find((i) => i.id === 'pie')!;
     expect([at('2027-03-10'), at('2027-03-11'), at('2027-03-17'), at('2027-03-18')].map((d) => itemOnSale(pie, d))).toEqual([false, true, true, false]);
+    // 💧 Weltwassertag: Trinkflasche und Azumarill vom 19. bis 25. März
+    expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '💧').map((i) => `${i.slot}:${i.id}`)).toEqual(['accessory:bottle', 'companion:184']);
+    const bottle = TRAINER_ITEMS.find((i) => i.id === 'bottle')!;
+    expect([at('2027-03-18'), at('2027-03-19'), at('2027-03-25'), at('2027-03-26')].map((d) => itemOnSale(bottle, d))).toEqual([false, true, true, false]);
   });
 
   it('Kauf nur in der Saison (400 not_on_sale), danach bleibt er tragbar', async () => {
