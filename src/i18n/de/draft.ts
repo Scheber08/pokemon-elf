@@ -922,6 +922,9 @@ const draft = {
     roundLabel: 'Runde',
     group: (letter: string) => `Gruppe ${letter}`,
     groupsTitle: 'Gruppen',
+    /** Legende unter den Gruppentabellen und Text für Screenreader an den ersten zwei */
+    groupsThrough: 'Platz 1–2: weiter ins Viertelfinale',
+    throughSr: 'Weiterkommen-Platz',
     progressText: (n: number, total: number) => `Runde ${n} von ${total}`,
     bracket: 'Turnierbaum',
     winnerLabel: 'Turniersieger: ',

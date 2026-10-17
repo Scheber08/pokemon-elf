@@ -188,7 +188,7 @@ Liga-Seed in `fillTeams`), fehlen welche, Vereine. Statt der Liga geht auch ein 
 `src/lib/cup.ts`): 16 Teams im Baum, gesetzt nach Team-Score, ein Spiel pro Runde, bei Remis Elfmeterschießen;
 als „Tabelle" speichert der Server das Endklassement, dazu den Baum (`league.cup`). Optional (`cupGroups`, Standard an)
 vorher eine Gruppenphase: 4 Gruppen à 4 aus Lostöpfen nach Team-Score, Hin- und Rückspiel, die ersten zwei ins
-Viertelfinale (A1–B2, C1–D2, B1–A2, D1–C2).
+Viertelfinale (A1–B2, C1–D2, B1–A2, D1–C2; in den Gruppentabellen grün markiert, mit Legende und Text für Screenreader).
 Dritter Modus: die **Manager-Saison** (`format = 'manager'`, `src/lib/manager.ts`). Gedraftet wird zusätzlich
 eine Bank (`bench`: 3 oder 5), danach läuft Phase `season`: eine Hinrunde mit 18 Teams (17 Spieltage) im Takt
 `matchdayMinutes` (10 min bis 24 h); der Server spielt jeden Spieltag per Alarm zum Anpfiff. Davor stellt jedes

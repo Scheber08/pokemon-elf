@@ -835,6 +835,8 @@ const draft: Messages['draft'] = {
     roundLabel: 'Round',
     group: (letter) => `Group ${letter}`,
     groupsTitle: 'Groups',
+    groupsThrough: '1st–2nd: through to the quarter-finals',
+    throughSr: 'qualifying place',
     progressText: (n, total) => `Round ${n} of ${total}`,
     bracket: 'Bracket',
     winnerLabel: 'Cup winners: ',

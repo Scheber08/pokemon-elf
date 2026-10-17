@@ -75,6 +75,7 @@ export function CupGroups({ teams, matches, groups, upTo = Infinity, you, nameOf
   const t = useT();
   const c = t.draft.col;
   return (
+    <>
     <div className="cup-groups">
       {groups.map((members, g) => {
         const table = groupTable(teams, matches, members, upTo);
@@ -106,7 +107,10 @@ export function CupGroups({ teams, matches, groups, upTo = Infinity, you, nameOf
                 {table.map((r, i) => (
                   <tr key={r.team} className={`${r.team === you ? 'is-user' : ''} ${i < 2 ? 'cup-group__through' : ''}`}>
                     <td>{i + 1}</td>
-                    <td className="left">{nameOf(r.team)}</td>
+                    <td className="left">
+                      {nameOf(r.team)}
+                      {i < 2 && <span className="sr-only"> – {t.draft.cup.throughSr}</span>}
+                    </td>
                     <td>{r.played}</td>
                     <td>{r.gd > 0 ? `+${r.gd}` : r.gd}</td>
                     <td>
@@ -120,5 +124,11 @@ export function CupGroups({ teams, matches, groups, upTo = Infinity, you, nameOf
         );
       })}
     </div>
+    {/* Was der grüne Strich bedeutet (wie die Zonen-Legende der Ligatabelle) */}
+    <p className="table-legend small muted cup-groups__legend">
+      <span className="table-legend__mark table-legend__mark--top" aria-hidden="true" />
+      {t.draft.cup.groupsThrough}
+    </p>
+    </>
   );
 }
