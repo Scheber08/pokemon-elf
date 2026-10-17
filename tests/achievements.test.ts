@@ -499,6 +499,10 @@ describe('Saisonartikel', () => {
     expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '💧').map((i) => `${i.slot}:${i.id}`)).toEqual(['accessory:bottle', 'companion:184']);
     const bottle = TRAINER_ITEMS.find((i) => i.id === 'bottle')!;
     expect([at('2027-03-18'), at('2027-03-19'), at('2027-03-25'), at('2027-03-26')].map((d) => itemOnSale(bottle, d))).toEqual([false, true, true, false]);
+    // 🛸 Welt-UFO-Tag: Mini-UFO und Elgyem vom 29. Juni bis 5. Juli
+    expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '🛸').map((i) => `${i.slot}:${i.id}`)).toEqual(['accessory:ufo', 'companion:605']);
+    const ufo = TRAINER_ITEMS.find((i) => i.id === 'ufo')!;
+    expect([at('2027-06-28'), at('2027-06-29'), at('2027-07-05'), at('2027-07-06')].map((d) => itemOnSale(ufo, d))).toEqual([false, true, true, false]);
   });
 
   it('Kauf nur in der Saison (400 not_on_sale), danach bleibt er tragbar', async () => {

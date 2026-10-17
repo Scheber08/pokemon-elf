@@ -693,6 +693,15 @@ function accessory(c: Canvas, id: string, cloth: string) {
       c.dots([[24, 25], [24, 26]], '#cfeaff');
       c.rect(23, 29, 4, 1, '#2a6aa8');
       break;
+    case 'ufo':
+      // Mini-UFO (Welt-UFO-Tag) schwebt oben rechts – frei von Frisuren und Hüten und innerhalb der runden Ecke:
+      // Glaskuppel, graue Untertasse mit gelben Lichtern, grüner Leuchtstrahl
+      c.rect(27, 1, 3, 1, '#9fe8ff');
+      c.rect(26, 2, 5, 1, '#aeb6c2');
+      c.dots([[26, 2], [28, 2], [30, 2]], '#ffd84a');
+      c.rect(27, 3, 3, 1, '#7c8696');
+      c.dots([[28, 4]], '#b9ff9a');
+      break;
     case 'lantern':
       // Laterne am Stab: dunkler Stab über der Schulter, leuchtend orange Laterne mit Rahmen
       c.dots([[20, 23], [21, 22], [22, 21], [23, 20], [24, 20], [25, 21]], '#b07a3e');

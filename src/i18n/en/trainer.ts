@@ -172,6 +172,7 @@ const trainer: Messages['trainer'] = {
       coffee: 'Coffee cup',
       pie: 'Slice of pie',
       bottle: 'Water bottle',
+      ufo: 'Mini UFO',
       lantern: 'Lantern',
       sapling: 'Sapling',
       divemask: 'Diving mask',
