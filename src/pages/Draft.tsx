@@ -62,6 +62,7 @@ import { SHINY_CHANCE, SHINY_FIT_BONUS, SHINY_PARTY_CHANCE, shinyBonus, shinyRol
 import { useToast } from '../state/Toast';
 import { copyText, downloadBlob } from '../lib/exportImage';
 import { lineupImage, slugify } from '../lib/lineupImage';
+import { sharedRanks } from '../lib/ranks';
 
 const ROUNDS = 11;
 
@@ -1253,12 +1254,12 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
               {t.draft.topScorers}
             </h2>
             <ol className="scorers">
-              {league.scorers.map((s, i) => {
+              {league.scorers.map((s, i, all) => {
                 const p = byId.get(s.id);
                 return (
                   <li key={s.id}>
-                    {/* Raster wie überall: Platz, Sprite, Name, Tore */}
-                    <span className="muted">{i + 1}.</span>
+                    {/* Raster wie überall: Platz (geteilt bei gleich vielen Toren), Sprite, Name, Tore */}
+                    <span className="muted">{sharedRanks(all.map((x) => x.goals))[i]}.</span>
                     {p ? <Sprite pokemon={p} style={sprite} className="scorers__sprite" /> : <span aria-hidden="true" />}
                     <span className="scorers__name">
                       {p && t.game.pokemon(p)}{' '}

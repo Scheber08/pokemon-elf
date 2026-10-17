@@ -6,6 +6,7 @@ import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import { Segmented } from './Segmented';
 import { Sprite } from './Sprite';
+import { sharedRanks } from '../lib/ranks';
 
 type Tab = 'goals' | 'assists' | 'points' | 'teams';
 
@@ -44,6 +45,8 @@ export function SeasonStats({ league, you, nameOf, tabs = ['goals', 'assists', '
     .filter((p) => key(p) > 0)
     .sort((a, b) => key(b) - key(a) || b.goals - a.goals || a.teamIndex - b.teamIndex || a.pokemonId - b.pokemonId)
     .slice(0, limit);
+  // Geteilte Plätze bei gleichem Wert (1., 1., 3.)
+  const ranks = sharedRanks(list.map(key));
 
   return (
     <section className="card season-stats" aria-labelledby="season-stats-title">
@@ -110,7 +113,7 @@ export function SeasonStats({ league, you, nameOf, tabs = ['goals', 'assists', '
             const mon = byId.get(p.pokemonId);
             return (
               <li key={`${p.teamIndex}-${p.pokemonId}`} className={p.teamIndex === you ? 'is-you' : ''}>
-                <span className="draft-results__rank">{i + 1}.</span>
+                <span className="draft-results__rank">{ranks[i]}.</span>
                 {mon ? <Sprite pokemon={mon} style={sprite} className="scorers__sprite" /> : <span aria-hidden="true" />}
                 <span className="scorers__name">
                   {mon ? t.game.pokemon(mon) : `#${p.pokemonId}`}{' '}

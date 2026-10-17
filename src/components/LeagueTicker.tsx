@@ -32,6 +32,7 @@ import { scorerSummary } from '../lib/seasonTimeline';
 import { usePokemonData } from '../state/PokemonData';
 import { CupBracket, CupGroups, cupStatusText } from './CupBracket';
 import '../styles/league.css';
+import { sharedRanks } from '../lib/ranks';
 
 interface Props {
   league: LeagueResult;
@@ -568,9 +569,9 @@ export function LeagueTicker({ league, teamNames, highlight, startsAt, stepMs, c
         <section className="league-ticker__scorers" aria-label={t.draft.topScorers}>
           <h3 className="section-title">{t.draft.topScorers}</h3>
           <ol className="league-ticker__scorer-list">
-            {scorers.map((sc, i) => (
+            {scorers.map((sc, i, all) => (
               <li key={`${sc.teamIndex}-${sc.pokemonId}`} className={sc.teamIndex === you ? 'is-you' : ''}>
-                <span className="muted">{i + 1}.</span>
+                <span className="muted">{sharedRanks(all.map((x) => x.goals))[i]}.</span>
                 <span className="league-ticker__scorer-name">
                   {pokemonName(sc.pokemonId)}
                   {lineups?.[sc.teamIndex]?.captain === sc.pokemonId && (

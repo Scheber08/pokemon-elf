@@ -1630,6 +1630,14 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(container.querySelector('.league-numbers')!.textContent).toMatch(/^📊 League in numbers: 6 matches · \d+ goals \(avg \d+\.\d\) · \d+ draws · \d+ clean sheets$/);
     expect(all).toContain('Everyone plays everyone, home and away – 6 matches.');
     expect(all).toContain('Top scorers');
+    // Torjäger: geteilte Plätze bei gleich vielen Toren (1., 1., 3. …)
+    {
+      const { sharedRanks } = await import('../src/lib/ranks');
+      const list = container.querySelector('section[aria-labelledby="draft-scorers"] ol')!.querySelectorAll('li');
+      const goals = list.map((li) => Number(li.querySelector('.scorers__goals')!.textContent));
+      const ranks = list.map((li) => Number(li.querySelector('.muted')!.textContent!.replace('.', '')));
+      expect(ranks).toEqual(sharedRanks(goals));
+    }
     expect(all).toContain('My Team');
     expect(all).toContain(clubEn(CLUB_NAMES[1]));
     expect(all).toContain('Replay league');

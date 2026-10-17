@@ -10,6 +10,7 @@ import { TypeGoals } from './TypeGoals';
 import { copyText, downloadBlob } from '../lib/exportImage';
 import { titleClinched } from '../lib/foes';
 import { bestTransfer, comebackOf, missedChance, draftJoker, expectationGap, draftGrades, draftShareText, biggestWin, draftSteal, fastestPicker, formatDuration, goalFest, dreamDuo, attackDefenseRanks, weightExtremes, sharpestTeam, playerTallies, favouriteFoes, hatTricks, mostCleanSheets, seasonEleven, seasonSwings, headToHead, leagueTimeline, longestWinStreak, recentForm, tableRowClass, titleRace, titleTieNote, topScorers } from '../lib/leagueTimeline';
+import { sharedRanks } from '../lib/ranks';
 import { lineupImage, slugify } from '../lib/lineupImage';
 import { buildTable, formatRecord, sideTable, type LeagueResult } from '../lib/season';
 import { usePokemonData } from '../state/PokemonData';
@@ -91,6 +92,8 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
   const days = useMemo(() => leagueTimeline(league), [league]);
   const allScorers = useMemo(() => topScorers(league), [league]);
   const scorers = allScorers.slice(0, TOP_SCORERS);
+  // Geteilte Plätze bei gleich vielen Toren (1., 1., 3.)
+  const scorerRanks = sharedRanks(scorers.map((s) => s.goals));
   /** Bester Torschütze je Team (Index in league.teams) für die Kader-Karten */
   const teamTopScorer = useMemo(() => {
     const m = new Map<number, (typeof allScorers)[number]>();
@@ -665,7 +668,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                 const p = byId.get(s.pokemonId);
                 return (
                   <li key={`${s.teamIndex}-${s.pokemonId}`} className={s.teamIndex === you ? 'is-you' : ''}>
-                    <span className="draft-results__rank">{i + 1}.</span>
+                    <span className="draft-results__rank">{scorerRanks[i]}.</span>
                     {p ? <Sprite pokemon={p} style={sprite} className="scorers__sprite" /> : <span aria-hidden="true" />}
                     <span className="scorers__name">
                       {pokemonName(s.pokemonId)}{' '}
