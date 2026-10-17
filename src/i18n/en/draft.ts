@@ -757,6 +757,7 @@ const draft: Messages['draft'] = {
     marketCancel: 'Withdraw',
     marketFit: (pos, fit) => `${pos} ${fit}`,
     marketNone: 'No matching free Pokémon.',
+    marketMore: (n) => `Show more (${plural(n, 'more', 'more')})`,
     newcomers: (list) => `Your signings: ${list}`,
     newcomerItem: (name, goals) => `${name} (${goals} ${goals === 1 ? 'goal' : 'goals'})`,
     transfersTitle: (n) => `Transfers before matchday ${n}`,

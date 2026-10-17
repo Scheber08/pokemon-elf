@@ -1254,6 +1254,9 @@ button.draft-bench__slot {
 .manager__search input {
   min-width: 14em;
 }
+.manager__more {
+  margin-top: 8px;
+}
 .manager__free {
   display: grid;
   gap: 6px;

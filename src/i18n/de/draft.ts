@@ -840,6 +840,7 @@ const draft = {
     marketCancel: 'Zurückziehen',
     marketFit: (pos: string, fit: number) => `${pos} ${fit}`,
     marketNone: 'Kein passendes freies Pokémon.',
+    marketMore: (n: number) => `Mehr zeigen (${n} weitere)`,
     newcomers: (list: string) => `Deine Neuzugänge: ${list}`,
     newcomerItem: (name: string, goals: number) => `${name} (${goals} ${goals === 1 ? 'Tor' : 'Tore'})`,
     transfersTitle: (n: number) => `Transfers vor Spieltag ${n}`,

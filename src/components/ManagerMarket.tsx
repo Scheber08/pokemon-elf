@@ -14,6 +14,9 @@ import { useSettings } from '../state/Settings';
 import '../styles/draft.css';
 
 /** Transfermarkt: eigenen Wunsch setzen (wen abgeben, wen holen) bzw. zurückziehen. */
+/** Freie Pokémon je Seite im Transfermarkt */
+const MARKET_PAGE = 12;
+
 export function TransferMarket({
   state,
   team,
@@ -54,6 +57,8 @@ export function TransferMarket({
   const [query, setQuery] = useState('');
   // Positionsfilter: nur freie Pokémon, deren beste Position (in der eigenen Formation) diese ist
   const [posFilter, setPosFilter] = useState<PosCode | ''>('');
+  // So viele Treffer stehen in der Liste; „Mehr zeigen“ legt je 12 nach, Suche/Filter fangen wieder bei 12 an
+  const [limit, setLimit] = useState(MARKET_PAGE);
   const teamsKey = state.teams.map((tm) => rosterOf(tm).join(',')).join('|');
   const free = useMemo(
     () => freeAgents(state, list).map((p) => ({ p, ...best(p) })).sort((a, b) => b.fit - a.fit || a.p.id - b.p.id),
@@ -74,7 +79,8 @@ export function TransferMarket({
     return top;
   }, [free, teamsKey, team.formation]);
   const q = query.trim().toLowerCase();
-  const shown = free.filter((x) => (!q || t.game.pokemon(x.p).toLowerCase().includes(q)) && (!posFilter || x.pos === posFilter)).slice(0, 12);
+  const matching = free.filter((x) => (!q || t.game.pokemon(x.p).toLowerCase().includes(q)) && (!posFilter || x.pos === posFilter));
+  const shown = matching.slice(0, limit);
   const name = (id: number) => {
     const p = byId.get(id);
     return p ? t.game.pokemon(p) : `#${id}`;
@@ -122,7 +128,10 @@ export function TransferMarket({
         </label>
         <label className="field manager__posfilter">
           <span className="field__label">{tx.marketPos}</span>
-          <select className="input" value={posFilter} onChange={(e) => setPosFilter(e.target.value as PosCode | '')}>
+          <select className="input" value={posFilter} onChange={(e) => {
+              setPosFilter(e.target.value as PosCode | '');
+              setLimit(MARKET_PAGE);
+            }}>
             <option value="">{tx.marketPosAll}</option>
             {positions.map((pos) => (
               <option key={pos} value={pos}>
@@ -133,7 +142,10 @@ export function TransferMarket({
         </label>
         <label className="field manager__search">
           <span className="field__label">{tx.marketSearch}</span>
-          <input className="input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <input className="input" type="search" value={query} onChange={(e) => {
+              setQuery(e.target.value);
+              setLimit(MARKET_PAGE);
+            }} />
         </label>
       </div>
       {validOut === team.captain && <p className="hint manager__formwarn">©️ {tx.marketCaptainOut(name(validOut))}</p>}
@@ -161,6 +173,11 @@ export function TransferMarket({
         </ul>
       ) : (
         <p className="muted small">{tx.marketNone}</p>
+      )}
+      {matching.length > shown.length && (
+        <button type="button" className="btn btn--small btn--ghost manager__more" onClick={() => setLimit((n) => n + MARKET_PAGE)}>
+          {tx.marketMore(matching.length - shown.length)}
+        </button>
       )}
     </section>
   );

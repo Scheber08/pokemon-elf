@@ -1875,6 +1875,14 @@ describe('ManagerSeason', () => {
       expect(items.length).toBeGreaterThan(0);
       expect(items.every((li) => li.querySelector('.manager__free-sprite'))).toBe(true);
       expect(items.every((li) => li.querySelector('.manager__free-sprite')!.getAttribute('alt') === '')).toBe(true);
+      // „Mehr zeigen“ legt 12 nach
+      const total = freeAgents(s, ALL).length;
+      expect(items).toHaveLength(Math.min(12, total));
+      expect(total).toBeGreaterThan(12);
+      const more = r.container.querySelector('.manager__more') as MiniElement;
+      expect(more.textContent).toBe(`Mehr zeigen (${total - 12} weitere)`);
+      await act(async () => more.click());
+      expect(r.container.querySelectorAll('.manager__free li')).toHaveLength(Math.min(24, total));
     }
     // Positionsfilter: nur freie Pokémon mit dieser besten Position
     {
