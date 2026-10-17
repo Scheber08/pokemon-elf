@@ -1295,6 +1295,18 @@ button.draft-bench__slot {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* Schmale Handys: Name in eigener Zeile (sonst bleibt nur „…“), Position/Fit/Wirkung/Knopf darunter */
+@media (max-width: 420px) {
+  .manager__free li {
+    grid-template-columns: auto 3em minmax(0, 1fr) auto;
+    row-gap: 2px;
+  }
+  .manager__free-name {
+    grid-column: 1 / -1;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
 .manager__free-fit {
   text-align: right;
   font-variant-numeric: tabular-nums;
