@@ -82,6 +82,7 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'runs_10', category: 'challenge', coins: 100, goal: 10, value: (s) => s.runs },
   { id: 'runs_50', category: 'challenge', coins: 250, goal: 50, value: (s) => s.runs },
   { id: 'runs_200', category: 'challenge', coins: 600, goal: 200, value: (s) => s.runs },
+  { id: 'runs_500', category: 'challenge', coins: 1200, goal: 500, value: (s) => s.runs },
   { id: 'c340_25', category: 'challenge', coins: 100, goal: 25, value: wins('c340') },
   { id: 'c340_30', category: 'challenge', coins: 200, goal: 30, value: wins('c340') },
   { id: 'c340_perfect', category: 'challenge', coins: 500, goal: 1, value: perfect('c340') },

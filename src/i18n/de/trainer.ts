@@ -247,6 +247,7 @@ const trainer = {
     runs_10: { name: 'Stammspieler', desc: '10 gewertete Runs.' },
     runs_50: { name: 'Dauerbrenner', desc: '50 gewertete Runs.' },
     runs_200: { name: 'Vereinslegende', desc: '200 gewertete Runs.' },
+    runs_500: { name: 'Ehrenpräsident', desc: '500 gewertete Runs.' },
     c340_25: { name: 'Titelkandidat', desc: '34–0 Challenge: 25 Siege in einer Saison.' },
     c340_30: { name: 'Übermannschaft', desc: '34–0 Challenge: 30 Siege in einer Saison.' },
     c340_perfect: { name: '34–0!', desc: '34–0 Challenge: eine Saison nur mit Siegen.' },

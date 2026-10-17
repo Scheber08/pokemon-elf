@@ -81,6 +81,13 @@ describe('Definitionen', () => {
     expect(state(14).done).toBe(true);
   });
 
+  it('Run-Stufen 10/50/200/500: 500 Runs erreichen die neue Stufe, 499 noch nicht', () => {
+    expect(ACHIEVEMENTS.filter((a) => /^runs_\d+$/.test(a.id)).map((a) => a.goal)).toEqual([10, 50, 200, 500]);
+    const state = (n: number) => achievementStates({ ...EMPTY, runs: n }).find((a) => a.id === 'runs_500')!;
+    expect(state(499)).toMatchObject({ done: false, value: 499, goal: 500, coins: 1200 });
+    expect(state(500).done).toBe(true);
+  });
+
   it('Siege-Stufen 25/30 in allen drei Challenges (aus dem besten Run)', () => {
     for (const c of ['c340', 'retro340', 'c151'] as const) {
       expect(ACHIEVEMENTS.filter((a) => a.id === `${c}_25` || a.id === `${c}_30`).map((a) => [a.id, a.goal, a.coins])).toEqual([

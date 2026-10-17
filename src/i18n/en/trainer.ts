@@ -244,6 +244,7 @@ const trainer: Messages['trainer'] = {
     runs_10: { name: 'Regular', desc: '10 ranked runs.' },
     runs_50: { name: 'Ever-present', desc: '50 ranked runs.' },
     runs_200: { name: 'Club legend', desc: '200 ranked runs.' },
+    runs_500: { name: 'Honorary president', desc: '500 ranked runs.' },
     c340_25: { name: 'Title contender', desc: '34–0 Challenge: 25 wins in one season.' },
     c340_30: { name: 'Juggernaut', desc: '34–0 Challenge: 30 wins in one season.' },
     c340_perfect: { name: '34–0!', desc: '34–0 Challenge: a season with nothing but wins.' },
