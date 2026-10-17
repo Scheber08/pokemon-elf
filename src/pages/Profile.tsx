@@ -137,7 +137,7 @@ export function Profile() {
                   <td>
                     {c.runs} {tp.runsCol}
                     {c.perfect > 0 && (
-                      <span className="profile__perfect" title={tp.perfectTitle(c.perfect)}>
+                      <span className="profile__perfect" role="img" title={tp.perfectTitle(c.perfect)} aria-label={tp.perfectTitle(c.perfect)}>
                         {' '}
                         🏆 {c.perfect}
                       </span>

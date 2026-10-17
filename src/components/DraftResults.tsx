@@ -1125,7 +1125,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                   </span>{' '}
                   <strong>{p ? t.game.pokemon(p) : `#${pk.pokemonId}`}</strong>
                   {p && <KindMarks kinds={limitKindsOf(p)} />}
-                  {pk.shiny && <span title={t.shiny.title}> ✨</span>} → {ti >= 0 ? nameOf(ti) : '?'}
+                  {pk.shiny && <span title={t.shiny.title}> ✨<span className="sr-only"> {t.shiny.title}</span></span>} → {ti >= 0 ? nameOf(ti) : '?'}
                   {pk.auto && <small className="muted">{t.draft.board.auto}</small>}
                   {best && <RoundBest />}
                 </li>

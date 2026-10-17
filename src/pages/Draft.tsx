@@ -1792,7 +1792,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                       </span>{' '}
                       <strong>{p ? t.game.pokemon(p) : `#${x.id}`}</strong>
                       {p && <KindMarks kinds={limitKindsOf(p)} />}
-                      {state.shinies?.includes(x.id) && <span title={t.shiny.title}> ✨</span>} → {teamName(state.teams[x.team].name)}
+                      {state.shinies?.includes(x.id) && <span title={t.shiny.title}> ✨<span className="sr-only"> {t.shiny.title}</span></span>} → {teamName(state.teams[x.team].name)}
                       {best.has(k) && <RoundBest />}
                     </li>
                   );
@@ -2077,7 +2077,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
           return (
             <p className="small muted draft__last">
               {t.online.lastPick} <strong>{t.game.pokemon(mon)}</strong>
-              {state.shinies?.includes(last.id) && <span title={t.shiny.title}> ✨</span>} → {teamName(state.teams[last.team].name)}
+              {state.shinies?.includes(last.id) && <span title={t.shiny.title}> ✨<span className="sr-only"> {t.shiny.title}</span></span>} → {teamName(state.teams[last.team].name)}
             </p>
           );
         })()}

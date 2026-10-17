@@ -298,7 +298,7 @@ export function DraftPickFeed({ items, you }: { items: FeedItem[]; you: string |
             <span className="draft-feed__no">#{f.no}</span>
             <span className="draft-feed__text">
               <strong>
-                {f.shiny && <span title={t.shiny.title}>✨ </span>}
+                {f.shiny && <span title={t.shiny.title}>✨<span className="sr-only">{t.shiny.title}</span> </span>}
                 {f.pokemon}
               </strong>
               <KindMarks kinds={f.kinds} />{' '}

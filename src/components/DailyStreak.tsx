@@ -104,7 +104,7 @@ export function DailyStreak() {
                       </small>
                     )}
                     {history.length > 1 && d.points === top && (
-                      <span className="daily-streak__top" title={td.bestDay}>
+                      <span className="daily-streak__top" role="img" title={td.bestDay} aria-label={td.bestDay}>
                         {' '}
                         🏅
                       </span>
