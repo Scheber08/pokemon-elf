@@ -260,6 +260,7 @@ const trainer = {
     c151_30: { name: 'Kanto-Kraft', desc: '151 Challenge: 30 Siege in einer Saison.' },
     c151_perfect: { name: 'Erste Generation, erste Klasse', desc: '151 Challenge: eine Saison nur mit Siegen.' },
     daily_1: { name: 'Guten Morgen', desc: 'Spiele deine erste Tägliche Elf.' },
+    daily_days_30: { name: 'Frühaufsteher', desc: 'Spiele die Tägliche Elf an 30 Tagen (auch mit Pausen).' },
     daily_streak_3: { name: 'Am Ball', desc: 'Tägliche Elf an 3 Tagen hintereinander.' },
     daily_streak_7: { name: 'Wochenkarte', desc: 'Tägliche Elf an 7 Tagen hintereinander.' },
     daily_streak_14: { name: 'Zwei-Wochen-Ticket', desc: 'Tägliche Elf an 14 Tagen hintereinander.' },

@@ -94,6 +94,7 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'c151_perfect', category: 'challenge', coins: 500, goal: 1, value: perfect('c151') },
   // Tägliche Elf
   { id: 'daily_1', category: 'daily', coins: 50, goal: 1, value: (s) => s.dailyDays },
+  { id: 'daily_days_30', category: 'daily', coins: 400, goal: 30, value: (s) => s.dailyDays },
   { id: 'daily_streak_3', category: 'daily', coins: 100, goal: 3, value: (s) => s.dailyStreak },
   { id: 'daily_streak_7', category: 'daily', coins: 250, goal: 7, value: (s) => s.dailyStreak },
   { id: 'daily_streak_14', category: 'daily', coins: 450, goal: 14, value: (s) => s.dailyStreak },

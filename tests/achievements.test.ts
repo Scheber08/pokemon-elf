@@ -88,6 +88,12 @@ describe('Definitionen', () => {
     expect(state(50).done).toBe(true);
   });
 
+  it('„Frühaufsteher“: 30 gespielte Tage der Täglichen Elf, auch ohne Serie', () => {
+    const state = (n: number) => achievementStates({ ...EMPTY, dailyDays: n, dailyStreak: 1 }).find((a) => a.id === 'daily_days_30')!;
+    expect(state(29)).toMatchObject({ done: false, value: 29, goal: 30, coins: 400 });
+    expect(state(30).done).toBe(true);
+  });
+
   it('Run-Stufen 10/50/200/500: 500 Runs erreichen die neue Stufe, 499 noch nicht', () => {
     expect(ACHIEVEMENTS.filter((a) => /^runs_\d+$/.test(a.id)).map((a) => a.goal)).toEqual([10, 50, 200, 500]);
     const state = (n: number) => achievementStates({ ...EMPTY, runs: n }).find((a) => a.id === 'runs_500')!;

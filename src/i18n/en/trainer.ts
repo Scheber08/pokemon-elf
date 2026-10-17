@@ -257,6 +257,7 @@ const trainer: Messages['trainer'] = {
     c151_30: { name: 'Kanto power', desc: '151 Challenge: 30 wins in one season.' },
     c151_perfect: { name: 'First gen, first class', desc: '151 Challenge: a season with nothing but wins.' },
     daily_1: { name: 'Good morning', desc: 'Play your first Daily XI.' },
+    daily_days_30: { name: 'Early riser', desc: 'Play the Daily XI on 30 days (breaks allowed).' },
     daily_streak_3: { name: 'On the ball', desc: 'Daily XI on 3 days in a row.' },
     daily_streak_7: { name: 'Season ticket', desc: 'Daily XI on 7 days in a row.' },
     daily_streak_14: { name: 'Fortnight pass', desc: 'Daily XI on 14 days in a row.' },
