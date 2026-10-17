@@ -14,6 +14,7 @@ const info: Messages['info'] = {
     guidePost: '.',
     newsTitle: 'What’s new?',
     news: [
+      'New: conversion rate in the match report, 🆕 on fresh public lobbies, “n more types for a rainbow” in the builder, achievements for 25 wins in the Retro and 151 challenges and “Honorary president” for 500 runs, a “World UFO Day” season in the shop',
       'New: ✏️ rename in “My teams”, “Hide players in the XI” in the builder’s picker, formation preview in the challenge setup and per team in the single-device draft, goal difference in the manager table (wide view), a more readable type roll card and a “World Water Day” season in the shop',
       'New: “Fill the gaps” in the builder (fills only empty spots, your players stay), 🕑 “Since your last pick” in the online and single-device draft, “Show more” and full names in the manager transfer market, full club names in the final table on narrow phones and a “Pi Day” season in the shop',
       'New: “Best for my team first” now also in the single-device draft and in the challenges (with position and fit on the cards), “Show taken” in the single-device draft, 🥇 lead over 2nd place on the leaderboard, “top n %” next to the all-time rank in profiles, light or dark design on your first visit to match your device and a “Coffee Day” season in the shop',

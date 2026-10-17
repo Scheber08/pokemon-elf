@@ -16,6 +16,7 @@ const info = {
     /** „Was ist neu?" – die wichtigsten Neuerungen, neueste zuerst */
     newsTitle: 'Was ist neu?',
     news: [
+      'Neu: Chancenverwertung im Spielbericht, 🆕 an frischen öffentlichen Lobbys, „🌈 noch n Typen bis zum Regenbogen“ im Builder, Erfolge für 25 Siege in Retro- und 151-Challenge und „Ehrenpräsident“ für 500 Runs, Saison „Welt-UFO-Tag“ im Shop',
       'Neu: ✏️ Umbenennen in „Meine Teams“, „Aufgestellte ausblenden“ im Auswahl-Dialog des Builders, Formations-Vorschau im Challenge-Setup und je Team im Draft an einem Gerät, Tordifferenz in der Manager-Tabelle (breite Ansicht), besser lesbare Typ-Würfelkarte und Saison „Weltwassertag“ im Shop',
       'Neu: „Lücken füllen“ im Builder (besetzt nur leere Plätze, deine Spieler bleiben), 🕑 „Seit deinem letzten Pick“ im Online-Draft und im Draft an einem Gerät, „Mehr zeigen“ und ganze Namen im Transfermarkt der Manager-Saison, ganze Vereinsnamen in der Abschlusstabelle auf schmalen Handys und Saison „π-Tag“ im Shop',
       'Neu: „Beste für mein Team zuerst“ jetzt auch im Draft an einem Gerät und in den Challenges (mit Position und Fit auf den Karten), „Vergebene zeigen“ im Draft an einem Gerät, 🥇 Vorsprung auf Platz 2 in der Rangliste, „Top n %“ beim Allzeit-Platz im Profil, helles oder dunkles Design beim ersten Besuch wie dein Gerät und Saison „Tag des Kaffees“ im Shop',
