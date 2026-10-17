@@ -514,7 +514,7 @@ describe('/draft (Online-Modus)', () => {
         if (url.endsWith('/drafts/public')) {
           return json(200, {
             lobbies: [
-              { code: 'QWE789', name: 'Mix', hostName: 'Mix FC', teams: 1, maxTeams: 2, region: 10, legends: false, pickSeconds: 0, createdAt: Date.now() - 60_000 },
+              { code: 'QWE789', name: 'Mix', hostName: 'Mix FC', teams: 1, maxTeams: 2, region: 10, legends: false, pickSeconds: 0, createdAt: Date.now() - 30 * 60_000 },
               // Nur Mysteriöse im Pool: Die Spalte legends ist an – das Etikett darf nicht „Legendäre" allein sagen
               { code: 'MYT234', name: 'Myth', hostName: 'Myth FC', teams: 1, maxTeams: 2, region: 1, legends: true, pickSeconds: 30, createdAt: Date.now() - 60_000, shinyParty: true, format: 'cup' },
               // Volle Lobby: verschwindet mit „Nur mit freien Plätzen“
@@ -534,13 +534,21 @@ describe('/draft (Online-Modus)', () => {
     // 🔥 an Lobbys mit genau einem freien Platz (Mix 1/2, Myth 1/2) – nicht an der vollen
     expect(container.querySelectorAll('.draft-lobbies__item').map((li) => !!li.querySelector('.draft-lobbies__last'))).toEqual([true, true, false]);
     expect(container.querySelector('.draft-lobbies__last')!.textContent).toBe('🔥 nur noch 1 Platz frei');
+    // 🆕 nur an Lobbys aus den letzten 10 Minuten (Mix ist 30 Minuten alt)
+    // (neueste zuerst: Myth, Mix, dann die volle)
+    expect(container.querySelectorAll('.draft-lobbies__item').map((li) => [li.querySelector('.draft-lobbies__name')!.textContent, !!li.querySelector('.draft-lobbies__fresh')])).toEqual([
+      ['Myth 🆕', true],
+      ['Mix', false],
+      ['Voll 🆕', true],
+    ]);
+    expect(container.querySelector('.draft-lobbies__fresh')!.getAttribute('aria-label')).toBe('Neu – in den letzten 10 Minuten erstellt');
     // Umschalter „Nur mit freien Plätzen“ (2 freie von 3)
     expect(container.querySelectorAll('.draft-lobbies__item')).toHaveLength(3);
     const open = container.querySelector('.draft-lobbies__openonly') as MiniElement;
     expect(open.textContent).toBe('Nur mit freien Plätzen (2)');
     await act(async () => open.click());
     expect(open.getAttribute('aria-pressed')).toBe('true');
-    expect(container.querySelectorAll('.draft-lobbies__name').map((e) => e.textContent)).toEqual(['Mix', 'Myth']);
+    expect(container.querySelectorAll('.draft-lobbies__name').map((e) => e.textContent)).toEqual(['Myth 🆕', 'Mix']);
     const gens = field(container, 'Generationen');
     expect(button(gens, 'Hoenn').getAttribute('aria-pressed')).toBe('true');
     expect(button(gens, 'Kanto').getAttribute('aria-pressed')).toBe('false');

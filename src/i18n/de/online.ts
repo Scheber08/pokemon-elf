@@ -58,6 +58,8 @@ const online = {
   byHost: (host: string, ago: string) => `von ${host} · ${ago}`,
   /** Öffentliche Lobbys: nur noch ein freier Platz */
   lastSpot: '🔥 nur noch 1 Platz frei',
+  /** Lobby erst vor Kurzem erstellt (🆕) */
+  freshLobby: 'Neu – in den letzten 10 Minuten erstellt',
   teamsOf: (n: number, max: number) => `${n}/${max} Teams`,
   /** Lobby-Liste: Legendäre und/oder Mysteriöse im Pool (die D1-Spalte unterscheidet sie nicht) */
   plusLegends: ' + Legendäre/Mysteriöse',

@@ -56,6 +56,9 @@ function errorText(e: unknown, t: Messages): string {
  * Neue Liga erstellen → /draft/CODE. preset: fest vorbelegte Einstellungen (z. B. die Manager-Seite:
  * format 'manager'); storageKey: eigene gemerkte Einstellungen je Seite.
  */
+/** So lange gilt eine öffentliche Lobby als neu (🆕) */
+const FRESH_LOBBY_MS = 10 * 60_000;
+
 export function CreateLeague({
   preset = {},
   storageKey = SETTINGS_KEY,
@@ -271,7 +274,15 @@ function PublicLobbies() {
             return (
               <li key={l.code} className="draft-lobbies__item">
                 <div className="draft-lobbies__info">
-                  <strong className="draft-lobbies__name">{l.name || t.online.leagueFallback(l.code)}</strong>
+                  <strong className="draft-lobbies__name">
+                    {l.name || t.online.leagueFallback(l.code)}
+                    {Date.now() - l.createdAt < FRESH_LOBBY_MS && (
+                      <span className="draft-lobbies__fresh" role="img" title={t.online.freshLobby} aria-label={t.online.freshLobby}>
+                        {' '}
+                        🆕
+                      </span>
+                    )}
+                  </strong>
                   <span className="muted small">{t.online.byHost(l.hostName, ago(l.createdAt, t))}</span>
                   <span className="draft-lobbies__facts">
                     <span>{t.online.teamsOf(l.teams, l.maxTeams)}</span>

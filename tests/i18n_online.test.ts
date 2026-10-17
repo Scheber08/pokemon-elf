@@ -520,7 +520,8 @@ describe('Seiten (en)', () => {
     const { container } = await render(
       app(h(DraftOnline, { modeSwitch: null, supported: true, onRetry: vi.fn(), onLocal: vi.fn() })),
     );
-    const names = container.querySelectorAll('.draft-lobbies__name').map((n) => n.textContent);
+    // (ohne 🆕-Abzeichen frischer Lobbys)
+    const names = container.querySelectorAll('.draft-lobbies__name').map((n) => n.textContent!.replace(' 🆕', ''));
     expect(names).toEqual(['Open one', 'Open two', 'Full one', 'Full two']);
   });
 

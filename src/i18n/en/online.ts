@@ -54,6 +54,7 @@ const online: Messages['online'] = {
   noPublic: 'No public league is waiting right now. Create one yourself – with the lobby set to “Public”.',
   byHost: (host, ago) => `by ${host} · ${ago}`,
   lastSpot: '🔥 only 1 spot left',
+  freshLobby: 'New – created in the last 10 minutes',
   teamsOf: (n, max) => `${n}/${max} teams`,
   plusLegends: ' + legendaries/mythicals',
   shinyPartyBadge: '✨ Shiny party',
