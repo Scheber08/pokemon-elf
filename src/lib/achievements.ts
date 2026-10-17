@@ -108,6 +108,7 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'draft_first', category: 'draft', coins: 100, goal: 1, value: (s) => s.draft.leagues },
   { id: 'draft_5', category: 'draft', coins: 250, goal: 5, value: (s) => s.draft.leagues },
   { id: 'draft_20', category: 'draft', coins: 600, goal: 20, value: (s) => s.draft.leagues },
+  { id: 'draft_50', category: 'draft', coins: 1200, goal: 50, value: (s) => s.draft.leagues },
   { id: 'draft_podium', category: 'draft', coins: 150, goal: 1, value: (s) => s.draft.podiums },
   { id: 'draft_title', category: 'draft', coins: 300, goal: 1, value: (s) => s.draft.titles },
   { id: 'draft_cup', category: 'draft', coins: 300, goal: 1, value: (s) => s.draft.cups },

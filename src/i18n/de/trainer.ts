@@ -271,6 +271,7 @@ const trainer = {
     draft_first: { name: 'Draft-Debüt', desc: 'Spiele eine Online-Liga bis zum Ende.' },
     draft_5: { name: 'Ligaprofi', desc: '5 Online-Ligen bis zum Ende.' },
     draft_20: { name: 'Draft-Veteran', desc: '20 Online-Ligen bis zum Ende.' },
+    draft_50: { name: 'Draft-Legende', desc: '50 Online-Ligen bis zum Ende.' },
     draft_podium: { name: 'Treppchen', desc: 'Platz 1 bis 3 in einer Online-Liga (oder ein Turnier unter den letzten drei).' },
     draft_title: { name: 'Meister', desc: 'Gewinne eine Online-Liga.' },
     draft_cup: { name: 'Pokalsieger', desc: 'Gewinne ein KO-Turnier im Online-Draft.' },

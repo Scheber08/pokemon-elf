@@ -268,6 +268,7 @@ const trainer: Messages['trainer'] = {
     draft_first: { name: 'Draft debut', desc: 'Play an online league to the end.' },
     draft_5: { name: 'League pro', desc: '5 online leagues played to the end.' },
     draft_20: { name: 'Draft veteran', desc: '20 online leagues played to the end.' },
+    draft_50: { name: 'Draft legend', desc: '50 online leagues played to the end.' },
     draft_podium: { name: 'Podium', desc: 'Finish 1st to 3rd in an online league (or reach the last three of a cup).' },
     draft_title: { name: 'Champion', desc: 'Win an online league.' },
     draft_cup: { name: 'Cup winner', desc: 'Win a knockout cup in the online draft.' },

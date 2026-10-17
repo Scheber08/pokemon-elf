@@ -81,6 +81,13 @@ describe('Definitionen', () => {
     expect(state(14).done).toBe(true);
   });
 
+  it('Online-Ligen in Stufen 1/5/20/50: 50 beendete Ligen erreichen die neue Stufe', () => {
+    expect(ACHIEVEMENTS.filter((a) => a.id === 'draft_first' || /^draft_\d+$/.test(a.id)).map((a) => a.goal)).toEqual([1, 5, 20, 50]);
+    const state = (n: number) => achievementStates({ ...EMPTY, draft: { ...EMPTY.draft, leagues: n } }).find((a) => a.id === 'draft_50')!;
+    expect(state(49)).toMatchObject({ done: false, value: 49, goal: 50, coins: 1200 });
+    expect(state(50).done).toBe(true);
+  });
+
   it('Run-Stufen 10/50/200/500: 500 Runs erreichen die neue Stufe, 499 noch nicht', () => {
     expect(ACHIEVEMENTS.filter((a) => /^runs_\d+$/.test(a.id)).map((a) => a.goal)).toEqual([10, 50, 200, 500]);
     const state = (n: number) => achievementStates({ ...EMPTY, runs: n }).find((a) => a.id === 'runs_500')!;
