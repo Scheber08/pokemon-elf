@@ -781,6 +781,10 @@
 .draft-squads .draft-results__roster-name {
   margin: 0;
 }
+/* Kader vor dem Anpfiff haben keinen Platz vorn: Name (darf schrumpfen) und Score – sonst ragt ein langer Name bei 320 px raus */
+.draft-squads .draft-results__roster-head {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
 
 .draft-results__grade {
   font-family: var(--font-head);
