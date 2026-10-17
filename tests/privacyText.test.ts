@@ -8,7 +8,7 @@ describe('Datenschutz-Text', () => {
     expect(en.privacy.leaderboardItems).toHaveLength(de.privacy.leaderboardItems.length);
     expect(de.privacy.leaderboardItems.some((x) => x.includes('Trainer') && x.includes('Shop'))).toBe(true);
     expect(en.privacy.leaderboardItems.some((x) => x.includes('trainer') && x.includes('shop'))).toBe(true);
-    for (const s of ['Meine Teams', 'Täglichen Elf', 'Manager-Saison', 'Online-Rangliste']) expect(de.privacy.local).toContain(s);
-    for (const s of ['My teams', 'Daily XI', 'manager-season', 'online leaderboard']) expect(en.privacy.local).toContain(s);
+    for (const s of ['Meine Teams', 'Täglichen Elf', 'Manager-Saison', 'Online-Rangliste', '2D-Wiedergabe']) expect(de.privacy.local).toContain(s);
+    for (const s of ['My teams', 'Daily XI', 'manager-season', 'online leaderboard', '2D replay']) expect(en.privacy.local).toContain(s);
   });
 });

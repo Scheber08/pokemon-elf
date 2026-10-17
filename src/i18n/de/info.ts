@@ -76,7 +76,7 @@ const info = {
       'Kurz gesagt: Diese App kommt ohne Konto aus und setzt keine Tracking-Cookies. Nur für die Online-Rangliste und Online-Ligen speichert der Server das Nötigste – mehr dazu unten.',
     localTitle: 'Lokale Speicherung',
     local:
-      'Deine Aufstellung, „Meine Teams“, Einstellungen, Bestwerte, laufende Runs, der Verlauf der Täglichen Elf, die lokale Rangliste, Trikots, Torjubel und Wappen, deine Tipps in der Manager-Saison, zwischengespeicherte Teamnamen aus der Online-Rangliste (für die Ligagegner), die Online-Ligen, in denen du mitspielst (Code, Liga- und Teamname), und die zufällige Geräte-Kennung für die Online-Rangliste und Online-Ligen werden im localStorage deines Browsers gespeichert. Du kannst sie jederzeit über die Browser-Einstellungen löschen – dann gilt dein Browser als neues Gerät.',
+      'Deine Aufstellung, „Meine Teams“, Einstellungen, Bestwerte, laufende Runs, der Verlauf der Täglichen Elf, die lokale Rangliste, Trikots, Torjubel und Wappen, das Tempo der 2D-Wiedergabe, deine Tipps in der Manager-Saison, zwischengespeicherte Teamnamen aus der Online-Rangliste (für die Ligagegner), die Online-Ligen, in denen du mitspielst (Code, Liga- und Teamname), und die zufällige Geräte-Kennung für die Online-Rangliste und Online-Ligen werden im localStorage deines Browsers gespeichert. Du kannst sie jederzeit über die Browser-Einstellungen löschen – dann gilt dein Browser als neues Gerät.',
     usage: (entries: number, kb: number) => `Auf diesem Gerät gerade: ${entries} ${entries === 1 ? 'Eintrag' : 'Einträge'}, etwa ${kb} KB.`,
     leaderboardTitle: 'Online-Rangliste',
     leaderboardIntro:

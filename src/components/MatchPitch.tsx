@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { load, save, STORAGE_KEYS } from '../lib/storage';
 import { useT } from '../i18n';
 import { ballAt, buildReplay, PITCH_H, PITCH_W, playerAt, type ReplayLineup } from '../lib/matchReplay';
 import { matchKits } from '../lib/kits';
@@ -41,7 +42,17 @@ export function MatchPitch({ match, lineups, nameOf, pokemonName }: Props) {
   const reduced = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const [time, setTime] = useState(0);
   const [playing, setPlaying] = useState(!reduced);
-  const [rate, setRate] = useState<(typeof RATES)[number]>(1);
+  // Tempo wie zuletzt gewählt (gespeichert); Unbekanntes → 1×
+  const [rate, setRateState] = useState<(typeof RATES)[number]>(() => {
+    const saved = load<number>(STORAGE_KEYS.replayRate, 1);
+    return (RATES as readonly number[]).includes(saved) ? (saved as (typeof RATES)[number]) : 1;
+  });
+  const setRate = (next: (r: (typeof RATES)[number]) => (typeof RATES)[number]) =>
+    setRateState((r) => {
+      const v = next(r);
+      save(STORAGE_KEYS.replayRate, v);
+      return v;
+    });
   /** Angetippter Spieler (Handy: kein Tooltip) – Name unter dem Feld */
   const [focus, setFocus] = useState<number | null>(null);
   const last = useRef<number | null>(null);

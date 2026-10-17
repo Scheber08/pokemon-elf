@@ -26,6 +26,8 @@ export const STORAGE_KEYS = {
   rankingNames: 'ranking-names',
   /** Manager-Saison: eigene Tipps je Liga und Spieltag (src/lib/managerTips.ts) */
   managerTips: 'manager-tips',
+  /** 2D-Wiedergabe: zuletzt gewähltes Tempo (1, 2 oder 4) */
+  replayRate: 'replay-rate',
 } as const;
 
 export function load<T>(key: string, fallback: T): T {

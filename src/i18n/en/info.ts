@@ -73,7 +73,7 @@ const info: Messages['info'] = {
       'In short: this app works without an account and sets no tracking cookies. Only for the online leaderboard and online leagues does the server store the bare minimum – more on that below.',
     localTitle: 'Local storage',
     local:
-      'Your lineup, “My teams”, settings, best scores, runs in progress, your Daily XI history, the local leaderboard, kits, goal celebrations and crests, your manager-season predictions, cached team names from the online leaderboard (for league opponents), the online leagues you take part in (code, league and team name) and the random device identifier for the online leaderboard and online leagues are stored in your browser’s localStorage. You can delete them at any time via your browser settings – your browser then counts as a new device.',
+      'Your lineup, “My teams”, settings, best scores, runs in progress, your Daily XI history, the local leaderboard, kits, goal celebrations and crests, the 2D replay speed, your manager-season predictions, cached team names from the online leaderboard (for league opponents), the online leagues you take part in (code, league and team name) and the random device identifier for the online leaderboard and online leagues are stored in your browser’s localStorage. You can delete them at any time via your browser settings – your browser then counts as a new device.',
     usage: (entries, kb) => `On this device right now: ${entries} ${entries === 1 ? 'entry' : 'entries'}, about ${kb} KB.`,
     leaderboardTitle: 'Online leaderboard',
     leaderboardIntro:

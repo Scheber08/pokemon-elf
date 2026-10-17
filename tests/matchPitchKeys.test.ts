@@ -49,4 +49,32 @@ describe('MatchPitch Pfeiltasten', () => {
     key('ArrowLeft');
     expect(Number(slider().value)).toBe(0);
   });
+
+  it('Tempo wird gemerkt: 1× → 2× gespeichert, neuer Dialog startet mit 2×; Unsinn im Speicher → 1×', () => {
+    localStorage.removeItem('pokemon-elf:replay-rate');
+    const mount = () => {
+      const host = doc.createElement('div');
+      doc.body.appendChild(host);
+      root = createRoot(host as never);
+      act(() => {
+        root!.render(h(MatchPitch, { match, lineups: [null, null], nameOf: (n: number) => `T${n}`, pokemonName: (id: number) => `P${id}` }));
+      });
+      return host;
+    };
+    let host = mount();
+    const rate = () => host.querySelector('.match-pitch__rate')!;
+    expect(rate().textContent).toBe('1×');
+    act(() => (rate() as unknown as { click(): void }).click());
+    expect(rate().textContent).toBe('2×');
+    expect(localStorage.getItem('pokemon-elf:replay-rate')).toBe('2');
+    act(() => root?.unmount());
+    host = mount();
+    expect(rate().textContent).toBe('2×');
+    act(() => root?.unmount());
+    localStorage.setItem('pokemon-elf:replay-rate', '3');
+    host = mount();
+    expect(rate().textContent).toBe('1×');
+    localStorage.removeItem('pokemon-elf:replay-rate');
+  });
 });
+
