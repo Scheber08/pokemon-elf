@@ -338,7 +338,18 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
     () => all.filter((p) => inPool(p) && !drafted.has(p.id) && (megaRoom || !isMega(p))),
     [all, state.region, state.legends, state.forms, megas, megaRoom, drafted],
   );
-  const filtered = useFilteredPokemon(pool, filters);
+  // „Vergebene zeigen“ (wie online): bereits gezogene Pokémon bleiben gesperrt im Raster, mit Team
+  const [showTaken, setShowTaken] = useState(false);
+  const ownerOf = useMemo(() => {
+    const m = new Map<number, number>();
+    state.teams.forEach((tm, i) => tm.slots.forEach((id) => id != null && m.set(id, i)));
+    return m;
+  }, [state.teams]);
+  const gridPool = useMemo(
+    () => (showTaken ? all.filter((p) => inPool(p) && (drafted.has(p.id) || megaRoom || !isMega(p))) : pool),
+    [showTaken, pool, all, drafted],
+  );
+  const filtered = useFilteredPokemon(gridPool, filters);
   // „★ … noch frei“ als Umschalter: nur Legendäre/Mysteriöse im Raster (wie online)
   const [legendsOnly, setLegendsOnly] = useState(false);
   // „Beste für mein Team zuerst“ (wie online): nach dem besten Fit auf einem freien Platz des Teams am Zug
@@ -2269,14 +2280,23 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   </button>
                 </p>
               )}
-              <label className="draft-check draft__bestfirst">
-                <input type="checkbox" checked={bestFirst} onChange={(e) => setBestFirst(e.target.checked)} /> {t.online.bestFirst}
-              </label>
+              <div className="draft__checks">
+                <label className="draft-check draft__bestfirst">
+                  <input type="checkbox" checked={bestFirst} onChange={(e) => setBestFirst(e.target.checked)} /> {t.online.bestFirst}
+                </label>
+                <label className="draft-check draft__showtaken">
+                  <input type="checkbox" checked={showTaken} onChange={(e) => setShowTaken(e.target.checked)} /> {t.online.showTaken}
+                </label>
+              </div>
               <FilterBar filters={filters} onChange={setFilters} showRegion={state.region === 0} resultCount={shownPool.length} slashFocus />
               <PokemonGrid
                 items={shownPool}
                 sprite={sprite}
                 selectedId={state.selected}
+                disabledReason={(p) => {
+                  const owner = ownerOf.get(p.id);
+                  return owner != null ? t.online.takenBy(teamName(state.teams[owner].name)) : null;
+                }}
                 onPick={(p: Pokemon) => {
                   setState((s) => ({ ...s, selected: s.selected === p.id ? null : p.id }));
                   if (window.matchMedia('(max-width: 899px)').matches) {

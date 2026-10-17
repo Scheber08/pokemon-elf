@@ -2143,6 +2143,11 @@ button.sheet__row:hover {
 /* ============================================================
    Fantasy-Draft
    ============================================================ */
+.draft__checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
 .draft__setup {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);

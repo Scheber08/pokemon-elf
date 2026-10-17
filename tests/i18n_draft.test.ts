@@ -1517,6 +1517,33 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(container.querySelector('.draft-turnbar__final')!.textContent).toBe('Round 11/11 🏁Final round');
   });
 
+  it('Draft läuft: „Show taken“ zeigt vergebene Pokémon gesperrt mit Team', async () => {
+    storeLang('en');
+    const f = FORMATION_IDS[0];
+    const kanto = ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth && !p.form);
+    const teams = [
+      { name: 'Mein Team', cpu: false, formation: f, slots: emptySlots(f) },
+      { name: 'Zweites Team', cpu: false, formation: f, slots: emptySlots(f).map((x, j) => (j === 0 ? kanto[0].id : x)) },
+    ];
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: false, pick: 1, selected: null, seed: null }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    const card = () => container.querySelectorAll('button.pcard').find((b) => b.textContent!.includes(kanto[0].en));
+    expect(card()).toBeUndefined();
+    const box = container.querySelector('.draft__showtaken input') as MiniElement;
+    expect(container.querySelector('.draft__showtaken')!.textContent).toContain('Show taken');
+    await act(async () => {
+      (box as unknown as { checked: boolean }).checked = true;
+      box.click();
+    });
+    await settle();
+    expect(card()!.getAttribute('aria-disabled')).toBe('true');
+    expect(card()!.getAttribute('title')).toBe('Taken by Zweites Team');
+    // Antippen wählt nichts aus
+    await act(async () => (card() as MiniElement).click());
+    expect(JSON.parse(localStorage.getItem('pokemon-elf:draft')!).selected).toBeNull();
+  });
+
   it('Draft läuft: 👑 am Team mit dem alleinigen besten Ø Fit', async () => {
     const { positionFit } = await import('../src/lib/fit');
     const { FORMATIONS } = await import('../src/config/formations');
