@@ -521,6 +521,10 @@ describe('Saisonartikel', () => {
     expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '🫖').map((i) => `${i.slot}:${i.id}`)).toEqual(['accessory:teapot', 'companion:854']);
     const teapot = TRAINER_ITEMS.find((i) => i.id === 'teapot')!;
     expect([at('2027-12-11'), at('2027-12-12'), at('2027-12-18'), at('2027-12-19')].map((d) => itemOnSale(teapot, d))).toEqual([false, true, true, false]);
+    // 💋 Tag des Kusses: Kussmund und Kussilla vom 3. bis 9. Juli
+    expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '💋').map((i) => `${i.slot}:${i.id}`)).toEqual(['accessory:kiss', 'companion:238']);
+    const kiss = TRAINER_ITEMS.find((i) => i.id === 'kiss')!;
+    expect([at('2027-07-02'), at('2027-07-03'), at('2027-07-09'), at('2027-07-10')].map((d) => itemOnSale(kiss, d))).toEqual([false, true, true, false]);
   });
 
   it('Kauf nur in der Saison (400 not_on_sale), danach bleibt er tragbar', async () => {

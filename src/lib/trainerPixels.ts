@@ -676,6 +676,12 @@ function accessory(c: Canvas, id: string, cloth: string) {
       c.dots([[24, 22], [25, 21], [25, 23]], '#cfd6dd');
       c.rect(23, 28, 4, 1, '#c9c1b2');
       break;
+    case 'kiss':
+      // Kussmund (Tag des Kusses): roter Lippenabdruck auf der rechten Wange
+      c.dots([[19, 16], [21, 16]], '#d6304a');
+      c.rect(19, 17, 3, 1, '#d6304a');
+      c.dots([[20, 18]], '#b0213a');
+      break;
     case 'teapot':
       // Teekanne (Tag des Tees): bauchige Kanne in Seladon mit Deckel, Knauf, Tülle, Henkel und Dampf
       c.rect(22, 25, 5, 3, '#9fd4b8');

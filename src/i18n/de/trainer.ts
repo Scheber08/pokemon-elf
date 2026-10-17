@@ -177,6 +177,7 @@ const trainer = {
       bottle: 'Trinkflasche',
       ufo: 'Mini-UFO',
       teapot: 'Teekanne',
+      kiss: 'Kussmund',
       lantern: 'Laterne',
       sapling: 'Setzling',
       divemask: 'Taucherbrille',

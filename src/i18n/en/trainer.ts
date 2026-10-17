@@ -174,6 +174,7 @@ const trainer: Messages['trainer'] = {
       bottle: 'Water bottle',
       ufo: 'Mini UFO',
       teapot: 'Teapot',
+      kiss: 'Kiss mark',
       lantern: 'Lantern',
       sapling: 'Sapling',
       divemask: 'Diving mask',

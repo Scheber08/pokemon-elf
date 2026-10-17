@@ -115,6 +115,8 @@ const WATER = ['03-19', '03-25', '💧'] as const;
 const UFO = ['06-29', '07-05', '🛸'] as const;
 /** Internationaler Tag des Tees (15. Dezember) */
 const TEA = ['12-12', '12-18', '🫖'] as const;
+/** Internationaler Tag des Kusses (6. Juli) */
+const KISS = ['07-03', '07-09', '💋'] as const;
 /** Valentinstag */
 const VALENTINE = ['02-07', '02-14', '💘'] as const;
 
@@ -271,6 +273,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('accessory', 'bottle', 150), ...WATER),
   seasonal(item('accessory', 'ufo', 200), ...UFO),
   seasonal(item('accessory', 'teapot', 150), ...TEA),
+  seasonal(item('accessory', 'kiss', 150), ...KISS),
   // Hintergrund
   item('background', 'plain', 0, '#22324a'),
   item('background', 'sky', 0, '#7ec4ef'),
@@ -355,6 +358,7 @@ export const TRAINER_ITEMS: readonly TrainerItem[] = [
   seasonal(item('companion', '184', 350), ...WATER),
   seasonal(item('companion', '605', 350), ...UFO),
   seasonal(item('companion', '854', 350), ...TEA),
+  seasonal(item('companion', '238', 350), ...KISS),
   item('companion', '6', 600),
   item('companion', '149', 600),
   item('companion', '448', 600),
