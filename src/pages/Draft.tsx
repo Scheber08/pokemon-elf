@@ -9,6 +9,7 @@ import { POSITIONS } from '../config/positions';
 import { REGIONS } from '../config/regions';
 import { CLUB_NAMES } from '../config/season';
 import { PosBadge } from '../components/Badges';
+import { FormationMini } from '../components/FormationMini';
 import { DraftPickFeed, DraftTypeChip, KindMarks, RoundBest } from '../components/DraftBoard';
 import type { FeedItem } from '../state/useDraftRoom';
 import { PoolStars, poolStars, scarceFor, StarsLanded } from '../components/PoolStars';
@@ -778,16 +779,20 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   >
                     <span aria-hidden="true">🎲</span>
                   </button>
-                  <select
-                    className="input select"
-                    aria-label={tx.teamFormationAria(i + 1)}
-                    value={tm.formation}
-                    onChange={(e) => updateTeam(i, { formation: e.target.value as FormationId })}
-                  >
-                    {FORMATION_IDS.map((f) => (
-                      <option key={f}>{f}</option>
-                    ))}
-                  </select>
+                  {/* Formation mit kleiner Vorschau (wie beim eigenen Team im Online-Draft) */}
+                  <span className="draft__formation">
+                    <select
+                      className="input select"
+                      aria-label={tx.teamFormationAria(i + 1)}
+                      value={tm.formation}
+                      onChange={(e) => updateTeam(i, { formation: e.target.value as FormationId })}
+                    >
+                      {FORMATION_IDS.map((f) => (
+                        <option key={f}>{f}</option>
+                      ))}
+                    </select>
+                    <FormationMini formation={tm.formation} small />
+                  </span>
                   <button
                     type="button"
                     className={`btn btn--small ${tm.cpu ? '' : 'btn--accent'}`}

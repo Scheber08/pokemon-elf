@@ -2161,6 +2161,11 @@ button.sheet__row:hover {
   display: grid;
   gap: 8px;
 }
+.draft__formation {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 .draft__teamrow {
   display: grid;
   grid-template-columns: 2em minmax(0, 1fr) auto auto 6.5em;
@@ -2248,7 +2253,7 @@ button.sheet__row:hover {
   .draft__teamrow {
     grid-template-columns: 1.6em minmax(0, 1fr) 5.4em;
   }
-  .draft__teamrow .select {
+  .draft__teamrow .draft__formation {
     grid-column: 2;
   }
 }

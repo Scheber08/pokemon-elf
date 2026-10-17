@@ -659,8 +659,11 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(saved.legends).toBe(true);
     expect(saved.teams.map((t: { name: string; cpu: boolean; formation: string }) => [t.name, t.cpu, t.formation])).toEqual(teams.map((t) => [t.name, t.cpu, t.formation]));
     expect(saved.teams.every((t: { slots: (number | null)[]; captain: unknown }) => t.slots.every((x) => x == null) && t.captain == null)).toBe(true);
-    // Aufbau zeigt die Teams wieder
+    // Aufbau zeigt die Teams wieder – je Team eine kleine Formations-Vorschau
     expect(container.querySelectorAll('.draft__teamrow')).toHaveLength(3);
+    const minis = container.querySelectorAll('.draft__teamrow .formation-mini');
+    expect(minis.map((m) => m.getAttribute('aria-label'))).toEqual(teams.map((t) => expect.stringContaining(t.formation)));
+    expect(minis.every((m) => m.querySelectorAll('.formation-mini__dot').length === 11)).toBe(true);
   });
 
   it('Liga: Titelsammlung zählt Meister je Seed einmal, ab zwei Ligen sichtbar', async () => {
