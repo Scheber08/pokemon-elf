@@ -323,6 +323,8 @@ const draft = {
     topFit: 'Bester Ø Fit bisher',
     /** Typ-Elf: so viele Pokémon des Teams tragen diesen Typ */
     rainbowTitle: (n: number) => `Typen-Regenbogen: ${n} verschiedene Typen`,
+    /** Builder: knapp vor dem Regenbogen */
+    rainbowNear: (missing: number) => `🌈 noch ${missing === 1 ? 'ein Typ' : `${missing} Typen`} bis zum Regenbogen`,
     typeTitle: (type: string, n: number) => `Typ-Elf: ${n} Pokémon vom Typ ${type}`,
     /** Blitz-Pick im Verlauf (⚡) */
     feedFast: (s: number) => `Blitz-Pick: nach ${s} ${s === 1 ? 'Sekunde' : 'Sekunden'}`,

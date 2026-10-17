@@ -286,6 +286,7 @@ const draft: Messages['draft'] = {
     fitTitle: (fit) => `Average positional fit of the picks so far: ${fit}`,
     topFit: 'Best average fit so far',
     rainbowTitle: (n) => `Type rainbow: ${n} different types`,
+    rainbowNear: (missing) => `🌈 ${plural(missing, 'more type', 'more types')} for a rainbow`,
     typeTitle: (type, n) => `Type squad: ${n} ${type}-type Pokémon`,
     feedFast: (s) => `Lightning pick: after ${s} ${s === 1 ? 'second' : 'seconds'}`,
     feedKind: { legend: 'Legendary/mythical', ub: 'Ultra Beast', mega: 'Mega' },

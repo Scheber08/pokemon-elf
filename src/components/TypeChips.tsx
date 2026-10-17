@@ -11,7 +11,9 @@ export function TypeChips({ pokemon, size = false }: { pokemon: Pokemon[]; /** ð
   const dom = dominantType(pokemon);
   const variety = typeVariety(pokemon);
   const showSize = size && pokemon.length >= 11;
-  if (!dom && variety < RAINBOW_TYPES && !showSize) return null;
+  // Builder: zwei oder ein Typ fehlen noch zum ðŸŒˆ â€“ als leiser Hinweis
+  const near = size && variety >= RAINBOW_TYPES - 2 && variety < RAINBOW_TYPES ? RAINBOW_TYPES - variety : 0;
+  if (!dom && variety < RAINBOW_TYPES && !showSize && !near) return null;
   const domLabel = dom ? t.draft.board.typeTitle(t.game.type[dom.type], dom.n) : '';
   return (
     <p className="builder__types">
@@ -29,6 +31,7 @@ export function TypeChips({ pokemon, size = false }: { pokemon: Pokemon[]; /** ð
           <span className="sr-only">{t.draft.board.rainbowTitle(variety)}</span>
         </span>
       )}
+      {near > 0 && <span className="builder__type builder__rainbow-near muted">{t.draft.board.rainbowNear(near)}</span>}
       {showSize && (
         <span className="builder__type builder__size">
           {t.draft.results.rosterSize(pokemon.reduce((sum, p) => sum + p.h, 0) / pokemon.length, pokemon.reduce((sum, p) => sum + p.w, 0))}

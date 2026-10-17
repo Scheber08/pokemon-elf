@@ -747,6 +747,11 @@ select {
   color: #fff;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
+.builder__rainbow-near {
+  border: 1px dashed var(--line-strong);
+  font-weight: 500;
+  white-space: normal;
+}
 .team-title {
   font-family: var(--font-head);
   text-transform: uppercase;
