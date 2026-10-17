@@ -1808,6 +1808,9 @@ function ManagerTable({
                 {c.lost}
               </th>
               <th scope="col">{c.goals}</th>
+              <th scope="col" title={c.diffTitle} className="manager__gd">
+                {c.diff}
+              </th>
               <th scope="col" title={c.ptsTitle}>
                 {c.pts}
               </th>
@@ -1844,6 +1847,7 @@ function ManagerTable({
                 <td>{r.d}</td>
                 <td>{r.l}</td>
                 <td>{`${r.gf}:${r.ga}`}</td>
+                <td className="manager__gd">{r.gf - r.ga > 0 ? `+${r.gf - r.ga}` : r.gf - r.ga}</td>
                 <td>
                   <strong>{r.pts}</strong>
                 </td>

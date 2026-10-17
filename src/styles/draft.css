@@ -1254,6 +1254,12 @@ button.draft-bench__slot {
 .manager__search input {
   min-width: 14em;
 }
+/* Tordifferenz in der Manager-Tabelle: auf schmalen Handys weg (die Tabelle scrollt sonst noch weiter) */
+@media (max-width: 520px) {
+  .manager__gd {
+    display: none;
+  }
+}
 .manager__more {
   margin-top: 8px;
 }

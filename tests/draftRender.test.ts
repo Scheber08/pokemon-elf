@@ -2277,6 +2277,13 @@ describe('ManagerSeason', () => {
     const marked = container.querySelectorAll('.manager__table-rival');
     expect(marked).toHaveLength(1);
     expect(marked[0].closest('td')!.textContent).toContain(league.teams[rival].name.split(' ')[0]);
+    // Tordifferenz je Zeile (mit Vorzeichen), passend zu den Toren daneben
+    for (const td of container.querySelectorAll('td.manager__gd')) {
+      const cells = td.closest('tr')!.querySelectorAll('td');
+      const [gf, ga] = cells[cells.indexOf(td) - 1].textContent!.split(':').map(Number);
+      expect(td.textContent).toBe(gf - ga > 0 ? `+${gf - ga}` : `${gf - ga}`);
+    }
+    expect(container.querySelectorAll('td.manager__gd').length).toBeGreaterThan(0);
     const el = container.querySelector('.manager__rival-venue');
     expect(row.played).toBeGreaterThan(0);
     expect(el!.textContent).toBe(`${side === 'home' ? 'Zu Hause' : 'Auswärts'}: ${formatRecord(row)} (S–U–N, ${row.played === 1 ? '1 Spiel' : `${row.played} Spiele`})`);
