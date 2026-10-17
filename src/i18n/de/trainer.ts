@@ -176,6 +176,7 @@ const trainer = {
       pie: 'Stück Kuchen',
       bottle: 'Trinkflasche',
       ufo: 'Mini-UFO',
+      teapot: 'Teekanne',
       lantern: 'Laterne',
       sapling: 'Setzling',
       divemask: 'Taucherbrille',

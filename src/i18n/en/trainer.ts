@@ -173,6 +173,7 @@ const trainer: Messages['trainer'] = {
       pie: 'Slice of pie',
       bottle: 'Water bottle',
       ufo: 'Mini UFO',
+      teapot: 'Teapot',
       lantern: 'Lantern',
       sapling: 'Sapling',
       divemask: 'Diving mask',

@@ -676,6 +676,16 @@ function accessory(c: Canvas, id: string, cloth: string) {
       c.dots([[24, 22], [25, 21], [25, 23]], '#cfd6dd');
       c.rect(23, 28, 4, 1, '#c9c1b2');
       break;
+    case 'teapot':
+      // Teekanne (Tag des Tees): bauchige Kanne in Seladon mit Deckel, Knauf, Tülle, Henkel und Dampf
+      c.rect(22, 25, 5, 3, '#9fd4b8');
+      c.rect(23, 24, 3, 1, '#7fbf9e');
+      c.dots([[24, 23]], '#5a9c7b');
+      c.dots([[27, 25], [28, 24]], '#9fd4b8');
+      c.dots([[21, 25], [21, 26]], '#7fbf9e');
+      c.rect(22, 28, 5, 1, '#5a9c7b');
+      c.dots([[28, 22], [29, 21]], '#cfd6dd');
+      break;
     case 'pie':
       // Stück Kuchen (π-Tag): Keil mit goldenem Rand, heller Füllung und roter Beere obenauf
       c.rect(22, 25, 6, 3, '#f6e3b0');

@@ -510,6 +510,10 @@ describe('Saisonartikel', () => {
     expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '🛸').map((i) => `${i.slot}:${i.id}`)).toEqual(['accessory:ufo', 'companion:605']);
     const ufo = TRAINER_ITEMS.find((i) => i.id === 'ufo')!;
     expect([at('2027-06-28'), at('2027-06-29'), at('2027-07-05'), at('2027-07-06')].map((d) => itemOnSale(ufo, d))).toEqual([false, true, true, false]);
+    // 🫖 Tag des Tees: Teekanne und Fragitee vom 12. bis 18. Dezember
+    expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '🫖').map((i) => `${i.slot}:${i.id}`)).toEqual(['accessory:teapot', 'companion:854']);
+    const teapot = TRAINER_ITEMS.find((i) => i.id === 'teapot')!;
+    expect([at('2027-12-11'), at('2027-12-12'), at('2027-12-18'), at('2027-12-19')].map((d) => itemOnSale(teapot, d))).toEqual([false, true, true, false]);
   });
 
   it('Kauf nur in der Saison (400 not_on_sale), danach bleibt er tragbar', async () => {
