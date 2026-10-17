@@ -1849,7 +1849,7 @@ describe('ManagerSeason', () => {
     expect(await text(withCaptain(lineup.slots[0], { [lineup.slots[0]]: { kind: 'red', until: 2, since: 0 } }))).toContain('keinen Kapitänsbonus');
   });
 
-  it('Kader-Tabelle: Summenzeile „Gesamt“ mit Toren, Vorlagen und Scorerpunkten', async () => {
+  it('Kader-Tabelle: Summenzeile „Gesamt“ mit Ø Fit der Startelf, Toren, Vorlagen und Scorerpunkten', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
     let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
@@ -1868,7 +1868,14 @@ describe('ManagerSeason', () => {
     const col = (i: number) => container.querySelectorAll('.manager__squad tbody tr').reduce((a, tr) => a + num(tr.querySelectorAll('td')[i].textContent), 0);
     const foot = container.querySelector('.manager__squad tfoot tr')!;
     expect(foot.querySelector('th')!.textContent).toBe('Gesamt');
-    const cells = foot.querySelectorAll('td').map((td) => num(td.textContent));
+    const tds = foot.querySelectorAll('td');
+    // Fit-Spalte: Ø Fit der Startelf (Bank zählt nicht mit)
+    const xiFits = container.querySelectorAll('.manager__squad tbody tr').filter((tr) => !(tr.getAttribute('class') ?? '').includes('is-bench')).map((tr) => Number(tr.querySelectorAll('td')[2].textContent));
+    expect(xiFits).toHaveLength(11);
+    const avgText = tds[0].textContent!.replace(' – Ø Fit der Startelf', '');
+    expect(avgText).toMatch(/^Ø \d+$/);
+    expect(Math.abs(Number(avgText.slice(2)) - xiFits.reduce((a, b) => a + b, 0) / 11)).toBeLessThanOrEqual(1);
+    const cells = tds.slice(2).map((td) => num(td.textContent));
     // Spalten im Körper: Pokémon, Rolle, Fit, Form, Tore, Vorlagen, Scorer, Einsätze (td-Index ab 0)
     expect(cells.slice(0, 3)).toEqual([col(4), col(5), col(6)]);
     expect(cells[2]).toBe(cells[0] + cells[1]);

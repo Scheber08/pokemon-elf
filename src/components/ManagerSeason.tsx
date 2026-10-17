@@ -1579,12 +1579,20 @@ function LineupEditor({
             const g = sum(goals);
             const a = sum(assists);
             if (g + a === 0) return null;
+            // Ø Fit der Startelf in der Fit-Spalte
+            const xi = sorted.filter((r) => r.role);
+            const avgFit = xi.length ? Math.round(xi.reduce((s, r) => s + r.fit, 0) / xi.length) : null;
             return (
               <tfoot>
                 <tr className="manager__squad-total">
-                  <th scope="row" className="left" colSpan={4}>
+                  <th scope="row" className="left" colSpan={2}>
                     {tx.squadTotal}
                   </th>
+                  <td className="manager__squad-avgfit" title={tx.squadAvgFitTitle}>
+                    {avgFit != null ? `Ø ${avgFit}` : '–'}
+                    {avgFit != null && <span className="sr-only"> – {tx.squadAvgFitTitle}</span>}
+                  </td>
+                  <td />
                   <td>{g || '–'}</td>
                   <td>{a || '–'}</td>
                   <td>{g + a}</td>

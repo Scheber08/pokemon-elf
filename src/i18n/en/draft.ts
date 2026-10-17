@@ -710,6 +710,7 @@ const draft: Messages['draft'] = {
     colPoints: 'Pts',
     pointsTitle: 'Goal involvements (goals + assists) this season',
     squadTotal: 'Total',
+    squadAvgFitTitle: 'Average fit of the starting XI',
     colStarts: 'GS',
     startsTitle: 'Games started this season',
     goalsTitle: 'Goals this season',

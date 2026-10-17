@@ -795,6 +795,7 @@ const draft = {
     colStarts: 'Sp.',
     /** Summenzeile unter der Kader-Tabelle */
     squadTotal: 'Gesamt',
+    squadAvgFitTitle: 'Ø Fit der Startelf',
     startsTitle: 'Spiele von Beginn an (Startelf) in dieser Saison',
     goalsTitle: 'Tore in dieser Saison',
     formTitle: (n: number) => (n > 0 ? `Tagesform +${n}` : n < 0 ? `Tagesform ${n}` : 'Tagesform normal'),
