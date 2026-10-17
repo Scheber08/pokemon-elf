@@ -45,7 +45,7 @@ import { usePokemonData } from '../state/PokemonData';
 import { useSettings } from '../state/Settings';
 import type { FormationId, Pokemon, PosCode, RegionFilter, Slots } from '../types';
 import { DraftOnline } from './DraftOnline';
-import { FormDots, TableLegend } from '../components/LeagueTicker';
+import { FormDots, TableLegend, ZoneSr } from '../components/LeagueTicker';
 import { PlaceChart } from '../components/PlaceChart';
 import { TableTimeTravel } from '../components/TableTimeTravel';
 import { SeasonStats } from '../components/SeasonStats';
@@ -1225,6 +1225,7 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                           </>
                         )}
                         {teamName(r.name)} {state.teams[r.team].cpu && <span className="rating">{t.draft.cpu}</span>}
+                        {tableView === 'all' && <ZoneSr place={i + 1} total={league.table.length} />}
                       </td>
                       <td>{r.rating}</td>
                       <td className="draft__grade">{grades[r.team]}</td>

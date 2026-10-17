@@ -767,7 +767,10 @@ function LiveTable({ table, day, you, nameOf, matches }: LiveTableProps) {
                 {day ? i + 1 : '–'}
                 {day && <Trend delta={day.delta[r.team]} />}
               </td>
-              <td className="left league-live__name">{nameOf(r.team)}</td>
+              <td className="left league-live__name">
+                {nameOf(r.team)}
+                <ZoneSr place={i + 1} total={table.length} />
+              </td>
               <td>{r.played}</td>
               <td>{r.w}</td>
               <td>{r.d}</td>
@@ -807,6 +810,15 @@ export function TableLegend({ total, top = 1 }: { total: number; top?: number })
       )}
     </p>
   );
+}
+
+/** Tabellen-Zone einer Zeile als Text für Screenreader (die Farbe allein reicht nicht) – leer ohne Zone. */
+export function ZoneSr({ place, total, top = 1 }: { place: number; total: number; top?: number }) {
+  const t = useT();
+  const zone = tableZone(place, total, top);
+  if (!zone) return null;
+  const text = zone === 'top' ? (top > 1 ? t.draft.manager.zonePromotion : t.draft.manager.zoneChampion) : t.draft.legendBottom(TABLE_BOTTOM_ZONE);
+  return <span className="sr-only"> – {text}</span>;
 }
 
 /** Formkurve als Punkte (ältestes links) mit Text für Screenreader. */

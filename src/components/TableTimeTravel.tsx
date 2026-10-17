@@ -1,6 +1,7 @@
 import { useId, useState } from 'react';
 import { useT } from '../i18n';
 import { tableRowClass, type Matchday } from '../lib/leagueTimeline';
+import { ZoneSr } from './LeagueTicker';
 
 interface Props {
   days: Matchday[];
@@ -55,7 +56,10 @@ export function TableTimeTravel({ days, you, nameOf }: Props) {
             {d.table.map((r, i) => (
               <tr key={r.team} className={tableRowClass(r.team === you, i + 1, d.table.length)}>
                 <td>{i + 1}</td>
-                <td className="left">{nameOf(r.team)}</td>
+                <td className="left">
+                  {nameOf(r.team)}
+                  <ZoneSr place={i + 1} total={d.table.length} />
+                </td>
                 <td>{r.played}</td>
                 <td>{r.gd > 0 ? `+${r.gd}` : r.gd}</td>
                 <td>

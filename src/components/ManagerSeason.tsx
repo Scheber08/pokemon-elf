@@ -17,7 +17,7 @@ import type { FormationId, Pokemon, PosCode } from '../types';
 import { PosBadge } from './Badges';
 import { BenchRow } from './BenchRow';
 import { Segmented } from './Segmented';
-import { FixtureList, FormDots, TableLegend, Trend } from './LeagueTicker';
+import { FixtureList, FormDots, TableLegend, Trend, ZoneSr } from './LeagueTicker';
 import { ReplayToggle, useMatchReport } from './MatchReport';
 import { CaptainPicker } from './CaptainPicker';
 import { JerseyEditor } from './JerseyEditor';
@@ -1861,6 +1861,7 @@ function ManagerTable({
                       <span className="sr-only"> – {t.draft.manager.rivalMark}</span>
                     </span>
                   )}
+                  {view === 'all' && <ZoneSr place={i + 1} total={rows.length} top={top} />}
                 </td>
                 <td>{r.played}</td>
                 <td>{r.w}</td>

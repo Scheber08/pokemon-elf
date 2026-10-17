@@ -20,7 +20,7 @@ import type { SpriteStyle } from '../types';
 import { cupPath, cupPens, cupStageOf, cupStatus, cupWinner } from '../lib/cup';
 import { Confetti } from './Confetti';
 import { CupBracket, CupGroups, cupStatusText } from './CupBracket';
-import { FixtureList, FormDots, TableLegend } from './LeagueTicker';
+import { FixtureList, FormDots, TableLegend, ZoneSr } from './LeagueTicker';
 import { ReplayToggle, useMatchReport } from './MatchReport';
 import { SeasonStats } from './SeasonStats';
 import { TrainerAvatar } from './TrainerAvatar';
@@ -629,6 +629,7 @@ export function DraftResults({ league, teams, ratings, highlight, sprite, code, 
                         </small>
                       )}
                       {r.team === you && <span className="sr-only">{tx.yourTeamSr}</span>}
+                      {!cup && tableView === 'all' && <ZoneSr place={i + 1} total={table.length} top={zoneTop} />}
                     </td>
                     <td>{ratingOf(r.team)}</td>
                     <td className="draft-results__grade">{grades[r.team] ?? '–'}</td>
