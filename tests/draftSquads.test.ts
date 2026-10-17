@@ -114,6 +114,16 @@ describe('Kader vor dem Anpfiff', () => {
     expect(scores[0]).toBeGreaterThanOrEqual(scores[1]);
     // Jeder Kader mit Spielfeld (11 Plätze)
     expect(cards[1].querySelectorAll('[data-slot-index]').length).toBe(11);
+    // Typ-Chips (Typ-Elf/🌈) genau dort, wo der Kader sie hergibt
+    {
+      const { dominantType, typeVariety, RAINBOW_TYPES } = await import('../src/config/pokemonTypes');
+      for (const tm of room.state!.teams) {
+        const mons = [...tm.slots, tm.ss ?? null].flatMap((id) => (id != null ? [ALL.find((p) => p.id === id)!] : []));
+        const expected = !!dominantType(mons) || typeVariety(mons) >= RAINBOW_TYPES;
+        const card = cards.find((c) => c.querySelector('.draft-results__roster-name')!.textContent!.startsWith(tm.name))!;
+        expect(!!card.querySelector('.builder__types'), tm.name).toBe(expected);
+      }
+    }
     expect(container.textContent).toContain('Anpfiff in');
   });
 

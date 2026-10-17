@@ -1,7 +1,9 @@
 import { useT } from '../i18n';
 import type { DraftTeam } from '../lib/api/draftContract';
 import type { SpriteStyle } from '../types';
+import { usePokemonData } from '../state/PokemonData';
 import { Pitch } from './Pitch';
+import { TypeChips } from './TypeChips';
 
 interface Props {
   /** Shinys der Liga */
@@ -24,6 +26,7 @@ interface Props {
  */
 export function DraftSquads({ teams, ratings, names, highlight, sprite, setPiece, shinies }: Props) {
   const t = useT();
+  const { byId } = usePokemonData();
   const order = teams
     .map((team, i) => ({ team, i, rating: ratings[i] ?? 0 }))
     .sort((a, b) => Number(b.i === highlight) - Number(a.i === highlight) || b.rating - a.rating || a.i - b.i);
@@ -46,6 +49,8 @@ export function DraftSquads({ teams, ratings, names, highlight, sprite, setPiece
               </span>
             </header>
             <p className="draft-results__roster-meta muted small">{team.formation}</p>
+            {/* Typ-Elf und 🌈 Regenbogen wie auf dem Draft-Board */}
+            <TypeChips pokemon={[...team.slots, setPiece ? team.ss : null].flatMap((id) => (id != null && byId.has(id) ? [byId.get(id)!] : []))} />
             <Pitch
               formation={team.formation}
               slots={team.slots}
