@@ -3046,6 +3046,14 @@ button.sheet__row:hover {
   .card {
     break-inside: avoid;
   }
+  /* Knöpfe (Bild speichern, Teilen, Neuer Run …) haben auf Papier keinen Sinn */
+  .btn {
+    display: none !important;
+  }
+  /* Breite Tabellen nicht im Scroll-Bereich abschneiden, sondern ganz drucken */
+  .table-scroll {
+    overflow: visible;
+  }
 }
 
 /* Hauptbereich bekommt nach Seitenwechseln den Fokus (Tastatur/Screenreader) – ohne sichtbaren Rahmen */

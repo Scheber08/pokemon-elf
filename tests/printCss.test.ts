@@ -19,4 +19,8 @@ describe('Druckansicht', () => {
     for (const sel of ['.site-header', '.skip-link', '.back-to-top', '.offline-banner-wrap', '.toasts', '.actionbar']) expect(print).toContain(sel);
     expect(print).toContain('display: none');
   });
+  it('ohne Knöpfe; breite Tabellen werden ganz gedruckt statt im Scroll-Bereich abgeschnitten', () => {
+    expect(print).toMatch(/\.btn \{\s*display: none !important;/);
+    expect(print).toMatch(/\.table-scroll \{\s*overflow: visible;/);
+  });
 });
