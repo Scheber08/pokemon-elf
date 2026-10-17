@@ -1260,6 +1260,12 @@ button.draft-bench__slot {
     display: none;
   }
 }
+/* Summenzeile der Kader-Tabelle */
+.manager__squad-total th,
+.manager__squad-total td {
+  border-top: 2px solid var(--line-strong);
+  font-weight: 700;
+}
 .manager__more {
   margin-top: 8px;
 }

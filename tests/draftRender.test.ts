@@ -1849,6 +1849,32 @@ describe('ManagerSeason', () => {
     expect(await text(withCaptain(lineup.slots[0], { [lineup.slots[0]]: { kind: 'red', until: 2, since: 0 } }))).toContain('keinen Kapitänsbonus');
   });
 
+  it('Kader-Tabelle: Summenzeile „Gesamt“ mit Toren, Vorlagen und Scorerpunkten', async () => {
+    const { ManagerSeason } = await import('../src/components/ManagerSeason');
+    const { startManagerSeason, playMatchday } = await import('../src/lib/manager');
+    let s = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0, format: 'manager' }), 'dev-h', 0, ALL);
+    while (s.phase === 'drafting') s = autoPick(s);
+    s = startManagerSeason(s, ALL, SCALE);
+    // Vor dem ersten Spieltag: keine Summenzeile
+    {
+      const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+      await settle();
+      expect(container.querySelector('.manager__squad tfoot')).toBeNull();
+    }
+    for (let i = 0; i < 6; i++) s = playMatchday(s, ALL, SCALE);
+    const { container } = await render(app(h(ManagerSeason, { room: fakeRoom(snap(s, 'h')), readOnly: false })));
+    await settle();
+    const num = (x: string | null) => (x === '–' || !x ? 0 : Number(x));
+    const col = (i: number) => container.querySelectorAll('.manager__squad tbody tr').reduce((a, tr) => a + num(tr.querySelectorAll('td')[i].textContent), 0);
+    const foot = container.querySelector('.manager__squad tfoot tr')!;
+    expect(foot.querySelector('th')!.textContent).toBe('Gesamt');
+    const cells = foot.querySelectorAll('td').map((td) => num(td.textContent));
+    // Spalten im Körper: Pokémon, Rolle, Fit, Form, Tore, Vorlagen, Scorer, Einsätze (td-Index ab 0)
+    expect(cells.slice(0, 3)).toEqual([col(4), col(5), col(6)]);
+    expect(cells[2]).toBe(cells[0] + cells[1]);
+    expect(cells[0]).toBeGreaterThan(0);
+  });
+
   it('Karriere: frühere Saisons des eigenen Teams im Status', async () => {
     const { ManagerSeason } = await import('../src/components/ManagerSeason');
     const { startManagerSeason } = await import('../src/lib/manager');

@@ -709,6 +709,7 @@ const draft: Messages['draft'] = {
     tipStreak: (n) => `${n} in a row`,
     colPoints: 'Pts',
     pointsTitle: 'Goal involvements (goals + assists) this season',
+    squadTotal: 'Total',
     colStarts: 'GS',
     startsTitle: 'Games started this season',
     goalsTitle: 'Goals this season',

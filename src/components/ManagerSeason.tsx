@@ -1573,6 +1573,26 @@ function LineupEditor({
               </tr>
             ))}
           </tbody>
+          {(() => {
+            // Summenzeile: Tore, Vorlagen und Scorerpunkte des ganzen Kaders (nur sobald jemand getroffen oder vorgelegt hat)
+            const sum = (m?: ReadonlyMap<number, number>) => sorted.reduce((a, r) => a + (m?.get(r.p.id) ?? 0), 0);
+            const g = sum(goals);
+            const a = sum(assists);
+            if (g + a === 0) return null;
+            return (
+              <tfoot>
+                <tr className="manager__squad-total">
+                  <th scope="row" className="left" colSpan={4}>
+                    {tx.squadTotal}
+                  </th>
+                  <td>{g || '–'}</td>
+                  <td>{a || '–'}</td>
+                  <td>{g + a}</td>
+                  <td />
+                </tr>
+              </tfoot>
+            );
+          })()}
         </table>
       </div>
     </section>
