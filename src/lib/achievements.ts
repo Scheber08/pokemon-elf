@@ -85,8 +85,10 @@ export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'c340_25', category: 'challenge', coins: 100, goal: 25, value: wins('c340') },
   { id: 'c340_30', category: 'challenge', coins: 200, goal: 30, value: wins('c340') },
   { id: 'c340_perfect', category: 'challenge', coins: 500, goal: 1, value: perfect('c340') },
+  { id: 'retro340_25', category: 'challenge', coins: 100, goal: 25, value: wins('retro340') },
   { id: 'retro340_30', category: 'challenge', coins: 200, goal: 30, value: wins('retro340') },
   { id: 'retro340_perfect', category: 'challenge', coins: 500, goal: 1, value: perfect('retro340') },
+  { id: 'c151_25', category: 'challenge', coins: 100, goal: 25, value: wins('c151') },
   { id: 'c151_30', category: 'challenge', coins: 200, goal: 30, value: wins('c151') },
   { id: 'c151_perfect', category: 'challenge', coins: 500, goal: 1, value: perfect('c151') },
   // Tägliche Elf

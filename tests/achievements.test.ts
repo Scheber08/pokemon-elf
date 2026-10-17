@@ -81,6 +81,19 @@ describe('Definitionen', () => {
     expect(state(14).done).toBe(true);
   });
 
+  it('Siege-Stufen 25/30 in allen drei Challenges (aus dem besten Run)', () => {
+    for (const c of ['c340', 'retro340', 'c151'] as const) {
+      expect(ACHIEVEMENTS.filter((a) => a.id === `${c}_25` || a.id === `${c}_30`).map((a) => [a.id, a.goal, a.coins])).toEqual([
+        [`${c}_25`, 25, 100],
+        [`${c}_30`, 30, 200],
+      ]);
+      const state = (wins: number) =>
+        achievementStates({ ...EMPTY, runs: 1, challenges: { [c]: { runs: 1, bestWins: wins, perfect: 0 } } }).find((a) => a.id === `${c}_25`)!;
+      expect(state(24)).toMatchObject({ done: false, value: 24 });
+      expect(state(25).done).toBe(true);
+    }
+  });
+
   it('Fortschritt bis zum Ziel, Münzen nur für erreichte', () => {
     const s: AchievementStats = { ...EMPTY, runs: 12, challenges: { c340: { runs: 12, bestWins: 34, perfect: 1 } }, bestPlace: 7 };
     const st = Object.fromEntries(achievementStates(s).map((a) => [a.id, a]));
@@ -317,8 +330,8 @@ describe('Kennzahlen und /api/me', () => {
     expect(body.achievements).toHaveLength(ACHIEVEMENTS.length);
     addEntry(db, auth.deviceId, 'c151', '2026-10-01', 30, 2, 2);
     const again = (await (await call()).json()) as MeResponse;
-    expect(again.achievements.filter((a) => a.done).map((a) => a.id).sort()).toEqual(['c151_30', 'first_run']);
-    expect(again.coins.balance).toBe(250);
+    expect(again.achievements.filter((a) => a.done).map((a) => a.id).sort()).toEqual(['c151_25', 'c151_30', 'first_run']);
+    expect(again.coins.balance).toBe(350);
     // Bilanz: Kennzahlen hinter den Erfolgen
     expect(again.stats).toMatchObject({ runs: 1, dailyStreak: 0, draft: { leagues: 0 } });
     // Falscher Schlüssel → 401
@@ -354,12 +367,12 @@ describe('Kennzahlen und /api/me', () => {
     expect(await post('/me/buy', { item: 'hat:beanie' })).toMatchObject({ status: 400, body: { error: 'not_enough_coins' } });
     expect((await post('/me/buy', { item: 'hat:zylinder' })).status).toBe(400);
     expect((await post('/me/buy', { item: 'hat:cap' })).status).toBe(400);
-    // 250 Münzen verdient (erster Run + 30 Siege in der 151 Challenge)
+    // 350 Münzen verdient (erster Run + 25 und 30 Siege in der 151 Challenge)
     addEntry(db, auth.deviceId, 'c151', '2026-10-01', 30, 2, 2);
     const bought = await post('/me/buy', { item: 'hat:beanie' });
     expect(bought.status).toBe(200);
     expect(bought.body.owned).toEqual(['hat:beanie']);
-    expect(bought.body.coins).toEqual({ earned: 250, spent: 150, balance: 100 });
+    expect(bought.body.coins).toEqual({ earned: 350, spent: 150, balance: 200 });
     // Nochmal kaufen: nichts passiert; teurer als der Rest: nein
     expect((await post('/me/buy', { item: 'hat:beanie' })).body.coins.spent).toBe(150);
     expect(await post('/me/buy', { item: 'hat:pokecap' })).toMatchObject({ status: 400, body: { error: 'not_enough_coins' } });
