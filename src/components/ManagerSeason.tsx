@@ -1698,9 +1698,15 @@ export function ManagerCupView({
           <ul className="manager__cup-ties">
             {r.ties.map((tie) => (
               <li key={`${tie.home}-${tie.away}`} className={tie.home === you || tie.away === you ? 'is-user' : ''}>
-                <span className={tie.winner === tie.home ? 'is-winner' : ''}>{nameOf(tie.home)}</span>
+                <span className={tie.winner === tie.home ? 'is-winner' : ''}>
+                  {nameOf(tie.home)}
+                  {tie.winner === tie.home && <span className="sr-only"> ({t.draft.cup.advancesSr})</span>}
+                </span>
                 <span className="manager__cup-score">{score(r, tie)}</span>
-                <span className={tie.winner === tie.away ? 'is-winner' : ''}>{nameOf(tie.away)}</span>
+                <span className={tie.winner === tie.away ? 'is-winner' : ''}>
+                  {nameOf(tie.away)}
+                  {tie.winner === tie.away && <span className="sr-only"> ({t.draft.cup.advancesSr})</span>}
+                </span>
               </li>
             ))}
           </ul>

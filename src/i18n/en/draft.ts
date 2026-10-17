@@ -850,6 +850,7 @@ const draft: Messages['draft'] = {
     outGroup: 'Out in the group stage',
     pens: (home, away) => `${home}:${away} on pens`,
     pensTitle: 'after a penalty shoot-out',
+    advancesSr: 'through',
     finalLine: (score, opponent) => `Final ${score} against ${opponent}`,
     pathTitle: 'Road to the title',
     ownPathTitle: 'Your knockout games',

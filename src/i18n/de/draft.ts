@@ -939,6 +939,8 @@ const draft = {
     outGroup: 'Aus in der Gruppenphase',
     pens: (home: number, away: number) => `i. E. ${home}:${away}`,
     pensTitle: 'nach Elfmeterschießen',
+    /** Sieger einer Paarung im Turnierbaum (für Screenreader, sichtbar nur fett) */
+    advancesSr: 'weiter',
     finalLine: (score: string, opponent: string) => `Finale ${score} gegen ${opponent}`,
     pathTitle: 'Weg zum Titel',
     ownPathTitle: 'Deine KO-Spiele',

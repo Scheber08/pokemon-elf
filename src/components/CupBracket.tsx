@@ -38,7 +38,10 @@ export function CupBracket({ cup, matches, upTo = Infinity, you, nameOf }: Props
               const own = you != null && (tie.home === you || tie.away === you);
               return (
                 <li key={`${tie.home}-${tie.away}`} className={`cup-bracket__tie ${own ? 'is-own' : ''}`}>
-                  <span className={`cup-bracket__team ${tie.winner === tie.home ? 'is-winner' : ''}`}>{nameOf(tie.home)}</span>
+                  <span className={`cup-bracket__team ${tie.winner === tie.home ? 'is-winner' : ''}`}>
+                    {nameOf(tie.home)}
+                    {m && tie.winner === tie.home && <span className="sr-only"> ({c.advancesSr})</span>}
+                  </span>
                   <span className="cup-bracket__score">
                     {m ? `${m.hg}:${m.ag}` : '–:–'}
                     {tie.pens && (
@@ -49,6 +52,7 @@ export function CupBracket({ cup, matches, upTo = Infinity, you, nameOf }: Props
                   </span>
                   <span className={`cup-bracket__team cup-bracket__team--away ${tie.winner === tie.away ? 'is-winner' : ''}`}>
                     {nameOf(tie.away)}
+                    {m && tie.winner === tie.away && <span className="sr-only"> ({c.advancesSr})</span>}
                   </span>
                 </li>
               );

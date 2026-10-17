@@ -1,8 +1,8 @@
-/** KO-Turnier: Gruppentabellen erklären den grünen Strich (Legende) und nennen die Weiterkommen-Plätze für Screenreader. */
+/** KO-Turnier: Gruppentabellen erklären den grünen Strich (Legende) und nennen die Weiterkommen-Plätze für Screenreader; im Turnierbaum steht „weiter“ am Sieger. */
 import { describe, expect, it } from 'vitest';
 import { createElement as h } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { CupGroups } from '../src/components/CupBracket';
+import { CupBracket, CupGroups } from '../src/components/CupBracket';
 import { simulateCup } from '../src/lib/cup';
 import { createRng } from '../src/lib/rng';
 import type { LeagueTeam } from '../src/lib/season';
@@ -17,4 +17,15 @@ describe('CupGroups', () => {
     expect(html.match(/Weiterkommen-Platz/g)).toHaveLength(2 * r.cup.groups!.length);
     expect(html.match(/cup-group__through/g)).toHaveLength(2 * r.cup.groups!.length);
   });
+
+  it('Turnierbaum: „(weiter)“ für Screenreader genau einmal je gespielter Paarung, beim Sieger', () => {
+    const r = simulateCup(teams, createRng(9));
+    const html = renderToStaticMarkup(h(CupBracket, { cup: r.cup, matches: r.matches, you: null, nameOf: (i: number) => `T${i}` }));
+    const ties = r.cup.rounds.reduce((n, x) => n + x.ties.length, 0);
+    expect(ties).toBe(15);
+    expect(html.match(/\(weiter\)/g)).toHaveLength(ties);
+    // Steht im Sieger-Element
+    expect(html.match(/is-winner">T\d+<span class="sr-only"> \(weiter\)/g)).toHaveLength(ties);
+  });
 });
+
