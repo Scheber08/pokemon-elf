@@ -2,6 +2,7 @@ import { FORMATIONS } from '../config/formations';
 import { POSITIONS } from '../config/positions';
 import { useT } from '../i18n';
 import type { FormationId } from '../types';
+import '../styles/formation-mini.css';
 
 /** Kleine Formations-Vorschau: Spielfeld mit einem Punkt je Position (Farben wie die Positions-Badges). */
 export function FormationMini({ formation, small }: { formation: FormationId; small?: boolean }) {

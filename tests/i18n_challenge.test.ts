@@ -278,6 +278,12 @@ describe('34–0 Challenge auf Englisch', () => {
     expect(text).toContain('Your name on the leaderboard');
     expect(text).toContain('Team name');
     expect(text).toContain('Offline – runs are only saved on this device');
+    // Formations-Vorschau unter der Formationswahl (ein Punkt je Position)
+    {
+      const mini = el.querySelector('.setup__formation .formation-mini')!;
+      expect(mini.getAttribute('aria-label')).toContain('4-3-3');
+      expect(mini.querySelectorAll('.formation-mini__dot')).toHaveLength(11);
+    }
 
     // Start (Backend weg → lokaler Run)
     await click(button(el, 'Start run'));

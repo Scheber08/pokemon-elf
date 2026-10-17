@@ -8,6 +8,7 @@ import { averageScore, type ChallengeStats } from '../lib/challengeStats';
 import type { NameField, NameIssues } from '../lib/runFinish';
 import { formatRecord } from '../lib/season';
 import type { FormationId } from '../types';
+import { FormationMini } from './FormationMini';
 import { RandomNameButton } from './RandomNameButton';
 import { Segmented } from './Segmented';
 import '../styles/run.css';
@@ -214,6 +215,9 @@ export function RunSetup({
         onChange={(f) => onChange({ formation: f, ssEnabled, teamName })}
         options={FORMATION_IDS.map((f) => ({ value: f, label: f }))}
       />
+      <div className="formation-mini-row setup__formation">
+        <FormationMini formation={formation} />
+      </div>
       <Segmented
         label={t.game.posName.SS}
         value={ssEnabled}
