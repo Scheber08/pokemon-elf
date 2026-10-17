@@ -3054,6 +3054,15 @@ button.sheet__row:hover {
   .table-scroll {
     overflow: visible;
   }
+  /* Überschriften nie allein am Seitenende, Tabellenzeilen nicht über zwei Seiten zerteilt */
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+  tr {
+    break-inside: avoid;
+  }
 }
 
 /* Hauptbereich bekommt nach Seitenwechseln den Fokus (Tastatur/Screenreader) – ohne sichtbaren Rahmen */

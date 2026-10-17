@@ -23,4 +23,8 @@ describe('Druckansicht', () => {
     expect(print).toMatch(/\.btn \{\s*display: none !important;/);
     expect(print).toMatch(/\.table-scroll \{\s*overflow: visible;/);
   });
+  it('Überschriften bleiben bei ihrem Inhalt, Tabellenzeilen werden nicht zerteilt', () => {
+    expect(print).toMatch(/h1,\s*h2,\s*h3 \{\s*break-after: avoid;/);
+    expect(print).toMatch(/\btr \{\s*break-inside: avoid;/);
+  });
 });
