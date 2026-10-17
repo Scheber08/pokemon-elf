@@ -1236,6 +1236,23 @@ describe('DraftLive', () => {
     expect(notes).toContain('★ Wunsch 2');
   });
 
+  it('🕑 Picks der anderen seit dem letzten eigenen (nur am Zug)', async () => {
+    const { DraftLive } = await import('../src/components/DraftLive');
+    let st = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
+    // Snake mit 2 Teams: ich, dann zweimal das andere Team, dann wieder ich
+    st = autoPick(autoPick(autoPick(st)));
+    const view = await render(app(h(DraftLive, { room: fakeRoom({ ...snap(st, 'h'), queue: [] }) })));
+    await settle();
+    const other = st.teams.find((x) => x.id !== 'h')!;
+    const names = st.picks.slice(1).map((x) => ALL.find((p) => p.id === x.pokemonId)!.de);
+    expect(view.container.querySelector('.draft__since')!.textContent).toBe(`🕑 Seit deinem letzten Pick: ${names.map((n) => `${n} (${other.name})`).join(', ')}`);
+    // Erster eigener Pick: kein Hinweis
+    const first = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);
+    const view2 = await render(app(h(DraftLive, { room: fakeRoom({ ...snap(first, 'h'), queue: [] }) })));
+    await settle();
+    expect(view2.container.querySelector('.draft__since')).toBeNull();
+  });
+
   it('„Beste zuerst“: Karten zeigen den bestpassenden freien Platz mit Fit', async () => {
     const { DraftLive } = await import('../src/components/DraftLive');
     const st = engine.startDraft(lobby(2, { region: 1, maxTeams: 4, order: 'host', pickSeconds: 0 }), 'dev-h', 0, ALL);

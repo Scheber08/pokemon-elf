@@ -852,6 +852,28 @@ export function DraftLive({ room, readOnly = false }: { room: DraftRoom; readOnl
           {t.online.yourTurn}
         </div>
       )}
+      {myTurn &&
+        me &&
+        (() => {
+          // 🕑 Was die anderen seit dem letzten eigenen Pick gezogen haben (wie im Draft an einem Gerät)
+          let last = -1;
+          s.picks.forEach((x, i) => x.teamId === me.id && (last = i));
+          const since = last >= 0 ? s.picks.slice(last + 1) : [];
+          if (!since.length) return null;
+          const list = since
+            .map((x) => {
+              const mon = byId.get(x.pokemonId);
+              const tm = s.teams.find((tt) => tt.id === x.teamId);
+              return `${mon ? t.game.pokemon(mon) : `#${x.pokemonId}`}${tm ? ` (${teamLabel(tm, t)})` : ''}`;
+            })
+            .join(', ');
+          return (
+            <p className="muted small draft__since">
+              <span aria-hidden="true">🕑 </span>
+              {t.draft.local.sinceLast(list)}
+            </p>
+          );
+        })()}
 
       <div className="challenge__play draft-live__play">
         <div className="challenge__controls">
