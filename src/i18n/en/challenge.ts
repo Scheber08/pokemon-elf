@@ -49,6 +49,7 @@ const challenge: Messages['challenge'] = {
   round: 'Round',
   original151: 'Original 151',
   lastRound: '🏁 Final round',
+  bestFirst: 'Best for my team first',
   legends: 'Legendaries',
   rerolls: 'Rerolls:',
   region: 'Region',

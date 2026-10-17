@@ -15,6 +15,7 @@ import {
   legendsUsed,
   MODE_RULES,
   rerollsLeft,
+  SS_SLOT,
   totalRounds,
   type EngineData,
   type RerollKind,
@@ -133,6 +134,33 @@ export function RunBoard({
         ? []
         : candidates(state, data).sort((a, b) => Number(isLegend(a)) - Number(isLegend(b)) || a.id - b.id),
     [state, data, rules.roll],
+  );
+
+  // „Beste für mein Team zuerst“ (wie im Draft): Kandidaten nach dem besten Fit auf einem freien Platz, Position + Fit auf der Karte
+  const [bestFirst, setBestFirst] = useState(false);
+  const freePositions = useMemo(() => {
+    const defs = FORMATIONS[formation].slots;
+    const list = defs.flatMap((d, i) => (isFreeSlot(state, i) ? [d.pos] : []));
+    if (isFreeSlot(state, SS_SLOT)) list.push('SS' as const);
+    return [...new Set(list)];
+  }, [state, formation]);
+  const bestFit = useMemo(() => {
+    const m = new Map<number, { pos: (typeof freePositions)[number]; fit: number }>();
+    if (!bestFirst || !freePositions.length) return m;
+    const sc = scale(rules.scale);
+    for (const p of cands) {
+      let top: { pos: (typeof freePositions)[number]; fit: number } | null = null;
+      for (const pos of freePositions) {
+        const fit = positionFit(p, pos, sc);
+        if (!top || fit > top.fit) top = { pos, fit };
+      }
+      if (top) m.set(p.id, { pos: top.pos, fit: Math.round(top.fit) });
+    }
+    return m;
+  }, [bestFirst, freePositions, cands, rules.scale]);
+  const shownCands = useMemo(
+    () => (bestFirst ? [...cands].sort((a, b) => (bestFit.get(b.id)?.fit ?? 0) - (bestFit.get(a.id)?.fit ?? 0) || a.id - b.id) : cands),
+    [bestFirst, cands, bestFit],
   );
 
   const monReel = useMemo(
@@ -322,8 +350,15 @@ export function RunBoard({
                 tc.hintRegionType
               )}
             </p>
+            <label className="draft-check run__bestfirst">
+              <input type="checkbox" checked={bestFirst} onChange={(e) => setBestFirst(e.target.checked)} /> {tc.bestFirst}
+            </label>
             <PokemonGrid
-              items={cands}
+              items={shownCands}
+              note={(p) => {
+                const best = bestFit.get(p.id);
+                return best ? `${t.game.posShort[best.pos]} ${best.fit}` : null;
+              }}
               sprite={style}
               selectedId={selectedId}
               onPick={choose}

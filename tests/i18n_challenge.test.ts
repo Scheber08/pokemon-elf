@@ -290,6 +290,23 @@ describe('34–0 Challenge auf Englisch', () => {
     expect(text).toContain('Pick a Pokémon that matches the region and type.');
     expect(text).toContain('Abandon run');
 
+    // „Best for my team first“: Position + Fit auf jeder Karte, absteigend sortiert
+    {
+      expect(el.querySelectorAll('.pcard__note')).toHaveLength(0);
+      const box = el.querySelector('.run__bestfirst input')!;
+      expect(el.querySelector('.run__bestfirst')!.textContent).toContain('Best for my team first');
+      (box as unknown as { checked: boolean }).checked = true;
+      await click(box);
+      const notes = el.querySelectorAll('.pcard__note').map((n) => n.textContent!);
+      expect(notes.length).toBe(el.querySelectorAll('button.pcard').length);
+      for (const n of notes) expect(n).toMatch(/^[A-Z]{2,3} \d+$/);
+      const fits = notes.map((n) => Number(n.split(' ')[1]));
+      expect(fits).toEqual([...fits].sort((x, y) => y - x));
+      (box as unknown as { checked: boolean }).checked = false;
+      await click(box);
+      expect(el.querySelectorAll('.pcard__note')).toHaveLength(0);
+    }
+
     // Kandidat wählen
     const card = el.querySelectorAll('button.pcard')[0];
     await click(card);

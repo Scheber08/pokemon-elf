@@ -53,6 +53,7 @@ const challenge = {
   original151: 'Original 151',
   /** Statuszeile: die letzte Runde des Runs */
   lastRound: '🏁 Letzte Runde',
+  bestFirst: 'Beste für mein Team zuerst',
   legends: 'Legendäre',
   rerolls: 'Neu würfeln:',
   region: 'Region',
