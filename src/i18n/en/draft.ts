@@ -585,6 +585,7 @@ const draft: Messages['draft'] = {
     possession: 'Possession',
     shots: 'Shots',
     onTarget: 'On target',
+    conversion: 'Conversion rate',
     xg: 'Expected goals (xG)',
     noStats: 'No stats for this match (older league).',
   },

@@ -172,6 +172,13 @@ function ReportBody({
         { label: tx.possession, home: st.possession, away: 100 - st.possession, text: (v) => `${v} %` },
         { label: tx.shots, home: st.shots[0], away: st.shots[1] },
         { label: tx.onTarget, home: st.onTarget[0], away: st.onTarget[1] },
+        // Chancenverwertung: Tore je Schuss (ohne Schüsse 0 %)
+        {
+          label: tx.conversion,
+          home: st.shots[0] > 0 ? Math.round((match.hg / st.shots[0]) * 100) : 0,
+          away: st.shots[1] > 0 ? Math.round((match.ag / st.shots[1]) * 100) : 0,
+          text: (v) => `${v} %`,
+        },
         { label: tx.xg, home: st.xg[0], away: st.xg[1], text: (v) => fmtNumber(v, 1, lang) },
       ]
     : [];

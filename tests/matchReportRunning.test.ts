@@ -83,4 +83,16 @@ describe('Spielbericht: laufender Spielstand', () => {
     expect(tags[1]).toContain("60'");
     expect(tags[1]).toContain('🎩 Hattrick');
   });
+
+  it('Statistik: Chancenverwertung = Tore je Schuss in Prozent (ohne Schüsse 0 %)', () => {
+    const body = render({
+      round: 1, home: 0, away: 1, hg: 2, ag: 0,
+      homeScorers: [{ pokemonId: 1, minute: 10 }, { pokemonId: 4, minute: 50 }],
+      awayScorers: [],
+      stats: { possession: 55, shots: [8, 0], onTarget: [4, 0], xg: [1.8, 0.2] },
+    });
+    const row = body.querySelectorAll('.match-report__stat').find((r) => r.textContent!.startsWith('Chancenverwertung'))!;
+    expect(row.querySelectorAll('.match-report__val').map((v) => v.textContent)).toEqual(['25 %', '0 %']);
+  });
 });
+

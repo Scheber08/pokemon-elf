@@ -656,6 +656,8 @@ const draft = {
     possession: 'Ballbesitz',
     shots: 'Schüsse',
     onTarget: 'Aufs Tor',
+    /** Tore je Schuss in Prozent */
+    conversion: 'Chancenverwertung',
     xg: 'Erwartete Tore (xG)',
     noStats: 'Für dieses Spiel gibt es keine Statistik (ältere Liga).',
   },
