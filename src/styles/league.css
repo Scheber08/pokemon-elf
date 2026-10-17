@@ -533,8 +533,12 @@
   max-width: 0;
   width: 100%;
   min-width: 7em;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+/* Lange Vereinsnamen umbrechen statt auf „…“ kürzen (schmale Handys) */
+.league-table td.draft-results__name {
+  white-space: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 /* Torjäger: Platz, Sprite, Name + Team, Tore (Raster aus .scorers) */
