@@ -145,6 +145,7 @@ const draft = {
     yourTurn: (team: string) => `${team}, du bist dran.`,
     /** Hot-Seat: ein anderes menschliches Team ist jetzt dran */
     handover: (team: string) => `Gerät an ${team} weitergeben!`,
+    sinceLast: (picks: string) => `Seit deinem letzten Pick: ${picks}`,
     abortConfirm: 'Draft abbrechen?',
     abort: 'Draft abbrechen',
   },

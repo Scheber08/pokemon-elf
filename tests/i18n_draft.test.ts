@@ -1544,6 +1544,39 @@ describe('/draft an einem Gerät auf Englisch', () => {
     expect(JSON.parse(localStorage.getItem('pokemon-elf:draft')!).selected).toBeNull();
   });
 
+  it('Draft läuft: 🕑 Picks der anderen seit dem letzten eigenen', async () => {
+    storeLang('en');
+    const f = FORMATION_IDS[0];
+    const kanto = ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth && !p.form);
+    // Snake mit 2 Teams: Pick 0 ich, 1+2 Zweites Team, 3 wieder ich
+    const teams = [
+      { name: 'Mein Team', cpu: false, formation: f, slots: emptySlots(f).map((x, j) => (j === 0 ? kanto[0].id : x)) },
+      { name: 'Zweites Team', cpu: false, formation: f, slots: emptySlots(f).map((x, j) => (j === 0 ? kanto[1].id : j === 1 ? kanto[2].id : x)) },
+    ];
+    const log = [
+      { team: 0, slot: 0, id: kanto[0].id },
+      { team: 1, slot: 0, id: kanto[1].id },
+      { team: 1, slot: 1, id: kanto[2].id },
+    ];
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: false, pick: 3, selected: null, seed: null, log }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    expect(container.querySelector('.draft__since')!.textContent).toBe(`🕑 Since your last pick: ${kanto[1].en} (Zweites Team), ${kanto[2].en} (Zweites Team)`);
+  });
+
+  it('Draft läuft: 🕑 fehlt beim ersten eigenen Pick', async () => {
+    const f = FORMATION_IDS[0];
+    const kanto = ALL.filter((p) => p.gen === 1 && !p.leg && !p.myth && !p.form);
+    const teams = [
+      { name: 'Mein Team', cpu: false, formation: f, slots: emptySlots(f).map((x, j) => (j === 0 ? kanto[0].id : x)) },
+      { name: 'Zweites Team', cpu: false, formation: f, slots: emptySlots(f) },
+    ];
+    localStorage.setItem('pokemon-elf:draft', JSON.stringify({ phase: 'drafting', teams, region: 1, legends: false, pick: 1, selected: null, seed: null, log: [{ team: 0, slot: 0, id: kanto[0].id }] }));
+    const { container } = await render(app(h(Draft)));
+    await settle();
+    expect(container.querySelector('.draft__since')).toBeNull();
+  });
+
   it('Draft läuft: 👑 am Team mit dem alleinigen besten Ø Fit', async () => {
     const { positionFit } = await import('../src/lib/fit');
     const { FORMATIONS } = await import('../src/config/formations');

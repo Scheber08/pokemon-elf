@@ -2154,6 +2154,26 @@ function LocalDraft({ modeSwitch }: { modeSwitch?: ReactNode }) {
                   </p>
                 );
               })()}
+              {(() => {
+                // 🕑 Was die anderen seit dem letzten eigenen Pick gezogen haben (Hot-Seat und gegen CPU)
+                if (!team || team.cpu || !state.log || state.log.length !== state.pick) return null;
+                let last = -1;
+                state.log.forEach((x, i) => x.team === currentTeam && (last = i));
+                const since = last >= 0 ? state.log.slice(last + 1) : [];
+                if (!since.length) return null;
+                const list = since
+                  .map((x) => {
+                    const mon = byId.get(x.id);
+                    return `${mon ? t.game.pokemon(mon) : `#${x.id}`} (${teamName(state.teams[x.team]?.name ?? '')})`;
+                  })
+                  .join(', ');
+                return (
+                  <p className="muted small draft__since">
+                    <span aria-hidden="true">🕑 </span>
+                    {tx.sinceLast(list)}
+                  </p>
+                );
+              })()}
               <p className={`hint ${selected ? 'hint--active' : ''}`} aria-live="polite">
                 {selected ? (
                   <>

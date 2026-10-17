@@ -128,6 +128,7 @@ const draft: Messages['draft'] = {
     selectedHint: ' selected. Click a free spot on the pitch.',
     yourTurn: (team) => `${team}, you’re up.`,
     handover: (team) => `Pass the device to ${team}!`,
+    sinceLast: (picks) => `Since your last pick: ${picks}`,
     abortConfirm: 'Cancel the draft?',
     abort: 'Cancel draft',
   },
