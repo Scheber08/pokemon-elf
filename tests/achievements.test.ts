@@ -478,6 +478,10 @@ describe('Saisonartikel', () => {
     expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '☕').map((i) => `${i.slot}:${i.id}`)).toEqual(['accessory:coffee', 'companion:926']);
     const coffee = TRAINER_ITEMS.find((i) => i.id === 'coffee')!;
     expect([at('2027-09-27'), at('2027-09-28'), at('2027-10-04'), at('2027-10-05')].map((d) => itemOnSale(coffee, d))).toEqual([false, true, true, false]);
+    // 🥧 π-Tag: Stück Kuchen und Porygon vom 11. bis 17. März
+    expect(TRAINER_ITEMS.filter((i) => i.season?.icon === '🥧').map((i) => `${i.slot}:${i.id}`)).toEqual(['accessory:pie', 'companion:137']);
+    const pie = TRAINER_ITEMS.find((i) => i.id === 'pie')!;
+    expect([at('2027-03-10'), at('2027-03-11'), at('2027-03-17'), at('2027-03-18')].map((d) => itemOnSale(pie, d))).toEqual([false, true, true, false]);
   });
 
   it('Kauf nur in der Saison (400 not_on_sale), danach bleibt er tragbar', async () => {

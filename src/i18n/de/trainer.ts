@@ -173,6 +173,7 @@ const trainer = {
       facepaint: 'Fanschminke',
       locket: 'Herz-Medaillon',
       coffee: 'Kaffeebecher',
+      pie: 'Stück Kuchen',
       lantern: 'Laterne',
       sapling: 'Setzling',
       divemask: 'Taucherbrille',

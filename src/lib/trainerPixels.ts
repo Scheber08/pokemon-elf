@@ -676,6 +676,15 @@ function accessory(c: Canvas, id: string, cloth: string) {
       c.dots([[24, 22], [25, 21], [25, 23]], '#cfd6dd');
       c.rect(23, 28, 4, 1, '#c9c1b2');
       break;
+    case 'pie':
+      // Stück Kuchen (π-Tag): Keil mit goldenem Rand, heller Füllung und roter Beere obenauf
+      c.rect(22, 25, 6, 3, '#f6e3b0');
+      c.rect(23, 24, 4, 1, '#f6e3b0');
+      c.rect(24, 23, 2, 1, '#f6e3b0');
+      c.rect(22, 28, 6, 1, '#c98a3c');
+      c.dots([[22, 25], [23, 24], [24, 23], [25, 23]], '#c98a3c');
+      c.dots([[25, 22]], '#d63c4a');
+      break;
     case 'lantern':
       // Laterne am Stab: dunkler Stab über der Schulter, leuchtend orange Laterne mit Rahmen
       c.dots([[20, 23], [21, 22], [22, 21], [23, 20], [24, 20], [25, 21]], '#b07a3e');
