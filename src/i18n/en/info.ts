@@ -14,6 +14,7 @@ const info: Messages['info'] = {
     guidePost: '.',
     newsTitle: 'What’s new?',
     news: [
+      'New: “Early riser” achievement for 30 days of the Daily XI, average fit of the starting XI in the manager squad table, a legend for the qualifying places in the knockout tournament, print view without buttons and with full tables, an “International Kissing Day” season in the shop; plus table zones, cup winners, shinies and best runs for screen readers',
       'New: shared places in top-scorer and scorer lists, the 2D replay remembers its speed, type chips on the squads before kick-off, a “Total” row in the manager squad table, the “Draft legend” achievement for 50 online leagues and a “Tea Day” season in the shop',
       'New: conversion rate in the match report, 🆕 on fresh public lobbies, “n more types for a rainbow” in the builder, achievements for 25 wins in the Retro and 151 challenges and “Honorary president” for 500 runs, a “World UFO Day” season in the shop',
       'New: ✏️ rename in “My teams”, “Hide players in the XI” in the builder’s picker, formation preview in the challenge setup and per team in the single-device draft, goal difference in the manager table (wide view), a more readable type roll card and a “World Water Day” season in the shop',
