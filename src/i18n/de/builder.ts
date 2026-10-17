@@ -56,6 +56,8 @@ const builder = {
     friendlyTitle: (name: string) => `Aktuelle Elf gegen ${name} (Hin- und Rückspiel)`,
   },
   best: 'Beste Elf',
+  fillGaps: 'Lücken füllen',
+  fillGapsTitle: 'Besetzt nur die leeren Plätze mit den bestpassenden Pokémon – deine Spieler bleiben',
   bestTitle: 'Stellt die stärkste Elf aus der gewählten Region und den Einstellungen auf',
   undoTitle: 'Letzte Änderung an der Aufstellung zurücknehmen (Strg/Cmd+Z)',
   redo: 'Wiederholen',

@@ -52,6 +52,8 @@ const builder: Messages['builder'] = {
     friendlyTitle: (name) => `Current XI against ${name} (home and away)`,
   },
   best: 'Best XI',
+  fillGaps: 'Fill the gaps',
+  fillGapsTitle: 'Fills only the empty spots with the best-fitting Pokémon – your players stay',
   bestTitle: 'Picks the strongest lineup from the selected region and settings',
   undoTitle: 'Undo the last change to the lineup (Ctrl/Cmd+Z)',
   redo: 'Redo',

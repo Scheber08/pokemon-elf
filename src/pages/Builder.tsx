@@ -11,7 +11,7 @@ import { SavedTeams } from '../components/SavedTeams';
 import { Segmented } from '../components/Segmented';
 import { TeamSheet } from '../components/TeamSheet';
 import { useT } from '../i18n';
-import { bestEleven } from '../lib/bestEleven';
+import { bestEleven, fillGaps } from '../lib/bestEleven';
 import { copyText, downloadBlob } from '../lib/exportImage';
 import { remapFormation } from '../lib/formation';
 import { shuffle } from '../lib/rng';
@@ -269,6 +269,19 @@ export function Builder() {
     change((s) => ({ ...s, slots: best.slots, ss: s.ssEnabled ? best.ss : s.ss }));
   };
 
+  /** Nur leere Plätze besetzen (gesetzte Spieler bleiben) – gleicher Pool wie „Beste Elf“ */
+  const filled = state.slots.filter((id) => id != null).length;
+  const gaps = state.slots.length - filled + (state.ssEnabled && state.ss == null ? 1 : 0);
+  const autoFill = () => {
+    const source = regionPool.length >= 12 ? regionPool : pool;
+    const next = fillGaps(state.formation, state.slots, state.ss, source, scale('all'), {
+      megaMax: megaMax(state.megas),
+      setPiece: state.ssEnabled,
+      lookup: byId,
+    });
+    change((s) => ({ ...s, slots: next.slots, ss: s.ssEnabled ? next.ss : s.ss }));
+  };
+
   const saveImage = async () => {
     setBusy(true);
     try {
@@ -362,6 +375,11 @@ export function Builder() {
           <button type="button" className="btn" onClick={autoBest} title={t.builder.bestTitle}>
             {t.builder.best}
           </button>
+          {filled > 0 && gaps > 0 && (
+            <button type="button" className="btn builder__fill" onClick={autoFill} title={t.builder.fillGapsTitle}>
+              {t.builder.fillGaps}
+            </button>
+          )}
           <button
             ref={undoRef}
             type="button"

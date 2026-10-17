@@ -82,3 +82,48 @@ export function bestEleven(
   }
   return { slots: chosen.map((p) => p?.id ?? null), ss };
 }
+
+/**
+ * „Lücken füllen": nur leere Plätze (und einen fehlenden Standardschützen) mit dem jeweils
+ * bestpassenden freien Pokémon besetzen – wichtigste Positionen zuerst; gesetzte Spieler bleiben.
+ * Bereits aufgestellte Megas zählen aufs Limit. Deterministisch.
+ */
+export function fillGaps(
+  formation: FormationId,
+  slots: readonly (number | null)[],
+  ss: number | null,
+  pool: Pokemon[],
+  scale: Scale,
+  { megaMax = null, setPiece = false, lookup }: BestElevenOptions & { lookup?: ReadonlyMap<number, Pokemon> } = {},
+): { slots: (number | null)[]; ss: number | null } {
+  const defs = FORMATIONS[formation].slots;
+  const out = defs.map((_, i) => slots[i] ?? null);
+  const used = new Set<number>([...out, setPiece ? ss : null].filter((id): id is number => id != null));
+  // Gesetzte Spieler können außerhalb des Pools liegen (andere Region) – fürs Mega-Limit alle kennen
+  const byId = lookup ?? new Map(pool.map((p) => [p.id, p]));
+  let megas = [...used].filter((id) => isMega(byId.get(id) ?? {})).length;
+  const take = (pos: PosCode): Pokemon | null => {
+    let best: Pokemon | null = null;
+    let bestFit = -1;
+    for (const p of pool) {
+      if (used.has(p.id) || (isMega(p) && megaMax != null && megas >= megaMax)) continue;
+      const f = positionFit(p, pos, scale);
+      if (f > bestFit || (f === bestFit && best && p.id < best.id)) {
+        best = p;
+        bestFit = f;
+      }
+    }
+    if (best) {
+      used.add(best.id);
+      if (isMega(best)) megas++;
+    }
+    return best;
+  };
+  const order = defs
+    .map((_, i) => i)
+    .filter((i) => out[i] == null)
+    .sort((a, b) => POSITIONS[defs[b].pos].teamWeight - POSITIONS[defs[a].pos].teamWeight || a - b);
+  for (const i of order) out[i] = take(defs[i].pos)?.id ?? null;
+  const nextSs = setPiece && ss == null ? (take('SS')?.id ?? null) : ss;
+  return { slots: out, ss: nextSs };
+}
