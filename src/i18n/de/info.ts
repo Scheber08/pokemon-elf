@@ -16,6 +16,7 @@ const info = {
     /** „Was ist neu?" – die wichtigsten Neuerungen, neueste zuerst */
     newsTitle: 'Was ist neu?',
     news: [
+      'Neu: ✏️ Umbenennen in „Meine Teams“, „Aufgestellte ausblenden“ im Auswahl-Dialog des Builders, Formations-Vorschau im Challenge-Setup und je Team im Draft an einem Gerät, Tordifferenz in der Manager-Tabelle (breite Ansicht), besser lesbare Typ-Würfelkarte und Saison „Weltwassertag“ im Shop',
       'Neu: „Lücken füllen“ im Builder (besetzt nur leere Plätze, deine Spieler bleiben), 🕑 „Seit deinem letzten Pick“ im Online-Draft und im Draft an einem Gerät, „Mehr zeigen“ und ganze Namen im Transfermarkt der Manager-Saison, ganze Vereinsnamen in der Abschlusstabelle auf schmalen Handys und Saison „π-Tag“ im Shop',
       'Neu: „Beste für mein Team zuerst“ jetzt auch im Draft an einem Gerät und in den Challenges (mit Position und Fit auf den Karten), „Vergebene zeigen“ im Draft an einem Gerät, 🥇 Vorsprung auf Platz 2 in der Rangliste, „Top n %“ beim Allzeit-Platz im Profil, helles oder dunkles Design beim ersten Besuch wie dein Gerät und Saison „Tag des Kaffees“ im Shop',
       'Neu: ▲/▼ gegen deinen Schnitt im Challenge-Ergebnis und in der Täglichen Elf, Siegquote gegen die Prognose im Testspiel, 💯 Volltreffer-Kandidaten je Position im Scouting-Guide, Erfolg „Zwei-Wochen-Ticket“ und Saison „Weltgesundheitstag“ im Shop',
